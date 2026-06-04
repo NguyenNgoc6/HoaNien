@@ -1,0 +1,17 @@
+# Cấu hình IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Cấu hình VS Code (Nhóm bạn dùng)
+.vscode/
+
+# Thư mục build/đóng gói
+out/
+build/
+bin/
+target/
+
+# File hệ thống
+.DS_Store
+Thumbs.db
