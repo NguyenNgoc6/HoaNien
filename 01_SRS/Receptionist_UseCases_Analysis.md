@@ -79,3 +79,54 @@ Tài liệu này phân tích chi tiết các Use Case cụ thể thuộc quy tr�
     4. Trong trường hợp đặc biệt, Lễ tân có thể can thiệp thủ công để đổi trạng thái phòng (ví dụ: khóa phòng lại không cho đặt nếu có dấu hiệu hư hỏng đột xuất trước khi báo bảo trì).
 *   **Quy tắc nghiệp vụ (Business Rules):**
     *   **BR-FO-04:** Chu trình chuẩn của phòng bắt buộc là: `Vacant_Clean` → `Occupied` → `Vacant_Dirty` → `Vacant_Clean`. Lễ tân cần phối hợp với Housekeeping để đảm bảo vòng lặp này diễn ra trơn tru.
+
+## 8. Create Customer Folio (Khởi tạo công nợ phòng - Folio)
+*   **Mô tả:** Hệ thống tự động tạo hoặc Lễ tân chủ động thiết lập một sổ ghi nợ (Folio) cho khách hàng ngay khi Check-in để ghi nhận các chi phí phát sinh trong quá trình lưu trú.
+*   **Tiền điều kiện:** Khách hàng đã được Check-in thành công (trạng thái phòng là `Occupied`).
+*   **Luồng cơ bản:**
+    1. Khi hoàn tất Check-in, hệ thống cấp phát một bảng theo dõi công nợ (Folio) gắn với `Room_Booking_Details`.
+    2. Lễ tân có thể xem và kiểm tra số dư hiện tại của Folio (thường bằng 0 ở thời điểm Check-in nếu tiền phòng đã thanh toán trước).
+    3. Thiết lập hạn mức tín dụng (Credit Limit) nếu khách có yêu cầu sử dụng các dịch vụ trả sau.
+*   **Hậu điều kiện:** Khách có thể dùng số phòng và mã PIN để gọi đồ ăn/dịch vụ (dữ liệu lưu vào bảng `Folio_Items`).
+
+## 9. Attach Service Charges (Ghi nhận phụ phí/dịch vụ vào phòng)
+*   **Mô tả:** Lễ tân hoặc các bộ phận khác (Nhà hàng, Spa, Tour) đẩy các khoản phí phát sinh vào Folio của phòng để khách thanh toán một lần khi Check-out.
+*   **Tiền điều kiện:** Phòng đang có trạng thái `Occupied` và hạn mức (Credit Limit) vẫn còn đủ.
+*   **Luồng cơ bản:**
+    1. Lễ tân chọn phòng cần thêm phụ phí (ví dụ: phí giặt là, mini-bar, đền bù đồ vỡ).
+    2. Nhập chi tiết khoản phí, số tiền và bộ phận phát sinh (`source_department`).
+    3. Hệ thống kiểm tra tổng nợ mới so với hạn mức (Credit Limit).
+    4. Cập nhật khoản phí vào danh sách `Folio_Items` của phòng.
+*   **Quy tắc nghiệp vụ (Business Rules):**
+    *   **BR-FB-01:** Phí chỉ được đẩy vào phòng đang có người ở và phải thông qua xác thực PIN hoặc chữ ký (signature) đối với các dịch vụ tự gọi.
+
+## 10. Generate Consolidated Invoice (Tạo hóa đơn tổng hợp)
+*   **Mô tả:** Lễ tân tổng hợp mọi chi phí chưa thanh toán (Tiền phòng, F&B, Tour, Phụ phí) để xuất thành một hóa đơn duy nhất phục vụ Check-out.
+*   **Tiền điều kiện:** Khách hàng yêu cầu trả phòng (Check-out).
+*   **Luồng cơ bản:**
+    1. Lễ tân nhấn nút tạo hóa đơn cho phòng đang làm thủ tục.
+    2. Hệ thống rà soát toàn bộ các bảng `Room_Bookings`, `Folio_Items`, `Tour_Bookings` liên kết với khách hàng.
+    3. Hệ thống tính toán tổng tiền trước thuế (`pre_tax_amount`), thuế VAT (`vat_amount`) và ra số tiền cuối cùng (`total_amount`).
+    4. Lễ tân có thể áp dụng mã khuyến mãi (Promotions) tại bước này.
+    5. Hóa đơn (`Consolidated_Invoices`) được tạo và lưu lại.
+
+## 11. Process Final Payment (Xử lý thanh toán cuối cùng)
+*   **Mô tả:** Lễ tân ghi nhận dòng tiền khách thanh toán cho hóa đơn tổng hợp vừa tạo bằng các hình thức khác nhau (Tiền mặt, Thẻ tín dụng, Chuyển khoản).
+*   **Tiền điều kiện:** Hóa đơn tổng hợp (`Consolidated_Invoices`) đã được tạo và chưa thanh toán đủ.
+*   **Luồng cơ bản:**
+    1. Lễ tân thông báo số tiền cuối cùng cần thanh toán cho khách.
+    2. Khách thực hiện thanh toán.
+    3. Lễ tân chọn phương thức thanh toán (`gateway_method`) và nhập số tiền nhận được.
+    4. Hệ thống ghi nhận một `Payment_Transactions` nối với hóa đơn.
+    5. Nếu số dư hóa đơn về 0, trạng thái hóa đơn đổi thành `Paid`.
+*   **Quy tắc nghiệp vụ (Business Rules):**
+    *   **BR-FIN-01:** Chỉ khi hóa đơn chuyển sang trạng thái `Paid`, quy trình Check-out mới được phép hoàn tất.
+
+## 12. Manage History Payment (Quản lý lịch sử thanh toán)
+*   **Mô tả:** Lễ tân tra cứu lại các giao dịch thanh toán đa bước (cọc trước, trả góp, hoàn tiền) và các hóa đơn cũ để đối soát hoặc hỗ trợ khách hàng.
+*   **Tiền điều kiện:** Lễ tân đã đăng nhập và có quyền xem giao dịch.
+*   **Luồng cơ bản:**
+    1. Lễ tân vào giao diện Lịch sử thanh toán.
+    2. Tìm kiếm theo mã khách hàng, mã hóa đơn hoặc khoảng thời gian.
+    3. Xem chuỗi các giao dịch (`Payment_Transactions`) liên quan đến một Booking cụ thể.
+    4. Thực hiện in lại biên lai (Receipt) hoặc xử lý hoàn tiền (Refund) nếu có quy định áp dụng (VD: Hủy tour, hủy phòng đúng hạn theo BR-FIN-02).
