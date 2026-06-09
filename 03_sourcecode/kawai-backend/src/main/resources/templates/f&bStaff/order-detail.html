@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Detail — F&amp;B Staff | Kawai Resort</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" th:href="@{/f&amp;bStaff/css/pos-dashboard.css}" href="../../statics/f&bStaff/css/pos-dashboard.css" />
+  <link rel="stylesheet" th:href="@{/f&amp;bStaff/css/order-detail.css}" href="../../statics/f&bStaff/css/order-detail.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand-name">KAWAI</div>
+      <div class="brand-sub">Resort &amp; Tour Hub</div>
+      <div class="staff-badge">
+        <span class="material-symbols-outlined" style="font-size:0.7rem;">restaurant</span> F&amp;B Staff
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Vận hành</div>
+      <a href="pos-dashboard.html" th:href="@{/fbStaff/dashboard}" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span><span>POS Dashboard</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="material-symbols-outlined">add_circle</span><span>Tạo đơn mới</span>
+      </a>
+      <a href="table-management.html" th:href="@{/fbStaff/table-management}" class="nav-item">
+        <span class="material-symbols-outlined">table_restaurant</span><span>Table Management</span>
+      </a>
+      <a href="room-service-management.html" th:href="@{/fbStaff/room-service}" class="nav-item">
+        <span class="material-symbols-outlined">room_service</span><span>Room Service</span>
+      </a>
+      <a href="#" class="nav-item active">
+        <span class="material-symbols-outlined">receipt_long</span><span>Order Detail</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-outline" style="width:100%; border-color:var(--border); color:var(--text-muted);" onclick="location.href='/auth/logout'">Đăng xuất</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">Chi tiết Đơn hàng</div>
+        <div class="topbar-subtitle">Thông tin, trạng thái &amp; hóa đơn</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline" onclick="location.href='pos-dashboard.html'">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Quay lại
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-body detail-wrapper">
+      
+      <!-- Toggle Mock View (For Demo only) -->
+      <div class="demo-toggle" style="margin-bottom: 20px; background:var(--bg-card); padding:10px 15px; border-radius:var(--radius-md); border:1px dashed var(--namia-text); display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <strong style="color:var(--text-secondary); font-size:0.8rem;">DEMO NAV:</strong>
+        <button class="btn btn-sm btn-outline" onclick="window.location.href='order-detail.html?type=food&id=ORD-001'">Food Order (Dine-in)</button>
+        <button class="btn btn-sm btn-outline" onclick="window.location.href='order-detail.html?type=food&id=ORD-002&mode=room'">Food Order (Room Svc)</button>
+        <button class="btn btn-sm btn-outline" onclick="window.location.href='order-detail.html?type=table&id=RES-105'">Table Reservation</button>
+      </div>
+
+      <div class="detail-card">
+        
+        <!-- HEADER -->
+        <div class="detail-header">
+          <div class="dh-left">
+            <h2 id="order-id">ORD-000</h2>
+            <div class="dh-meta">
+              <span id="order-type-badge" class="type-badge">Food Order</span>
+              <span id="order-date"><span class="material-symbols-outlined">calendar_today</span> <span id="val-date">09/06/2026 19:34</span></span>
+            </div>
+          </div>
+          <div class="dh-right">
+            <span id="order-status-chip" class="order-status-chip chip-cooking" style="font-size:0.8rem; padding:6px 14px;"><span class="dot"></span>Processing</span>
+          </div>
+        </div>
+
+        <!-- STATUS TRACKER -->
+        <div class="status-tracker" id="status-tracker">
+          <div class="step completed" id="step-1">
+            <div class="step-icon"><span class="material-symbols-outlined">receipt_long</span></div>
+            <div class="step-label">Created</div>
+          </div>
+          <div class="step active" id="step-2">
+            <div class="step-icon"><span class="material-symbols-outlined">skillet</span></div>
+            <div class="step-label" id="lbl-step-2">Processing</div>
+          </div>
+          <div class="step" id="step-3">
+            <div class="step-icon"><span class="material-symbols-outlined" id="icon-step-3">room_service</span></div>
+            <div class="step-label" id="lbl-step-3">Served</div>
+          </div>
+        </div>
+
+        <!-- INFO GRID -->
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">Khách hàng</div>
+            <div class="info-value" id="info-customer">Nguyễn Minh Quân</div>
+          </div>
+          <div class="info-box" id="box-service-type">
+            <div class="info-label">Hình thức</div>
+            <div class="info-value" id="info-service">Dine-In</div>
+          </div>
+          <div class="info-box" id="box-location">
+            <div class="info-label" id="lbl-location">Bàn / Phòng</div>
+            <div class="info-value" id="info-location">Bàn 05 - Nhà hàng Indochine</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label" id="lbl-pax">Số lượng khách</div>
+            <div class="info-value" id="info-pax">4 người</div>
+          </div>
+        </div>
+
+        <!-- DYNAMIC BODY: FOOD ORDER -->
+        <div id="body-food-order" style="display:none;">
+          <h3 class="section-heading">Danh sách món ăn</h3>
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th style="width:60px; text-align:center;">SL</th>
+                <th>Món ăn</th>
+                <th style="text-align:right;">Đơn giá</th>
+                <th style="text-align:right;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="food-items-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+          <div class="order-summary">
+            <div class="summary-row">
+              <span>Tổng tạm tính:</span>
+              <span id="food-subtotal">0₫</span>
+            </div>
+            <div class="summary-row">
+              <span>Phí phục vụ (5%):</span>
+              <span id="food-svc">0₫</span>
+            </div>
+            <div class="summary-row">
+              <span>Thuế GTGT (8%):</span>
+              <span id="food-vat">0₫</span>
+            </div>
+            <div class="summary-row total">
+              <span>Tổng cộng:</span>
+              <span id="food-total">0₫</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DYNAMIC BODY: TABLE RESERVATION -->
+        <div id="body-table-order" style="display:none;">
+          <h3 class="section-heading">Chi tiết đặt bàn</h3>
+          <div class="table-res-details">
+            <div class="trd-row">
+              <span class="trd-label">Bàn đã đặt:</span>
+              <span class="trd-value" id="tbl-numbers">Bàn 01</span>
+            </div>
+            <div class="trd-row">
+              <span class="trd-label">Khu vực:</span>
+              <span class="trd-value" id="tbl-zone">Nhà hàng Indochine</span>
+            </div>
+            <div class="trd-row">
+              <span class="trd-label">Sức chứa:</span>
+              <span class="trd-value" id="tbl-capacity">4 người</span>
+            </div>
+            <div class="trd-row">
+              <span class="trd-label">Thời gian dự kiến:</span>
+              <span class="trd-value" id="tbl-time">19:30, Hôm nay</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMMON NOTES -->
+        <div class="order-notes" id="order-notes" style="display:none;">
+          <strong>Yêu cầu đặc biệt:</strong> <span id="note-content"></span>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="detail-actions">
+          <button class="btn btn-outline btn-danger" id="btn-cancel"><span class="material-symbols-outlined">close</span> Hủy đơn</button>
+          <div style="margin-left:auto; display:flex; gap:10px;">
+            <button class="btn btn-outline" id="btn-print"><span class="material-symbols-outlined">print</span> In hóa đơn</button>
+            <button class="btn btn-primary" id="btn-action"><span class="material-symbols-outlined">check</span> <span id="btn-action-lbl">Hoàn thành</span></button>
+          </div>
+        </div>
+
+      </div><!-- / detail-card -->
+    </div><!-- / detail-wrapper -->
+  </div>
+
+  <script th:src="@{/f&amp;bStaff/js/order-detail.js}" src="../../statics/f&bStaff/js/order-detail.js"></script>
+</body>
+</html>
