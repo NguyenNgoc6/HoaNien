@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Dashboard — F&amp;B Staff | Kawai Resort</title>
+  <meta name="description" content="Màn hình POS Dashboard cho nhân viên F&amp;B — Kawai Retreat Resort &amp; Hub" />
+
+  <!-- Google Fonts: Playfair Display + Montserrat (shared with main system template) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Material Symbols (shared with main system template) -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
+
+  <!-- POS Dashboard CSS — statics/f&bStaff/css/ -->
+  <link rel="stylesheet" th:href="@{/f&amp;bStaff/css/pos-dashboard.css}" href="../../statics/f&bStaff/css/pos-dashboard.css" />
+</head>
+
+<body>
+
+  <!-- ============================================================
+       SIDEBAR  (dark tone — #3c3530, matches homepage footer)
+       ============================================================ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="brand-name">KAWAI</div>
+      <div class="brand-sub">Resort &amp; Tour Hub</div>
+      <div class="staff-badge">
+        <span class="material-symbols-outlined" style="font-size:0.7rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;">restaurant</span>
+        F&amp;B Staff
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Vận hành</div>
+
+      <a href="#" class="nav-item active">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>POS Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-open-modal="newOrder">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Tạo đơn mới</span>
+      </a>
+      <a href="table-management.html" th:href="@{/fbStaff/table-management}" class="nav-item">
+        <span class="material-symbols-outlined">table_restaurant</span>
+        <span>Table Management</span>
+      </a>
+      <a href="room-service-management.html" th:href="@{/fbStaff/room-service}" class="nav-item">
+        <span class="material-symbols-outlined">room_service</span>
+        <span>Room Service</span>
+        <span class="nav-badge pulse" id="roomsvc-badge">3</span>
+      </a>
+      <a href="e-menu.html" class="nav-item" th:href="@{/fbStaff/emenu}">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span>E-Menu</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="material-symbols-outlined">kitchen</span>
+        <span>KDS Bếp</span>
+      </a>
+
+      <div class="nav-section-label">Tài chính</div>
+
+      <a href="#" class="nav-item">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>Post to Room</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="material-symbols-outlined">payments</span>
+        <span>Thanh toán POS</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="material-symbols-outlined">bar_chart</span>
+        <span>Báo cáo ca</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="staff-profile">
+        <div class="staff-avatar">TP</div>
+        <div>
+          <div class="staff-name" th:text="${staffName != null ? staffName : 'Trần Phương'}">Trần Phương</div>
+          <div class="staff-role">F&amp;B POS · Ca Sáng</div>
+        </div>
+        <button class="logout-btn" title="Đăng xuất" onclick="location.href='/auth/logout'">
+          <span class="material-symbols-outlined" style="font-size:1.05rem;">logout</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <div class="main-content">
+
+    <!-- Top Header Bar -->
+    <header class="topbar" id="main-topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title-text">POS Dashboard</div>
+        <div class="topbar-subtitle" id="topbar-subtitle-text">Nhà hàng &amp; Dịch vụ phòng</div>
+      </div>
+
+      <div class="topbar-right">
+        <div style="position:relative;">
+          <div class="topbar-clock" id="live-clock">--:--:--</div>
+          <div class="topbar-date" id="live-date" style="position:absolute;top:calc(100% + 3px);left:0;right:0;text-align:center;white-space:nowrap;"></div>
+        </div>
+
+        <div class="icon-btn" title="Thông báo">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-dot"></span>
+        </div>
+
+        <div class="icon-btn" title="Làm mới" onclick="location.reload()">
+          <span class="material-symbols-outlined">refresh</span>
+        </div>
+
+        <!-- Primary button — black like homepage "Book Now" -->
+        <button class="btn btn-primary" data-open-modal="newOrder" style="height:34px;padding:0 14px;">
+          <span class="material-symbols-outlined">add</span>
+          Đơn mới
+          <span style="font-size:0.58rem;opacity:0.6;margin-left:2px;">[N]</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Dashboard Body -->
+    <div class="dashboard-body">
+
+      <!-- =====================================================
+           KPI STATS (4 cards)
+           ===================================================== -->
+      <div class="stats-row">
+
+        <div class="stat-card" style="--card-accent: #2c2c2c;">
+          <div class="stat-icon" style="--icon-bg: rgba(44,44,44,0.07); --icon-color: #2c2c2c;">
+            <span class="material-symbols-outlined">receipt</span>
+          </div>
+          <div class="stat-label">Đơn đang xử lý</div>
+          <div class="stat-value" id="kpi-active-orders">8<span class="unit">đơn</span></div>
+          <div class="stat-delta up">
+            <span class="material-symbols-outlined">arrow_upward</span>+2 so với hôm qua
+          </div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #1a7044;">
+          <div class="stat-icon" style="--icon-bg: rgba(30,120,70,0.09); --icon-color: #1a7044;">
+            <span class="material-symbols-outlined">payments</span>
+          </div>
+          <div class="stat-label">Doanh thu hôm nay</div>
+          <div class="stat-value">12.4<span class="unit">tr₫</span></div>
+          <div class="stat-delta up">
+            <span class="material-symbols-outlined">arrow_upward</span>+18% so với hôm qua
+          </div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #b04510;">
+          <div class="stat-icon" style="--icon-bg: rgba(190,80,20,0.09); --icon-color: #b04510;">
+            <span class="material-symbols-outlined">table_restaurant</span>
+          </div>
+          <div class="stat-label">Bàn đang có khách</div>
+          <div class="stat-value">11<span class="unit">/20</span></div>
+          <div class="stat-delta down">
+            <span class="material-symbols-outlined">arrow_downward</span>55% công suất
+          </div>
+        </div>
+
+        <div class="stat-card" style="--card-accent: #8a306e;">
+          <div class="stat-icon" style="--icon-bg: rgba(140,50,120,0.09); --icon-color: #8a306e;">
+            <span class="material-symbols-outlined">room_service</span>
+          </div>
+          <div class="stat-label">Room Service chờ</div>
+          <div class="stat-value">3<span class="unit">đơn</span></div>
+          <div class="stat-delta" style="color: var(--status-roomsvc-text);">
+            <span class="material-symbols-outlined">schedule</span>Cần xử lý ngay
+          </div>
+        </div>
+
+      </div>
+      <!-- / KPI Stats -->
+
+      <!-- =====================================================
+           2-COLUMN GRID
+           ===================================================== -->
+      <div class="content-grid">
+
+        <!-- LEFT: Active Orders -->
+        <div class="orders-panel">
+          <div class="orders-panel-header">
+            <div class="section-header" style="margin-bottom:0;">
+              <span class="section-title">Danh sách Đơn hàng</span>
+              <div class="section-actions">
+                <button class="btn btn-sm btn-outline">
+                  <span class="material-symbols-outlined">sort</span>Sắp xếp
+                </button>
+                <button class="btn btn-sm btn-primary" data-open-modal="newOrder">
+                  <span class="material-symbols-outlined">add</span>Tạo đơn
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="dashboard-tabs">
+              <button class="dash-tab active" data-target="list-food">Food Orders</button>
+              <button class="dash-tab" data-target="list-table">Table Orders</button>
+            </div>
+
+            <!-- Filters for Food Orders (default) -->
+            <div class="filter-pills" id="filters-food">
+              <button class="pill active" data-filter="all">Tất cả</button>
+              <button class="pill" data-filter="pending">Pending</button>
+              <button class="pill" data-filter="cooking">Processing</button>
+              <button class="pill" data-filter="ready">Ready / Served</button>
+              <button class="pill" data-filter="cancelled">Cancelled</button>
+            </div>
+
+            <!-- Filters for Table Orders (hidden by default) -->
+            <div class="filter-pills" id="filters-table" style="display:none;">
+              <button class="pill active" data-filter="all">Tất cả</button>
+              <button class="pill" data-filter="pending">Pending</button>
+              <button class="pill" data-filter="serving">Serving</button>
+              <button class="pill" data-filter="completed">Completed</button>
+              <button class="pill" data-filter="cancelled">Cancelled</button>
+            </div>
+          </div>
+
+          <!-- LIST: FOOD ORDERS -->
+          <div class="orders-list" id="list-food">
+
+            <!-- Order #001 — Dine-in, COOKING (highlighted) -->
+            <div class="order-card highlighted" data-status="cooking" data-order="ORD-001" onclick="location.href='order-detail.html?id=ORD-001&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in">
+                  <span class="material-symbols-outlined">chair</span>
+                </div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 05 · Nhà hàng Indochine</div>
+                  <div class="order-guest">Nguyễn Minh Quân · 4 khách</div>
+                </div>
+                <span class="order-status-chip chip-cooking"><span class="dot"></span>Đang chế biến</span>
+              </div>
+              <div class="order-items" style="display:none;">
+                <div class="order-item-row">
+                  <span class="item-qty">2×</span>
+                  <span class="item-name">Bò Wagyu Nướng Than Hoa</span>
+                  <span class="item-kot kot-cooking">Đang nấu</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">1×</span>
+                  <span class="item-name">Súp Bí Đỏ Nhà hàng</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">4×</span>
+                  <span class="item-name">Nước Khoáng La Vie</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:34 · 18 phút</span>
+                <button class="btn btn-sm btn-danger btn-cancel-order"><span class="material-symbols-outlined">close</span></button>
+                <button class="btn btn-sm btn-success btn-mark-served"><span class="material-symbols-outlined">check</span>Đã phục vụ</button>
+                <span class="order-amount">1.850.000₫</span>
+              </div>
+            </div>
+
+            <!-- Order #002 — Room Service, PENDING -->
+            <div class="order-card" data-status="pending" data-order="ORD-002" onclick="location.href='order-detail.html?id=ORD-002&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon room-svc">
+                  <span class="material-symbols-outlined">room_service</span>
+                </div>
+                <div class="order-meta">
+                  <div class="order-table">Room Service · Phòng 208</div>
+                  <div class="order-guest">Trần Thị Lan Anh · Villa Suite</div>
+                </div>
+                <span class="order-status-chip chip-pending"><span class="dot"></span>Chờ xác nhận</span>
+              </div>
+              <div class="order-items" style="display:none;">
+                <div class="order-item-row">
+                  <span class="item-qty">1×</span>
+                  <span class="item-name">Phở Bò Truyền Thống</span>
+                  <span class="item-kot kot-pending">Chờ</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">2×</span>
+                  <span class="item-name">Nước Cam Tươi Ép</span>
+                  <span class="item-kot kot-pending">Chờ</span>
+                </div>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:41 · 11 phút</span>
+                <button class="btn btn-sm btn-outline btn-post-room"><span class="material-symbols-outlined">home_pin</span>Post to Room</button>
+                <button class="btn btn-sm btn-success btn-mark-served"><span class="material-symbols-outlined">check</span>Đã phục vụ</button>
+                <span class="order-amount">285.000₫</span>
+              </div>
+            </div>
+
+            <!-- Order #003 — Dine-in, READY -->
+            <div class="order-card" data-status="ready" data-order="ORD-003" onclick="location.href='order-detail.html?id=ORD-003&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in">
+                  <span class="material-symbols-outlined">chair</span>
+                </div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 12 · Terrace Bar</div>
+                  <div class="order-guest">Lê Hữu Phước · 2 khách</div>
+                </div>
+                <span class="order-status-chip chip-ready"><span class="dot"></span>Sẵn phục vụ</span>
+              </div>
+              <div class="order-items" style="display:none;">
+                <div class="order-item-row">
+                  <span class="item-qty">2×</span>
+                  <span class="item-name">Cocktail Kawai Signature</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">1×</span>
+                  <span class="item-name">Cheese Board Cao Cấp</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:28 · 24 phút</span>
+                <button class="btn btn-sm btn-danger btn-cancel-order"><span class="material-symbols-outlined">close</span></button>
+                <button class="btn btn-sm btn-primary btn-mark-served"><span class="material-symbols-outlined">delivery_dining</span>Giao bàn</button>
+                <span class="order-amount">620.000₫</span>
+              </div>
+            </div>
+
+            <!-- Order #004 — Room Service, COOKING -->
+            <div class="order-card" data-status="cooking" data-order="ORD-004" onclick="location.href='order-detail.html?id=ORD-004&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon room-svc">
+                  <span class="material-symbols-outlined">room_service</span>
+                </div>
+                <div class="order-meta">
+                  <div class="order-table">Room Service · Phòng 315</div>
+                  <div class="order-guest">Phạm Ngọc Bảo · Garden Villa</div>
+                </div>
+                <span class="order-status-chip chip-cooking"><span class="dot"></span>Đang chế biến</span>
+              </div>
+              <div class="order-items" style="display:none;">
+                <div class="order-item-row">
+                  <span class="item-qty">1×</span>
+                  <span class="item-name">Club Sandwich Đặc biệt</span>
+                  <span class="item-kot kot-cooking">Đang nấu</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">1×</span>
+                  <span class="item-name">Khoai tây chiên</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">2×</span>
+                  <span class="item-name">Pepsi lon</span>
+                  <span class="item-kot kot-ready">Sẵn sàng</span>
+                </div>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:38 · 14 phút</span>
+                <button class="btn btn-sm btn-outline btn-post-room"><span class="material-symbols-outlined">home_pin</span>Post to Room</button>
+                <button class="btn btn-sm btn-success btn-mark-served"><span class="material-symbols-outlined">check</span>Đã phục vụ</button>
+                <span class="order-amount">430.000₫</span>
+              </div>
+            </div>
+
+            <!-- Order #005 — Dine-in, PENDING -->
+            <div class="order-card" data-status="pending" data-order="ORD-005" onclick="location.href='order-detail.html?id=ORD-005&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in">
+                  <span class="material-symbols-outlined">chair</span>
+                </div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 03 · Nhà hàng Indochine</div>
+                  <div class="order-guest">Hoàng Thị Minh Nguyệt · 6 khách</div>
+                </div>
+                <span class="order-status-chip chip-pending"><span class="dot"></span>Chờ xác nhận</span>
+              </div>
+              <div class="order-items" style="display:none;">
+                <div class="order-item-row">
+                  <span class="item-qty">3×</span><span class="item-name">Gỏi cuốn tôm thịt</span><span class="item-kot kot-pending">Chờ</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">2×</span><span class="item-name">Cá Hồi Nướng Miso</span><span class="item-kot kot-pending">Chờ</span>
+                </div>
+                <div class="order-item-row">
+                  <span class="item-qty">6×</span><span class="item-name">Bia Tiger lon</span><span class="item-kot kot-pending">Chờ</span>
+                </div>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:49 · 3 phút</span>
+                <button class="btn btn-sm btn-danger btn-cancel-order"><span class="material-symbols-outlined">close</span></button>
+                <button class="btn btn-sm btn-primary btn-mark-served"><span class="material-symbols-outlined">send</span>Gửi Bếp</button>
+                <span class="order-amount">1.240.000₫</span>
+              </div>
+            </div>
+
+            <!-- Order #006 — SERVED -->
+            <div class="order-card" data-status="ready" data-order="ORD-006" style="opacity:0.6;" onclick="location.href='order-detail.html?id=ORD-006&type=food'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in"><span class="material-symbols-outlined">chair</span></div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 07 · Terrace Bar</div>
+                  <div class="order-guest">Vũ Đình Hào · 2 khách</div>
+                </div>
+                <span class="order-status-chip chip-served"><span class="dot"></span>Đã phục vụ</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:15 · Hoàn thành lúc 19:42</span>
+                <button class="btn btn-sm btn-outline"><span class="material-symbols-outlined">print</span>In hóa đơn</button>
+                <span class="order-amount">480.000₫</span>
+              </div>
+            </div>
+
+          </div><!-- / list-food -->
+
+          <!-- LIST: TABLE ORDERS -->
+          <div class="orders-list" id="list-table" style="display:none;">
+
+            <!-- Table Order #1 -->
+            <div class="order-card" data-status="serving" data-order="RES-105" onclick="location.href='order-detail.html?id=RES-105&type=table'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in"><span class="material-symbols-outlined">table_restaurant</span></div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 01 · Indochine</div>
+                  <div class="order-guest">Nguyễn Minh Quân · 4 khách</div>
+                </div>
+                <span class="order-status-chip chip-cooking"><span class="dot"></span>Serving</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>19:34</span>
+              </div>
+            </div>
+
+            <!-- Table Order #2 -->
+            <div class="order-card" data-status="pending" data-order="RES-106" onclick="location.href='order-detail.html?id=RES-106&type=table'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in"><span class="material-symbols-outlined">book_online</span></div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 06 · Đã đặt</div>
+                  <div class="order-guest">Lê Văn Hùng · 8 khách</div>
+                </div>
+                <span class="order-status-chip chip-pending"><span class="dot"></span>Pending</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>20:30</span>
+              </div>
+            </div>
+
+            <!-- Table Order #3 -->
+            <div class="order-card" data-status="completed" data-order="RES-102" style="opacity:0.6;" onclick="location.href='order-detail.html?id=RES-102&type=table'">
+              <div class="order-card-top">
+                <div class="order-type-icon dine-in"><span class="material-symbols-outlined">task_alt</span></div>
+                <div class="order-meta">
+                  <div class="order-table">Bàn 08 · Trống</div>
+                  <div class="order-guest">Phan Minh Tài · 2 khách</div>
+                </div>
+                <span class="order-status-chip chip-served"><span class="dot"></span>Completed</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time"><span class="material-symbols-outlined">schedule</span>18:00 - 19:10</span>
+              </div>
+            </div>
+
+          </div><!-- / list-table -->
+        </div>
+        <!-- / LEFT Orders Panel -->
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <!-- Room Service Alerts (Live) -->
+          <div class="alert-panel">
+            <div class="alert-panel-header">
+              <span class="material-symbols-outlined" style="font-size:0.95rem;color:var(--status-roomsvc-text);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;">room_service</span>
+              <span class="section-title" style="font-size:0.75rem;">Room Service Mới</span>
+              <span class="section-count">3</span>
+              <div class="live-indicator"><span class="live-dot"></span>LIVE</div>
+            </div>
+            <div class="alert-list" id="alert-list">
+
+              <div class="alert-item">
+                <div class="alert-icon"><span class="material-symbols-outlined">room_service</span></div>
+                <div class="alert-body">
+                  <div class="alert-title">Phòng 204 — Nguyễn Văn An</div>
+                  <div class="alert-desc">2x Phở Bò, 1x Nước cam ép tươi</div>
+                  <div class="alert-time">19:41 · 320.000₫</div>
+                </div>
+                <div class="alert-actions">
+                  <button class="btn btn-sm btn-success btn-accept-alert"><span class="material-symbols-outlined">check</span></button>
+                </div>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-icon"><span class="material-symbols-outlined">room_service</span></div>
+                <div class="alert-body">
+                  <div class="alert-title">Phòng 112 — Lê Hoàng Nam</div>
+                  <div class="alert-desc">1x Burger Bò Wagyu, 1x Green Smoothie</div>
+                  <div class="alert-time">19:35 · 275.000₫</div>
+                </div>
+                <div class="alert-actions">
+                  <button class="btn btn-sm btn-success btn-accept-alert"><span class="material-symbols-outlined">check</span></button>
+                </div>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-icon"><span class="material-symbols-outlined">room_service</span></div>
+                <div class="alert-body">
+                  <div class="alert-title">Phòng 501 — Phạm Thùy Linh</div>
+                  <div class="alert-desc">3x Bánh mì thịt nướng, 1x Cà phê sữa đá</div>
+                  <div class="alert-time">19:29 · 210.000₫</div>
+                </div>
+                <div class="alert-actions">
+                  <button class="btn btn-sm btn-success btn-accept-alert"><span class="material-symbols-outlined">check</span></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <!-- / Room Service Alerts -->
+
+          <!-- Quick Actions -->
+          <div class="alert-panel">
+            <div class="alert-panel-header">
+              <span class="material-symbols-outlined" style="font-size:0.95rem;color:var(--text-secondary);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">bolt</span>
+              <span class="section-title" style="font-size:0.75rem;">Thao tác nhanh</span>
+            </div>
+            <div style="padding:12px 14px;">
+              <div class="quick-actions-grid">
+                <a href="#" class="quick-action-btn" data-open-modal="newOrder">
+                  <span class="material-symbols-outlined">add_shopping_cart</span>
+                  <span class="quick-action-label">Tạo đơn</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                  <span class="material-symbols-outlined">print</span>
+                  <span class="quick-action-label">In hóa đơn</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                  <span class="material-symbols-outlined">home_pin</span>
+                  <span class="quick-action-label">Post to Room</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                  <span class="material-symbols-outlined">menu_book</span>
+                  <span class="quick-action-label">E-Menu</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                  <span class="material-symbols-outlined">local_offer</span>
+                  <span class="quick-action-label">Giảm giá</span>
+                </a>
+                <a href="#" class="quick-action-btn">
+                  <span class="material-symbols-outlined">support_agent</span>
+                  <span class="quick-action-label">Gọi Bếp</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- / Quick Actions -->
+
+          <!-- Mini Stats -->
+          <div class="alert-panel">
+            <div class="alert-panel-header">
+              <span class="material-symbols-outlined" style="font-size:0.95rem;color:var(--text-secondary);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">bar_chart</span>
+              <span class="section-title" style="font-size:0.75rem;">Thống kê ca hôm nay</span>
+            </div>
+            <div style="padding:12px 14px;">
+              <div class="mini-stats">
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Tổng đơn</div>
+                  <div class="mini-stat-value">34</div>
+                  <div class="mini-stat-bar"><div class="mini-stat-bar-fill" data-width="68" style="width:0;--bar-color:#2c2c2c;"></div></div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Đã thanh toán</div>
+                  <div class="mini-stat-value">26</div>
+                  <div class="mini-stat-bar"><div class="mini-stat-bar-fill" data-width="76" style="width:0;--bar-color:var(--status-ready-text);"></div></div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Avg. Order</div>
+                  <div class="mini-stat-value" style="font-size:0.9rem;">365<span style="font-size:0.58rem;font-weight:500;color:var(--text-muted);margin-left:1px;">k₫</span></div>
+                  <div class="mini-stat-bar"><div class="mini-stat-bar-fill" data-width="45" style="width:0;--bar-color:var(--status-cooking-text);"></div></div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Room Service</div>
+                  <div class="mini-stat-value">9</div>
+                  <div class="mini-stat-bar"><div class="mini-stat-bar-fill" data-width="30" style="width:0;--bar-color:var(--status-roomsvc-text);"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- / Mini Stats -->
+
+          <!-- Table Status Map -->
+          <div class="table-map">
+            <div class="table-map-header">
+              <div class="section-header" style="margin-bottom:0;">
+                <span class="material-symbols-outlined" style="font-size:0.95rem;color:var(--text-secondary);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;">table_restaurant</span>
+                <span class="section-title" style="font-size:0.75rem;">Sơ đồ bàn</span>
+                <span class="section-count">20 bàn</span>
+              </div>
+            </div>
+            <div class="table-map-body">
+              <div class="table-grid">
+                <div class="table-dot occupied"  data-table="01" data-status="occupied">01</div>
+                <div class="table-dot vacant"    data-table="02" data-status="vacant">02</div>
+                <div class="table-dot occupied"  data-table="03" data-status="occupied">03</div>
+                <div class="table-dot vacant"    data-table="04" data-status="vacant">04</div>
+                <div class="table-dot occupied"  data-table="05" data-status="occupied">05</div>
+                <div class="table-dot vacant"    data-table="06" data-status="vacant">06</div>
+                <div class="table-dot occupied"  data-table="07" data-status="occupied">07</div>
+                <div class="table-dot reserved"  data-table="08" data-status="reserved">08</div>
+                <div class="table-dot vacant"    data-table="09" data-status="vacant">09</div>
+                <div class="table-dot occupied"  data-table="10" data-status="occupied">10</div>
+                <div class="table-dot occupied"  data-table="11" data-status="occupied">11</div>
+                <div class="table-dot occupied"  data-table="12" data-status="occupied">12</div>
+                <div class="table-dot cleaning"  data-table="13" data-status="cleaning">13</div>
+                <div class="table-dot reserved"  data-table="14" data-status="reserved">14</div>
+                <div class="table-dot vacant"    data-table="15" data-status="vacant">15</div>
+                <div class="table-dot vacant"    data-table="16" data-status="vacant">16</div>
+                <div class="table-dot occupied"  data-table="17" data-status="occupied">17</div>
+                <div class="table-dot occupied"  data-table="18" data-status="occupied">18</div>
+                <div class="table-dot vacant"    data-table="19" data-status="vacant">19</div>
+                <div class="table-dot occupied"  data-table="20" data-status="occupied">20</div>
+              </div>
+              <div class="table-map-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--status-ready-text);"></div>Trống (9)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--status-cooking-text);"></div>Có khách (11)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--status-served-text);"></div>Đặt trước (2)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--status-pending-text);"></div>Đang dọn (1)</div>
+              </div>
+            </div>
+          </div>
+          <!-- / Table Map -->
+
+        </div>
+        <!-- / RIGHT COLUMN -->
+
+      </div>
+      <!-- / Content Grid -->
+
+    </div>
+    <!-- / Dashboard Body -->
+
+  </div><!-- / main-content -->
+
+
+  <!-- ============================================================
+       MODAL — Tạo Đơn Mới
+       ============================================================ -->
+  <div class="modal-overlay" id="newOrderModal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="material-symbols-outlined" style="color:var(--text-secondary);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;font-size:1.05rem;">add_shopping_cart</span>
+        <span class="modal-title">Tạo Đơn Mới</span>
+        <button class="modal-close" data-close-modal>
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form class="modal-body" id="newOrderForm" onsubmit="return false;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+          <div class="form-group">
+            <label class="form-label" for="selectType">Loại đơn</label>
+            <select class="form-select" id="selectType">
+              <option value="dine-in">🍽 Dine-in (Tại bàn)</option>
+              <option value="room-svc">🛎 Room Service</option>
+              <option value="takeaway">🥡 Mang đi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="selectTable">Bàn / Phòng</label>
+            <select class="form-select" id="selectTable">
+              <option value="02">Bàn 02</option>
+              <option value="04">Bàn 04</option>
+              <option value="06">Bàn 06</option>
+              <option value="09">Bàn 09</option>
+              <option value="15">Bàn 15</option>
+              <option value="P-104">Phòng 104</option>
+              <option value="P-201">Phòng 201</option>
+              <option value="P-403">Phòng 403</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ghi chú đặc biệt</label>
+          <input type="text" class="form-input" placeholder="Ví dụ: Không hành, ít đá, dị ứng tôm..." />
+        </div>
+
+        <!-- Menu items quick-add -->
+        <div class="form-group">
+          <label class="form-label">Chọn món</label>
+          <div style="display:flex;flex-direction:column;gap:5px;max-height:170px;overflow-y:auto;">
+            <!-- Item row template -->
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border);">
+              <span style="font-size:0.76rem;color:var(--text-secondary);">Bò Wagyu Nướng Than Hoa</span>
+              <span style="font-size:0.68rem;color:var(--text-secondary);">680k</span>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <button type="button" onclick="changeQty(this,-1)" style="width:20px;height:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">−</button>
+                <span class="qty-display" style="font-size:0.76rem;font-weight:700;min-width:14px;text-align:center;color:var(--text-primary);">0</span>
+                <button type="button" onclick="changeQty(this,1)"  style="width:20px;height:20px;background:var(--namia-text);border:1px solid var(--namia-text);border-radius:3px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">+</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border);">
+              <span style="font-size:0.76rem;color:var(--text-secondary);">Cá Hồi Nướng Miso</span>
+              <span style="font-size:0.68rem;color:var(--text-secondary);">520k</span>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <button type="button" onclick="changeQty(this,-1)" style="width:20px;height:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">−</button>
+                <span class="qty-display" style="font-size:0.76rem;font-weight:700;min-width:14px;text-align:center;color:var(--text-primary);">0</span>
+                <button type="button" onclick="changeQty(this,1)"  style="width:20px;height:20px;background:var(--namia-text);border:1px solid var(--namia-text);border-radius:3px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">+</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border);">
+              <span style="font-size:0.76rem;color:var(--text-secondary);">Phở Bò Truyền Thống</span>
+              <span style="font-size:0.68rem;color:var(--text-secondary);">95k</span>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <button type="button" onclick="changeQty(this,-1)" style="width:20px;height:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">−</button>
+                <span class="qty-display" style="font-size:0.76rem;font-weight:700;min-width:14px;text-align:center;color:var(--text-primary);">0</span>
+                <button type="button" onclick="changeQty(this,1)"  style="width:20px;height:20px;background:var(--namia-text);border:1px solid var(--namia-text);border-radius:3px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">+</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border);">
+              <span style="font-size:0.76rem;color:var(--text-secondary);">Cocktail Kawai Signature</span>
+              <span style="font-size:0.68rem;color:var(--text-secondary);">165k</span>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <button type="button" onclick="changeQty(this,-1)" style="width:20px;height:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">−</button>
+                <span class="qty-display" style="font-size:0.76rem;font-weight:700;min-width:14px;text-align:center;color:var(--text-primary);">0</span>
+                <button type="button" onclick="changeQty(this,1)"  style="width:20px;height:20px;background:var(--namia-text);border:1px solid var(--namia-text);border-radius:3px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+          <div class="form-group">
+            <label class="form-label" for="paymentMethod">Thanh toán</label>
+            <select class="form-select" id="paymentMethod">
+              <option value="pos">Thanh toán tại quầy</option>
+              <option value="room-charge">Ký gửi phòng (Folio)</option>
+              <option value="vnpay">VNPay</option>
+              <option value="cash">Tiền mặt</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tổng tạm tính</label>
+            <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+              0₫
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" data-close-modal>Hủy</button>
+        <button class="btn btn-primary" onclick="document.getElementById('newOrderForm').dispatchEvent(new Event('submit'))">
+          <span class="material-symbols-outlined">send</span>Gửi Bếp (KDS)
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- / Modal newOrder -->
+
+
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Inline: qty helper -->
+  <script>
+    function changeQty(btn, delta) {
+      const d = btn.parentElement.querySelector('.qty-display');
+      d.textContent = Math.max(0, (parseInt(d.textContent) || 0) + delta);
+    }
+  </script>
+
+  <!-- POS Dashboard JS — statics/f&bStaff/js/ -->
+  <script th:src="@{/f&amp;bStaff/js/pos-dashboard.js}" src="../../statics/f&bStaff/js/pos-dashboard.js"></script>
+
+</body>
+</html>
