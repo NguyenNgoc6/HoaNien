@@ -160,76 +160,16 @@
             </div>
 
             <!-- Table -->
-            <div class="adm-table-wrap">
-                <table class="adm-table">
-                    <thead>
-                    <tr>
-                        <th th:each="col : ${columns}" th:text="${col.label}">Col</th>
-                        <th style="text-align:right">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="row, rowStat : ${rows}"
-                        th:attr="data-id=${row['id']}"
-                        th:style="${rowStat.odd} ? 'background:rgba(44,42,30,0.025)' : ''">
-
-                        <td th:each="col : ${columns}"
-                            th:attr="data-key=${col.key},data-value=${row[col.key]}">
-
-                            <!-- badge -->
-                            <span th:if="${col.renderType == 'badge'}"
-                                  class="cell-badge"
-                                  th:style="${row['__' + col.key + 'Style']}"
-                                  th:text="${row[col.key]}"></span>
-
-                            <!-- code -->
-                            <span th:if="${col.renderType == 'code'}"
-                                  class="cell-code"
-                                  th:text="${row[col.key]}"></span>
-
-                            <!-- toggle -->
-                            <span th:if="${col.renderType == 'toggle'}">
-                                <button type="button" class="btn-toggle"
-                                        th:attr="data-id=${row['id']},data-value=${row[col.key]}">
-                                    <i th:if="${row[col.key] == 'true'}"
-                                       data-lucide="toggle-right" style="color:#C9A96E"></i>
-                                    <i th:unless="${row[col.key] == 'true'}"
-                                       data-lucide="toggle-left" style="color:#8B7355"></i>
-                                </button>
-                            </span>
-
-                            <!-- text -->
-                            <span th:if="${col.renderType == 'text'}" th:text="${row[col.key]}"></span>
-                        </td>
-
-                        <!-- Actions -->
-                        <td style="text-align:right">
-                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:2px">
-                                <button th:if="${activeTab == 'Account Management' and row['type'] == 'Nhân viên'}"
-                                        class="btn-action btn-action-shield btn-permissions"
-                                        th:attr="data-id=${row['id']},data-name=${row['name']},data-role=${row['role']}"
-                                        title="Cấp quyền">
-                                    <i data-lucide="shield"></i>
-                                </button>
-                                <button class="btn-action btn-action-edit btn-edit"
-                                        th:attr="data-id=${row['id']}" title="Sửa">
-                                    <i data-lucide="pencil"></i>
-                                </button>
-                                <button class="btn-action btn-action-delete btn-delete"
-                                        th:attr="data-id=${row['id']}" title="Xóa">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(rows)}">
-                        <td th:attr="colspan=${#lists.size(columns) + 1}"
-                            style="text-align:center;padding:48px;color:#8B7355;font-family:var(--font-serif);font-size:18px">
-                            Không có bản ghi nào
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div th:switch="${activeTab}">
+                <div th:case="'Room Categories'"><div th:replace="~{admin/fragments/md-room-categories :: table}"></div></div>
+                <div th:case="'Rooms'"><div th:replace="~{admin/fragments/md-rooms :: table}"></div></div>
+                <div th:case="'Restaurant Menu'"><div th:replace="~{admin/fragments/md-restaurant-menu :: table}"></div></div>
+                <div th:case="'Menu Categories'"><div th:replace="~{admin/fragments/md-menu-categories :: table}"></div></div>
+                <div th:case="'Tour Categories'"><div th:replace="~{admin/fragments/md-tour-categories :: table}"></div></div>
+                <div th:case="'Tours'"><div th:replace="~{admin/fragments/md-tours :: table}"></div></div>
+                <div th:case="'Account Management'"><div th:replace="~{admin/fragments/md-account-management :: table}"></div></div>
+                <div th:case="'Promotions'"><div th:replace="~{admin/fragments/md-promotions :: table}"></div></div>
+                <div th:case="'Pricing Management'"><div th:replace="~{admin/fragments/md-pricing-management :: table}"></div></div>
             </div>
 
             <!-- Pagination footer -->
@@ -253,8 +193,16 @@
             <button class="btn-close-modal adm-modal-close" data-modal="entity-modal"><i data-lucide="x"></i></button>
         </div>
         <form id="entity-form" class="adm-modal-body">
-            <div id="modal-form-fields" style="display:flex;flex-direction:column;gap:20px">
-                <!-- JS injects fields based on active tab -->
+            <div id="modal-form-fields" style="display:flex;flex-direction:column;gap:20px" th:switch="${activeTab}">
+                <div th:case="'Room Categories'"><div th:replace="~{admin/fragments/md-room-categories :: form}"></div></div>
+                <div th:case="'Rooms'"><div th:replace="~{admin/fragments/md-rooms :: form}"></div></div>
+                <div th:case="'Restaurant Menu'"><div th:replace="~{admin/fragments/md-restaurant-menu :: form}"></div></div>
+                <div th:case="'Menu Categories'"><div th:replace="~{admin/fragments/md-menu-categories :: form}"></div></div>
+                <div th:case="'Tour Categories'"><div th:replace="~{admin/fragments/md-tour-categories :: form}"></div></div>
+                <div th:case="'Tours'"><div th:replace="~{admin/fragments/md-tours :: form}"></div></div>
+                <div th:case="'Account Management'"><div th:replace="~{admin/fragments/md-account-management :: form}"></div></div>
+                <div th:case="'Promotions'"><div th:replace="~{admin/fragments/md-promotions :: form}"></div></div>
+                <div th:case="'Pricing Management'"><div th:replace="~{admin/fragments/md-pricing-management :: form}"></div></div>
             </div>
             <div class="adm-modal-footer" style="margin-top:16px">
                 <button type="button" class="btn-close-modal adm-btn adm-btn-ghost" data-modal="entity-modal">Hủy</button>

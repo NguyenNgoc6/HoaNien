@@ -32,31 +32,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
-                .requestMatchers("/profile/**").authenticated()
-                .anyRequest().authenticated()
-            )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 Console
-            .formLogin(form -> form
-                .loginPage("/booking")
-                .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/booking?error=true")
-                .permitAll()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/booking")
-                .defaultSuccessUrl("/", true)
-            )
-            .logout(logout -> logout
-                .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/")
-                .permitAll()
-            );
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**")
+                        .permitAll()
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/manager/**").permitAll()
+                        .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/profile/**").authenticated()
+                        .anyRequest().authenticated())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 Console
+                .formLogin(form -> form
+                        .loginPage("/booking")
+                        .loginProcessingUrl("/auth/login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/booking?error=true")
+                        .permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/booking")
+                        .defaultSuccessUrl("/", true))
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/")
+                        .permitAll());
 
         http.authenticationProvider(authenticationProvider());
         return http.build();
