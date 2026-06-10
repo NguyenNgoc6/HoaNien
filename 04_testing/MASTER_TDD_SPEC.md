@@ -179,10 +179,32 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 ---
 
 ## 5. Red-Green-Refactor Tracker
+
+### UC09 — Tìm kiếm phòng trống (RoomService)
+| TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
+|---|---|---|---|---|
+| TC-M2-001 | `RoomServiceUC09Test.java` | [x] | [x] | ✅ Refactored: extract methods `isRoomAvailable()`, `toSearchResult()` |
+| TC-M2-002 | `RoomServiceUC09Test.java` | [x] | [x] | ✅ Refactored: always return empty list (never null) |
+| TC-M2-002b | `RoomServiceUC09Test.java` | [x] | [x] | ✅ Refactored: filter overlapping bookings via `countOverlappingBookings()` |
+
+### UC10 — Đặt phòng & Thanh toán cọc (BookingService)
+| TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
+|---|---|---|---|---|
+| TC-M2-003 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `createBooking()` returns CONFIRMED + cancellationDeadline |
+| TC-M2-004 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ Concurrency: 1 CONFIRMED, 1 RoomNotAvailableException |
+| TC-M2-005 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `validateBookingDates()` throws IllegalArgumentException |
+| TC-M2-006 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `cancelBooking()` → Cancelled_Refunded + 100% refund |
+| TC-M2-007 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `cancelBooking()` → Cancelled_Forfeited + 0% refund |
+| TC-M2-008 | `BookingServiceUC10Test.java` | [x] | [x] | ✅ SUMMER10: 10% off = 9,000,000 |
+| TC-M2-008b | `BookingServiceUC10Test.java` | [x] | [x] | ✅ EARLYBIRD20: 20% off = 4,800,000 |
+| TC-M2-009a | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `[ERR_PROMO_INACTIVE]` error code |
+| TC-M2-009b | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `[ERR_PROMO_EXPIRED]` error code |
+| TC-M2-009c | `BookingServiceUC10Test.java` | [x] | [x] | ✅ `[ERR_PROMO_NOT_FOUND]` error code |
+
+### Chưa thực hiện
 | TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 |---|---|---|---|---|
 | MOD1-TC-001 | `AuthIntegrationTest.java` | [ ] | [ ] | |
-| MOD2-TC-001 | `BookingConcurrencyTest.java` | [ ] | [ ] | |
 | MOD3-TC-001 | `FolioChargeTest.java` | [ ] | [ ] | |
 | MOD5-TC-001 | `NightAuditSchedulerTest.java` | [ ] | [ ] | |
 
