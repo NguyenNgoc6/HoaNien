@@ -23,19 +23,6 @@
 hs_err_pid*
 replay_pid*
 
-# IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-
-# Eclipse
-.classpath
-.project
-.settings/
-
-# VS Code
-.vscode/
-
 # Maven
 target/
 pom.xml.tag
@@ -46,12 +33,23 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
 # Node
 node_modules/
 npm-debug.log
 yarn-error.log
+
+# IDEs
+.idea/
+*.iml
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
 
 # OS generated files
 .DS_Store

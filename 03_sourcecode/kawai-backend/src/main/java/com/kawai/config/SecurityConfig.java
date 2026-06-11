@@ -34,27 +34,30 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**")
-                        .permitAll()
+                        .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**", "/living", "/wellbeing", "/dining", "/experiences", "/tours", "/tours/**").permitAll()
                         .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/manager/**").permitAll()
                         .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/profile/**").authenticated()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 Console
                 .formLogin(form -> form
                         .loginPage("/booking")
                         .loginProcessingUrl("/auth/login")
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/booking?error=true")
-                        .permitAll())
+                        .permitAll()
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/booking")
-                        .defaultSuccessUrl("/", true))
+                        .defaultSuccessUrl("/", true)
+                )
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/")
-                        .permitAll());
+                        .permitAll()
+                );
 
         http.authenticationProvider(authenticationProvider());
         return http.build();
