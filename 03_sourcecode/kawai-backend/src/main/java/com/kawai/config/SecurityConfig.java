@@ -34,11 +34,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-<<<<<<< Updated upstream
-                .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**").permitAll()
-=======
                 .requestMatchers("/", "/booking", "/auth/register", "/h2-console/**", "/css/**", "/js/**", "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**", "/error").permitAll()
->>>>>>> Stashed changes
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
                 .requestMatchers("/profile/**").authenticated()
