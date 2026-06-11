@@ -129,9 +129,185 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
 
 ---
 
+## 6. API Specification — UC19: Tìm kiếm Gói Tour (Module 4)
+
+### 6.1. Endpoint
+
+| Method | Path | Auth Level | Required Roles | Rate Limit | Idempotent? |
+|--------|------|------------|----------------|------------|-------------|
+| GET | `/tours/search` | Public (Guest / Customer) | Guest, Customer | 100/min | Yes |
+
+### 6.2. Request Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `fromDate` | `LocalDate` (ISO 8601) | No | Today | Ngày bắt đầu tìm kiếm (yyyy-MM-dd) |
+| `toDate` | `LocalDate` (ISO 8601) | No | `fromDate + 7 days` | Ngày kết thúc tìm kiếm (yyyy-MM-dd) |
+
+### 6.3. Response — 200 OK (Happy Path)
+
+```json
+{
+  "tours": [
+    {
+      "tourId": 1,
+      "tourName": "Vịnh Hạ Long - 1 Ngày",
+      "tourType": "DAY_TRIP",
+      "basePrice": 1500000,
+      "maxCapacity": 30,
+      "availableSlots": 15,
+      "departureDate": "2026-06-20",
+      "scheduleStatus": "Open",
+      "weatherAvailable": true,
+      "weatherDescription": "Sunny",
+      "temperature": 32.5
+    }
+  ],
+  "fromDate": "2026-06-15",
+  "toDate": "2026-06-25"
+}
+```
+
+### 6.4. Response — 200 OK (Weather API Unavailable)
+
+```json
+{
+  "tours": [
+    {
+      "tourId": 1,
+      "tourName": "Vịnh Hạ Long - 1 Ngày",
+      "tourType": "DAY_TRIP",
+      "basePrice": 1500000,
+      "maxCapacity": 30,
+      "availableSlots": 15,
+      "departureDate": "2026-06-20",
+      "scheduleStatus": "Open",
+      "weatherAvailable": false,
+      "weatherDescription": null,
+      "temperature": null
+    }
+  ],
+  "fromDate": "2026-06-15",
+  "toDate": "2026-06-25"
+}
+```
+
+### 6.5. Business Rules
+| Rule ID | Description | Implementation |
+|---------|-------------|---------------|
+| BR-TR-01 | Chỉ hiển thị lịch trình có trạng thái "Open" | `TourScheduleRepository.findByDepartureDateBetweenAndScheduleStatus(fromDate, toDate, "Open")` |
+| GRACEFUL-DEG-01 | Nếu OpenWeather API lỗi, tour vẫn hiển thị, ẩn thông tin thời tiết | `TourServiceImpl.enrichWithWeatherData()` catch RuntimeException, set `weatherAvailable = false` |
+
+### 6.6. Error Codes
+| Code | HTTP Status | Message | Trigger Condition |
+|------|-------------|---------|------------------|
+| `TOUR-001` | 400 | `fromDate must not be null` | Thiếu tham số fromDate (validation ở Service layer) |
+| `TOUR-002` | 400 | `fromDate must not be after toDate` | fromDate > toDate |
+
+---
+
 ## 7. Phương pháp Xác minh (API Verification Samples)
 
-### 7.1. Chống Over-Booking (DB Inspection)
+### 7.1. UC09 — Tìm kiếm phòng trống (RoomService.searchAvailableRooms)
+
+**[POST] Tìm phòng trống**
+```bash
+# [POST] Tìm phòng trống theo khoảng ngày
+curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
+  -H "Authorization: Bearer [CUSTOMER_TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "checkInDate": "2026-08-01",
+    "checkOutDate": "2026-08-05",
+    "categoryName": "Deluxe",
+    "minCapacity": 2
+  }'
+
+# Expected Response (200):
+{
+  "status": "SUCCESS",
+  "rooms": [
+    {
+      "roomId": 1,
+      "roomNumber": "R101",
+      "categoryName": "Deluxe",
+      "pricePerNight": 2000000,
+      "capacity": 2,
+      "checkInDate": "2026-08-01",
+      "checkOutDate": "2026-08-05"
+    }
+  ]
+}
+```
+
+**Business Rules:**
+* BR-FO-01: Chỉ hiển thị phòng không có booking trùng ngày
+* BR-FO-04: Trạng thái phòng Vacant_Clean hoặc Available
+* BR-FIN-05: Giá phòng BigDecimal scale 0, HALF_UP
+
+**Implementation:**
+* Interface: `RoomService.searchAvailableRooms(RoomSearchRequestDTO)`
+* Repository: `RoomRepository.findAll()`, `RoomBookingRepository.countOverlappingBookings()`
+
+---
+
+### 7.2. UC10 — Đặt phòng & Thanh toán cọc (BookingService)
+
+**[POST] Đặt phòng mới**
+```bash
+# [POST] Đặt phòng
+curl -X POST https://api.kawairesort.com/api/v1/bookings \
+  -H "Authorization: Bearer [CUSTOMER_TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": 1,
+    "roomNumber": "R101",
+    "checkInDate": "2026-08-15",
+    "checkOutDate": "2026-08-20",
+    "depositAmount": 2000000,
+    "promotionCode": "SUMMER10"
+  }'
+
+# Expected Response (201):
+{
+  "bookingId": 12345,
+  "bookingStatus": "CONFIRMED",
+  "depositAmount": 2000000,
+  "discountedPrice": 9000000,
+  "checkInDate": "2026-08-15",
+  "checkOutDate": "2026-08-20",
+  "cancellationDeadline": "2026-08-13"
+}
+```
+
+**[DELETE] Hủy booking**
+```bash
+# [DELETE] Hủy booking trước 48h
+curl -X DELETE https://api.kawairesort.com/api/v1/bookings/12345 \
+  -H "Authorization: Bearer [CUSTOMER_TOKEN]"
+
+# Expected Response (200):
+{
+  "refundAmount": 2000000,
+  "bookingStatus": "Cancelled_Refunded"
+}
+```
+
+**Business Rules:**
+* BR-DATE-01: checkOutDate > checkInDate
+* BR-FO-01: Pessimistic Locking chống overbooking
+* BR-FIN-02: Hủy trước 48h → hoàn 100%; trong 48h → tịch thu cọc
+* BR-STATUS-01: Booking tạo mới → "CONFIRMED"
+* BR-STATUS-02: Hủy trước 48h → "Cancelled_Refunded"; sau → "Cancelled_Forfeited"
+* BR-ERR-01: Exception message chứa error code `[ERR_PROMO_XXX]`
+
+**Implementation:**
+* Interface: `BookingService.createBooking()`, `BookingService.cancelBooking()`
+* Repository: `RoomBookingRepository.countOverlappingBookings()`, `PromotionRepository.findByPromoCode()`
+
+---
+
+### 7.3. Chống Over-Booking (DB Inspection)
 Mô phỏng 2 threads gọi API `/api/bookings` cùng lúc:
 ```sql
 -- Kiểm tra DB sau khi chạy JMeter Stress Test
@@ -161,6 +337,33 @@ curl -X POST https://api.kawairesort.com/api/v1/pos/post-to-room \
   "folioId": "FOL-202-A",
   "addedAmount": 1000000,
   "newTotalBalance": 1000000
+}
+```
+
+### 7.3. Tạo tài khoản nhân viên mới (Quản lý RBAC) - API Call
+```bash
+# [POST] Admin tạo tài khoản nhân viên (UC05.1 - TC-M1-015)
+curl -X POST https://api.kawairesort.com/api/v1/admin/employees \
+  -H "Authorization: Bearer [ADMIN_TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "staff_new",
+    "password": "password123",
+    "roleId": 2,
+    "fullName": "Nguyen Van Staff",
+    "gender": "MALE",
+    "cccd": "012345678912",
+    "phone": "0987654321",
+    "email": "staff@example.com",
+    "salary": 10000000
+  }'
+
+# Expected Response (201):
+{
+  "status": "SUCCESS",
+  "employeeId": 1,
+  "accountId": 1,
+  "role": "ROLE_FB_STAFF"
 }
 ```
 
