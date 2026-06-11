@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 -- ============================================================
 -- KAWAI RESORT & TOUR HUB — H2 Sample Data
 -- Chạy tự động sau khi Hibernate tạo schema (defer-datasource-initialization: true)
@@ -276,3 +277,13 @@ VALUES (21, 19, 1, 2, 180000, 'Pending');
 
 ALTER TABLE Food_Orders ALTER COLUMN order_id RESTART WITH 100;
 ALTER TABLE Food_Order_Details ALTER COLUMN detail_id RESTART WITH 100;
+=======
+INSERT INTO Roles (role_name) VALUES ('Admin');
+INSERT INTO Roles (role_name) VALUES ('Receptionist');
+INSERT INTO Roles (role_name) VALUES ('F&B');
+INSERT INTO Roles (role_name) VALUES ('Housekeeping');
+INSERT INTO Roles (role_name) VALUES ('Manager');
+INSERT INTO Roles (role_name) VALUES ('Tourguide');
+INSERT INTO Roles (role_name) VALUES ('Khách VIP');
+INSERT INTO Roles (role_name) VALUES ('Khách thường');
+>>>>>>> origin/dev

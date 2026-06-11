@@ -11,7 +11,6 @@ public class TableReservation {
     @ManyToOne @JoinColumn(name="table_id", nullable=false) private RestaurantTable table;
     @Column(name="reserve_date", nullable=false) private LocalDate reserveDate;
     @Column(name="reserve_time", nullable=false) private LocalTime reserveTime;
-    @Column(name="pax", nullable=false) private Integer pax = 1;
     @Column(name="deposit_amount", nullable=false) private BigDecimal depositAmount = BigDecimal.ZERO;
     @Column(nullable=false) private String status = "Pending";
 }

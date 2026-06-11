@@ -13,7 +13,4 @@ public class FoodOrder {
     @Column(name="is_paid_in_pos", nullable=false) private Boolean isPaidInPos = false;
     @ManyToOne @JoinColumn(name="created_by_staff_id", nullable=false) private Employee createdByStaff;
     @ManyToOne @JoinColumn(name="kitchen_processed_by_id") private Employee kitchenProcessedBy;
-
-    @OneToMany(mappedBy = "foodOrder", fetch = FetchType.EAGER)
-    private java.util.List<FoodOrderDetail> details;
 }
