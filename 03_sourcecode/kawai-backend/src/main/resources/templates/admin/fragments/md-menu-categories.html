@@ -12,7 +12,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="row, stat : ${rows}" th:attr="data-id=${row['id']}">
+            <tr th:each="row, stat : ${rows}" th:attr="data-id=${row['id']},data-entity=${row['jsonString']}">
                 <td th:attr="data-key='id',data-value=${row['id']}" th:text="${row['id']}"></td>
                 <td th:attr="data-key='name',data-value=${row['name']}" th:text="${row['name']}"></td>
                 <td th:attr="data-key='items',data-value=${row['items']}" th:text="${row['items']}"></td>

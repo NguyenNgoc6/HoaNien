@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function handleSidebarToggle(event) {
     event.preventDefault();
     const submenu = document.getElementById("master-data-submenu");
-    const arrow   = document.getElementById("master-data-arrow");
+    const arrow = document.getElementById("master-data-arrow");
     if (!submenu || !arrow) return;
     const isOpen = submenu.classList.toggle("open");
     arrow.classList.toggle("open", isOpen);
@@ -154,16 +154,32 @@ function openAddModal() {
     editingRowId = null;
     const title = document.getElementById("modal-title");
     if (title) title.innerText = `Thêm mới ${activeTab}`;
-    
-    const container = document.getElementById("modal-form-fields");
-    // If container is empty, it means we are using JS to build forms
-    // If it has children, it means it's hardcoded HTML, so we just reset the form
-    if (container && container.children.length === 0) {
-        loadFormFields(null);
-    } else {
-        document.getElementById("entity-form").reset();
+
+    const form = document.getElementById("entity-form");
+    if (form) {
+        form.reset();
+        form.dataset.action = '';
+        form.dataset.method = 'POST';
     }
-    
+
+    // Gắn sự kiện hiển thị loại tài khoản nếu ở tab Account Management
+    if (activeTab === "Account Management") {
+        const typeSelect = document.getElementById('account-type-select');
+        if (typeSelect) {
+            Array.from(typeSelect.options).forEach(opt => {
+                if (opt.value === 'Khách hàng') {
+                    opt.style.display = 'none';
+                    opt.disabled = true;
+                }
+            });
+            typeSelect.value = 'Nhân viên';
+            // Prevent changing type since it's the only valid one for new accounts
+            typeSelect.style.pointerEvents = 'none';
+            typeSelect.style.backgroundColor = '#f3f4f6';
+        }
+    }
+
+    initAccountFormToggles();
     openModal("entity-modal");
 }
 
@@ -172,42 +188,103 @@ function openEditModal(id) {
     const title = document.getElementById("modal-title");
     if (title) title.innerText = `Chỉnh sửa ${activeTab}`;
 
-    // Read row data from DOM (Thymeleaf renders data-key and data-value on each td)
     const tr = document.querySelector(`tr[data-id="${id}"]`);
-    const entityData = {};
-    if (tr) {
-        tr.querySelectorAll("td[data-key]").forEach(td => {
-            entityData[td.dataset.key] = td.dataset.value;
-        });
-    }
+    if (!tr) return;
 
-    const container = document.getElementById("modal-form-fields");
-    if (container && container.children.length === 0) {
-        loadFormFields(entityData);
-    } else {
-        const form = document.getElementById("entity-form");
+    const entityJson = tr.getAttribute('data-entity');
+    const entityData = entityJson ? JSON.parse(entityJson) : {};
+
+    const form = document.getElementById("entity-form");
+    if (form) {
         form.reset();
+
+        if (activeTab === "Account Management") {
+            const typeSelect = document.getElementById('account-type-select');
+            if (typeSelect) {
+                Array.from(typeSelect.options).forEach(opt => {
+                    if (opt.value === 'Khách hàng') {
+                        opt.style.display = 'block';
+                        opt.disabled = false;
+                    }
+                });
+                // Restore styling so it's not disabled
+                typeSelect.style.pointerEvents = 'auto';
+                typeSelect.style.backgroundColor = '';
+            }
+        }
+
         for (const [key, value] of Object.entries(entityData)) {
             const input = form.elements[key];
             if (input) {
                 if (input.type === "checkbox") {
-                    input.checked = (value === "true");
+                    input.checked = (value === "true" || value === true);
                 } else {
                     input.value = value;
                 }
             }
         }
+        form.dataset.action = `/admin/api/v1/accounts/${id}`;
+        form.dataset.method = "PUT";
     }
-    
+
+    initAccountFormToggles();
     openModal("entity-modal");
 }
 
 function handleFormSubmit(event) {
     event.preventDefault();
-    // TODO: POST to /admin/api/master-data when backend is ready.
-    // For now: close modal and show toast.
     const isEdit = editingRowId !== null;
+    const form = event.target;
 
+    // Disable submit button
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang xử lý...';
+    }
+
+    // Generic form submission logic
+    let endpoint = form.dataset.action || '';
+    let method = form.dataset.method || 'POST';
+
+    // Fallback for Account Management tab if data-action wasn't explicitly set
+    if (activeTab === "Account Management" && !endpoint) {
+        endpoint = isEdit ? `/admin/api/v1/accounts/${editingRowId}` : '/admin/api/v1/accounts';
+    }
+
+    if (endpoint) {
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        // Fix checkbox booleans
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            payload[cb.name] = cb.checked;
+        });
+
+        fetch(endpoint, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Lỗi API: " + res.status);
+                return res.json();
+            })
+            .then(data => {
+                closeModal("entity-modal");
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error("API Error: ", err);
+                alert("Lỗi khi lưu: " + err.message);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Lưu';
+                }
+            });
+        return;
+    }
+
+    // Default flow if no endpoint
     closeModal("entity-modal");
     editingRowId = null;
 
@@ -226,8 +303,6 @@ function openDeleteConfirm(id) {
 }
 
 function handleConfirmDelete() {
-    // TODO: DELETE /admin/api/master-data/${deletingRowId} when backend is ready.
-    // For now: hide the row from DOM and close.
     if (deletingRowId) {
         const tr = document.querySelector(`tr[data-id="${deletingRowId}"]`);
         if (tr) tr.remove();
@@ -242,161 +317,57 @@ function handleConfirmDelete() {
 // Form field loading — UI schema (not business data)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function loadFormFields(entity) {
-    const container = document.getElementById("modal-form-fields");
-    if (!container) return;
-    container.innerHTML = "";
+// loadFormFields deleted - Forms are strictly server-side rendered by Thymeleaf
 
-    const inputStyle = "adm-form-input";
-    const selectStyle = "adm-form-select";
-    const labelStyle = "adm-form-label";
-    const wrap = "adm-form-group";
+// Helper to toggle employee fields visibility on static Thymeleaf forms
+function initAccountFormToggles() {
+    if (activeTab !== "Account Management") return;
+    const typeSelect = document.getElementById('account-type-select');
+    const roleSelect = document.getElementById('account-role-select');
+    const empFields = document.getElementById('account-employee-fields');
+    if (!typeSelect || !empFields || !roleSelect) return;
 
-    function text(label, name, value = "", placeholder = "", required = true, type = "text") {
-        const div = document.createElement("div");
-        div.className = wrap;
-        div.innerHTML = `
-            <label class="${labelStyle}">${label}${required ? ' <span style="color:#B45309">*</span>' : ""}</label>
-            <input type="${type}" name="${name}" value="${value ?? ""}" placeholder="${placeholder}"
-                   class="${inputStyle}" ${required ? "required" : ""} />
-        `;
-        return div;
-    }
+    function updateVisibility() {
+        const isEmp = typeSelect.value === "Nhân viên";
 
-    // Select input helper
-    function select(label, name, options, selected = "") {
-        const div = document.createElement("div");
-        div.className = wrap;
-        const optHtml = options.map(o => `<option value="${o.value}" ${o.value === selected ? "selected" : ""}>${o.label}</option>`).join("");
-        div.innerHTML = `
-            <label class="${labelStyle}">${label}</label>
-            <select name="${name}" class="${selectStyle}">${optHtml}</select>
-        `;
-        return div;
-    }
+        // Hiện/ẩn form fields của Employee
+        empFields.style.display = isEmp ? "flex" : "none";
 
-    function grid2(...children) {
-        const div = document.createElement("div");
-        div.className = "grid-2";
-        children.forEach(c => div.appendChild(c));
-        return div;
-    }
+        // Yêu cầu (require) các trường employee-specific nếu là Nhân viên
+        empFields.querySelectorAll('input').forEach(input => {
+            input.required = isEmp;
+        });
 
-    // ── Dropdown options — injected by Thymeleaf from AdminController.buildFormOptions() ──
-    // Sửa dữ liệu tại AdminController.java → buildFormOptions() thay vì sửa ở đây.
-    const _opts = window.KAWAI_FORM_OPTIONS || {};
-    const toOpt = arr => (arr || []).map(v => ({ value: v, label: v }));
-
-    const STATUS_ACTIVE = [{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }];
-    const STATUS_AVAIL = [{ value: "Available", label: "Available" }, { value: "Unavailable", label: "Unavailable" }];
-    const STATUS_ACTIVE_EXPIRED = [{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }, { value: "Expired", label: "Expired" }];
-
-    const ROOM_CATS = toOpt(_opts.roomCategories);
-    const ROOM_STATUS = toOpt(_opts.roomStatuses);
-    const MENU_CATS = toOpt(_opts.menuCategories);
-    const TOUR_CATS = toOpt(_opts.tourCategories);
-    const PROMO_SCOPE = toOpt(_opts.promoScopes);
-    const SEASON_TYPES = toOpt(_opts.seasonTypes);
-    const STAFF_ROLES = toOpt(_opts.staffRoles);
-    const GUEST_ROLES = toOpt(_opts.guestRoles);
-
-    switch (activeTab) {
-
-        case "Room Categories":
-            container.appendChild(text("Tên hạng phòng", "name", entity?.name, "Ví dụ: Deluxe River View"));
-            container.appendChild(text("Số phòng", "rooms", entity?.rooms, "8", true, "number"));
-            container.appendChild(text("Giá cơ bản / đêm", "price", entity?.price, "2.800.000 VNĐ"));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE, entity?.status || "Active"));
-            break;
-
-        case "Rooms":
-            container.appendChild(text("Tên phòng", "name", entity?.name, "Phòng 101"));
-            container.appendChild(select("Hạng phòng", "category", ROOM_CATS, entity?.category || "Standard Room"));
-            container.appendChild(select("Trạng thái", "status", ROOM_STATUS, entity?.status || "Vacant"));
-            break;
-
-        case "Restaurant Menu":
-            container.appendChild(text("Tên món", "name", entity?.name, "Tom Yum Soup"));
-            container.appendChild(select("Danh mục", "category", MENU_CATS, entity?.category || "Súp"));
-            container.appendChild(text("Đơn giá", "price", entity?.price, "185.000 VNĐ"));
-            container.appendChild(select("Trạng thái", "status", STATUS_AVAIL, entity?.status || "Available"));
-            break;
-
-        case "Menu Categories":
-            container.appendChild(text("Tên danh mục", "name", entity?.name, "Súp"));
-            container.appendChild(text("Số món", "items", entity?.items, "4", false, "number"));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE, entity?.status || "Active"));
-            break;
-
-        case "Tour Categories":
-            container.appendChild(text("Tên danh mục tour", "name", entity?.name, "Du thuyền sông"));
-            container.appendChild(text("Số tour", "tours", entity?.tours, "3", false, "number"));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE, entity?.status || "Active"));
-            break;
-
-        case "Tours":
-            container.appendChild(text("Tên tour", "name", entity?.name, "Du thuyền hoàng hôn"));
-            container.appendChild(select("Danh mục", "category", TOUR_CATS, entity?.category || "Du thuyền sông"));
-            container.appendChild(text("Thời gian", "duration", entity?.duration, "2 tiếng"));
-            container.appendChild(text("Giá / người", "price", entity?.price, "450.000 VNĐ"));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE, entity?.status || "Active"));
-            break;
-
-        case "Promotions": {
-            container.appendChild(text("Mã giảm giá", "code", entity?.code, "SUMMER2026"));
-            container.appendChild(grid2(
-                select("Loại", "type", [{ value: "Phần trăm", label: "Phần trăm" }, { value: "Số tiền", label: "Số tiền" }], entity?.type || "Phần trăm"),
-                text("Giá trị", "value", entity?.value, "15%")
-            ));
-            container.appendChild(text("Đơn tối thiểu", "minOrder", entity?.minOrder, "500.000 VNĐ", false));
-            container.appendChild(select("Áp dụng cho", "scope", PROMO_SCOPE, entity?.scope || "Toàn bộ"));
-            container.appendChild(grid2(
-                text("Lượt dùng", "uses", entity?.uses, "0 / 100", false),
-                text("Hết hạn", "expires", entity?.expires, "30/06/2026")
-            ));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE_EXPIRED, entity?.status || "Active"));
-            break;
+        // Xử lý field chung nằm ngoài
+        const form = document.getElementById("entity-form");
+        if (form) {
+            const pwdInput = form.querySelector('input[name="password"]');
+            if (pwdInput) {
+                // Password bắt buộc khi thêm mới, không bắt buộc khi chỉnh sửa
+                pwdInput.required = !editingRowId;
+            }
         }
 
-        case "Account Management": {
-            container.appendChild(text("Tên tài khoản", "name", entity?.name, "Nguyễn Văn A"));
-            // STAFF_ROLES và GUEST_ROLES từ AdminController.buildFormOptions()
-            const typeDiv = select("Loại tài khoản", "type",
-                [{ value: "Nhân viên", label: "Nhân viên" }, { value: "Khách", label: "Khách" }],
-                entity?.type || "Nhân viên");
-            const roleDiv = select("Vai trò", "role",
-                entity?.type === "Khách" ? GUEST_ROLES : STAFF_ROLES,
-                entity?.role || "Receptionist");
-            container.appendChild(grid2(typeDiv, roleDiv));
-            typeDiv.querySelector("select").addEventListener("change", (e) => {
-                const roleSelect = roleDiv.querySelector("select");
-                roleSelect.innerHTML = (e.target.value === "Nhân viên" ? STAFF_ROLES : GUEST_ROLES)
-                    .map(o => `<option value="${o.value}">${o.label}</option>`).join("");
-            });
-            container.appendChild(text("Email", "email", entity?.email, "email@kawai.vn", true, "email"));
-            const checkDiv = document.createElement("div");
-            const isActive = entity ? (entity.status === "true" || entity.status === true) : true;
-            checkDiv.innerHTML = `
-                <label class="adm-form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-top:8px;text-transform:none">
-                    <input type="checkbox" name="status" ${isActive ? "checked" : ""} style="width:16px;height:16px;cursor:pointer" />
-                    <span>Tài khoản được kích hoạt</span>
-                </label>
-            `;
-            container.appendChild(checkDiv);
-            break;
-        }
+        // Hiện/ẩn options tùy vào Employee hay Guest, dựa trên class đã gắn sẵn (role-staff, role-guest)
+        Array.from(roleSelect.options).forEach(opt => {
+            if (opt.classList.contains('role-staff')) {
+                opt.style.display = isEmp ? "block" : "none";
+            } else if (opt.classList.contains('role-guest')) {
+                opt.style.display = isEmp ? "none" : "block";
+            }
+        });
 
-        case "Pricing Management":
-            container.appendChild(select("Hạng phòng", "roomCategory", ROOM_CATS, entity?.roomCategory || "Deluxe River View"));
-            container.appendChild(select("Loại mùa", "seasonType", SEASON_TYPES, entity?.seasonType || "Thường ngày"));
-            container.appendChild(grid2(
-                text("Ngày bắt đầu", "startDate", entity?.startDate, "", true, "date"),
-                text("Ngày kết thúc", "endDate", entity?.endDate, "", true, "date")
-            ));
-            container.appendChild(text("Giá / đêm", "price", entity?.price, "2.800.000 VNĐ"));
-            container.appendChild(select("Trạng thái", "status", STATUS_ACTIVE, entity?.status || "Active"));
-            break;
+        // Reset giá trị selected nếu option hiện tại đang bị ẩn
+        const currentOption = roleSelect.options[roleSelect.selectedIndex];
+        if (currentOption && currentOption.style.display === "none") {
+            const firstVisible = Array.from(roleSelect.options).find(opt => opt.style.display !== "none");
+            if (firstVisible) roleSelect.value = firstVisible.value;
+        }
     }
+
+    typeSelect.removeEventListener("change", updateVisibility);
+    typeSelect.addEventListener("change", updateVisibility);
+    updateVisibility();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -479,9 +450,9 @@ document.addEventListener("click", (e) => {
     const btn = e.target.closest(".btn-toggle");
     if (!btn) return;
 
-    const id      = btn.dataset.id;
+    const id = btn.dataset.id;
     const current = btn.dataset.value === "true";
-    const next    = !current;
+    const next = !current;
 
     // ── Cập nhật UI ngay (không cần API) ─────────────────────────────────────
     btn.dataset.value = String(next);
@@ -497,21 +468,75 @@ document.addEventListener("click", (e) => {
     const td = btn.closest("td[data-key]");
     if (td) td.dataset.value = String(next);
 
-    // ── TODO: Gọi API khi backend /admin/account/{id}/toggle-status sẵn sàng ─
-    // fetch(`/admin/account/${id}/toggle-status`, {
-    //     method: "PUT",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ active: next })
-    // }).then(res => {
-    //     if (!res.ok) {
-    //         // Rollback UI nếu API thất bại
-    //         btn.dataset.value = String(current);
-    //         if (icon) {
-    //             icon.setAttribute("data-lucide", current ? "toggle-right" : "toggle-left");
-    //             icon.className = `w-[22px] h-[22px] ${current ? "text-[#C9A96E]" : "text-[#8B7355]"}`;
-    //             if (typeof lucide !== "undefined") lucide.createIcons();
-    //         }
-    //         console.error("Toggle failed — rolling back");
-    //     }
-    // }).catch(err => console.error("Toggle error:", err));
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Image Upload Handlers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleSingleImageUpload(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const preview = input.parentElement.querySelector('.image-preview');
+            const placeholder = input.parentElement.querySelector('.upload-placeholder');
+            if (preview) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function handleGalleryUpload(input) {
+    if (!input.files || input.files.length === 0) return;
+
+    const container = input.closest('.gallery-upload-container');
+    const previewList = container.querySelector('.gallery-preview-list');
+    const hiddenContainer = container.querySelector('.hidden-inputs-container');
+
+    // Tạo một input mới để thay thế input hiện tại
+    const newInput = document.createElement('input');
+    newInput.type = 'file';
+    newInput.name = 'galleryImages';
+    newInput.accept = 'image/*';
+    newInput.multiple = true;
+    newInput.style.display = 'none';
+    newInput.onchange = function () { handleGalleryUpload(this) };
+
+    // Đổi tên biến input cũ để tiện quản lý (mỗi input ẩn sẽ có 1 id riêng)
+    const inputId = 'gallery_input_' + Date.now();
+    input.id = inputId;
+
+    // Chuyển input cũ sang vùng ẩn
+    hiddenContainer.appendChild(input);
+    // Gắn input mới vào nút Thêm ảnh
+    container.querySelector('.gallery-upload-btn').appendChild(newInput);
+
+    const files = Array.from(input.files);
+
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            item.innerHTML = `
+                <img src="${e.target.result}" alt="preview">
+                <button type="button" class="remove-btn" onclick="removeGalleryItem(this, '${inputId}', ${index})" title="Xóa ảnh này">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            `;
+            previewList.appendChild(item);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeGalleryItem(btn, inputId, fileIndex) {
+    btn.parentElement.remove();
+}

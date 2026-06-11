@@ -182,6 +182,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 |---|---|---|---|---|
 | MOD1-TC-001 | `AuthIntegrationTest.java` | [ ] | [ ] | |
+| TC-M1-015 | `UserServiceTest.java` | [x] | [x] | Clean code |
 | MOD2-TC-001 | `BookingConcurrencyTest.java` | [ ] | [ ] | |
 | MOD3-TC-001 | `FolioChargeTest.java` | [ ] | [ ] | |
 | MOD5-TC-001 | `NightAuditSchedulerTest.java` | [ ] | [ ] | |

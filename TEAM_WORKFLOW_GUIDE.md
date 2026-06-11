@@ -18,7 +18,7 @@ Dự án được chia thành 5 Module độc lập cho 5 thành viên. Nguyên 
 Nhóm chúng ta sẽ áp dụng phương pháp **Test-Driven Development (TDD)**. Mỗi khi bắt đầu một Tính năng (Use Case) mới, mọi người hãy mở Antigravity và thực hiện theo 3 bước sau:
 
 1. **Bước 1 (🔴 Viết Test trước):**
-   > *"Đọc file `04_testing/MASTER_TDD_SPEC.md` phần [Mã TC của bạn]. Hãy viết JUnit Test cho Service của tính năng này. Chạy `mvn test` để đảm bảo test đang chạy và báo lỗi (Màu Đỏ)."*
+   > *"Đọc file `04_testing/MASTER_TDD_SPEC.md` phần [TC-M1-015]. Hãy viết JUnit Test cho Service của [UC05.1]. Chạy `mvn test` để đảm bảo test đang chạy và báo lỗi (Màu Đỏ)."*
    >
 2. **Bước 2 (🟢 Viết Code sau):**
    > *"Bây giờ hãy implement code thực tế cho tính năng này để làm cho file Test vừa nãy chạy PASS 100% (Màu Xanh)."*

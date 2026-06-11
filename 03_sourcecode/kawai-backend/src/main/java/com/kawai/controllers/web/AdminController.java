@@ -12,9 +12,23 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import com.kawai.repositories.EmployeeRepository;
+import com.kawai.repositories.CustomerRepository;
+import com.kawai.models.Employee;
+import com.kawai.models.Customer;
+import com.kawai.models.Role;
+import com.kawai.repositories.RoleRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Controller
 @RequestMapping("/admin")
+@AllArgsConstructor
 public class AdminController {
+
+  private final EmployeeRepository employeeRepository;
+  private final CustomerRepository customerRepository;
+  private final RoleRepository roleRepository;
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   // =========================================================================
   // Dashboard
@@ -119,6 +133,18 @@ public class AdminController {
     // Form dropdown options — injected via Thymeleaf JS inline →
     // window.KAWAI_FORM_OPTIONS
     model.addAttribute("formOptions", buildFormOptions());
+
+    if ("Account Management".equals(tab)) {
+      List<Role> allRoles = roleRepository.findAll();
+      List<Role> staffRoles = allRoles.stream()
+          .filter(r -> !r.getRoleName().startsWith("Khách") && !r.getRoleName().equalsIgnoreCase("Admin"))
+          .toList();
+      List<Role> guestRoles = allRoles.stream()
+          .filter(r -> r.getRoleName().startsWith("Khách"))
+          .toList();
+      model.addAttribute("staffRoles", staffRoles);
+      model.addAttribute("guestRoles", guestRoles);
+    }
 
     return "admin/master-data";
   }
@@ -256,34 +282,60 @@ public class AdminController {
               "value", "200.000 VNĐ", "minOrder", "Không có", "scope", "Toàn bộ", "__scopeStyle", bs("Toàn bộ"),
               "uses", "0 / 10", "expires", "01/06/2026", "status", "Inactive", "__statusStyle", bs("Inactive")));
 
-      case "Account Management" -> Arrays.asList(
-          r("id", "E-001", "name", "Linh Nguyễn", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "Receptionist", "__roleStyle", bs("Receptionist"),
-              "email", "linh@kawai.vn", "lastLogin", "Hôm nay 08:31", "status", "true"),
-          r("id", "E-002", "name", "Minh Trần", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "F&B", "__roleStyle", bs("F&B"),
-              "email", "minh@kawai.vn", "lastLogin", "Hôm nay 07:55", "status", "true"),
-          r("id", "E-003", "name", "Hà Phạm", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "Housekeeping", "__roleStyle", bs("Housekeeping"),
-              "email", "ha@kawai.vn", "lastLogin", "Hôm nay 07:30", "status", "true"),
-          r("id", "E-004", "name", "Admin Dũng", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "Admin", "__roleStyle", bs("Admin"),
-              "email", "dung@kawai.vn", "lastLogin", "Hôm nay 06:45", "status", "true"),
-          r("id", "E-005", "name", "Tuấn Lê", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "Manager", "__roleStyle", bs("Manager"),
-              "email", "tuan@kawai.vn", "lastLogin", "Hôm qua", "status", "true"),
-          r("id", "E-006", "name", "Mai Hoàng", "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
-              "role", "Receptionist", "__roleStyle", bs("Receptionist"),
-              "email", "mai@kawai.vn", "lastLogin", "3 ngày trước", "status", "false"),
-          r("id", "C-001", "name", "Haruto Yamamoto", "type", "Khách", "__typeStyle", bs("Khách"),
-              "role", "Khách VIP", "__roleStyle", bs("Khách VIP"),
-              "email", "haruto@email.com", "lastLogin", "05/06/2026", "status", "true"),
-          r("id", "C-002", "name", "Sarah Chen", "type", "Khách", "__typeStyle", bs("Khách"),
-              "role", "Khách thường", "__roleStyle", bs("Khách thường"),
-              "email", "sarah@email.com", "lastLogin", "04/06/2026", "status", "true"),
-          r("id", "C-003", "name", "Pierre Dubois", "type", "Khách", "__typeStyle", bs("Khách"),
-              "role", "Khách thường", "__roleStyle", bs("Khách thường"),
-              "email", "pierre@email.com", "lastLogin", "03/06/2026", "status", "true"));
+      case "Account Management" -> {
+        List<Map<String, String>> accountRows = new ArrayList<>();
+        List<Employee> employees = employeeRepository.findAll();
+        for (Employee emp : employees) {
+          String roleName = emp.getAccount().getRole().getRoleName();
+          String status = emp.getAccount().getIsActive() ? "true" : "false";
+          accountRows.add(r(
+              "id", "E-" + String.format("%03d", emp.getId()),
+              "name", emp.getFullName(),
+              "type", "Nhân viên", "__typeStyle", bs("Nhân viên"),
+              "role", roleName, "__roleStyle", bs(roleName),
+              "email", emp.getEmail(),
+              "lastLogin", "-",
+              "status", status,
+              "username", emp.getAccount().getUsername(),
+              "phone", emp.getPhone() != null ? emp.getPhone() : "",
+              "cccd", emp.getCccd() != null ? emp.getCccd() : "",
+              "gender", emp.getGender() != null ? emp.getGender() : "MALE",
+              "salary", emp.getSalary() != null ? emp.getSalary().toString() : ""));
+        }
+        // Load real guest accounts
+        List<Customer> customers = customerRepository.findAll();
+        for (Customer cus : customers) {
+          String roleName = cus.getAccount() != null && cus.getAccount().getRole() != null
+              ? cus.getAccount().getRole().getRoleName()
+              : "Khách thường";
+          String status = cus.getAccount() != null && cus.getAccount().getIsActive() ? "true" : "false";
+          String email = cus.getEmail() != null ? cus.getEmail() : "-";
+          String username = cus.getAccount() != null ? cus.getAccount().getUsername() : "";
+          accountRows.add(r(
+              "id", "C-" + String.format("%03d", cus.getId()),
+              "name", cus.getFullName(),
+              "type", "Khách hàng", "__typeStyle", bs("Khách hàng"),
+              "role", roleName, "__roleStyle", bs(roleName),
+              "email", email,
+              "lastLogin", "-",
+              "status", status,
+              "username", username,
+              "phone", cus.getPhone() != null ? cus.getPhone() : "",
+              "gender", cus.getGender() != null ? cus.getGender() : "MALE"));
+        }
+        // // Mock some guest accounts just for display if db is empty
+        // if (customers.isEmpty()) {
+        // accountRows.add(r("id", "C-001", "name", "Haruto Yamamoto", "type", "Khách
+        // hàng", "__typeStyle", bs("Khách hàng"),
+        // "role", "Khách VIP", "__roleStyle", bs("Khách VIP"),
+        // "email", "haruto@email.com", "lastLogin", "05/06/2026", "status", "true"));
+        // accountRows.add(r("id", "C-002", "name", "Sarah Chen", "type", "Khách hàng",
+        // "__typeStyle", bs("Khách hàng"),
+        // "role", "Khách thường", "__roleStyle", bs("Khách thường"),
+        // "email", "sarah@email.com", "lastLogin", "04/06/2026", "status", "true"));
+        // }
+        yield accountRows;
+      }
 
       case "Pricing Management" -> Arrays.asList(
           r("id", "PR-001", "roomCategory", "Deluxe River View", "seasonType", "Thường ngày",
@@ -429,7 +481,7 @@ public class AdminController {
 
     // Vai trò nhân viên — Account Management tab
     opts.put("staffRoles", Arrays.asList(
-        "Receptionist", "F&B", "Housekeeping", "Admin", "Manager"));
+        "Receptionist", "F&B", "Housekeeping", "Manager", "Tourguide"));
 
     // Vai trò khách — Account Management tab
     opts.put("guestRoles", Arrays.asList(
@@ -455,7 +507,7 @@ public class AdminController {
         "badge-green";
 
       // BLUE
-      case "Khách", "Receptionist", "Tours", "Số tiền" ->
+      case "Khách", "Khách hàng", "Receptionist", "Tours", "Số tiền" ->
         "badge-blue";
 
       // BROWN
@@ -484,6 +536,12 @@ public class AdminController {
     Map<String, String> map = new LinkedHashMap<>();
     for (int i = 0; i < kv.length; i += 2)
       map.put(kv[i], kv[i + 1]);
+
+    try {
+      map.put("jsonString", objectMapper.writeValueAsString(map));
+    } catch (Exception e) {
+      map.put("jsonString", "{}");
+    }
     return map;
   }
 
