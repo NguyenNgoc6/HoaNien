@@ -343,27 +343,24 @@ curl -X POST https://api.kawairesort.com/api/v1/pos/post-to-room \
 ### 7.3. Tạo tài khoản nhân viên mới (Quản lý RBAC) - API Call
 ```bash
 # [POST] Admin tạo tài khoản nhân viên (UC05.1 - TC-M1-015)
-curl -X POST https://api.kawairesort.com/api/v1/admin/employees \
+curl -X POST https://api.kawairesort.com/admin/api/v1/accounts \
   -H "Authorization: Bearer [ADMIN_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
+    "type": "Nhân viên",
     "username": "staff_new",
     "password": "password123",
-    "roleId": 2,
-    "fullName": "Nguyen Van Staff",
+    "role": "ROLE_FB_STAFF",
+    "name": "Nguyen Van Staff",
     "gender": "MALE",
     "cccd": "012345678912",
     "phone": "0987654321",
     "email": "staff@example.com",
     "salary": 10000000
   }'
-
-# Expected Response (201):
+# Expected Response (200):
 {
-  "status": "SUCCESS",
-  "employeeId": 1,
-  "accountId": 1,
-  "role": "ROLE_FB_STAFF"
+  "message": "Created successfully"
 }
 ```
 

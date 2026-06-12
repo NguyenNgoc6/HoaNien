@@ -12,4 +12,8 @@ public interface UserService {
     Employee updateEmployeeAccount(Long id, java.util.Map<String, String> payload);
 
     Customer updateCustomerAccount(Long id, java.util.Map<String, String> payload);
+
+    void deleteEmployeeAccount(Long id);
+
+    void deleteCustomerAccount(Long id);
 }

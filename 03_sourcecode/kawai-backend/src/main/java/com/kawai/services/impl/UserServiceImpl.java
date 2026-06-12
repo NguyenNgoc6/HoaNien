@@ -172,4 +172,28 @@ public class UserServiceImpl implements UserService {
 
         return customerRepository.save(customer);
     }
+
+    @Override
+    @Transactional
+    public void deleteEmployeeAccount(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+        Account account = employee.getAccount();
+        employeeRepository.delete(employee);
+        if (account != null) {
+            accountRepository.delete(account);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteCustomerAccount(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        Account account = customer.getAccount();
+        customerRepository.delete(customer);
+        if (account != null) {
+            accountRepository.delete(account);
+        }
+    }
 }

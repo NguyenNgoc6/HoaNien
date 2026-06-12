@@ -105,6 +105,50 @@ public class UserServiceTest {
     }
 
     @Test
+    void testCreateCustomerAccount_Success() {
+        // Arrange
+        CreateEmployeeDTO dto = new CreateEmployeeDTO();
+        dto.setUsername("customer123");
+        dto.setPassword("pass");
+        dto.setRoleId(3L);
+        dto.setFullName("Tran Customer");
+        dto.setEmail("cust@example.com");
+
+        Role mockRole = new Role();
+        mockRole.setId(3L);
+        mockRole.setRoleName("ROLE_GUEST");
+
+        when(roleRepository.findById(3L)).thenReturn(Optional.of(mockRole));
+        when(accountRepository.existsByUsername("customer123")).thenReturn(false);
+        when(customerRepository.existsByEmail("cust@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
+
+        Account savedAccount = new Account();
+        savedAccount.setId(2L);
+        savedAccount.setUsername("customer123");
+        savedAccount.setRole(mockRole);
+
+        when(accountRepository.save(any(Account.class))).thenReturn(savedAccount);
+
+        Customer savedCustomer = new Customer();
+        savedCustomer.setId(1L);
+        savedCustomer.setAccount(savedAccount);
+        savedCustomer.setFullName("Tran Customer");
+        savedCustomer.setEmail("cust@example.com");
+
+        when(customerRepository.save(any(Customer.class))).thenReturn(savedCustomer);
+
+        // Act
+        Customer result = userService.createCustomerAccount(dto);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Tran Customer", result.getFullName());
+        verify(accountRepository, times(1)).save(any(Account.class));
+        verify(customerRepository, times(1)).save(any(Customer.class));
+    }
+
+    @Test
     void testUpdateEmployeeAccount_ToggleStatus() {
         // Arrange
         Long employeeId = 1L;
@@ -132,5 +176,25 @@ public class UserServiceTest {
         // Verify that the repositories were called to save the new state
         verify(accountRepository, times(1)).save(mockAccount);
         verify(employeeRepository, times(1)).save(mockEmployee);
+    }
+
+    @Test
+    void testDeleteEmployeeAccount_Success() {
+        // Arrange
+        Long employeeId = 1L;
+        Employee mockEmployee = new Employee();
+        mockEmployee.setId(employeeId);
+        Account mockAccount = new Account();
+        mockAccount.setId(1L);
+        mockEmployee.setAccount(mockAccount);
+
+        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(mockEmployee));
+
+        // Act
+        userService.deleteEmployeeAccount(employeeId);
+
+        // Assert
+        verify(employeeRepository, times(1)).delete(mockEmployee);
+        verify(accountRepository, times(1)).delete(mockAccount);
     }
 }

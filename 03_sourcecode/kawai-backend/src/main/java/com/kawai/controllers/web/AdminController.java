@@ -304,7 +304,7 @@ public class AdminController {
               "gender", emp.getGender() != null ? emp.getGender() : "MALE",
               "salary", emp.getSalary() != null ? emp.getSalary().toString() : ""));
         }
-        // Load real guest accounts
+        // Load guest accounts
         List<Customer> customers = customerRepository.findAll();
         for (Customer cus : customers) {
           if (cus.getAccount() == null)

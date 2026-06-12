@@ -14,7 +14,7 @@ INSERT INTO Roles (role_id, role_name) VALUES (8, 'Customer Normal');
 -- ── 2. Accounts ──────────────────────────────────────────────
 -- Mật khẩu: "admin123" (BCrypt hash)
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
-VALUES (1, 'admin', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 1, CURRENT_TIMESTAMP);
+VALUES (1, 'admin', '$2a$10$Xj.BfBY1CWLSk3xd4g0biOw3Apy8FIQCfrOGQsHV.NeIEmqn0CuPy', TRUE, 1, CURRENT_TIMESTAMP);
 -- Mật khẩu: "staff123" (BCrypt hash)
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
 VALUES (2, 'tphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP);
@@ -293,6 +293,21 @@ VALUES (19, NULL, NULL, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 
 -- ORD-019 items
 INSERT INTO Food_Order_Details (detail_id, order_id, item_id, quantity, price_at_order, kot_status)
 VALUES (21, 19, 1, 2, 180000, 'Pending');
+
+-- ── 10. Tours ────────────────────────────────────────────────
+INSERT INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, description) VALUES
+(1, 'Du thuyền hoàng hôn', 'Du thuyền sông', 450000, 20, 'Thưởng thức hoàng hôn trên sông'),
+(2, 'Đi bộ rừng sáng sớm', 'Trekking rừng', 320000, 15, 'Trekking rừng ngắm bình minh'),
+(3, 'Thăm bản Hmông', 'Tham quan bản làng', 580000, 10, 'Tham quan và giao lưu văn hóa'),
+(4, 'Kayak đến thác nước', 'Chèo thuyền kayak', 520000, 10, 'Chèo thuyền mạo hiểm');
+
+-- ── 11. Audit Logs ───────────────────────────────────────────
+INSERT INTO Audit_Logs (log_id, account_id, action, table_name, record_id, old_value, new_value, ip_address, timestamp) VALUES
+(1, 1, 'Đăng nhập vào Operations Hub', 'Accounts', 1, NULL, NULL, '192.168.1.10', CURRENT_TIMESTAMP),
+(2, 4, 'Đánh dấu Phòng 204 đã dọn xong', 'Rooms', 3, '{"status": "Dirty"}', '{"status": "Vacant_Clean"}', '192.168.1.24', CURRENT_TIMESTAMP),
+(3, 2, 'Mở bàn T01 phục vụ', 'Restaurant_Tables', 1, '{"status": "Vacant"}', '{"status": "Occupied"}', '192.168.1.31', CURRENT_TIMESTAMP),
+(4, 4, 'Check-in khách', 'Room_Bookings', 1, NULL, '{"status": "Checked-in"}', '192.168.1.12', CURRENT_TIMESTAMP),
+(5, 3, 'Đóng bàn T03', 'Restaurant_Tables', 3, '{"status": "Occupied"}', '{"status": "Vacant"}', '192.168.1.31', CURRENT_TIMESTAMP);
 
 ALTER TABLE Roles ALTER COLUMN role_id RESTART WITH 100;
 ALTER TABLE Accounts ALTER COLUMN account_id RESTART WITH 100;
