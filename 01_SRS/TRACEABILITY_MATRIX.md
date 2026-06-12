@@ -1,4 +1,10 @@
 # BẢNG TRUY VẾT YÊU CẦU — KAWAI RESORT (TRACEABILITY MATRIX)
+
+## CHANGELOG
+| Ngày | Người thực hiện | Nội dung thay đổi |
+|---|---|---|
+| 2026-06-11 | Antigravity | Xác nhận và đồng bộ ma trận truy vết với luồng phát triển Hybrid Organization |
+| 2026-06-09 | Antigravity | Khởi tạo ma trận truy vết yêu cầu phần mềm |
 > Ánh xạ: `UC ID` → `Class/Method` → `TC ID` → `BR ID`
 > - UC ID lấy từ `01_SRS/UC_MASTER_TABLE.md`
 > - TC ID lấy từ `04_testing/TC_MASTER_TABLE.md`
@@ -33,7 +39,19 @@
 | UC09 | Tìm phòng trống | *(điền sau khi code)* | TC-M2-001, 002 | — |
 | UC10.1 | Đặt phòng & Cọc VNPay | *(điền sau khi code)* | TC-M2-003, 004, 005, 006, 007 | BR-FO-01, BR-FO-02, BR-FIN-02 |
 | UC10.2 | Mã khuyến mãi | *(điền sau khi code)* | TC-M2-008, 009 | — |
+<<<<<<< HEAD
 | UC11 | Front Desk Dashboard | *(điền sau khi code)* | TC-M2-010 | BR-FO-04 |
+| UC12.1 | Check-in (quét CCCD) | `CheckinServiceImpl.checkIn()` | TC-M2-011, 012 | BR-SYS-01, BR-FO-03, BR-FO-08, BR-FO-09 |
+| UC12.2 | Hạn mức chi tiêu | `CheckinServiceImpl.updateCreditLimit()` | TC-M2-013 | BR-FO-06 |
+| UC12.3 | Đổi phòng | `CheckinServiceImpl.transferRoom()` | TC-M2-014 | — |
+| UC12.4 | Nâng cấp Dependents | `CheckinServiceImpl.upgradeDependentToCustomer()` | TC-M2-015 | BR-FO-07 |
+| UC13.1 | Tự động lệnh dọn phòng | `HousekeepingServiceImpl.autoCreateHousekeepingTask()` | TC-M2-016 | BR-FO-04 |
+| UC13.2 | HK cập nhật dọn phòng | `HousekeepingServiceImpl.updateRoomToClean()` | TC-M2-017 | BR-FO-04 |
+| UC13.3 | Xem yêu cầu dọn/sửa | `HousekeepingServiceImpl.getPendingOperations()` | TC-M2-018 | BR-HK-04 |
+| UC13.4 | HK báo hỏng thiết bị | `HousekeepingServiceImpl.createMaintenanceRequest()` | TC-M2-019 | BR-HK-02 |
+| UC13.5 | MT hoàn thành bảo trì | `HousekeepingServiceImpl.completeMaintenance()` | TC-M2-020 | BR-HK-03 |
+=======
+| UC11 | Front Desk Dashboard | `RoomServiceImpl.getRoomDashboard()` | TC-M2-010 | BR-FO-04 |
 | UC12.1 | Check-in (quét CCCD) | *(điền sau khi code)* | TC-M2-011, 012 | BR-SYS-01, BR-FO-03, BR-FO-08, BR-FO-09 |
 | UC12.2 | Hạn mức chi tiêu | *(điền sau khi code)* | TC-M2-013 | BR-FO-06 |
 | UC12.3 | Đổi phòng | *(điền sau khi code)* | TC-M2-014 | — |
@@ -43,6 +61,7 @@
 | UC13.3 | Xem yêu cầu dọn/sửa | *(điền sau khi code)* | TC-M2-018 | BR-HK-04 |
 | UC13.4 | HK báo hỏng thiết bị | *(điền sau khi code)* | TC-M2-019 | BR-HK-02 |
 | UC13.5 | MT hoàn thành bảo trì | *(điền sau khi code)* | TC-M2-020 | BR-HK-03 |
+>>>>>>> 0c3447ef8295f1e483c05353a42af3905cc0c3a0
 
 ---
 
@@ -68,8 +87,8 @@
 | UC20.2 | Lập lịch chuyến tour      | `TourBookingServiceImpl.scheduleTour()`      | TC-M4-006           | BR-TR-06 |
 | UC20.3 | Hủy tour do sự cố         | `TourBookingServiceImpl.cancelTour()`        | TC-M4-007           | BR-TR-05 |
 | UC21   | Điểm danh AI Face Scan    | `TourServiceImpl.verifyAttendance()`         | TC-M4-008, 009      | BR-TR-02 |
-| UC22   | Đánh giá dịch vụ          | *(điền sau khi code)*                        | TC-M4-010, 011      | BR-TR-03 |
-| UC23   | Kiểm duyệt đánh giá       | *(điền sau khi code)*                        | TC-M4-012           | BR-TR-04 |
+| UC22   | Đánh giá dịch vụ          | `ReviewServiceImpl.submitTourReview()`       | TC-M4-010, 011      | BR-TR-03 |
+| UC23   | Kiểm duyệt đánh giá       | `ReviewServiceImpl.moderateReview()`         | TC-M4-012           | BR-TR-04 |
 
 ---
 
