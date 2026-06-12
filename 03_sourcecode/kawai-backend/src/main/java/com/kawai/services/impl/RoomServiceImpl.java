@@ -2,6 +2,7 @@ package com.kawai.services.impl;
 
 import com.kawai.dto.RoomSearchRequestDTO;
 import com.kawai.dto.RoomSearchResponseDTO;
+import com.kawai.dto.RoomDashboardDTO;
 import com.kawai.models.Room;
 import com.kawai.models.RoomCategory;
 import com.kawai.repositories.RoomBookingRepository;
@@ -54,6 +55,33 @@ public class RoomServiceImpl implements RoomService {
             }
         }
         return available;
+    }
+
+    @Override
+    public List<RoomDashboardDTO> getRoomDashboard() {
+        List<Room> allRooms = roomRepository.findAll();
+        if (allRooms == null || allRooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<RoomDashboardDTO> dashboard = new ArrayList<>();
+        for (Room room : allRooms) {
+            RoomDashboardDTO dto = new RoomDashboardDTO();
+            dto.setRoomId(room.getId());
+            dto.setRoomNumber(room.getRoomNumber());
+            dto.setRoomStatus(room.getRoomStatus());
+
+            RoomCategory cat = room.getCategory();
+            if (cat != null) {
+                dto.setCategoryName(cat.getCategoryName());
+                if (cat.getBasePrice() != null) {
+                    dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
+                }
+                dto.setCapacity(cat.getCapacity());
+            }
+            dashboard.add(dto);
+        }
+        return dashboard;
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
