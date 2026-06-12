@@ -263,7 +263,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 #### UC11 — Xem sơ đồ Matrix phòng trống (RoomService)
 | TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 |---|---|---|---|---|
-| TC-M2-010 | `RoomServiceUC11Test.java` | [x] | [x] `TDD-GREEN-UC11` | |
+| TC-M2-010 | `RoomServiceUC11Test.java` | [x] | [x] `da47c4d` | ✅ Extract `toDashboardDTO` helper method, use Java Streams, add JavaDoc |
 
 ### MOD3 — POS Nhà hàng & F&B (Sinh viên 3: Đức)
 | TC ID | Mô tả ngắn | Test File | 🔴 RED | 🟢 GREEN (commit) | 🔵 REFACTOR |

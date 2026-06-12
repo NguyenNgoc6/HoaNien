@@ -57,6 +57,12 @@ public class RoomServiceImpl implements RoomService {
         return available;
     }
 
+    /**
+     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard.
+     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản (UC11).
+     * 
+     * @return Danh sách RoomDashboardDTO, rỗng nếu không có dữ liệu
+     */
     @Override
     public List<RoomDashboardDTO> getRoomDashboard() {
         List<Room> allRooms = roomRepository.findAll();
@@ -64,24 +70,9 @@ public class RoomServiceImpl implements RoomService {
             return new ArrayList<>();
         }
 
-        List<RoomDashboardDTO> dashboard = new ArrayList<>();
-        for (Room room : allRooms) {
-            RoomDashboardDTO dto = new RoomDashboardDTO();
-            dto.setRoomId(room.getId());
-            dto.setRoomNumber(room.getRoomNumber());
-            dto.setRoomStatus(room.getRoomStatus());
-
-            RoomCategory cat = room.getCategory();
-            if (cat != null) {
-                dto.setCategoryName(cat.getCategoryName());
-                if (cat.getBasePrice() != null) {
-                    dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
-                }
-                dto.setCapacity(cat.getCapacity());
-            }
-            dashboard.add(dto);
-        }
-        return dashboard;
+        return allRooms.stream()
+                .map(this::toDashboardDTO)
+                .toList();
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
@@ -90,6 +81,23 @@ public class RoomServiceImpl implements RoomService {
         long overlappingCount = roomBookingRepository.countOverlappingBookings(
                 roomNumber, checkIn, checkOut);
         return overlappingCount == NO_OVERLAPPING;
+    }
+
+    private RoomDashboardDTO toDashboardDTO(Room room) {
+        RoomDashboardDTO dto = new RoomDashboardDTO();
+        dto.setRoomId(room.getId());
+        dto.setRoomNumber(room.getRoomNumber());
+        dto.setRoomStatus(room.getRoomStatus());
+
+        RoomCategory cat = room.getCategory();
+        if (cat != null) {
+            dto.setCategoryName(cat.getCategoryName());
+            if (cat.getBasePrice() != null) {
+                dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
+            }
+            dto.setCapacity(cat.getCapacity());
+        }
+        return dto;
     }
 
     private RoomSearchResponseDTO toSearchResult(Room room,
