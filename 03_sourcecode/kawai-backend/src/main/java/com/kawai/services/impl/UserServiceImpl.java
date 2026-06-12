@@ -23,11 +23,11 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(AccountRepository accountRepository, 
-                           EmployeeRepository employeeRepository, 
-                           CustomerRepository customerRepository,
-                           RoleRepository roleRepository, 
-                           PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(AccountRepository accountRepository,
+            EmployeeRepository employeeRepository,
+            CustomerRepository customerRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
         this.employeeRepository = employeeRepository;
         this.customerRepository = customerRepository;
@@ -104,11 +104,16 @@ public class UserServiceImpl implements UserService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
 
-        if (payload.containsKey("name")) employee.setFullName(payload.get("name"));
-        if (payload.containsKey("email")) employee.setEmail(payload.get("email"));
-        if (payload.containsKey("phone")) employee.setPhone(payload.get("phone"));
-        if (payload.containsKey("cccd")) employee.setCccd(payload.get("cccd"));
-        if (payload.containsKey("gender")) employee.setGender(payload.get("gender"));
+        if (payload.containsKey("name"))
+            employee.setFullName(payload.get("name"));
+        if (payload.containsKey("email"))
+            employee.setEmail(payload.get("email"));
+        if (payload.containsKey("phone"))
+            employee.setPhone(payload.get("phone"));
+        if (payload.containsKey("cccd"))
+            employee.setCccd(payload.get("cccd"));
+        if (payload.containsKey("gender"))
+            employee.setGender(payload.get("gender"));
         if (payload.containsKey("salary") && !payload.get("salary").isEmpty()) {
             employee.setSalary(new java.math.BigDecimal(payload.get("salary")));
         }
@@ -139,10 +144,14 @@ public class UserServiceImpl implements UserService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        if (payload.containsKey("name")) customer.setFullName(payload.get("name"));
-        if (payload.containsKey("email")) customer.setEmail(payload.get("email"));
-        if (payload.containsKey("phone")) customer.setPhone(payload.get("phone"));
-        if (payload.containsKey("gender")) customer.setGender(payload.get("gender"));
+        if (payload.containsKey("name"))
+            customer.setFullName(payload.get("name"));
+        if (payload.containsKey("email"))
+            customer.setEmail(payload.get("email"));
+        if (payload.containsKey("phone"))
+            customer.setPhone(payload.get("phone"));
+        if (payload.containsKey("gender"))
+            customer.setGender(payload.get("gender"));
 
         Account account = customer.getAccount();
         if (account != null) {

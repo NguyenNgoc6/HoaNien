@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        String rawRole = account.getRole().getRoleName();
+        String rawRole = account.getRole().getRoleName().trim();
         String securityRole = rawRole;
         if (rawRole.equalsIgnoreCase("Admin")) {
             securityRole = "ROLE_ADMIN";

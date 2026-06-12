@@ -51,6 +51,7 @@ public class AdminAccountRestController {
             throw e;
         }
     }
+
     @PostMapping("/accounts")
     public ResponseEntity<?> createAccount(@RequestBody Map<String, String> payload) {
         System.out.println("========== CREATE ACCOUNT API HIT! ==========");
@@ -74,7 +75,7 @@ public class AdminAccountRestController {
                 dto.setGender(payload.get("gender"));
                 String salaryStr = payload.get("salary");
                 dto.setSalary(salaryStr != null && !salaryStr.isEmpty() ? new BigDecimal(salaryStr) : BigDecimal.ZERO);
-                
+
                 Employee emp = userService.createEmployeeAccount(dto);
                 return ResponseEntity.status(HttpStatus.CREATED).body(emp);
             } else {
@@ -82,7 +83,7 @@ public class AdminAccountRestController {
                 dto.setPassword("123");
                 dto.setPhone("");
                 dto.setGender("MALE");
-                
+
                 Customer cus = userService.createCustomerAccount(dto);
                 return ResponseEntity.status(HttpStatus.CREATED).body(cus);
             }
