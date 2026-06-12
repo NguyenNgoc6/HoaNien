@@ -137,10 +137,10 @@ public class AdminController {
     if ("Account Management".equals(tab)) {
       List<Role> allRoles = roleRepository.findAll();
       List<Role> staffRoles = allRoles.stream()
-          .filter(r -> !r.getRoleName().startsWith("Khách") && !r.getRoleName().equalsIgnoreCase("Admin"))
+          .filter(r -> !r.getRoleName().toLowerCase().contains("customer"))
           .toList();
       List<Role> guestRoles = allRoles.stream()
-          .filter(r -> r.getRoleName().startsWith("Khách"))
+          .filter(r -> r.getRoleName().toLowerCase().contains("customer"))
           .toList();
       model.addAttribute("staffRoles", staffRoles);
       model.addAttribute("guestRoles", guestRoles);
@@ -267,7 +267,7 @@ public class AdminController {
               "value", "100.000 VNĐ", "minOrder", "800.000 VNĐ", "scope", "Phòng", "__scopeStyle", bs("Phòng"),
               "uses", "18 / 50", "expires", "15/07/2026", "status", "Active", "__statusStyle", bs("Active")),
           r("id", "PRO-003", "code", "VIPONLY20", "type", "Phần trăm", "__typeStyle", bs("Phần trăm"),
-              "value", "20%", "minOrder", "1.000.000 VNĐ", "scope", "Khách VIP", "__scopeStyle", bs("Khách VIP"),
+              "value", "20%", "minOrder", "1.000.000 VNĐ", "scope", "Customer Vip", "__scopeStyle", bs("Customer Vip"),
               "uses", "7 / 30", "expires", "31/07/2026", "status", "Active", "__statusStyle", bs("Active")),
           r("id", "PRO-004", "code", "FBDEAL50K", "type", "Số tiền", "__typeStyle", bs("Số tiền"),
               "value", "50.000 VNĐ", "minOrder", "300.000 VNĐ", "scope", "F&B", "__scopeStyle", bs("F&B"),
@@ -307,7 +307,7 @@ public class AdminController {
         for (Customer cus : customers) {
           String roleName = cus.getAccount() != null && cus.getAccount().getRole() != null
               ? cus.getAccount().getRole().getRoleName()
-              : "Khách thường";
+              : "Customer Normal";
           String status = cus.getAccount() != null && cus.getAccount().getIsActive() ? "true" : "false";
           String email = cus.getEmail() != null ? cus.getEmail() : "-";
           String username = cus.getAccount() != null ? cus.getAccount().getUsername() : "";
@@ -323,17 +323,7 @@ public class AdminController {
               "phone", cus.getPhone() != null ? cus.getPhone() : "",
               "gender", cus.getGender() != null ? cus.getGender() : "MALE"));
         }
-        // // Mock some guest accounts just for display if db is empty
-        // if (customers.isEmpty()) {
-        // accountRows.add(r("id", "C-001", "name", "Haruto Yamamoto", "type", "Khách
-        // hàng", "__typeStyle", bs("Khách hàng"),
-        // "role", "Khách VIP", "__roleStyle", bs("Khách VIP"),
-        // "email", "haruto@email.com", "lastLogin", "05/06/2026", "status", "true"));
-        // accountRows.add(r("id", "C-002", "name", "Sarah Chen", "type", "Khách hàng",
-        // "__typeStyle", bs("Khách hàng"),
-        // "role", "Khách thường", "__roleStyle", bs("Khách thường"),
-        // "email", "sarah@email.com", "lastLogin", "04/06/2026", "status", "true"));
-        // }
+        // Mock some guest accounts just for display if db is empty
         yield accountRows;
       }
 
@@ -473,7 +463,7 @@ public class AdminController {
 
     // Phạm vi áp dụng khuyến mãi — Promotions tab
     opts.put("promoScopes", Arrays.asList(
-        "Toàn bộ", "Phòng", "F&B", "Tours", "Khách VIP"));
+        "Toàn bộ", "Phòng", "F&B", "Tours", "Customer Vip"));
 
     // Loại mùa giá — Pricing Management tab
     opts.put("seasonTypes", Arrays.asList(
@@ -485,7 +475,7 @@ public class AdminController {
 
     // Vai trò khách — Account Management tab
     opts.put("guestRoles", Arrays.asList(
-        "Khách VIP", "Khách thường"));
+        "Customer Vip", "Customer Normal"));
 
     return opts;
   }
@@ -515,7 +505,7 @@ public class AdminController {
         "badge-brown";
 
       // YELLOW (VIP / warning / important)
-      case "Manager", "Khách VIP", "Unavailable", "Cao điểm" ->
+      case "Manager", "Customer Vip", "Unavailable", "Cao điểm" ->
         "badge-yellow";
 
       // DARK (maintenance / expired)
@@ -523,7 +513,7 @@ public class AdminController {
         "badge-dark";
 
       // GRAY (default / neutral / inactive)
-      case "Inactive", "Khách thường", "Phần trăm", "Toàn bộ" ->
+      case "Inactive", "Customer Normal", "Phần trăm", "Toàn bộ" ->
         "badge-gray";
 
       default ->

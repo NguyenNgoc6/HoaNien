@@ -15,6 +15,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.kawai.repositories.CustomerRepository;
+import com.kawai.models.Customer;
+
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -30,6 +33,9 @@ public class UserServiceTest {
 
     @Mock
     private AccountRepository accountRepository;
+
+    @Mock
+    private CustomerRepository customerRepository;
 
     @Mock
     private RoleRepository roleRepository;
@@ -96,5 +102,35 @@ public class UserServiceTest {
         
         verify(accountRepository, times(1)).save(any(Account.class));
         verify(employeeRepository, times(1)).save(any(Employee.class));
+    }
+
+    @Test
+    void testUpdateEmployeeAccount_ToggleStatus() {
+        // Arrange
+        Long employeeId = 1L;
+        Employee mockEmployee = new Employee();
+        mockEmployee.setId(employeeId);
+        
+        Account mockAccount = new Account();
+        mockAccount.setIsActive(true); // Trạng thái ban đầu đang bật
+        mockEmployee.setAccount(mockAccount);
+
+        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(mockEmployee));
+        when(employeeRepository.save(any(Employee.class))).thenReturn(mockEmployee);
+        when(accountRepository.save(any(Account.class))).thenReturn(mockAccount);
+
+        // Act - Gửi payload với yêu cầu vô hiệu hóa tài khoản (status = false)
+        java.util.Map<String, String> payload = new java.util.HashMap<>();
+        payload.put("status", "false");
+        Employee result = userService.updateEmployeeAccount(employeeId, payload);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getAccount());
+        assertFalse(result.getAccount().getIsActive(), "Account status should be updated to false");
+
+        // Verify that the repositories were called to save the new state
+        verify(accountRepository, times(1)).save(mockAccount);
+        verify(employeeRepository, times(1)).save(mockEmployee);
     }
 }

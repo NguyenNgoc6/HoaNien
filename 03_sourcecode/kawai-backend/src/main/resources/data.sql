@@ -9,10 +9,8 @@ INSERT INTO Roles (role_id, role_name) VALUES (3, 'F&B');
 INSERT INTO Roles (role_id, role_name) VALUES (4, 'Housekeeping');
 INSERT INTO Roles (role_id, role_name) VALUES (5, 'Manager');
 INSERT INTO Roles (role_id, role_name) VALUES (6, 'Tourguide');
-INSERT INTO Roles (role_id, role_name) VALUES (7, 'Khách VIP');
-INSERT INTO Roles (role_id, role_name) VALUES (8, 'Khách thường');
-INSERT INTO Roles (role_id, role_name) VALUES (9, 'CUSTOMER');
-INSERT INTO Roles (role_id, role_name) VALUES (10, 'ADMIN');
+INSERT INTO Roles (role_id, role_name) VALUES (7, 'Customer Vip');
+INSERT INTO Roles (role_id, role_name) VALUES (8, 'Customer Normal');
 -- ── 2. Accounts ──────────────────────────────────────────────
 -- Mật khẩu: "admin123" (BCrypt hash)
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)

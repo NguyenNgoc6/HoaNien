@@ -5,14 +5,15 @@
  * File này chỉ xử lý:
  *   - Tab switching (server-side navigation)
  *   - Sidebar submenu toggle
- *   - Client-side search (filter tr elements trong DOM)
+ *   - Client-side search (filter DOM rows)
  *   - Modal open / close
- *   - Edit: đọc data từ DOM attributes (data-key, data-value) do Thymeleaf sinh ra
- *   - Delete: xác nhận, sau đó reload page (khi có API thật)
+ *   - Edit: đọc data từ data-entity attribute do Thymeleaf sinh ra
+ *   - Delete: gọi DELETE API, xóa DOM row khi backend xác nhận
  *   - Add new: mở form rỗng theo active tab
- *   - Add / Edit form field generation (UI schema — không phải business data)
- *   - Account permissions modal
+ *   - Image upload preview
  *   - Lucide icon re-init
+ *
+ * Business logic (role rules, permission, CRUD, validation) do Spring Boot backend xử lý.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -24,7 +25,6 @@ const activeTab = document.body.dataset.activeTab || "Room Categories";
 
 let editingRowId = null;
 let deletingRowId = null;
-let permissionsUserId = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Init
@@ -49,18 +49,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Close modal on backdrop click
-    ["entity-modal", "delete-modal", "permissions-modal"].forEach(id => {
+    ["entity-modal", "delete-modal"].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener("click", () => closeModal(id));
+        if (el) {
+            el.addEventListener("click", (e) => {
+                if (e.target === el) closeModal(id);
+            });
+        }
     });
 
     // Delete confirm button
     const confirmDeleteBtn = document.getElementById("btn-confirm-delete");
     if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", handleConfirmDelete);
 
-    // Save permissions button
-    const savePermsBtn = document.getElementById("btn-save-permissions");
-    if (savePermsBtn) savePermsBtn.addEventListener("click", handleSavePermissions);
+    // Permissions button removed — access control is fully role-based (Spring Security)
 
     // Entity form submit
     const entityForm = document.getElementById("entity-form");
@@ -131,7 +133,7 @@ function closeModal(id) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Wire table action buttons (edit / delete / permissions)
+// Wire table action buttons (edit / delete)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function wireTableButtons() {
@@ -141,9 +143,8 @@ function wireTableButtons() {
     document.querySelectorAll(".btn-delete").forEach(btn => {
         btn.addEventListener("click", () => openDeleteConfirm(btn.dataset.id));
     });
-    document.querySelectorAll(".btn-permissions").forEach(btn => {
-        btn.addEventListener("click", () => openPermissionsModal(btn.dataset.id, btn.dataset.name, btn.dataset.role));
-    });
+    // .btn-permissions removed: access control is now fully role-based.
+    // Each role can only access the login page and pages assigned to that role.
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,20 +163,20 @@ function openAddModal() {
         form.dataset.method = 'POST';
     }
 
-    // Gắn sự kiện hiển thị loại tài khoản nếu ở tab Account Management
+    // Khi thêm mới: ẩn các account type không được phép tạo (backend đánh dấu qua data-allow-create="false")
     if (activeTab === "Account Management") {
         const typeSelect = document.getElementById('account-type-select');
         if (typeSelect) {
+            let firstAllowed = null;
             Array.from(typeSelect.options).forEach(opt => {
-                if (opt.value === 'Khách hàng') {
-                    opt.style.display = 'none';
-                    opt.disabled = true;
-                }
+                const allowed = opt.dataset.allowCreate !== 'false';
+                opt.style.display = allowed ? '' : 'none';
+                opt.disabled = !allowed;
+                if (allowed && !firstAllowed) firstAllowed = opt;
             });
-            typeSelect.value = 'Nhân viên';
-            // Prevent changing type since it's the only valid one for new accounts
-            typeSelect.style.pointerEvents = 'none';
-            typeSelect.style.backgroundColor = '#f3f4f6';
+            if (firstAllowed) {
+                typeSelect.value = firstAllowed.value;
+            }
         }
     }
 
@@ -199,20 +200,22 @@ function openEditModal(id) {
         form.reset();
 
         if (activeTab === "Account Management") {
+            const typeGroup = document.getElementById('account-type-group');
+            if (typeGroup) typeGroup.style.display = ''; // Khôi phục hiển thị nhóm Loại tài khoản
             const typeSelect = document.getElementById('account-type-select');
             if (typeSelect) {
+                // Khôi phục tất cả options và styling (openAddModal có thể đã ẩn chúng)
                 Array.from(typeSelect.options).forEach(opt => {
-                    if (opt.value === 'Khách hàng') {
-                        opt.style.display = 'block';
-                        opt.disabled = false;
-                    }
+                    opt.style.display = '';
+                    opt.disabled = false;
                 });
-                // Restore styling so it's not disabled
-                typeSelect.style.pointerEvents = 'auto';
-                typeSelect.style.backgroundColor = '';
+                typeSelect.style.pointerEvents = 'auto'; // Cho phép đổi loại tài khoản khi edit
+                typeSelect.style.opacity = '1';
             }
         }
 
+        // Set tất cả giá trị form TRƯỚC khi gọi initAccountFormToggles()
+        // để updateVisibility() đọc đúng giá trị type đã được chọn
         for (const [key, value] of Object.entries(entityData)) {
             const input = form.elements[key];
             if (input) {
@@ -223,10 +226,13 @@ function openEditModal(id) {
                 }
             }
         }
-        form.dataset.action = `/admin/api/v1/accounts/${id}`;
-        form.dataset.method = "PUT";
+        if (activeTab === "Account Management") {
+            form.dataset.action = `/admin/api/v1/accounts/${id}`;
+            form.dataset.method = "PUT";
+        }
     }
 
+    // Gọi SAU khi đã set values để updateVisibility() lọc role đúng loại tài khoản
     initAccountFormToggles();
     openModal("entity-modal");
 }
@@ -274,8 +280,9 @@ function handleFormSubmit(event) {
                 window.location.reload();
             })
             .catch(err => {
-                console.error("API Error: ", err);
-                alert("Lỗi khi lưu: " + err.message);
+                console.error("API Error:", err);
+                if (typeof showToast === "function") showToast("Lỗi khi lưu: " + err.message, "error");
+
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Lưu';
@@ -303,147 +310,123 @@ function openDeleteConfirm(id) {
 }
 
 function handleConfirmDelete() {
-    if (deletingRowId) {
-        const tr = document.querySelector(`tr[data-id="${deletingRowId}"]`);
-        if (tr) tr.remove();
-        handleSearch(document.getElementById("search-input")?.value || "");
+    if (!deletingRowId) return;
+
+    const deleteBtn = document.getElementById("btn-confirm-delete");
+    if (deleteBtn) { deleteBtn.disabled = true; deleteBtn.textContent = "Đang xóa..."; }
+
+    // TODO: Thay endpoint theo từng tab khi backend sẵn sàng
+    // Hiện tại Account Management là tab duy nhất có Delete API
+    const endpoint = activeTab === "Account Management"
+        ? `/admin/api/v1/accounts/${deletingRowId}`
+        : null;
+
+    if (endpoint) {
+        fetch(endpoint, { method: "DELETE" })
+            .then(res => {
+                if (!res.ok) return res.text().then(t => { throw new Error(t || res.status); });
+                // Backend xác nhận → mới xóa DOM
+                const tr = document.querySelector(`tr[data-id="${deletingRowId}"]`);
+                if (tr) tr.remove();
+                handleSearch(document.getElementById("search-input")?.value || "");
+                if (typeof showToast === "function") showToast("Đã xóa bản ghi!", "success");
+            })
+            .catch(err => {
+                console.error("Delete error:", err);
+                if (typeof showToast === "function") showToast("Lỗi xóa: " + err.message, "error");
+            })
+            .finally(() => {
+                closeModal("delete-modal");
+                deletingRowId = null;
+                if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = "Xác nhận xóa"; }
+            });
+    } else {
+        // Chưa có API cho tab này — chỉ đóng modal
+        closeModal("delete-modal");
+        deletingRowId = null;
+        if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = "Xác nhận xóa"; }
     }
-    closeModal("delete-modal");
-    deletingRowId = null;
-    if (typeof showToast === "function") showToast("Đã xóa bản ghi!", "success");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Form field loading — UI schema (not business data)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// loadFormFields deleted - Forms are strictly server-side rendered by Thymeleaf
+// Forms are server-side rendered by Thymeleaf.
+// Backend quyết định role nào là staff (class="role-staff") và guest (class="role-guest").
+// JS chỉ đọc các class này để show/hide — không hardcode tên role hay keyword.
 
-// Helper to toggle employee fields visibility on static Thymeleaf forms
+// WeakMap lưu listener reference để tránh đăng ký lặp
+const _typeSelectListeners = new WeakMap();
+
 function initAccountFormToggles() {
     if (activeTab !== "Account Management") return;
     const typeSelect = document.getElementById('account-type-select');
     const roleSelect = document.getElementById('account-role-select');
     const empFields = document.getElementById('account-employee-fields');
-    if (!typeSelect || !empFields || !roleSelect) return;
+    if (!empFields) return;
 
     function updateVisibility() {
-        const isEmp = typeSelect.value === "Nhân viên";
+        // Backend quyết định category qua data-account-category trên option
+        // Fallback: nếu không có attribute, dùng class role-staff/role-guest
+        const selectedOpt = typeSelect ? typeSelect.options[typeSelect.selectedIndex] : null;
+        const isEmp = !typeSelect || (selectedOpt?.dataset.accountCategory ?? 'EMPLOYEE') === 'EMPLOYEE';
 
-        // Hiện/ẩn form fields của Employee
+        // Hiện/ẩn employee-specific fields (username, salary) — UI chỉ đọc class từ HTML
         empFields.style.display = isEmp ? "flex" : "none";
-
-        // Yêu cầu (require) các trường employee-specific nếu là Nhân viên
         empFields.querySelectorAll('input').forEach(input => {
             input.required = isEmp;
         });
 
-        // Xử lý field chung nằm ngoài
+        // Password bắt buộc khi thêm mới, không bắt buộc khi chỉnh sửa
         const form = document.getElementById("entity-form");
         if (form) {
             const pwdInput = form.querySelector('input[name="password"]');
-            if (pwdInput) {
-                // Password bắt buộc khi thêm mới, không bắt buộc khi chỉnh sửa
-                pwdInput.required = !editingRowId;
-            }
+            if (pwdInput) pwdInput.required = !editingRowId;
         }
 
-        // Hiện/ẩn options tùy vào Employee hay Guest, dựa trên class đã gắn sẵn (role-staff, role-guest)
-        Array.from(roleSelect.options).forEach(opt => {
-            if (opt.classList.contains('role-staff')) {
-                opt.style.display = isEmp ? "block" : "none";
-            } else if (opt.classList.contains('role-guest')) {
-                opt.style.display = isEmp ? "none" : "block";
-            }
-        });
+        // Filter role options dựa hoàn toàn vào class do backend inject (role-staff / role-guest)
+        if (roleSelect) {
+            Array.from(roleSelect.options).forEach(opt => {
+                const isGuestRole = opt.classList.contains('role-guest');
+                const isStaffRole = opt.classList.contains('role-staff');
 
-        // Reset giá trị selected nếu option hiện tại đang bị ẩn
-        const currentOption = roleSelect.options[roleSelect.selectedIndex];
-        if (currentOption && currentOption.style.display === "none") {
-            const firstVisible = Array.from(roleSelect.options).find(opt => opt.style.display !== "none");
-            if (firstVisible) roleSelect.value = firstVisible.value;
+                if (isEmp) {
+                    opt.style.display = isGuestRole ? "none" : "";
+                    opt.disabled = isGuestRole;
+                } else {
+                    opt.style.display = isStaffRole ? "none" : "";
+                    opt.disabled = isStaffRole;
+                }
+            });
+
+            // Nếu option đang chọn bị ẩn → chuyển sang option đầu tiên hợp lệ
+            // Nhưng KHÔNG ghi đè nếu value hiện tại vẫn hợp lệ (trường hợp edit đã set role đúng)
+            const currentOpt = roleSelect.options[roleSelect.selectedIndex];
+            if (currentOpt && (currentOpt.style.display === "none" || currentOpt.disabled)) {
+                const firstValid = Array.from(roleSelect.options)
+                    .find(o => o.style.display !== "none" && !o.disabled);
+                if (firstValid) roleSelect.value = firstValid.value;
+            }
         }
     }
 
-    typeSelect.removeEventListener("change", updateVisibility);
-    typeSelect.addEventListener("change", updateVisibility);
+    // Fix event listener leak: dùng WeakMap để track và remove đúng reference
+    if (typeSelect) {
+        const existing = _typeSelectListeners.get(typeSelect);
+        if (existing) typeSelect.removeEventListener("change", existing);
+        typeSelect.addEventListener("change", updateVisibility);
+        _typeSelectListeners.set(typeSelect, updateVisibility);
+    }
     updateVisibility();
 }
 
+
+
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Permissions modal
-// ─────────────────────────────────────────────────────────────────────────────
-
-const PERMISSION_LABELS = {
-    dashboard: "Dashboard Panel",
-    masterData: "Master Data Management",
-    auditLog: "Audit Log Monitor",
-    reviews: "Review Management",
-    booking: "Booking Management",
-    fnb: "F&B Management",
-    housekeeping: "Housekeeping",
-    maintenance: "Maintenance Panel"
-};
-
-let localPermissions = {};
-
-function openPermissionsModal(id, name, role) {
-    permissionsUserId = id;
-
-    const titleEl = document.getElementById("permissions-modal-title");
-    const descEl = document.getElementById("permissions-desc");
-    if (titleEl) titleEl.innerText = `Cấp quyền - ${name}`;
-    if (descEl) descEl.innerHTML = `Quản lý quyền truy cập cho nhân viên <strong>${name}</strong> (Vai trò: ${role})`;
-
-    // Default permissions based on role — computed from role value (server logic simulated client-side)
-    localPermissions = {
-        dashboard: true,
-        masterData: role === "Admin" || role === "Manager",
-        auditLog: role === "Admin" || role === "Manager",
-        reviews: true,
-        booking: role !== "Housekeeping",
-        fnb: role === "F&B" || role === "Admin" || role === "Manager",
-        housekeeping: role === "Housekeeping" || role === "Admin" || role === "Manager",
-        maintenance: role === "Admin" || role === "Manager"
-    };
-
-    renderPermissionsList();
-    openModal("permissions-modal");
-}
-
-function renderPermissionsList() {
-    const container = document.getElementById("permissions-list");
-    if (!container) return;
-    container.innerHTML = "";
-
-    Object.entries(localPermissions).forEach(([key, value]) => {
-        const label = document.createElement("label");
-        label.className = "flex items-center gap-3.5 px-4 py-3 rounded-lg bg-[#2C2A1E]/4 cursor-pointer hover:bg-primary/8 transition-colors";
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = value;
-        checkbox.className = "w-4 h-4 cursor-pointer";
-        checkbox.addEventListener("change", () => { localPermissions[key] = checkbox.checked; });
-        const span = document.createElement("span");
-        span.className = "font-sans text-[14px] text-[#2C2A1E] flex-1";
-        span.innerText = PERMISSION_LABELS[key] || key;
-        label.appendChild(checkbox);
-        label.appendChild(span);
-        container.appendChild(label);
-    });
-}
-
-function handleSavePermissions() {
-    // TODO: POST permissions to backend when API ready
-    closeModal("permissions-modal");
-    permissionsUserId = null;
-    if (typeof showToast === "function") showToast("Lưu phân quyền thành công!", "success");
-}
-// ─────────────────────────────────────────────────────────────────────────────
-// ACCOUNT TOGGLE STATUS
-// Cập nhật UI ngay (optimistic). Khi backend sẵn sàng:
-//   1. Uncomment phần fetch() bên dưới
-//   2. Xóa phần "// Cập nhật UI" phía trên fetch (để tránh double-update)
+// ACCOUNT TOGGLE STATUS — Optimistic UI + PATCH API
+// Endpoint: PATCH /admin/api/v1/accounts/{id}/status
 // ─────────────────────────────────────────────────────────────────────────────
 
 document.addEventListener("click", (e) => {
@@ -454,21 +437,37 @@ document.addEventListener("click", (e) => {
     const current = btn.dataset.value === "true";
     const next = !current;
 
-    // ── Cập nhật UI ngay (không cần API) ─────────────────────────────────────
-    btn.dataset.value = String(next);
-
-    const icon = btn.querySelector("i");
-    if (icon) {
-        icon.setAttribute("data-lucide", next ? "toggle-right" : "toggle-left");
-        icon.className = `w-[22px] h-[22px] ${next ? "text-[#C9A96E]" : "text-[#8B7355]"}`;
-        if (typeof lucide !== "undefined") lucide.createIcons();
-    }
-
-    // Đồng bộ data-value trên <td> để edit modal đọc đúng
+    // Optimistic UI: cập nhật icon ngay
+    applyToggleIcon(btn, next);
     const td = btn.closest("td[data-key]");
     if (td) td.dataset.value = String(next);
 
+    // PATCH API — persist trạng thái lên backend
+    fetch(`/admin/api/v1/accounts/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next })
+    })
+        .then(res => {
+            if (!res.ok) throw new Error("API Error: " + res.status);
+            return res;
+        })
+        .catch(err => {
+            console.error("Toggle status error:", err);
+            // Rollback UI về trạng thái cũ nếu API thất bại
+            applyToggleIcon(btn, current);
+            if (td) td.dataset.value = String(current);
+            if (typeof showToast === "function") showToast("Lỗi cập nhật trạng thái", "error");
+        });
 });
+
+function applyToggleIcon(btn, isActive) {
+    btn.dataset.value = String(isActive);
+    const lucideName = isActive ? "toggle-right" : "toggle-left";
+    const color = isActive ? "#C9A96E" : "#8B7355";
+    btn.innerHTML = `<i data-lucide="${lucideName}" style="color:${color}"></i>`;
+    if (typeof lucide !== "undefined") lucide.createIcons({ root: btn });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Image Upload Handlers
@@ -527,7 +526,7 @@ function handleGalleryUpload(input) {
             item.className = 'gallery-item';
             item.innerHTML = `
                 <img src="${e.target.result}" alt="preview">
-                <button type="button" class="remove-btn" onclick="removeGalleryItem(this, '${inputId}', ${index})" title="Xóa ảnh này">
+                <button type="button" class="remove-btn" onclick="removeGalleryItem(this)" title="Xóa ảnh này">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             `;
@@ -537,6 +536,6 @@ function handleGalleryUpload(input) {
     });
 }
 
-function removeGalleryItem(btn, inputId, fileIndex) {
+function removeGalleryItem(btn) {
     btn.parentElement.remove();
 }
