@@ -17,7 +17,7 @@
 | UC02   | Xác thực 2FA / OTP      | *(điền sau khi code)* | TC-M1-007, 008, 009 | BR-SYS-02            |
 | UC03   | Đặt lại mật khẩu        | *(điền sau khi code)* | TC-M1-010, 011, 012 | BR-SYS-07            |
 | UC04   | Hồ sơ cá nhân (AES-256) | *(điền sau khi code)* | TC-M1-013, 014      | BR-SYS-01            |
-| UC05.1 | Quản lý nhân viên RBAC  | *(điền sau khi code)* | TC-M1-015, 016      | BR-SYS-06            |
+| UC05.1 | Quản lý nhân viên RBAC  | `UserServiceImpl.createEmployeeAccount()` | TC-M1-015, 016      | BR-SYS-06            |
 | UC05.2 | Audit Log               | *(điền sau khi code)* | TC-M1-017           | BR-SYS-04            |
 | UC06.1 | CRUD Core Data          | *(điền sau khi code)* | TC-M1-018           | —                    |
 | UC06.2 | Giá phòng động          | *(điền sau khi code)* | TC-M1-019           | —                    |

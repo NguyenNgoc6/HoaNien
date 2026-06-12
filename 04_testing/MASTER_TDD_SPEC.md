@@ -229,8 +229,8 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC-M1-012 | Token hết hạn / sai | | [ ] | [ ] | |
 | TC-M1-013 | Cập nhật hồ sơ, CCCD mã hóa AES | | [ ] | [ ] | |
 | TC-M1-014 | CCCD không lưu plaintext DB | | [ ] | [ ] | |
-| TC-M1-015 | Admin tạo tài khoản nhân viên | | [ ] | [ ] | |
-| TC-M1-016 | Non-Admin truy cập API admin → 403 | | [ ] | [ ] | |
+| TC-M1-015 | Admin tạo tài khoản nhân viên | `UserServiceTest.java` | [x] | [x]  | ✅ Refactored: Tối ưu DTO mapping & Phân quyền tài khoản |
+| TC-M1-016 | Non-Admin truy cập API admin → 403 | `AdminSecurityTest.java` | [x] | [x] | ✅ Test runs successfully, Controller security verified |
 | TC-M1-017 | Audit Log ghi đủ ai/gì/lúc nào | | [ ] | [ ] | |
 | TC-M1-018 | Admin CRUD hạng phòng/tour | | [ ] | [ ] | |
 | TC-M1-019 | Cấu hình giá phòng theo ngày | | [ ] | [ ] | |
