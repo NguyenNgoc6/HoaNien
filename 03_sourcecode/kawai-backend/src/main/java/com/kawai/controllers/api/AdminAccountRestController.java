@@ -22,36 +22,6 @@ public class AdminAccountRestController {
     private final UserService userService;
     private final RoleRepository roleRepository;
 
-    @PostMapping("/employees")
-    public ResponseEntity<Employee> createEmployeeAccount(@RequestBody CreateEmployeeDTO dto) {
-        System.out.println("========== CREATE EMPLOYEE API HIT! ==========");
-        System.out.println("Payload: " + dto);
-        try {
-            Employee createdEmployee = userService.createEmployeeAccount(dto);
-            System.out.println("========== SUCCESS! Employee created with ID: " + createdEmployee.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
-        } catch (Exception e) {
-            System.out.println("========== ERROR IN API: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    @PostMapping("/customers")
-    public ResponseEntity<Customer> createCustomerAccount(@RequestBody CreateEmployeeDTO dto) {
-        System.out.println("========== CREATE CUSTOMER API HIT! ==========");
-        System.out.println("Payload: " + dto);
-        try {
-            Customer createdCustomer = userService.createCustomerAccount(dto);
-            System.out.println("========== SUCCESS! Customer created with ID: " + createdCustomer.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdCustomer);
-        } catch (Exception e) {
-            System.out.println("========== ERROR IN API: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
     @PostMapping("/accounts")
     public ResponseEntity<?> createAccount(@RequestBody Map<String, String> payload) {
         System.out.println("========== CREATE ACCOUNT API HIT! ==========");

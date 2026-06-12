@@ -45,7 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/booking", "/auth/register", "/auth/login", "/ops-login",
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**", "/error")
+                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**",
+                                "/error")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
@@ -91,6 +92,12 @@ public class SecurityConfig {
                         break;
                     } else if (role.equals("ROLE_FB_STAFF")) {
                         redirect = "/fbStaff/dashboard";
+                        break;
+                    } else if (role.equals("ROLE_HOUSEKEEPING")) {
+                        redirect = "/housekeeping/dashboard";
+                        break;
+                    } else if (role.equals("ROLE_TOURGUIDE")) {
+                        redirect = "/tourguide/dashboard";
                         break;
                     } else if (role.equals("ROLE_GUEST") || role.equals("ROLE_CUSTOMER")) {
                         redirect = "/";

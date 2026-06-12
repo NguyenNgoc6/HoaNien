@@ -99,7 +99,7 @@ public class UserServiceTest {
         assertNotNull(result.getAccount());
         assertEquals("staff_new", result.getAccount().getUsername());
         assertEquals("ROLE_FB_STAFF", result.getAccount().getRole().getRoleName());
-        
+
         verify(accountRepository, times(1)).save(any(Account.class));
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
@@ -110,7 +110,7 @@ public class UserServiceTest {
         Long employeeId = 1L;
         Employee mockEmployee = new Employee();
         mockEmployee.setId(employeeId);
-        
+
         Account mockAccount = new Account();
         mockAccount.setIsActive(true); // Trạng thái ban đầu đang bật
         mockEmployee.setAccount(mockAccount);

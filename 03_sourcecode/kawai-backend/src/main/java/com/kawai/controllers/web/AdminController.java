@@ -286,7 +286,9 @@ public class AdminController {
         List<Map<String, String>> accountRows = new ArrayList<>();
         List<Employee> employees = employeeRepository.findAll();
         for (Employee emp : employees) {
-          String roleName = emp.getAccount().getRole().getRoleName();
+          if (emp.getAccount() == null)
+            continue;
+          String roleName = emp.getAccount().getRole() != null ? emp.getAccount().getRole().getRoleName() : "";
           String status = emp.getAccount().getIsActive() ? "true" : "false";
           accountRows.add(r(
               "id", "E-" + String.format("%03d", emp.getId()),
@@ -305,12 +307,14 @@ public class AdminController {
         // Load real guest accounts
         List<Customer> customers = customerRepository.findAll();
         for (Customer cus : customers) {
-          String roleName = cus.getAccount() != null && cus.getAccount().getRole() != null
+          if (cus.getAccount() == null)
+            continue;
+          String roleName = cus.getAccount().getRole() != null
               ? cus.getAccount().getRole().getRoleName()
               : "Customer Normal";
-          String status = cus.getAccount() != null && cus.getAccount().getIsActive() ? "true" : "false";
+          String status = cus.getAccount().getIsActive() ? "true" : "false";
           String email = cus.getEmail() != null ? cus.getEmail() : "-";
-          String username = cus.getAccount() != null ? cus.getAccount().getUsername() : "";
+          String username = cus.getAccount().getUsername();
           accountRows.add(r(
               "id", "C-" + String.format("%03d", cus.getId()),
               "name", cus.getFullName(),
@@ -323,7 +327,6 @@ public class AdminController {
               "phone", cus.getPhone() != null ? cus.getPhone() : "",
               "gender", cus.getGender() != null ? cus.getGender() : "MALE"));
         }
-        // Mock some guest accounts just for display if db is empty
         yield accountRows;
       }
 
