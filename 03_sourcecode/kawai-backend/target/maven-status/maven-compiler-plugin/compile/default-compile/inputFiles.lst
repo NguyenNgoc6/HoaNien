@@ -60,7 +60,6 @@ D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\dto\RoomInfoDto.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\services\impl\FolioServiceImpl.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\dto\CartItemDto.java
-D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\services\interfaces\CheckinService.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\models\ConsolidatedInvoice.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\repositories\TourPackageRepository.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\repositories\BookingRoomRepository.java
@@ -78,6 +77,7 @@ D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\dto\OrderRequest.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\models\DailyRate.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\security\UserDetailsServiceImpl.java
+D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\dto\RoomDashboardDTO.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\dto\TourBookingRequest.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\repositories\MaintenanceRequestRepository.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\controllers\PosApiController.java
@@ -117,7 +117,6 @@ D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\models\MenuItem.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\repositories\FoodItemRepository.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\services\impl\PosServiceImpl.java
-D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\services\impl\CheckinServiceImpl.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\repositories\RoomBookingRepository.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\controllers\web\ManagerController.java
 D:\SWP\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\src\main\java\com\kawai\services\interfaces\UserService.java
