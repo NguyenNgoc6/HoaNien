@@ -130,7 +130,8 @@ public class AdminController {
     if ("Account Management".equals(tab)) {
       List<Role> allRoles = roleRepository.findAll();
       List<Role> staffRoles = allRoles.stream()
-          .filter(r -> !r.getRoleName().toLowerCase().contains("customer") && !"Admin".equalsIgnoreCase(r.getRoleName()))
+          .filter(
+              r -> !r.getRoleName().toLowerCase().contains("customer") && !"Admin".equalsIgnoreCase(r.getRoleName()))
           .toList();
       List<Role> guestRoles = allRoles.stream()
           .filter(r -> r.getRoleName().toLowerCase().contains("customer"))
@@ -357,7 +358,8 @@ public class AdminController {
     opts.put("seasonTypes", List.of("Thường ngày", "Cuối tuần", "Cao điểm"));
     opts.put("staffRoles",
         roleRepository.findAll().stream()
-            .filter(r -> !r.getRoleName().toLowerCase().contains("customer") && !"Admin".equalsIgnoreCase(r.getRoleName()))
+            .filter(
+                r -> !r.getRoleName().toLowerCase().contains("customer") && !"Admin".equalsIgnoreCase(r.getRoleName()))
             .map(Role::getRoleName).collect(Collectors.toList()));
     opts.put("guestRoles", roleRepository.findAll().stream()
         .filter(r -> r.getRoleName().toLowerCase().contains("customer"))
