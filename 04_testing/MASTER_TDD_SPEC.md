@@ -26,6 +26,9 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                                  |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | Đức               | Refactor code cho UC16 |
+| 2026-06-13 | Đức               | Implement code logic cho UC16, tất cả test case đã pass GREEN |
+| 2026-06-13 | Đức               | Khởi tạo Test Case TC-M3-005, TC-M3-006 cho UC16 |
 | 2026-06-11 | Lưu                | Cập nhật đầy đủ 20 test case Module 2, chuẩn hóa cấu trúc bảng tracker cho cả 5 Module và bổ sung test case mẫu chi tiết cho 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu — Master TDD spec cho toàn bộ 5 Module Kawai Resort                                                                          |
 
@@ -419,8 +422,8 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC-M3-002 | Room Service phòng không OCCUPIED → từ chối |           | [ ]    | [ ]               |                  |
 | TC-M3-003 | Đặt bàn thành công → RESERVED              |           | [ ]    | [ ]               |                  |
 | TC-M3-004 | 2 khách đặt cùng bàn → 1 thắng            |           | [ ]    | [ ]               |                  |
-| TC-M3-005 | POS tạo order đúng bàn/món/giá             |           | [ ]    | [ ]               |                  |
-| TC-M3-006 | POS thanh toán → PAID                          |           | [ ]    | [ ]               |                  |
+| TC-M3-005 | POS tạo order đúng bàn/món/giá             | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | Tách hàm tạo detail, table, validation |
+| TC-M3-006 | POS thanh toán → PAID                          | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | Thêm JavaDoc chuẩn |
 | TC-M3-007 | KDS nhận order mới hiển thị KOT              |           | [ ]    | [ ]               |                  |
 | TC-M3-008 | Bếp cập nhật PREPARING → READY               |           | [ ]    | [ ]               |                  |
 | TC-M3-009 | Bếp báo hết món → POS/E-Menu khóa          |           | [ ]    | [ ]               |                  |

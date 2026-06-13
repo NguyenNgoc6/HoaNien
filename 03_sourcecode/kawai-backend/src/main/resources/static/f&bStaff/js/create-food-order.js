@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dineInFields = document.getElementById('fields-dine-in');
   const roomSvcFields = document.getElementById('fields-room-svc');
   const paymentSection = document.getElementById('payment-section-wrapper');
+  const tableSelect = document.getElementById('tableSelect');
 
   const roomInput = document.getElementById('roomInput');
   const roomInfo = document.getElementById('roomInfo');
