@@ -50,12 +50,16 @@ VALUES (3, 3, 'Nguyễn Minh Quân', 'Nam', '001234567892', '0912000003', 'nmqua
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
 VALUES (4, 4, 'Lê Linh', 'Nữ', '001234567893', '0912000004', 'lelinh@hoanien.vn', 9000000);
 -- ── 4. Room Categories ───────────────────────────────────────
+UPDATE Room_Categories SET category_name = 'Nipa Pool Villa', base_price = 2500000, capacity = 2 WHERE category_id = 1;
+UPDATE Room_Categories SET category_name = 'River Pool Villa', base_price = 3500000, capacity = 3 WHERE category_id = 2;
+UPDATE Room_Categories SET category_name = 'Wellness Retreats', base_price = 8000000, capacity = 4 WHERE category_id = 3;
+
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (1, 'Deluxe Room', 2500000, 2);
+VALUES (1, 'Nipa Pool Villa', 2500000, 2);
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (2, 'Superior Room', 3500000, 3);
+VALUES (2, 'River Pool Villa', 3500000, 3);
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (3, 'Villa Suite', 8000000, 4);
+VALUES (3, 'Wellness Retreats', 8000000, 4);
 -- ── 5. Rooms ─────────────────────────────────────────────────
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (1, '101', 1, 'Occupied', NULL);
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (2, '102', 1, 'Vacant_Clean', NULL);
@@ -343,3 +347,17 @@ VALUES (4, 4, '2026-06-16', '09:00:00', 0, 'Open');
 
 ALTER TABLE Tours ALTER COLUMN tour_id RESTART WITH 100;
 ALTER TABLE Tour_Schedules ALTER COLUMN schedule_id RESTART WITH 100;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

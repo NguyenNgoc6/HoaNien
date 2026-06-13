@@ -9,9 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
@@ -26,6 +26,8 @@
                     fontFamily: {
                         'serif': ['"Playfair Display"', 'serif'],
                         'sans': ['"Montserrat"', 'sans-serif'],
+                        "headline": ["EB Garamond", "serif"],
+                        "body": ["Inter", "sans-serif"],
                     },
                     spacing: { 'section-y': '120px' }
                 }
@@ -165,10 +167,9 @@
                     <a href="/tours" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Tours</a>
                 </div>
 
-                <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-serif text-3xl md:text-4xl font-medium tracking-wide nav-brand text-center cursor-pointer w-max"
+                <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-headline text-[32px] italic tracking-tighter nav-brand text-center cursor-pointer w-max"
                     onclick="window.location.href='/booking'">
-                    HOANIEN
-                    <span class="block text-xs md:text-sm font-sans tracking-[0.3em] uppercase mt-1 opacity-70">River Retreat</span>
+                    HoaNien
                 </div>
 
                 <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
