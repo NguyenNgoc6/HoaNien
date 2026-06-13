@@ -2,6 +2,7 @@ package com.kawai.services.impl;
 
 import com.kawai.dto.RoomSearchRequestDTO;
 import com.kawai.dto.RoomSearchResponseDTO;
+import com.kawai.dto.RoomDashboardDTO;
 import com.kawai.models.Room;
 import com.kawai.models.RoomCategory;
 import com.kawai.repositories.RoomBookingRepository;
@@ -9,7 +10,6 @@ import com.kawai.repositories.RoomRepository;
 import com.kawai.services.interfaces.RoomService;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +49,54 @@ public class RoomServiceImpl implements RoomService {
         List<RoomSearchResponseDTO> available = new ArrayList<>();
 
         for (Room room : allRooms) {
+            // Filter out rooms under maintenance
+            String status = room.getRoomStatus();
+            if ("Maintenance".equalsIgnoreCase(status) || "OutOfService".equalsIgnoreCase(status)) {
+                continue;
+            }
+
+            RoomCategory cat = room.getCategory();
+            if (cat != null) {
+                if (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty()) {
+                    if (!cat.getCategoryName().equalsIgnoreCase(request.getCategoryName().trim())) {
+                        continue;
+                    }
+                }
+                if (request.getMinCapacity() != null) {
+                    if (cat.getCapacity() < request.getMinCapacity()) {
+                        continue;
+                    }
+                }
+                if (request.getMaxPricePerNight() != null) {
+                    if (cat.getBasePrice().compareTo(request.getMaxPricePerNight()) > 0) {
+                        continue;
+                    }
+                }
+            }
+
             if (isRoomAvailable(room.getRoomNumber(), checkIn, checkOut)) {
                 available.add(toSearchResult(room, checkIn, checkOut));
             }
         }
         return available;
+    }
+
+    /**
+     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard.
+     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản (UC11).
+     * 
+     * @return Danh sách RoomDashboardDTO, rỗng nếu không có dữ liệu
+     */
+    @Override
+    public List<RoomDashboardDTO> getRoomDashboard() {
+        List<Room> allRooms = roomRepository.findAll();
+        if (allRooms == null || allRooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return allRooms.stream()
+                .map(this::toDashboardDTO)
+                .toList();
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
@@ -62,6 +105,23 @@ public class RoomServiceImpl implements RoomService {
         long overlappingCount = roomBookingRepository.countOverlappingBookings(
                 roomNumber, checkIn, checkOut);
         return overlappingCount == NO_OVERLAPPING;
+    }
+
+    private RoomDashboardDTO toDashboardDTO(Room room) {
+        RoomDashboardDTO dto = new RoomDashboardDTO();
+        dto.setRoomId(room.getId());
+        dto.setRoomNumber(room.getRoomNumber());
+        dto.setRoomStatus(room.getRoomStatus());
+
+        RoomCategory cat = room.getCategory();
+        if (cat != null) {
+            dto.setCategoryName(cat.getCategoryName());
+            if (cat.getBasePrice() != null) {
+                dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
+            }
+            dto.setCapacity(cat.getCapacity());
+        }
+        return dto;
     }
 
     private RoomSearchResponseDTO toSearchResult(Room room,

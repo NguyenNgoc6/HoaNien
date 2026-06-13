@@ -33,6 +33,33 @@ public class AdminSecurityTest {
     private com.kawai.repositories.RoleRepository roleRepository;
 
     @MockBean
+    private com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+
+    @MockBean
+    private com.kawai.repositories.RoomRepository roomRepository;
+
+    @MockBean
+    private com.kawai.repositories.FoodItemRepository foodItemRepository;
+
+    @MockBean
+    private com.kawai.repositories.TourRepository tourRepository;
+
+    @MockBean
+    private com.kawai.repositories.PromotionRepository promotionRepository;
+
+    @MockBean
+    private com.kawai.repositories.DailyRateRepository dailyRateRepository;
+
+    @MockBean
+    private com.kawai.repositories.BookingRepository bookingRepository;
+
+    @MockBean
+    private com.kawai.repositories.AuditLogRepository auditLogRepository;
+
+    @MockBean
+    private com.kawai.repositories.ReviewRepository reviewRepository;
+
+    @MockBean
     private UserService userService;
 
     @MockBean

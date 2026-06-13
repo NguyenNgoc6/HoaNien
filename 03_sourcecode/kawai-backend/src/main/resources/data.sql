@@ -1,16 +1,17 @@
 -- ============================================================
--- KAWAI RESORT & TOUR HUB — H2 Sample Data
+-- HOANIEN RESORT & TOUR HUB — H2 Sample Data
 -- Chạy tự động sau khi Hibernate tạo schema (defer-datasource-initialization: true)
 -- ============================================================
 -- ── 1. Roles ─────────────────────────────────────────────────
-INSERT INTO Roles (role_id, role_name) VALUES (1, 'Admin');
-INSERT INTO Roles (role_id, role_name) VALUES (2, 'Receptionist');
-INSERT INTO Roles (role_id, role_name) VALUES (3, 'F&B');
-INSERT INTO Roles (role_id, role_name) VALUES (4, 'Housekeeping');
-INSERT INTO Roles (role_id, role_name) VALUES (5, 'Manager');
-INSERT INTO Roles (role_id, role_name) VALUES (6, 'Tourguide');
-INSERT INTO Roles (role_id, role_name) VALUES (7, 'Customer Vip');
-INSERT INTO Roles (role_id, role_name) VALUES (8, 'Customer Normal');
+INSERT INTO Roles (role_id, role_name) VALUES (1, 'ADMIN');
+INSERT INTO Roles (role_id, role_name) VALUES (2, 'RECEPTIONIST');
+INSERT INTO Roles (role_id, role_name) VALUES (3, 'F&B KITCHEN');
+INSERT INTO Roles (role_id, role_name) VALUES (4, 'F&B POS');
+INSERT INTO Roles (role_id, role_name) VALUES (5, 'HOUSEKEEPING');
+INSERT INTO Roles (role_id, role_name) VALUES (6, 'MANAGER');
+INSERT INTO Roles (role_id, role_name) VALUES (7, 'TOURGUIDE');
+INSERT INTO Roles (role_id, role_name) VALUES (8, 'CUSTOMER VIP');
+INSERT INTO Roles (role_id, role_name) VALUES (9, 'CUSTOMER NORMAL');
 -- ── 2. Accounts ──────────────────────────────────────────────
 -- Mật khẩu: "admin123" (BCrypt hash)
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
@@ -22,32 +23,43 @@ INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, c
 VALUES (3, 'nmquan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP);
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
 VALUES (4, 'lelinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP);
+-- Mật khẩu cho Khách: "admin123"
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (5, 'hoangnam', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (6, 'vanan', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (7, 'phamtuan', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (8, 'thibich', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (9, 'lequang', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (10, 'mylinh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (11, 'hoanganh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP);
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
+VALUES (12, 'vuhung', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP);
 -- ── 3. Employees ─────────────────────────────────────────────
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
-VALUES (1, 1, 'Nguyễn Quản Trị', 'Nam', '001234567890', '0912000001', 'admin@kawai.vn', 15000000);
+VALUES (1, 1, 'Nguyễn Quản Trị', 'Nam', '001234567890', '0912000001', 'admin@hoanien.vn', 15000000);
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
-VALUES (2, 2, 'Trần Phương', 'Nữ', '001234567891', '0912000002', 'tphuong@kawai.vn', 10000000);
+VALUES (2, 2, 'Trần Phương', 'Nữ', '001234567891', '0912000002', 'tphuong@hoanien.vn', 10000000);
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
-VALUES (3, 3, 'Nguyễn Minh Quân', 'Nam', '001234567892', '0912000003', 'nmquan@kawai.vn', 10000000);
+VALUES (3, 3, 'Nguyễn Minh Quân', 'Nam', '001234567892', '0912000003', 'nmquan@hoanien.vn', 10000000);
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
 VALUES (4, 4, 'Lê Linh', 'Nữ', '001234567893', '0912000004', 'lelinh@kawai.vn', 9000000);
--- 4: Customer
-INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at)
-VALUES (5, 'nam101', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-       (6, 'an204', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-       (7, 'tuan308', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
-       (8, 'bich104', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-       (9, 'quang106', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-       (10, 'linh207', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-       (11, 'anh210', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
-       (12, 'hung311', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP);
 -- ── 4. Room Categories ───────────────────────────────────────
+UPDATE Room_Categories SET category_name = 'Nipa Pool Villa', base_price = 2500000, capacity = 2 WHERE category_id = 1;
+UPDATE Room_Categories SET category_name = 'River Pool Villa', base_price = 3500000, capacity = 3 WHERE category_id = 2;
+UPDATE Room_Categories SET category_name = 'Wellness Retreats', base_price = 8000000, capacity = 4 WHERE category_id = 3;
+
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (1, 'Deluxe Room', 2500000, 2);
+VALUES (1, 'Nipa Pool Villa', 2500000, 2);
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (2, 'Superior Room', 3500000, 3);
+VALUES (2, 'River Pool Villa', 3500000, 3);
 INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (3, 'Villa Suite', 8000000, 4);
+VALUES (3, 'Wellness Retreats', 8000000, 4);
 -- ── 5. Rooms ─────────────────────────────────────────────────
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (1, '101', 1, 'Occupied', NULL);
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (2, '102', 1, 'Vacant_Clean', NULL);
@@ -72,16 +84,15 @@ INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booki
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (20, '314', 3, 'Vacant_Clean', NULL);
 
 -- ── 5.1. Customers & Bookings cho các phòng Occupied ──
-INSERT INTO Customers (customer_id, account_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier) VALUES 
-(1, 5, 'Lê Hoàng Nam', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 'Regular'),
-(2, 6, 'Nguyễn Văn An', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 'Silver'),
-(3, 7, 'Phạm Tuấn', 'Nam', 'CCCD_308', '090308', 'tuan308@test.com', 500, 'Gold'),
-(4, 8, 'Trần Thị Bích', 'Nữ', 'CCCD_104', '090104', 'bich104@test.com', 50, 'Regular'),
-(5, 9, 'Lê Quang', 'Nam', 'CCCD_106', '090106', 'quang106@test.com', 0, 'Regular'),
-(6, 10, 'Đỗ Mỹ Linh', 'Nữ', 'CCCD_207', '090207', 'linh207@test.com', 150, 'Silver'),
-(7, 11, 'Hoàng Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 'Gold'),
-(8, 12, 'Vũ Hùng', 'Nam', 'CCCD_311', '090311', 'hung311@test.com', 800, 'Platinum');
-
+INSERT INTO Customers (customer_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier) VALUES 
+(1, 'Lê Hoàng Nam', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 'Regular'),
+(2, 'Nguyễn Văn An', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 'Silver'),
+(3, 'Phạm Tuấn', 'Nam', 'CCCD_308', '090308', 'tuan308@test.com', 500, 'Gold'),
+(4, 'Trần Thị Bích', 'Nữ', 'CCCD_104', '090104', 'bich104@test.com', 50, 'Regular'),
+(5, 'Lê Quang', 'Nam', 'CCCD_106', '090106', 'quang106@test.com', 0, 'Regular'),
+(6, 'Đỗ Mỹ Linh', 'Nữ', 'CCCD_207', '090207', 'linh207@test.com', 150, 'Silver'),
+(7, 'Hoàng Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 'Gold'),
+(8, 'Vũ Hùng', 'Nam', 'CCCD_311', '090311', 'hung311@test.com', 800, 'Platinum');
 
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, version) VALUES
 (1, 1, '2026-06-01', 5000000, 'Confirmed', 'Direct_Web', 1),
@@ -321,4 +332,47 @@ ALTER TABLE Restaurant_Tables ALTER COLUMN table_id RESTART WITH 100;
 ALTER TABLE Menu_Items ALTER COLUMN item_id RESTART WITH 100;
 ALTER TABLE Food_Orders ALTER COLUMN order_id RESTART WITH 100;
 ALTER TABLE Food_Order_Details ALTER COLUMN detail_id RESTART WITH 100;
+
+
+-- ── 10. Tours & Schedules ────────────────────────────────────
+INSERT INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, description)
+VALUES (1, 'Đoàn tụ - Huế', 'Full-Day', 1500000, 20, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.');
+
+INSERT INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, description)
+VALUES (2, 'Tinh túy đồng nội - Quảng Nam', 'Half-Day', 1200000, 15, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.');
+
+INSERT INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, description)
+VALUES (3, 'Di sản thủ công - Ninh Bình', 'Half-Day', 1800000, 15, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.');
+
+INSERT INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, description)
+VALUES (4, 'Tĩnh lặng liên hoa - Tháp Mười', 'Full-Day', 2500000, 10, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.');
+
+-- Thêm lịch trình cho vài ngày tới (dùng cứng ngày tháng sáu 2026)
+INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status)
+VALUES (1, 1, '2026-06-14', '08:00:00', 0, 'Open');
+
+INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status)
+VALUES (2, 2, '2026-06-15', '14:00:00', 0, 'Open');
+
+INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status)
+VALUES (3, 3, '2026-06-15', '17:00:00', 0, 'Open');
+
+INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status)
+VALUES (4, 4, '2026-06-16', '09:00:00', 0, 'Open');
+
+ALTER TABLE Tours ALTER COLUMN tour_id RESTART WITH 100;
+ALTER TABLE Tour_Schedules ALTER COLUMN schedule_id RESTART WITH 100;
+
+
+
+
+
+
+
+
+
+
+
+
+
 

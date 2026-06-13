@@ -1,0 +1,26 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 538898392088-lv7in7thft76gbj9dki3u6ko1itmnrda.apps.googleusercontent.com
+            client-secret: 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
+  datasource:
+    url: jdbc:h2:mem:kawai_db;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+      continue-on-error: true
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect

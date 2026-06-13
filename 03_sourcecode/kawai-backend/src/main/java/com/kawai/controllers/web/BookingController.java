@@ -3,16 +3,25 @@ package com.kawai.controllers.web;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.kawai.repositories.RoomCategoryRepository;
+import com.kawai.models.RoomCategory;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class BookingController {
+
+    @Autowired
+    private RoomCategoryRepository roomCategoryRepository;
     
     @GetMapping({"/", "/booking"})
-    public String showBookingPage(Principal principal, Model model) {
+    public String showBookingPage(Principal principal, Model model, @RequestParam(name = "keyword", required = false) String keyword) {
         model.addAttribute("isLoggedIn", principal != null);
 
         // ---- Search summary ----
@@ -25,73 +34,50 @@ public class BookingController {
 
         // ---- Resort info (footer) ----
         model.addAttribute("resort", Map.of(
-                "name", "Namia River Retreat",
-                "title", "Namia River Retreat - Wellness Inclusive Resort, Managed by Lumina Wellbeing",
+                "name", "Hoanien River Retreat",
+                "title", "Hoanien River Retreat - Wellness Inclusive Resort, Managed by Lumina Wellbeing",
                 "address", "232 Tran Nhan Tong Street, Hoi An Dong Ward, Danang City, Viet Nam"
         ));
 
-        // ---- Suggested picks & filters ----
-        model.addAttribute("defaultPicks", List.of(
-                "King Bed 200x200 cm", "Terrace and Loungers", "Direct River View"));
-        model.addAttribute("defaultFilters", List.of(
-                "Bedding", "Layout", "Location", "View"));
+        // ---- Fetch Rooms from DB ----
+        List<RoomCategory> categories = roomCategoryRepository.findAll();
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String kw = keyword.toLowerCase();
+            categories = categories.stream()
+                .filter(c -> c.getCategoryName().toLowerCase().contains(kw) || 
+                             (c.getDescription() != null && c.getDescription().toLowerCase().contains(kw)))
+                .collect(Collectors.toList());
+        }
 
-        // ---- Rooms ----
-        model.addAttribute("rooms", List.of(
-                new BookingRoom("NIPA POOL VILLA - King bed",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        "Lowest Price", "price", false,
-                        2, 1, 62,
-                        List.of("Outdoor shower", "Sunken Bathtub With View", "Private Pool",
-                                "Nipa Palm View", "1 Bedroom Villa", "M - size: 62 sqm", "King Bed 200x200 cm"),
-                        0,
-                        "₫ 20,460,000.00", "-25%", "₫ 15,345,000.00", "₫ 46,035,000.00"),
+        List<String> tempImages = List.of(
+            "https://images.unsplash.com/photo-1582719478250-c89400652e71?w=800&q=80",
+            "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80",
+            "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80",
+            "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80",
+            "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80"
+        );
 
-                new BookingRoom("RIVER POOL VILLA - King bed",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        "Our Tip", "tip", false,
-                        2, 1, 62,
-                        List.of("Sunken Bathtub With View", "Private Pool", "Outdoor Shower",
-                                "On Islet", "Indoor Shower", "Ensuite Bathroom", "1 Bedroom Villa"),
-                        4,
-                        "₫ 25,626,666.67", "-25%", "₫ 19,220,000.00", "₫ 57,660,000.00"),
+        List<BookingRoom> rooms = categories.stream().map(cat -> {
+            String priceStr = cat.getBasePrice() != null ? String.format("₫ %,d", cat.getBasePrice().longValue()) : "Contact Us";
+            int capacity = cat.getCapacity() != null ? cat.getCapacity() : 2;
+            String image = tempImages.get((int)(cat.getId() != null ? cat.getId() % tempImages.size() : 0));
+            
+            return new BookingRoom(
+                cat.getCategoryName(),
+                image,
+                null, null, false, // no badges
+                capacity, 
+                1, // beds
+                40, // size
+                List.of(), // no amenities mapped yet
+                0,
+                null, null, priceStr, priceStr
+            );
+        }).collect(Collectors.toList());
 
-                new BookingRoom("NIPA POOL VILLA - Twin bed",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        null, "price", false,
-                        2, 1, 62,
-                        List.of("Outdoor shower", "Twin Beds 110x200 cm", "Sunken Bathtub With View",
-                                "Private Pool", "Nipa Palm View", "1 Bedroom Villa"),
-                        1,
-                        "₫ 20,461,033.33", "-25%", "₫ 15,345,774.67", "₫ 46,037,324.00"),
-
-                new BookingRoom("RIVER POOL VILLA - Twin bed",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        null, "price", false,
-                        2, 1, 62,
-                        List.of("Twin Beds 110x200 cm", "Sunken Bathtub With View", "Private Pool",
-                                "1 Bedroom Villa", "Terrace and Loungers", "M - size: 62 sqm"),
-                        1,
-                        "₫ 25,626,666.67", "-25%", "₫ 19,220,000.00", "₫ 57,660,000.00"),
-
-                new BookingRoom("WELLNESS RETREATS - GENTLE RESET - 03 NIGHTS",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        null, "price", true,
-                        2, 1, 62,
-                        List.of("Sunken Bathtub With View", "Private Pool", "Nipa Palm View",
-                                "L- size: 80 sqm", "1 Bedroom Villa", "King Bed 200x200 cm", "Retreats package"),
-                        0,
-                        null, null, "₫ 26,936,244.00", "₫ 80,808,732.00"),
-
-                new BookingRoom("WELLNESS RETREATS - MINDFUL RECOVERY - 03 NIGHTS",
-                        "https://cdnphoto.dantri.com.vn/dQBtl5WxjzNsef4JCGFZSlf8WRk=/2023/01/24/khoa-hocdocx-1674520013659.png",
-                        null, "price", true,
-                        2, 1, 62,
-                        List.of("Sunken Bathtub With View", "Private Pool", "Nipa Palm View",
-                                "L- size: 80 sqm", "1 Bedroom Villa", "King Bed 200x200 cm", "Retreats package"),
-                        0,
-                        null, null, "₫ 29,990,180.00", "₫ 89,970,540.00")
-        ));
+        model.addAttribute("rooms", rooms);
+        model.addAttribute("keyword", keyword);
 
         return "guest/booking"; 
     }

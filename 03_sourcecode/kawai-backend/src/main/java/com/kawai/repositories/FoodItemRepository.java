@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface FoodItemRepository extends JpaRepository<MenuItem, Long> {
+    
+    @Query("SELECT m.category, COUNT(m) FROM MenuItem m GROUP BY m.category")
+    List<Object[]> findCategoryCounts();
     @Query("SELECT DISTINCT m.category FROM MenuItem m")
     List<String> findDistinctCategories();
 }
