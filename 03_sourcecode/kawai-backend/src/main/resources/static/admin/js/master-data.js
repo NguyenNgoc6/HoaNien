@@ -179,7 +179,6 @@ function openAddModal() {
             }
         }
     }
-
     initAccountFormToggles();
     openModal("entity-modal");
 }
@@ -436,13 +435,9 @@ document.addEventListener("click", (e) => {
     const id = btn.dataset.id;
     const current = btn.dataset.value === "true";
     const next = !current;
-
-    // Optimistic UI: cập nhật icon ngay
     applyToggleIcon(btn, next);
     const td = btn.closest("td[data-key]");
     if (td) td.dataset.value = String(next);
-
-    // PATCH API — persist trạng thái lên backend
     fetch(`/admin/api/v1/accounts/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
