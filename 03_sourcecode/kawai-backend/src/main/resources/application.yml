@@ -7,10 +7,17 @@ spring:
             client-id: 538898392088-lv7in7thft76gbj9dki3u6ko1itmnrda.apps.googleusercontent.com
             client-secret: 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
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/kawai_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
-    driverClassName: com.mysql.cj.jdbc.Driver
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:12345678}
+    # --- CẤU HÌNH H2 DATABASE (Dùng tạm thời không cần MySQL) ---
+    url: jdbc:h2:mem:kawai_db;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+
+    # --- CẤU HÌNH MYSQL (Bỏ dấu # để dùng lại sau này) ---
+    # url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/kawai_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    # driverClassName: com.mysql.cj.jdbc.Driver
+    # username: ${SPRING_DATASOURCE_USERNAME:root}
+    # password: ${SPRING_DATASOURCE_PASSWORD:12345678}
   sql:
     init:
       mode: always
@@ -19,11 +26,11 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
 
   thymeleaf:
     cache: false
