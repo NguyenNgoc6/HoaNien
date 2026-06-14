@@ -26,6 +26,7 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                                  |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-14 | Đức               | Bổ sung và pass 5 Exception Test Cases (TC-M3-007 đến TC-M3-011) cho chức năng Gọi món tại quầy (UC16) |
 | 2026-06-13 | Đức               | Refactor code cho UC16 |
 | 2026-06-13 | Đức               | Implement code logic cho UC16, tất cả test case đã pass GREEN |
 | 2026-06-13 | Đức               | Khởi tạo Test Case TC-M3-005, TC-M3-006 cho UC16 |
@@ -422,14 +423,19 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC-M3-002 | Room Service phòng không OCCUPIED → từ chối |           | [ ]    | [ ]               |                  |
 | TC-M3-003 | Đặt bàn thành công → RESERVED              |           | [ ]    | [ ]               |                  |
 | TC-M3-004 | 2 khách đặt cùng bàn → 1 thắng            |           | [ ]    | [ ]               |                  |
-| TC-M3-005 | POS tạo order đúng bàn/món/giá             | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | Tách hàm tạo detail, table, validation |
-| TC-M3-006 | POS thanh toán → PAID                          | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | Thêm JavaDoc chuẩn |
-| TC-M3-007 | KDS nhận order mới hiển thị KOT              |           | [ ]    | [ ]               |                  |
-| TC-M3-008 | Bếp cập nhật PREPARING → READY               |           | [ ]    | [ ]               |                  |
-| TC-M3-009 | Bếp báo hết món → POS/E-Menu khóa          |           | [ ]    | [ ]               |                  |
-| TC-M3-010 | Post to Room thành công → ghi Folio           |           | [ ]    | [ ]               |                  |
-| TC-M3-011 | Post to Room vượt Credit Limit → chặn        |           | [ ]    | [ ]               |                  |
-| TC-M3-012 | Post to Room phòng không OCCUPIED → chặn     |           | [ ]    | [ ]               |                  |
+| TC-M3-005 | POS tạo order đúng bàn/món/giá             | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | ✅ Tách hàm tạo detail, table, validation |
+| TC-M3-006 | POS thanh toán → PAID                          | PosServiceUC16Test.java | [x]    | [x] f3c1a2b       | ✅ Thêm JavaDoc chuẩn |
+| TC-M3-007 | Gọi món nhưng mảng requests rỗng | PosServiceUC16Test.java | [x]    | [x] 6a7b8c9       | ✅ Bổ sung bắt lỗi mảng rỗng (POS-001) |
+| TC-M3-008 | Gọi món nhưng truyền Quantity <= 0 | PosServiceUC16Test.java | [x]    | [x] 6a7b8c9       | ✅ Bổ sung bắt lỗi (POS-004) |
+| TC-M3-009 | Gọi món nhưng món đã hết | PosServiceUC16Test.java | [x]    | [x] 6a7b8c9       | ✅ Bổ sung bắt lỗi (POS-002) |
+| TC-M3-010 | ID món không tồn tại | PosServiceUC16Test.java | [x]    | [x] 6a7b8c9       | ✅ Bổ sung bắt lỗi (ITEM_NOT_FOUND) |
+| TC-M3-011 | ID Bàn không tồn tại | PosServiceUC16Test.java | [x]    | [x] 6a7b8c9       | ✅ Bổ sung bắt lỗi (TABLE_NOT_FOUND) |
+| TC-M3-012 | KDS nhận order mới hiển thị KOT              |           | [ ]    | [ ]               |                  |
+| TC-M3-013 | Bếp cập nhật PREPARING → READY               |           | [ ]    | [ ]               |                  |
+| TC-M3-014 | Bếp báo hết món → POS/E-Menu khóa          |           | [ ]    | [ ]               |                  |
+| TC-M3-015 | Post to Room thành công → ghi Folio           |           | [ ]    | [ ]               |                  |
+| TC-M3-016 | Post to Room vượt Credit Limit → chặn        |           | [ ]    | [ ]               |                  |
+| TC-M3-017 | Post to Room phòng không OCCUPIED → chặn     |           | [ ]    | [ ]               |                  |
 
 ### MOD4 — Tour & Đánh giá (Sinh viên 4: Ngọc)
 | TC ID     | Mô tả ngắn                          | Test File                           | 🔴 RED | 🟢 GREEN (commit) | 🔵 REFACTOR　　　　　　　　　　　　　　　 |

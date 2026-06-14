@@ -14,6 +14,7 @@ import com.kawai.repositories.RoomRepository;
 import com.kawai.repositories.RestaurantTableRepository;
 import com.kawai.repositories.FoodItemRepository;
 import com.kawai.repositories.FoodOrderRepository;
+import com.kawai.dto.OrderItemRequest;
 import com.kawai.services.interfaces.PosService;
 
 import java.math.BigDecimal;
@@ -91,13 +92,13 @@ public class PosServiceImpl implements PosService {
      * Creates a new dine-in order for a specific table with a list of menu items.
      *
      * @param tableId     The ID of the restaurant table.
-     * @param menuItemIds The list of menu item IDs to order.
+     * @param requests    The list of menu item requests to order.
      * @return The saved FoodOrder.
      * @throws BusinessException if item list is empty, table not found, or item unavailable.
      */
     @Override
-    public FoodOrder createDineInOrder(Long tableId, List<Long> menuItemIds) {
-        if (menuItemIds == null || menuItemIds.isEmpty()) {
+    public FoodOrder createDineInOrder(Long tableId, List<OrderItemRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
             throw new BusinessException("POS-001", "Đơn hàng trống — không có món");
         }
 
@@ -109,7 +110,7 @@ public class PosServiceImpl implements PosService {
         order.setOrderStatus("UNPAID");
         order.setIsPaidInPos(false);
 
-        List<FoodOrderDetail> details = createOrderDetails(order, menuItemIds);
+        List<FoodOrderDetail> details = createOrderDetails(order, requests);
         order.setDetails(details);
 
         return foodOrderRepository.save(order);
@@ -126,15 +127,18 @@ public class PosServiceImpl implements PosService {
     /**
      * Helper method to create order details from a list of item IDs.
      */
-    private List<FoodOrderDetail> createOrderDetails(FoodOrder order, List<Long> menuItemIds) {
+    private List<FoodOrderDetail> createOrderDetails(FoodOrder order, List<OrderItemRequest> requests) {
         List<FoodOrderDetail> details = new ArrayList<>();
-        for (Long itemId : menuItemIds) {
-            MenuItem item = getAvailableMenuItem(itemId);
+        for (OrderItemRequest req : requests) {
+            if (req.getQuantity() == null || req.getQuantity() <= 0) {
+                throw new BusinessException("POS-004", "Số lượng món phải lớn hơn 0");
+            }
+            MenuItem item = getAvailableMenuItem(req.getMenuItemId());
 
             FoodOrderDetail detail = new FoodOrderDetail();
             detail.setFoodOrder(order);
             detail.setMenuItem(item);
-            detail.setQuantity(1);
+            detail.setQuantity(req.getQuantity());
             detail.setPriceAtOrder(item.getPrice());
             detail.setKotStatus("Pending");
             details.add(detail);

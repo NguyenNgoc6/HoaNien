@@ -8,7 +8,8 @@
 | **Date** | 2026-06-12 |
 | **Status** | Approved |
 | **Standard** | ISO/IEC/IEEE 29119-3:2021 |
-| **Author** | Nguyễn Xuân Lưu - Tech Lead |
+| **Author** | Trịnh Minh Đức |
+| **Review By** | Nguyễn Xuân Lưu - Tech Lead |
 
 ---
 
@@ -133,8 +134,8 @@ Event-driven testing.
 | TC-M3-002 | Room Service cho phòng không OCCUPIED → từ chối | TBD | [ ] | [ ] | |
 | TC-M3-003 | Đặt bàn thành công — bàn chuyển RESERVED | TBD | [ ] | [ ] | |
 | TC-M3-004 | 2 khách đặt cùng bàn cùng giờ → 1 thành công, 1 báo lỗi | TBD | [ ] | [ ] | |
-| TC-M3-005 | POS tạo order Dine-In — ghi đúng bàn, đúng món, đúng giá | TBD | [ ] | [ ] | |
-| TC-M3-006 | POS thanh toán tiền mặt — đơn hàng chuyển PAID | TBD | [ ] | [ ] | |
+| TC-M3-005 | POS tạo order Dine-In — ghi đúng bàn, đúng món, đúng giá | PosServiceUC16Test.java | [x] | [x] f3c1a2b | ✅ Tách hàm tạo detail, table, validation |
+| TC-M3-006 | POS thanh toán tiền mặt — đơn hàng chuyển PAID | PosServiceUC16Test.java | [x] | [x] f3c1a2b | ✅ Thêm JavaDoc chuẩn |
 | TC-M3-007 | KDS nhận order mới → hiển thị KOT trên màn hình bếp | TBD | [ ] | [ ] | |
 | TC-M3-008 | Bếp cập nhật từng món PREPARING → READY | TBD | [ ] | [ ] | |
 | TC-M3-009 | Bếp báo hết món → POS/E-Menu tự động khóa món đó | TBD | [ ] | [ ] | |

@@ -1,4 +1,3 @@
-
 # KAWAI RESORT - SỔ TAY QUY TRÌNH LÀM VIỆC NHÓM TÍCH HỢP AI (AI-HUMAN COLLABORATIVE WORKFLOW)
 
 Tài liệu này định nghĩa quy trình phối hợp chặt chẽ giữa **Lập trình viên (Developer)**, **Trợ lý AI (Antigravity)**, và **Trưởng nhóm kỹ thuật (Tech Lead)** nhằm đảm bảo tốc độ phát triển nhanh, chất lượng code cao và Tech Lead dễ dàng giám sát tiến độ thực tế.

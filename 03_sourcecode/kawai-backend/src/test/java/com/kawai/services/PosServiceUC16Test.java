@@ -1,5 +1,9 @@
 package com.kawai.services;
 
+import com.kawai.exceptions.BusinessException;
+import java.util.Collections;
+
+import com.kawai.dto.OrderItemRequest;
 import com.kawai.models.FoodOrder;
 import com.kawai.models.MenuItem;
 import com.kawai.models.RestaurantTable;
@@ -54,7 +58,15 @@ public class PosServiceUC16Test {
     void testCreateDineInOrder_Success() {
         // TC-M3-005: POS tạo order đúng bàn/món/giá
         Long tableId = 1L;
-        List<Long> menuItemIds = Arrays.asList(101L, 102L);
+        OrderItemRequest req1 = new OrderItemRequest();
+        req1.setMenuItemId(101L);
+        req1.setQuantity(2);
+        
+        OrderItemRequest req2 = new OrderItemRequest();
+        req2.setMenuItemId(102L);
+        req2.setQuantity(1);
+        
+        List<OrderItemRequest> requests = Arrays.asList(req1, req2);
 
         RestaurantTable table = new RestaurantTable();
         table.setId(tableId);
@@ -79,11 +91,91 @@ public class PosServiceUC16Test {
             return saved;
         });
 
-        FoodOrder order = posService.createDineInOrder(tableId, menuItemIds);
+        FoodOrder order = posService.createDineInOrder(tableId, requests);
 
         assertNotNull(order, "Order should not be null");
         assertEquals("UNPAID", order.getOrderStatus(), "Order status should be UNPAID");
         assertEquals(2, order.getDetails().size(), "Order should have 2 details");
+    }
+
+    @Test
+    void testCreateDineInOrder_EmptyRequests() {
+        // TC-M3-007: Empty array throws POS-001
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            BusinessException.class,
+            () -> posService.createDineInOrder(1L, Collections.emptyList())
+        );
+        assertEquals("POS-001", exception.getErrorCode());
+    }
+
+    @Test
+    void testCreateDineInOrder_NegativeQuantity() {
+        // TC-M3-008: Quantity <= 0 throws POS-004
+        OrderItemRequest req = new OrderItemRequest();
+        req.setMenuItemId(101L);
+        req.setQuantity(0);
+
+        when(restaurantTableRepository.findById(1L)).thenReturn(Optional.of(new RestaurantTable()));
+
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            BusinessException.class,
+            () -> posService.createDineInOrder(1L, Arrays.asList(req))
+        );
+        assertEquals("POS-004", exception.getErrorCode());
+    }
+
+    @Test
+    void testCreateDineInOrder_ItemUnavailable() {
+        // TC-M3-009: Item unavailable throws POS-002
+        OrderItemRequest req = new OrderItemRequest();
+        req.setMenuItemId(101L);
+        req.setQuantity(1);
+
+        MenuItem item = new MenuItem();
+        item.setId(101L);
+        item.setIsAvailable(false);
+
+        when(restaurantTableRepository.findById(1L)).thenReturn(Optional.of(new RestaurantTable()));
+        when(foodItemRepository.findById(101L)).thenReturn(Optional.of(item));
+
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            BusinessException.class,
+            () -> posService.createDineInOrder(1L, Arrays.asList(req))
+        );
+        assertEquals("POS-002", exception.getErrorCode());
+    }
+
+    @Test
+    void testCreateDineInOrder_ItemNotFound() {
+        // TC-M3-010: Item not found throws ITEM_NOT_FOUND
+        OrderItemRequest req = new OrderItemRequest();
+        req.setMenuItemId(999L);
+        req.setQuantity(1);
+
+        when(restaurantTableRepository.findById(1L)).thenReturn(Optional.of(new RestaurantTable()));
+        when(foodItemRepository.findById(999L)).thenReturn(Optional.empty());
+
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            BusinessException.class,
+            () -> posService.createDineInOrder(1L, Arrays.asList(req))
+        );
+        assertEquals("ITEM_NOT_FOUND", exception.getErrorCode());
+    }
+
+    @Test
+    void testCreateDineInOrder_TableNotFound() {
+        // TC-M3-011: Table not found throws TABLE_NOT_FOUND
+        OrderItemRequest req = new OrderItemRequest();
+        req.setMenuItemId(101L);
+        req.setQuantity(1);
+
+        when(restaurantTableRepository.findById(999L)).thenReturn(Optional.empty());
+
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            BusinessException.class,
+            () -> posService.createDineInOrder(999L, Arrays.asList(req))
+        );
+        assertEquals("TABLE_NOT_FOUND", exception.getErrorCode());
     }
 
     @Test

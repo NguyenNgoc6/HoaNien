@@ -7,9 +7,9 @@
 | **Version** | 1.0 |
 | **Date** | 2026-06-12 |
 | **Status** | Approved |
-| **Document Owner** | Nguyễn Xuân Lưu |
-| **Author** | Nguyễn Xuân Lưu - Tech Lead |
-
+| **Document Owner** | Trịnh Minh Đức |
+| **Author** | Trịnh Minh Đức |
+| **Review By** | Nguyễn Xuân Lưu - Tech Lead |
 ---
 
 ### MỤC LỤC
