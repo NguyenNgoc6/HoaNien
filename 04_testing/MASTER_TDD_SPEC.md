@@ -447,11 +447,11 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 ### MOD5 — Hóa đơn & Báo cáo (Sinh viên 5: Lan)
 | TC ID     | Mô tả ngắn                              | Test File | 🔴 RED | 🟢 GREEN (commit) | 🔵 REFACTOR |
 | -----------| -----------------------------------------| -----------| --------| ------------------| -------------|
-| TC-M5-001 | Folio hiển thị đúng danh sách nợ        |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-002 | Ghi nhận luồng tiền nhiều đợt           |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-003 | Gom hóa đơn tổng = BigDecimal chính xác |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-004 | Night Audit 02:00 → cộng phí phòng      |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-005 | Night Audit chuyển Business Date        |           | [ ]　　| [ ]              | 　　　　　　|
+| TC-M5-001 | Folio hiển thị đúng danh sách nợ        | `FolioServiceTest.java` | [x]　　| [x] `a1b2c3d`    | ✅ Tách hàm, sử dụng Constructor Injection |
+| TC-M5-002 | Ghi nhận luồng tiền nhiều đợt           | `FolioServiceTest.java` | [x]　　| [x] `a1b2c3d`    | ✅ Thêm JavaDoc, extract createPaymentItem |
+| TC-M5-003 | Gom hóa đơn tổng = BigDecimal chính xác | `FolioServiceTest.java` | [x]　　| [x] `a1b2c3d`    | ✅ Dùng Stream API để tính tổng |
+| TC-M5-004 | Night Audit 02:00 → cộng phí phòng      | `FolioServiceTest.java` | [x]　　| [x] `a1b2c3d`    | ✅ Extract method chargeNightlyRoomRate |
+| TC-M5-005 | Night Audit chuyển Business Date        | `FolioServiceTest.java` | [x]　　| [x] `a1b2c3d`    | ✅ Chuẩn hóa tên biến |
 | TC-M5-006 | Check-out Folio = 0 → thành công        |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-007 | Check-out Folio > 0 → chặn FOLIO-001    |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-008 | Thanh toán tất toán → SETTLED           |           | [ ]　　| [ ]              | 　　　　　　|

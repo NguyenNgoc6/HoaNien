@@ -3,6 +3,7 @@ package com.kawai.repositories;
 import com.kawai.models.FolioItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 /**
  * Repository cho FolioItem entity.
@@ -10,4 +11,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
-}
+
+    List<FolioItem> findByBookingId(Long bookingId);
+    List<FolioItem> findAllByBookingId(Long bookingId);
+}
