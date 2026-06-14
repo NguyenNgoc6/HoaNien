@@ -51,7 +51,18 @@ public class PosController {
     }
 
     @GetMapping("/create-food-order")
-    public String createFoodOrder() {
+    public String createFoodOrder(Model model) {
+        List<Map<String, Object>> mappedItems = getMappedMenuItems();
+        
+        List<RestaurantTable> vacantTables = new ArrayList<>();
+        for (RestaurantTable t : restaurantTableRepository.findAll()) {
+            if ("Available".equalsIgnoreCase(t.getTableStatus()) || "Vacant".equalsIgnoreCase(t.getTableStatus()) || "Trống".equalsIgnoreCase(t.getTableStatus())) {
+                vacantTables.add(t);
+            }
+        }
+
+        model.addAttribute("menuItems", mappedItems);
+        model.addAttribute("vacantTables", vacantTables);
         return "f&bStaff/create-food-order";
     }
 
@@ -74,6 +85,12 @@ public class PosController {
 
     @GetMapping("/emenu")
     public String emenu(Model model) {
+        List<Map<String, Object>> mappedItems = getMappedMenuItems();
+        model.addAttribute("menuItems", mappedItems);
+        return "f&bStaff/e-menu";
+    }
+
+    private List<Map<String, Object>> getMappedMenuItems() {
         List<MenuItem> rawItems = foodItemRepository.findAll();
         List<Map<String, Object>> mappedItems = new ArrayList<>();
 
@@ -103,7 +120,7 @@ public class PosController {
             }
             map.put("cat", cat);
 
-            map.put("status", item.getIsAvailable() ? "available" : "out-of-stock");
+            map.put("status", Boolean.TRUE.equals(item.getIsAvailable()) ? "available" : "out-of-stock");
 
             // Set UI backgrounds and icons based on category
             if ("starter".equals(cat)) {
@@ -140,9 +157,7 @@ public class PosController {
 
             mappedItems.add(map);
         }
-
-        model.addAttribute("menuItems", mappedItems);
-        return "f&bStaff/e-menu";
+        return mappedItems;
     }
 
     @GetMapping("/shift-report")
@@ -151,7 +166,20 @@ public class PosController {
     }
 
     @GetMapping("/order-detail")
-    public String orderDetail() {
+    public String orderDetail(@org.springframework.web.bind.annotation.RequestParam(value = "id", required = false) String idStr,
+                              @org.springframework.web.bind.annotation.RequestParam(value = "type", required = false) String type,
+                              Model model) {
+        if ("food".equals(type) && idStr != null) {
+            try {
+                Long id = Long.parseLong(idStr.replace("ORD-", ""));
+                java.util.Optional<FoodOrder> orderOpt = foodOrderRepository.findById(id);
+                if (orderOpt.isPresent()) {
+                    model.addAttribute("foodOrder", orderOpt.get());
+                }
+            } catch (Exception e) {
+                // Ignored
+            }
+        }
         return "f&bStaff/order-detail";
     }
 }

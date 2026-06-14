@@ -17,6 +17,7 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                    |
 | ---------- | ------------------- | ----------------------------------------------------------------------- |
+| 2026-06-13 | Đức               | Đặc tả API endpoint cho UC16 trong Module 3 |
 | 2026-06-11 | Lưu                | Đồng bộ mục lục, bổ sung đặc tả API chi tiết cho cả 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu EDS cho toàn bộ hệ thống Kawai Resort         |
 
@@ -344,6 +345,49 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
   ```
 
 ### 7.4. MODULE 3 — DỊCH VỤ ẨM THỰC & NHÀ HÀNG (UC14-UC18)
+
+#### Endpoint: POST `/api/v1/pos/orders/dine-in` (UC16)
+
+* **Mô tả:** Tạo đơn đặt món (Dine-in) tại nhà hàng và lưu trạng thái UNPAID.
+* **Quyền hạn (Roles):** F&B Staff, Admin
+* **Request Body:**
+  ```json
+  {
+    "tableId": 1,
+    "menuItemIds": [101, 102]
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "SUCCESS",
+    "orderId": 10,
+    "orderStatus": "UNPAID"
+  }
+  ```
+* **Error Codes:**
+  * `POS-001` (400): Đơn hàng trống — không có món
+  * `POS-002` (409): Món đã hết — không thể order
+
+#### Endpoint: PUT `/api/v1/pos/orders/{orderId}/pay` (UC16)
+
+* **Mô tả:** Thanh toán đơn hàng Dine-in tại quầy POS.
+* **Quyền hạn (Roles):** F&B Staff, Admin
+* **Request Body:**
+  ```json
+  {
+    "paymentMethod": "CASH"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "SUCCESS",
+    "orderId": 10,
+    "orderStatus": "PAID",
+    "paymentType": "CASH"
+  }
+  ```
 
 #### Endpoint: POST `/api/v1/pos/post-to-room`
 
