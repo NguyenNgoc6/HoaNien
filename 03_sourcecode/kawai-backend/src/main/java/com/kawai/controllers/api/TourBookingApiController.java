@@ -35,8 +35,6 @@ public class TourBookingApiController {
     @Autowired
     private RoomRepository roomRepository;
 
-    @Autowired
-    private RoomBookingDetailRepository roomBookingDetailRepository;
 
     @PostMapping
     public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal) {

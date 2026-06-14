@@ -12,6 +12,13 @@
 
 ---
 
+### CHANGELOG
+| Ngày | Người thực hiện | Nội dung thay đổi |
+|---|---|---|
+| 2026-06-14 | Ngo Thi Ngoc Lan | Đặc tả API endpoint cho UC26.1 và UC26.2 trong Module 5 |
+
+---
+
 ### MỤC LỤC
 1. [Tổng quan Module](#1-tong-quan-module)
 2. [Ma trận Truy vết (Traceability Matrix)](#2-ma-tran-truy-vet-traceability-matrix)
@@ -95,9 +102,58 @@ NightAuditScheduler -> FolioService: applyDailyCharges()
 ---
 
 ### 9. API Specification
+
 ### 🔹 API 001: Kích hoạt Night Audit thủ công
 - **HTTP Method:** `POST`
 - **URL Path:** `/api/v1/audit/run`
+- **Authorization:** ADMIN only
+- **Request Body:** _(empty)_
+- **Response 200:**
+```json
+{ "status": "success", "message": "Night audit đã chạy xong" }
+```
+
+---
+
+### 🔹 API 002: Lấy dữ liệu biểu đồ tài chính (UC26.1)
+- **HTTP Method:** `GET`
+- **URL Path:** `/api/v1/report/dashboard`
+- **Authorization:** MANAGER only (`hasRole('MANAGER')`)
+- **Request Body:** _(empty — GET request)_
+- **Query Params:** _(none — vế tất cả folio hiện tại)_
+- **Response 200 OK:**
+```json
+{
+  "ROOM": 4000000,
+  "FB": 500000,
+  "TOUR": 800000
+}
+```
+- **Response 403 Forbidden:** Khi caller không có role MANAGER.
+- **Response 500 Internal Server Error:** Lỗi hệ thống (SYS-001).
+- **Business Rules:** BR-FIN-04 (phân tách USALI), BR-FIN-05 (BigDecimal HALF_UP), BR-SYS-06 (RBAC).
+- **Service Method:** `ReportServiceImpl.getDashboardFinancialData()`
+
+---
+
+### 🔹 API 003: Lấy Occupancy Rate (UC26.2)
+- **HTTP Method:** `GET`
+- **URL Path:** `/api/v1/report/occupancy`
+- **Authorization:** MANAGER only (`hasRole('MANAGER')`)
+- **Request Body:** _(empty — GET request)_
+- **Query Params:** _(none)_
+- **Response 200 OK:**
+```json
+{
+  "occupancyRate": 75.0,
+  "unit": "%"
+}
+```
+> **Edge case:** Khi Resort chưa có phòng nào, API trả `"occupancyRate": 0.0` — không ném lỗi.
+- **Response 403 Forbidden:** Khi caller không có role MANAGER.
+- **Response 500 Internal Server Error:** Lỗi hệ thống (SYS-001).
+- **Business Rules:** BR-SYS-06 (RBAC).
+- **Service Method:** `ReportServiceImpl.getOccupancyRate()`
 
 ---
 
@@ -105,6 +161,9 @@ NightAuditScheduler -> FolioService: applyDailyCharges()
 | Code | HTTP Status | Message (VI) | Trigger Condition |
 | --- | --- | --- | --- |
 | `FIN-001` | 400 | Đã audit trong ngày | BusinessDate đã update |
+| `RPT-001` | 403 | Không đủ quyền xem Dashboard | Caller không có role MANAGER |
+| `RPT-002` | 403 | Không đủ quyền xem Occupancy Rate | Caller không có role MANAGER |
+| `SYS-001` | 500 | Lỗi hệ thống nội bộ | Exception không xử lý được |
 
 ---
 
@@ -131,16 +190,36 @@ Kiểm tra bảng Business_Date.
 ---
 
 ### 15. Mẫu thử thực tế (API Verification Samples)
-`curl -X POST /api/v1/audit/run`
+```bash
+# API 001 — Night Audit thủ công
+curl -X POST /api/v1/audit/run \
+     -H "Authorization: Bearer <ADMIN_TOKEN>"
+
+# API 002 — Dashboard tài chính (UC26.1)
+curl -X GET /api/v1/report/dashboard \
+     -H "Authorization: Bearer <MANAGER_TOKEN>"
+# Expected: {"ROOM": 4000000, "FB": 500000, "TOUR": 800000}
+
+# API 003 — Occupancy Rate (UC26.2)
+curl -X GET /api/v1/report/occupancy \
+     -H "Authorization: Bearer <MANAGER_TOKEN>"
+# Expected: {"occupancyRate": 75.0, "unit": "%"}
+```
 
 ---
 
 ### 16. Bảng tổng hợp phân quyền (Authorization Matrix)
-| Endpoint | GUEST | USER | ADMIN |
-| --- | :---: | :---: | :---: |
-| POST `/audit/run` | ❌ | ❌ | ✔️ |
+| Endpoint | GUEST | CUSTOMER | RECEPTIONIST | MANAGER | ADMIN |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| POST `/audit/run` | ❌ | ❌ | ❌ | ❌ | ✔️ |
+| GET `/report/dashboard` | ❌ | ❌ | ❌ | ✔️ | ✔️ |
+| GET `/report/occupancy` | ❌ | ❌ | ❌ | ✔️ | ✔️ |
 
 ---
 
 ### 17. Phụ lục
 **Night Audit:** Chốt sổ qua đêm.
+
+**getDashboardFinancialData():** Gom doanh thu từ bảng `Folio_Items`, nhóm theo `source_department`, cộng dồn bằng `BigDecimal` (BR-FIN-04, BR-FIN-05).
+
+**getOccupancyRate():** Tử vấn `Room` table qua `findOccupied()` và `countTotalRooms()`, tính tỷ lệ %, guard chia cho 0.
