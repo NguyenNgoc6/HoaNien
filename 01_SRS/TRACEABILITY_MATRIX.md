@@ -83,10 +83,10 @@
 
 | UC ID  | Mô tả                  | Class / Method        | TC ID               | BR                   |
 | --------| ------------------------| -----------------------| ---------------------| ----------------------|
-| UC24.1 | Folio dư nợ phòng      | *(điền sau khi code)* | TC-M5-001           | BR-FB-01             |
-| UC24.2 | Luồng tiền nhiều đợt   | *(điền sau khi code)* | TC-M5-002           | BR-FIN-06            |
-| UC24.3 | Gom hóa đơn quyết toán | *(điền sau khi code)* | TC-M5-003           | BR-FIN-01            |
-| UC24.4 | Night Audit 02:00 AM   | *(điền sau khi code)* | TC-M5-004, 005      | BR-FIN-03, BR-FIN-07 |
+| UC24.1 | Folio dư nợ phòng      | `FolioServiceImpl.getFolioItemsForBooking()` | TC-M5-001           | BR-FB-01             |
+| UC24.2 | Luồng tiền nhiều đợt   | `FolioServiceImpl.addPayment()` | TC-M5-002           | BR-FIN-06            |
+| UC24.3 | Gom hóa đơn quyết toán | `FolioServiceImpl.calculateTotalFolio()` | TC-M5-003           | BR-FIN-01            |
+| UC24.4 | Night Audit 02:00 AM   | `FolioServiceImpl.runNightAudit()` | TC-M5-004, 005      | BR-FIN-03, BR-FIN-07 |
 | UC25.1 | Thanh toán Check-out   | *(điền sau khi code)* | TC-M5-006, 007, 008 | BR-FIN-01, BR-FO-09  |
 | UC25.2 | e-Invoice tự động      | *(điền sau khi code)* | TC-M5-009           | —                    |
 | UC26.1 | Biểu đồ tài chính      | *(điền sau khi code)* | TC-M5-010           | —                    |

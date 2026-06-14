@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoomBookingDetailRepository extends JpaRepository<RoomBookingDetail, Long> {
+    java.util.List<RoomBookingDetail> findByDetailStatus(String detailStatus);
 }

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sơ đồ phòng | Kawai Retreat Resort & Hub</title>
+    <!-- Tailwind CSS và Google Fonts & Icons -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..300,0..1@18..24"
+        rel="stylesheet" />
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-luxury": "#FDFBF7", // Trắng kem tơ tằm (Nền chính)
+                        "brand-earth": "#372618",  // Nâu đất trầm (Chữ & nhấn chính)
+                        "brand-sand": "#D3CEBF",   // Beige cát nhạt (Trang trí/viền)
+                        "brand-gold": "#BFAC8F",   // Vàng Champagne (Nhấn phụ)
+                        "primary-dark": "#372618"
+                    },
+                    fontFamily: {
+                        serif: ["EB Garamond", "serif"],
+                        sans: ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FDFBF7;
+            color: 362620;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .serif-text {
+            font-family: 'EB Garamond', serif;
+        }
+
+        /* Hiệu ứng mờ ảo cho Header cố định */
+        .glass-header {
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(12px);
+        }
+
+        /* Thanh cuộn siêu mảnh phong cách sang trọng */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #FDFBF7;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #BFAC8F;
+            border-radius: 99px;
+        }
+
+        /* Hiệu ứng chuyển trạng thái mượt mà cho các Card phòng */
+        .room-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .room-card.hidden-filter {
+            opacity: 0.12;
+            transform: scale(0.97);
+            pointer-events: none;
+        }
+
+        /* Chặn scroll x ngoài ý muốn và kích hoạt scroll dọc mượt */
+        html,
+        body {
+            overflow-y: hidden !important;
+            overflow-x: hidden !important;
+            height: 100vh !important;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen overflow-hidden bg-brand-luxury">
+
+    <!-- SIDEBAR BÊN TRÁI (Cố định, tone Nâu đất trầm #372618) -->
+    <aside class="h-full w-64 flex-shrink-0 bg-primary-dark flex flex-col py-6 border-r border-brand-gold/10 z-50">
+        <!-- Logo thương hiệu -->
+        <div class="px-8 py-4 mb-10">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full border border-brand-gold/60 flex items-center justify-center">
+                    <span class="serif-text text-brand-gold font-bold text-lg">K</span>
+                </div>
+                <div>
+                    <h1 class="serif-text text-xl text-brand-luxury font-medium tracking-widest leading-none">KAWAI</h1>
+                    <p class="text-[9px] uppercase tracking-[0.25em] text-brand-gold/70 mt-1">Resort & Hub</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu điều hướng tinh giản -->
+        <nav class="flex-grow space-y-1">
+            <a class="flex items-center px-8 py-3.5 text-brand-luxury font-medium bg-white/5 border-l-2 border-brand-gold duration-300"
+                href="#">
+                <span class="material-symbols-outlined mr-4 text-brand-gold">dashboard</span>
+                <span class="text-xs uppercase tracking-widest">Sơ đồ phòng</span>
+            </a>
+            <a class="flex items-center px-8 py-3.5 text-brand-sand/60 font-medium hover:bg-white/5 hover:text-brand-luxury transition-all duration-300 group"
+                href="#">
+                <span class="material-symbols-outlined mr-4 opacity-60 group-hover:opacity-100">calendar_today</span>
+                <span class="text-xs uppercase tracking-widest">Đặt phòng</span>
+            </a>
+            <a class="flex items-center px-8 py-3.5 text-brand-sand/60 font-medium hover:bg-white/5 hover:text-brand-luxury transition-all duration-300 group"
+                href="#">
+                <span class="material-symbols-outlined mr-4 opacity-60 group-hover:opacity-100">countertops</span>
+                <span class="text-xs uppercase tracking-widest">Lễ tân</span>
+            </a>
+            <a class="flex items-center px-8 py-3.5 text-brand-sand/60 font-medium hover:bg-white/5 hover:text-brand-luxury transition-all duration-300 group"
+                href="#">
+                <span class="material-symbols-outlined mr-4 opacity-60 group-hover:opacity-100">payments</span>
+                <span class="text-xs uppercase tracking-widest">Quản lý hóa đơn</span>
+            </a>
+            <a class="flex items-center px-8 py-3.5 text-brand-sand/60 font-medium hover:bg-white/5 hover:text-brand-luxury transition-all duration-300 group"
+                href="#">
+                <span class="material-symbols-outlined mr-4 opacity-60 group-hover:opacity-100">description</span>
+                <span class="text-xs uppercase tracking-widest">Báo cáo ca</span>
+            </a>
+        </nav>
+
+        <!-- Thẻ người dùng lễ tân ở đáy sidebar -->
+        <div class="px-8 py-6 border-t border-brand-gold/10 mt-auto">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-brand-gold/20 border border-brand-gold/40 flex items-center justify-center text-brand-gold text-xs font-bold font-serif">
+                    NL
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-brand-luxury">Ngoc Lan
+
+                    </p>
+                    <p class="text-[9px] text-brand-gold/60 uppercase tracking-widest">Lễ tân</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- VÙNG KHÔNG GIAN CHÍNH (Được cuộn mượt mà độc lập, không sợ lỗi đơ màn hình) -->
+    <main class="flex-grow flex flex-col h-screen overflow-y-auto relative bg-brand-luxury">
+
+        <!-- HEADER CỐ ĐỊNH (Không gian thoáng đãng) -->
+        <header
+            class="sticky top-0 w-full flex justify-between items-center px-12 h-20 border-b border-brand-sand/30 z-40 glass-header">
+            <!-- Đồng hồ & Ngày tháng bằng tiếng Việt -->
+            <div class="flex flex-col">
+                <span class="text-brand-earth text-sm font-semibold tracking-wider" id="digital-clock">--:--:--
+                    --</span>
+                <span class="text-[9px] uppercase tracking-[0.2em] text-brand-earth/60 mt-0.5" id="date-display">Thứ
+                    Bảy, 13/06/2026</span>
+            </div>
+
+            <!-- Nút đăng xuất tinh giản phong cách tối giản -->
+            <div class="flex items-center gap-6">
+                <button
+                    class="text-brand-earth hover:text-brand-gold transition-colors duration-300 flex items-center gap-2 text-xs uppercase tracking-widest font-semibold">
+                    <span class="material-symbols-outlined text-sm"></span>
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- NỘI DUNG CHÍNH CỦA TRANG SƠ ĐỒ PHÒNG -->
+        <div class="px-12 py-10 max-w-7xl w-full mx-auto space-y-10">
+
+            <!-- TIÊU ĐỀ TRANG VÀ BỘ LỌC NGÀY TRỐNG -->
+            <div
+                class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-brand-sand/20 pb-8">
+                <div>
+                    <h2 class="serif-text text-4xl text-brand-earth tracking-tight font-medium">Sơ đồ phòng</h2>
+                    <p class="text-xs italic text-brand-earth/60 mt-1 font-serif">Trạng thái phòng thời gian thực của
+                        Kawai Retreat</p>
+                </div>
+
+                <!-- Tìm phòng trống theo Ngày nhận và Ngày trả -->
+                <div
+                    class="flex flex-wrap items-center gap-4 bg-brand-sand/10 p-3 border border-brand-sand/30 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-[10px] uppercase tracking-wider text-brand-earth/60 font-semibold">Nhận:</span>
+                        <input type="date" id="checkin-date" value="2026-06-13"
+                            class="bg-transparent border-0 border-b border-brand-gold/60 p-0 text-xs focus:ring-0 focus:border-brand-earth font-medium w-28 text-brand-earth">
+                    </div>
+                    <div class="h-4 w-px bg-brand-sand/40"></div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] uppercase tracking-wider text-brand-earth/60 font-semibold">Trả:</span>
+                        <input type="date" id="checkout-date" value="2026-06-15"
+                            class="bg-transparent border-0 border-b border-brand-gold/60 p-0 text-xs focus:ring-0 focus:border-brand-earth font-medium w-28 text-brand-earth">
+                    </div>
+                    <button onclick="filterByDates()"
+                        class="bg-brand-earth text-brand-luxury px-4 py-1.5 text-[10px] uppercase tracking-widest font-semibold hover:bg-brand-gold hover:text-brand-earth transition-all duration-300">
+                        Tìm phòng trống
+                    </button>
+                </div>
+            </div>
+
+            <!-- BỘ LỌC TRẠNG THÁI (Lọc tức thời không tải lại trang) -->
+            <div class="space-y-4">
+                <span class="text-[10px] uppercase tracking-[0.2em] text-brand-earth/50 font-bold block">Lọc theo trạng
+                    thái phòng</span>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Nút lọc: Tất cả -->
+                    <button onclick="filterStatus('all')" id="btn-all"
+                        class="filter-btn active px-5 py-2 border border-brand-earth bg-brand-earth text-brand-luxury text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-2">
+                        <span>Tất cả</span>
+                        <span
+                            class="bg-brand-gold/20 text-brand-gold px-1.5 py-0.5 rounded-full text-[9px] font-semibold">6</span>
+                    </button>
+                    <!-- Nút lọc: Sẵn sàng -->
+                    <button onclick="filterStatus('ready')" id="btn-ready"
+                        class="filter-btn px-5 py-2 border border-brand-sand/50 text-brand-earth hover:border-brand-gold text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+                        <span>Trống / Sẵn sàng</span>
+                    </button>
+                    <!-- Nút lọc: Đang có khách -->
+                    <button onclick="filterStatus('occupied')" id="btn-occupied"
+                        class="filter-btn px-5 py-2 border border-brand-sand/50 text-brand-earth hover:border-brand-gold text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-earth"></span>
+                        <span>Đang có khách</span>
+                    </button>
+                    <!-- Nút lọc: Đang dọn dẹp -->
+                    <button onclick="filterStatus('cleaning')" id="btn-cleaning"
+                        class="filter-btn px-5 py-2 border border-brand-sand/50 text-brand-earth hover:border-brand-gold text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span>Đang dọn dẹp</span>
+                    </button>
+                    <!-- Nút lọc: Bảo trì -->
+                    <button onclick="filterStatus('maintenance')" id="btn-maintenance"
+                        class="filter-btn px-5 py-2 border border-brand-sand/50 text-brand-earth hover:border-brand-gold text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span>Bảo trì</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- DANH SÁCH LƯỚI PHÒNG (Editorial Layout, loại bỏ hết các con số thống kê rác) -->
+            <section class="space-y-6">
+                <!-- Nhãn tầng -->
+                <div class="flex items-center gap-4">
+                    <span class="serif-text text-2xl text-brand-earth font-medium">Tầng 1</span>
+                    <div class="h-px flex-grow bg-brand-sand/30"></div>
+                </div>
+
+                <!-- Ô lưới hiển thị 6 phòng chuẩn cấu trúc tiếng Việt -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                    <!-- Phòng 101: Đang có khách -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 hover:border-brand-earth relative overflow-hidden"
+                        data-status="occupied" data-booked-dates="2026-06-11,2026-06-12,2026-06-13,2026-06-14">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Phòng
+                                    hạng sang</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 101</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Deluxe</span>
+                            </div>
+                            <span
+                                class="px-3 py-1 bg-brand-earth text-brand-luxury text-[8px] tracking-widest uppercase font-semibold">Đang
+                                có khách</span>
+                        </div>
+                        <div class="space-y-2 border-l border-brand-earth/30 pl-4 mt-8">
+                            <p class="text-[10px] uppercase tracking-wider text-brand-earth/40">Khách lưu trú</p>
+                            <p class="font-medium text-brand-earth text-sm">Ngô Thị Ngọc Lan</p>
+                            <p class="text-xs text-brand-earth/60 mt-1">Trả phòng: 11/06</p>
+                        </div>
+                    </div>
+
+                    <!-- Phòng 102: Đang dọn dẹp -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 hover:border-brand-gold relative overflow-hidden"
+                        data-status="cleaning" data-booked-dates="">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Phòng
+                                    hạng sang</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 102</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Deluxe</span>
+                            </div>
+                            <span
+                                class="material-symbols-outlined text-amber-500 animate-pulse">cleaning_services</span>
+                        </div>
+                        <div class="mt-12">
+                            <p
+                                class="text-amber-600 font-semibold text-xs uppercase tracking-wider italic flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                Đang dọn dẹp
+                            </p>
+                            <p class="text-[10px] text-brand-earth/40 mt-1">Dự kiến hoàn thành: 20 phút</p>
+                        </div>
+                    </div>
+
+                    <!-- Phòng 103: Trống sẵn sàng -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 hover:border-brand-gold relative overflow-hidden"
+                        data-status="ready" data-booked-dates="">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Phòng
+                                    hoàng gia</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 103</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Suite</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-brand-gold"></span>
+                                <span class="text-[9px] uppercase tracking-widest text-brand-gold font-bold">Sẵn
+                                    Sàng</span>
+                            </div>
+                        </div>
+                        <div class="mt-12">
+                            <button
+                                class="w-full py-2.5 border border-brand-sand hover:border-brand-earth text-[10px] uppercase tracking-[0.2em] text-brand-earth hover:bg-brand-earth hover:text-brand-luxury transition-all duration-300">
+                                Đặt phòng nhanh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Phòng 104: Đang có khách -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 hover:border-brand-earth relative overflow-hidden"
+                        data-status="occupied" data-booked-dates="2026-06-10,2026-06-11,2026-06-12">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Phòng
+                                    hoàng gia</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 104</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Suite</span>
+                            </div>
+                            <span
+                                class="px-3 py-1 bg-brand-earth text-brand-luxury text-[8px] tracking-widest uppercase font-semibold">Đang
+                                có khách</span>
+                        </div>
+                        <div class="space-y-2 border-l border-brand-earth/30 pl-4 mt-8">
+                            <p class="text-[10px] uppercase tracking-wider text-brand-earth/40">Khách lưu trú</p>
+                            <p class="font-medium text-brand-earth text-sm">Trần Văn Minh</p>
+                            <p class="text-xs text-brand-earth/60 mt-1">Trả phòng: 12/06</p>
+                        </div>
+                    </div>
+
+                    <!-- Phòng 105: Bảo trì -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 relative overflow-hidden"
+                        data-status="maintenance" data-booked-dates="">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Phòng
+                                    hạng sang</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 105</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Deluxe</span>
+                            </div>
+                            <span class="material-symbols-outlined text-brand-earth/40">engineering</span>
+                        </div>
+                        <div class="mt-12">
+                            <p
+                                class="text-brand-earth/50 font-semibold text-xs uppercase tracking-wider italic flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">construction</span>
+                                Bảo trì
+                            </p>
+                            <p class="text-[10px] text-brand-earth/40 mt-1">Dự kiến xong: 15/06</p>
+                        </div>
+                    </div>
+
+                    <!-- Phòng 106: Trống sẵn sàng -->
+                    <div class="room-card bg-brand-luxury p-8 border border-brand-sand/40 hover:border-brand-gold relative overflow-hidden"
+                        data-status="ready" data-booked-dates="">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span
+                                    class="text-[9px] uppercase tracking-widest text-brand-earth/40 font-semibold block">Biệt
+                                    thự ven đồi</span>
+                                <h4 class="serif-text text-3xl font-medium text-brand-earth">Phòng 106</h4>
+                                <span class="text-xs italic text-brand-earth/60 font-serif block mt-1">Villa</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-brand-gold"></span>
+                                <span class="text-[9px] uppercase tracking-widest text-brand-gold font-bold">Sẵn
+                                    Sàng</span>
+                            </div>
+                        </div>
+                        <div class="mt-12">
+                            <button
+                                class="w-full py-2.5 border border-brand-sand hover:border-brand-earth text-[10px] uppercase tracking-[0.2em] text-brand-earth hover:bg-brand-earth hover:text-brand-luxury transition-all duration-300">
+                                Đặt phòng nhanh
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- LOGIC ĐIỀU KHIỂN SƠ ĐỒ PHÒNG -->
+    <script>
+        // Cập nhật đồng hồ thời gian thực và định dạng ngày tiếng Việt
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const clockElement = document.getElementById('digital-clock');
+            if (clockElement) clockElement.textContent = timeString;
+
+            const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            const dayName = days[now.getDay()];
+            const dateDisplay = document.getElementById('date-display');
+            if (dateDisplay) {
+                dateDisplay.textContent = `${dayName}, ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Chức năng lọc nhanh theo Trạng thái khi bấm các nút lọc
+        function filterStatus(status) {
+            // Cập nhật phong cách hoạt động (active state) cho các nút lọc
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'bg-brand-earth', 'text-brand-luxury', 'border-brand-earth');
+                btn.classList.add('border-brand-sand/50', 'text-brand-earth');
+            });
+
+            // Gán active cho nút vừa click
+            const currentActiveButton = document.getElementById(`btn-${status}`);
+            if (currentActiveButton) {
+                currentActiveButton.classList.add('active', 'bg-brand-earth', 'text-brand-luxury', 'border-brand-earth');
+                currentActiveButton.classList.remove('border-brand-sand/50', 'text-brand-earth');
+            }
+
+            // Tiến hành ẩn hoặc làm mờ các phòng không khớp trạng thái
+            const cards = document.querySelectorAll('.room-card');
+            cards.forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                if (status === 'all' || cardStatus === status) {
+                    card.classList.remove('hidden-filter');
+                } else {
+                    card.classList.add('hidden-filter');
+                }
+            });
+        }
+
+        // Chức năng lọc tìm phòng trống theo ngày mong muốn
+        function filterByDates() {
+            const checkinVal = document.getElementById('checkin-date').value;
+            const checkoutVal = document.getElementById('checkout-date').value;
+
+            if (!checkinVal || !checkoutVal) {
+                return;
+            }
+
+            const checkInDate = new Date(checkinVal);
+            const checkOutDate = new Date(checkoutVal);
+            const cards = document.querySelectorAll('.room-card');
+
+            cards.forEach(card => {
+                const bookedDatesStr = card.getAttribute('data-booked-dates');
+                let isOverlap = false;
+
+                if (bookedDatesStr) {
+                    const bookedDatesArray = bookedDatesStr.split(',');
+                    let currentDate = new Date(checkInDate);
+
+                    while (currentDate <= checkOutDate) {
+                        const dateFormatted = currentDate.toISOString().split('T')[0];
+                        if (bookedDatesArray.includes(dateFormatted)) {
+                            isOverlap = true; // Phòng đã có lịch trùng với khoảng ngày tìm kiếm
+                            break;
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                }
+
+                // Nếu trùng lịch thì làm mờ thẻ phòng (coi như không khả dụng)
+                if (isOverlap) {
+                    card.classList.add('hidden-filter');
+                } else {
+                    card.classList.remove('hidden-filter');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

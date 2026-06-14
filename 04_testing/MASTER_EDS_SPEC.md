@@ -419,6 +419,39 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
   }
   ```
 
+#### Endpoint: POST `/api/v1/folios/{bookingId}/payments`
+
+* **Mô tả:** Ghi nhận thanh toán / luồng tiền nhiều đợt cho Folio của một phòng (UC24.2).
+* **Auth Level:** Protected
+* **Required Roles:** RECEPTIONIST, ADMIN
+* **Request Body:**
+  ```json
+  {
+    "amount": 2000000,
+    "paymentMethod": "VNPay",
+    "description": "Thanh toán cọc phòng đợt 2"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "SUCCESS",
+    "paymentId": 105,
+    "folioBalance": 2500000
+  }
+  ```
+* **Error Codes:**
+  - `ERR_FOLIO_NOT_FOUND` (404): Không tìm thấy Booking/Folio tương ứng.
+  - `ERR_INVALID_AMOUNT` (400): Số tiền không hợp lệ.
+
+### 7.6.1 Authorization Matrix (Module 5)
+
+| Tác vụ / Endpoint | GUEST | CUSTOMER | RECEPTIONIST | F&B STAFF | ADMIN / MANAGER |
+| --- | --- | --- | --- | --- | --- |
+| Lấy Folio (`GET /folios/{id}`) | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Ghi nhận thanh toán (`POST /folios/.../payments`) | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Chạy Night Audit (`POST /audit/night-audit`) | ❌ | ❌ | ❌ | ❌ | ✅ |
+
 ---
 
 <<<<<<< Updated upstream

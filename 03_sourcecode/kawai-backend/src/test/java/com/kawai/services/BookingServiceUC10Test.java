@@ -84,6 +84,15 @@ class BookingServiceUC10Test {
         @Mock
         private PromotionRepository promotionRepository;
 
+        @Mock
+        private com.kawai.repositories.CustomerRepository customerRepository;
+
+        @Mock
+        private com.kawai.repositories.RoomRepository roomRepository;
+
+        @Mock
+        private com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepository;
+
         // ── Test Fixtures ─────────────────────────────────────────────────────────
         private static final LocalDate CHECK_IN = LocalDate.of(2026, 7, 15);
         private static final LocalDate CHECK_OUT = LocalDate.of(2026, 7, 20); // 5 đêm
@@ -93,6 +102,20 @@ class BookingServiceUC10Test {
         /** Helper: tạo request cơ bản không có promo code. */
         private BookingRequestDTO buildRequest() {
                 return new BookingRequestDTO(1L, ROOM_NO, CHECK_IN, CHECK_OUT, DEPOSIT);
+        }
+
+        @org.junit.jupiter.api.BeforeEach
+        void setUp() {
+                lenient().when(customerRepository.findById(anyLong()))
+                        .thenReturn(Optional.of(new com.kawai.models.Customer()));
+                lenient().when(roomRepository.findByRoomNumber(anyString()))
+                        .thenReturn(Optional.of(new com.kawai.models.Room()));
+                lenient().when(roomBookingRepository.save(any(RoomBooking.class)))
+                        .thenAnswer(i -> {
+                                RoomBooking booking = i.getArgument(0);
+                                if (booking.getId() == null) booking.setId(999L);
+                                return booking;
+                        });
         }
 
         // ══════════════════════════════════════════════════════════════════════════
@@ -385,6 +408,10 @@ class BookingServiceUC10Test {
                 when(roomBookingRepository.countOverlappingBookings(
                                 anyString(), any(LocalDate.class), any(LocalDate.class))).thenReturn(0L);
 
+                com.kawai.models.Customer customer = new com.kawai.models.Customer();
+                customer.setId(request.getCustomerId());
+                when(customerRepository.findById(request.getCustomerId())).thenReturn(Optional.of(customer));
+
                 Promotion promo = new Promotion();
                 promo.setPromoCode("SUMMER10");
                 promo.setIsActive(true);
@@ -425,6 +452,10 @@ class BookingServiceUC10Test {
 
                 when(roomBookingRepository.countOverlappingBookings(
                                 anyString(), any(LocalDate.class), any(LocalDate.class))).thenReturn(0L);
+
+                com.kawai.models.Customer customer = new com.kawai.models.Customer();
+                customer.setId(request.getCustomerId());
+                when(customerRepository.findById(request.getCustomerId())).thenReturn(Optional.of(customer));
 
                 Promotion promo = new Promotion();
                 promo.setPromoCode("EARLYBIRD20");
