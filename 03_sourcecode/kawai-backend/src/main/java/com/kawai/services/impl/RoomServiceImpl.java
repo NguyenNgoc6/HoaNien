@@ -1,8 +1,8 @@
 package com.kawai.services.impl;
 
+import com.kawai.dto.RoomDashboardDTO;
 import com.kawai.dto.RoomSearchRequestDTO;
 import com.kawai.dto.RoomSearchResponseDTO;
-import com.kawai.dto.RoomDashboardDTO;
 import com.kawai.models.Room;
 import com.kawai.models.RoomCategory;
 import com.kawai.repositories.RoomBookingRepository;
@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RoomServiceImpl — UC09: Tìm kiếm phòng trống thời gian thực.
+ * RoomServiceImpl — UC09, UC11: Tìm kiếm phòng trống & Front Desk Dashboard.
  *
  * Business Rules:
- * BR-FO-01 : Chỉ hiển thị phòng không có booking trùng ngày
- * BR-FO-04 : Trạng thái phòng ảnh hưởng đến kết quả tìm kiếm
+ * BR-FO-01  : Chỉ hiển thị phòng không có booking trùng ngày
+ * BR-FO-04  : Trạng thái phòng ảnh hưởng đến kết quả tìm kiếm
  * BR-FIN-05 : Giá phòng tính bằng BigDecimal, scale 0, HALF_UP
  */
 @Service
@@ -49,7 +49,7 @@ public class RoomServiceImpl implements RoomService {
         List<RoomSearchResponseDTO> available = new ArrayList<>();
 
         for (Room room : allRooms) {
-            // Filter out rooms under maintenance
+            // Filter out rooms under maintenance (BR-FO-04)
             String status = room.getRoomStatus();
             if ("Maintenance".equalsIgnoreCase(status) || "OutOfService".equalsIgnoreCase(status)) {
                 continue;
@@ -82,9 +82,10 @@ public class RoomServiceImpl implements RoomService {
     }
 
     /**
-     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard.
-     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản (UC11).
-     * 
+     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard (UC11).
+     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản.
+     * Trả về danh sách rỗng (không null) nếu hệ thống chưa có phòng.
+     *
      * @return Danh sách RoomDashboardDTO, rỗng nếu không có dữ liệu
      */
     @Override
@@ -93,7 +94,6 @@ public class RoomServiceImpl implements RoomService {
         if (allRooms == null || allRooms.isEmpty()) {
             return new ArrayList<>();
         }
-
         return allRooms.stream()
                 .map(this::toDashboardDTO)
                 .toList();
@@ -116,11 +116,13 @@ public class RoomServiceImpl implements RoomService {
         RoomCategory cat = room.getCategory();
         if (cat != null) {
             dto.setCategoryName(cat.getCategoryName());
+            // Null-check on basePrice (BR-FIN-05: safe BigDecimal handling)
             if (cat.getBasePrice() != null) {
                 dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
             }
             dto.setCapacity(cat.getCapacity());
         }
+        // currentGuestName: TODO — cần join với Booking/Folio để lấy tên khách
         return dto;
     }
 

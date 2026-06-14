@@ -17,6 +17,7 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                    |
 | ---------- | ------------------- | ----------------------------------------------------------------------- |
+| 2026-06-14 | Ngo Thi Ngoc Lan    | Đặc tả API endpoint cho UC25 (UC25.1 và UC25.2) trong Module 5       |
 | 2026-06-11 | Lưu                | Đồng bộ mục lục, bổ sung đặc tả API chi tiết cho cả 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu EDS cho toàn bộ hệ thống Kawai Resort         |
 
@@ -419,6 +420,63 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
   }
   ```
 
+#### Endpoint: POST `/api/v1/checkout/{id}/process` — UC25.1 (Tất toán Check-out)
+
+* **Mô tả:** Xử lý Check-out cuối cùng cho khách. Kiểm tra Folio Balance = 0 (BR-FIN-01) trước khi cho phép rời đi.
+* **Authorization:** `RECEPTIONIST` (hasRole)
+* **Request Body:** _(empty — ID truyền qua path variable)_
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "message": "Check-out thành công. Phòng đã chuyển sang DIRTY."
+  }
+  ```
+* **Response (400 Bad Request — BR-FIN-01):**
+  ```json
+  {
+    "status": "error",
+    "message": "FOLIO-001: Hóa đơn chưa thanh toán hết — không thể thực hiện Check-out."
+  }
+  ```
+* **Business Rules:** BR-FIN-01 (Folio Balance = 0), BR-FO-09 (phòng → DIRTY)
+* **Service Method:** `CheckoutServiceImpl.processCheckout(Long)`
+
+#### Endpoint: POST `/api/v1/checkout/{id}/settle` — UC25.2 (Tất toán Folio + e-Invoice)
+
+* **Mô tả:** Tất toán toàn bộ khoản nợ Folio và kích hoạt gửi e-Invoice tự động qua email.
+* **Authorization:** `RECEPTIONIST` (hasRole)
+* **Request Body:**
+  ```json
+  {
+    "amount": 4500000,
+    "paymentMethod": "CREDIT_CARD"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "message": "Tất toán Folio thành công. e-Invoice đã gửi qua email."
+  }
+  ```
+* **Business Rules:** BR-FIN-05 (BigDecimal HALF_UP), BR-FIN-06 (ghi nhận từng khoản)
+* **Service Method:** `CheckoutServiceImpl.settleFolio(Long, BigDecimal, String)`
+* **Lưu ý:** Server tự tính tổng tiền từ DB qua `calculateTotalFolioAmount()` — không dùng `amount` do caller truyền vào cho e-Invoice.
+
+#### Error Codes — MODULE 5 (UC25)
+| Code | HTTP Status | Message (VI) | Trigger Condition |
+| --- | --- | --- | --- |
+| `FOLIO-001` | 400 | Hóa đơn chưa thanh toán hết — không thể Check-out | FolioItem có `isSettledSeparately = false` |
+| `CHK-001` | 404 | Không tìm thấy chi tiết đặt phòng | `roomBookingDetailId` không tồn tại |
+| `SYS-001` | 500 | Lỗi hệ thống nội bộ | Exception không xử lý được |
+
+#### Authorization Matrix — MODULE 5 (UC25)
+| Endpoint | GUEST | CUSTOMER | RECEPTIONIST | MANAGER | ADMIN |
+| --- | :---: | :---: | :---: | :---: | :---: |
+| POST `/checkout/{id}/process` | ❌ | ❌ | ✔️ | ❌ | ✔️ |
+| POST `/checkout/{id}/settle` | ❌ | ❌ | ✔️ | ❌ | ✔️ |
+
 ---
 
 <<<<<<< Updated upstream
@@ -536,10 +594,7 @@ curl -X PUT "https://api.kawairesort.com/api/v1/reviews/1/moderate?adminId=99&ne
 
 ---
 
-## 7. Phương pháp Xác minh (API Verification Samples)
-=======
 ## 8. Phương pháp Xác minh (API Verification Samples)
->>>>>>> Stashed changes
 
 ### 8.1. UC09 — Tìm kiếm phòng trống (RoomService.searchAvailableRooms)
 
@@ -587,45 +642,71 @@ curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
 
 ---
 
-### 7.1.b UC11 — Xem sơ đồ Matrix phòng trống (RoomService.getRoomDashboard)
+### 7.2. UC11 — Front Desk Dashboard (RoomService.getRoomDashboard)
 
-**[GET] Lấy danh sách sơ đồ phòng**
+**[GET] Lấy sơ đồ Matrix phòng**
 ```bash
-# [GET] Lấy danh sách sơ đồ phòng Front Desk
+# [GET] Lấy danh sách tất cả phòng + trạng thái cho Dashboard
 curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard \
-  -H "Authorization: Bearer [RECEPTIONIST_TOKEN]" \
-  -H "Content-Type: application/json"
+  -H "Authorization: Bearer [RECEPTIONIST_TOKEN]"
+```
 
 # Expected Response (200):
 {
   "status": "SUCCESS",
-  "rooms": [
-    {
-      "roomId": 1,
-      "roomNumber": "R101",
-      "categoryName": "Deluxe River View",
+  "totalRooms": 50,
       "roomStatus": "Vacant",
       "pricePerNight": 2800000,
       "capacity": 2
+=======
+      "categoryName": "Deluxe",
+      "roomStatus": "Vacant_Clean",
+      "pricePerNight": 2000000,
+      "capacity": 2,
+      "currentGuestName": null
+    },
+    {
+      "roomId": 2,
+      "roomNumber": "R102",
+      "categoryName": "Suite",
+      "roomStatus": "Occupied",
+      "pricePerNight": 3500000,
+      "capacity": 4,
+      "currentGuestName": "Nguyen Van A"
+>>>>>>> Stashed changes
     }
   ]
 }
 ```
 
 **Business Rules:**
+<<<<<<< Updated upstream
 * BR-FO-04: Trạng thái phòng phải tuân thủ nghiêm ngặt vòng đời phòng (Vacant, Occupied, Dirty, Maintenance).
 * BR-FIN-05: Giá phòng phải là `BigDecimal` scale 0, `HALF_UP`.
 
 **Error Codes:**
 * `SYS-001` (500) - `Lỗi hệ thống nội bộ`
+=======
+* Dashboard hiển thị tất cả phòng với trạng thái thời gian thực
+* Các trạng thái: Vacant_Clean, Occupied, Dirty, Out_of_Order, Maintenance
+* Trả về empty list (không null) nếu hệ thống chưa có phòng
+>>>>>>> Stashed changes
 
 **Implementation:**
 * Interface: `RoomService.getRoomDashboard()`
 * Repository: `RoomRepository.findAll()`
+<<<<<<< Updated upstream
 
 ---
 
 ### 7.2. UC10 — Đặt phòng & Thanh toán cọc (BookingService)
+=======
+* DTO: `RoomDashboardDTO`
+
+---
+
+### 7.3. UC10 — Đặt phòng & Thanh toán cọc (BookingService)
+>>>>>>> Stashed changes
 
 **[POST] Đặt phòng mới**
 

@@ -12,6 +12,16 @@
 
 ---
 
+### CHANGELOG
+| Ngày | Người thực hiện | Nội dung thay đổi |
+|---|---|---|
+| 2026-06-14 | Ngo Thi Ngoc Lan | Implement code logic cho UC25.1 và UC25.2, tất cả test case đã pass GREEN |
+| 2026-06-14 | Ngo Thi Ngoc Lan | Implement code logic cho UC26.1 và UC26.2, tất cả test case đã pass GREEN |
+| 2026-06-14 | Ngo Thi Ngoc Lan | Khởi tạo Test Case TC-M5-010 và TC-M5-011 cho UC26.1 và UC26.2 |
+| 2026-06-14 | Ngo Thi Ngoc Lan | Khởi tạo TC-M5-006 đến TC-M5-009 cho UC25.1 và UC25.2 |
+
+---
+
 ### MỤC LỤC
 1. [Thông tin Module](#1-thong-tin-module)
 2. [Logic Issues Resolved](#2-logic-issues-resolved)
@@ -148,12 +158,13 @@ Testing @Scheduled components.
 | TC-M5-003 | Gom hóa đơn — tiền phòng + ăn uống + tour = tổng chính xác (BigDecimal) | TBD | [ ] | [ ] | |
 | TC-M5-004 | Night Audit 02:00 AM — cộng phí phòng ngày vào Folio các phòng OCCUPIED | TBD | [ ] | [ ] | |
 | TC-M5-005 | Night Audit chuyển Business Date lên 1 ngày | TBD | [ ] | [ ] | |
-| TC-M5-006 | Check-out khi Folio = 0 → thành công, phòng chuyển DIRTY | TBD | [ ] | [ ] | |
-| TC-M5-007 | Check-out khi Folio > 0 → chặn, trả FOLIO-001 (BR-FIN-01) | TBD | [ ] | [ ] | |
-| TC-M5-008 | Thanh toán tất toán Folio (Tiền mặt/Thẻ) → Folio = SETTLED | TBD | [ ] | [ ] | |
-| TC-M5-009 | Sau tất toán → tự động gửi e-Invoice qua email (SendGrid) | TBD | [ ] | [ ] | |
-| TC-M5-010 | Dashboard trả dữ liệu biểu đồ tài chính đúng | TBD | [ ] | [ ] | |
-| TC-M5-011 | Occupancy Rate = (phòng OCCUPIED / tổng phòng) × 100% — tính đúng | TBD | [ ] | [ ] | |
+| TC-M5-006 | Check-out khi Folio = 0 → thành công, phòng chuyển DIRTY | CheckoutServiceUC25Test.java | [x] | [x] feat/mod5-uc25 | Hằng số `ROOM_STATUS_DIRTY`; tách `findRoomBookingDetailOrThrow()` + `markRoomDirtyAndSave()` |
+| TC-M5-007 | Check-out khi Folio > 0 → chặn, trả FOLIO-001 (BR-FIN-01) | CheckoutServiceUC25Test.java | [x] | [x] feat/mod5-uc25 | Hằng số `ERROR_FOLIO_UNPAID`; tách `hasUnpaidFolioItems()` dùng Stream.anyMatch |
+| TC-M5-008 | Thanh toán tất toán Folio (Tiền mặt/Thẻ) → Folio = SETTLED | CheckoutServiceUC25Test.java | [x] | [x] feat/mod5-uc25 | Tách `settleItem()` private; dùng Stream.filter + forEach thay for-loop |
+| TC-M5-009 | Sau tất toán → tự động gửi e-Invoice qua email (SendGrid) | CheckoutServiceUC25Test.java | [x] | [x] feat/mod5-uc25 | emailService.sendInvoiceEmail() được gọi sau khi toàn bộ items settled |
+| TC-M5-010 | Dashboard trả dữ liệu biểu đồ tài chính đúng | ReportServiceUC26Test.java | [x] | [x] feat/mod5-uc26 | Tách `aggregateRevenueByDepartment()` ra private helper; hằng số `CURRENCY_SCALE`; JavaDoc đầy đủ |
+| TC-M5-011 | Occupancy Rate = (phòng OCCUPIED / tổng phòng) × 100% — tính đúng | ReportServiceUC26Test.java | [x] | [x] feat/mod5-uc26 | Tách `calculatePercentage()` ra private helper; guard chia-0 trước khi gọi helper |
+
 | TC-M5-012 | Báo cáo USALI phân tách doanh thu Rooms / F&B / Tours đúng (BR-FIN-04) | TBD | [ ] | [ ] | |
 | TC-M5-013 | Kết xuất PDF — file không rỗng, đúng format | TBD | [ ] | [ ] | |
 | TC-M5-014 | Kết xuất Excel — dữ liệu khớp với DB | TBD | [ ] | [ ] | |

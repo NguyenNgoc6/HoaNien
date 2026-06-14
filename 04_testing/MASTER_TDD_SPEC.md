@@ -26,6 +26,7 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                                  |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-14 | Ngo Thi Ngoc Lan    | Refactor code cho UC25 (UC25.1 và UC25.2) — thêm `calculateTotalFolioAmount()`, tách helper, chuẩn JavaDoc                                         |
 | 2026-06-11 | Lưu                | Cập nhật đầy đủ 20 test case Module 2, chuẩn hóa cấu trúc bảng tracker cho cả 5 Module và bổ sung test case mẫu chi tiết cho 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu — Master TDD spec cho toàn bộ 5 Module Kawai Resort                                                                          |
 
@@ -365,6 +366,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 
 ### MOD1 — Xác thực & Tài khoản (Sinh viên 1: Lưu)
 
+<<<<<<< Updated upstream
 | TC ID     | Mô tả ngắn                         | Test File | 🔴 RED | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 | --------- | ------------------------------------- | --------- | ------ | ----------------- | ---------------- |
 | TC-M1-001 | Đăng ký thành công, hash BCrypt  |           | [ ]    | [ ]               |                  |
@@ -393,7 +395,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 ### MOD2 — Đặt phòng & Tiền sảnh (Sinh viên 2: Dũng)
 
 #### UC10 — Đặt phòng & Thanh toán cọc (BookingService)
-| TC ID      | Test File                     | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note　　　　　　　　　　　　　　　　　　　　　　 |
+| TC ID      | Test File                     | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 | ------------| -------------------------------| ------------------| ------------------| --------------------------------------------------------------|
 | TC-M2-003  | `BookingServiceUC10Test.java` | [x]　　　　　　　| [x]              | ✅ `createBooking()` returns CONFIRMED + cancellationDeadline |
 | TC-M2-004  | `BookingServiceUC10Test.java` | [x]　　　　　　　| [x]              | ✅ Concurrency: 1 CONFIRMED, 1 RoomNotAvailableException　　　|
@@ -407,6 +409,16 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC-M2-009c | `BookingServiceUC10Test.java` | [x]　　　　　　　| [x]              | ✅ `[ERR_PROMO_NOT_FOUND]` error code　　　　　　　　　　　　 |
 
 #### UC11 — Xem sơ đồ Matrix phòng trống (RoomService)
+=======
+### UC11 — Front Desk Dashboard (RoomService)
+| TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
+|---|---|---|---|---|
+| TC-M2-010a | `RoomServiceUC11Test.java` | [x] | [x] | ✅ `getRoomDashboard()` trả đúng danh sách + roomStatus |
+| TC-M2-010b | `RoomServiceUC11Test.java` | [x] | [x] | ✅ Fix: trả empty list thay vì null khi DB rỗng |
+| TC-M2-010c | `RoomServiceUC11Test.java` | [x] | [x] | ✅ Dashboard hiển thị đúng 4 loại status |
+
+### Chưa thực hiện
+>>>>>>> Stashed changes
 | TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 |---|---|---|---|---|
 | TC-M2-010 | `RoomServiceUC11Test.java` | [x] | [x] `da47c4d` | ✅ Extract `toDashboardDTO` helper method, use Java Streams, add JavaDoc |
@@ -452,12 +464,12 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 | TC-M5-003 | Gom hóa đơn tổng = BigDecimal chính xác |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-004 | Night Audit 02:00 → cộng phí phòng      |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-005 | Night Audit chuyển Business Date        |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-006 | Check-out Folio = 0 → thành công        |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-007 | Check-out Folio > 0 → chặn FOLIO-001    |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-008 | Thanh toán tất toán → SETTLED           |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-009 | Sau tất toán → gửi e-Invoice email      |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-010 | Dashboard biểu đồ tài chính             |           | [ ]　　| [ ]              | 　　　　　　|
-| TC-M5-011 | Occupancy Rate tính đúng %              |           | [ ]　　| [ ]              | 　　　　　　|
+| TC-M5-006 | Check-out Folio = 0 → thành công        | CheckoutServiceUC25Test.java | [x]　　| [x] feat/mod5-uc25 | ✅ Hằng số `ROOM_STATUS_DIRTY`; tách `findRoomBookingDetailOrThrow()` + `markRoomDirtyAndSave()` |
+| TC-M5-007 | Check-out Folio > 0 → chặn FOLIO-001    | CheckoutServiceUC25Test.java | [x]　　| [x] feat/mod5-uc25 | ✅ Hằng số `ERROR_FOLIO_UNPAID`; tách `hasUnpaidFolioItems()` dùng Stream.anyMatch |
+| TC-M5-008 | Thanh toán tất toán → SETTLED           | CheckoutServiceUC25Test.java | [x]　　| [x] feat/mod5-uc25 | ✅ Tách `settleItem()` private; `calculateTotalFolioAmount()` tính tổng từ DB thay vì caller |
+| TC-M5-009 | Sau tất toán → gửi e-Invoice email      | CheckoutServiceUC25Test.java | [x]　　| [x] feat/mod5-uc25 | ✅ `emailService.sendInvoiceEmail()` nhận `calculatedTotal` từ DB (BR-FIN-05) |
+| TC-M5-010 | Dashboard biểu đồ tài chính             | ReportServiceUC26Test.java | [x]　　| [x] feat/mod5-uc26 | ✅ Tách `aggregateRevenueByDepartment()` ra private helper; hằng số `CURRENCY_SCALE` |
+| TC-M5-011 | Occupancy Rate tính đúng %              | ReportServiceUC26Test.java | [x]　　| [x] feat/mod5-uc26 | ✅ Tách `calculatePercentage()` ra private helper; guard chia-0 trước khi gọi helper |
 | TC-M5-012 | Báo cáo USALI phân tách 3 mã DT         |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-013 | Kết xuất PDF không rỗng                 |           | [ ]　　| [ ]              | 　　　　　　|
 | TC-M5-014 | Kết xuất Excel khớp DB                  |           | [ ]　　| [ ]              | 　　　　　　|

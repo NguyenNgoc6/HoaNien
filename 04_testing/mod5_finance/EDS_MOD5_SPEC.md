@@ -101,6 +101,59 @@ NightAuditScheduler -> FolioService: applyDailyCharges()
 
 ---
 
+### 🔹 API 004: Xử lý Check-out cuối cùng (UC25.1)
+- **HTTP Method:** `POST`
+- **URL Path:** `/api/v1/checkout/{id}/process`
+  - `{id}` = `roomBookingDetailId`
+- **Authorization:** RECEPTIONIST only (`hasRole('RECEPTIONIST')`)
+- **Request Body:** _(empty — ID được truyền qua path variable)_
+- **Response 200 OK — Folio sạch, checkout thành công:**
+```json
+{
+  "status": "success",
+  "message": "Check-out thành công. Phòng đã chuyển sang DIRTY."
+}
+```
+- **Response 400 Bad Request — mã FOLIO-001 (BR-FIN-01):**
+```json
+{
+  "status": "error",
+  "message": "FOLIO-001: Hóa đơn chưa thanh toán hết — không thể thực hiện Check-out."
+}
+```
+- **Response 403 Forbidden:** Khi caller không có role RECEPTIONIST.
+- **Business Rules:** BR-FIN-01 (Folio phải = 0), BR-FO-09 (chuyển DIRTY), BR-SYS-06 (RBAC).
+- **Service Method:** `CheckoutServiceImpl.processCheckout()`
+
+---
+
+### 🔹 API 005: Tất toán Folio & gửi e-Invoice tự động (UC25.2)
+- **HTTP Method:** `POST`
+- **URL Path:** `/api/v1/checkout/{id}/settle`
+  - `{id}` = `roomBookingDetailId`
+- **Authorization:** RECEPTIONIST only (`hasRole('RECEPTIONIST')`)
+- **Request Body:**
+```json
+{
+  "amount": 4500000,
+  "paymentMethod": "CREDIT_CARD"
+}
+```
+> `paymentMethod` hợp lệ: `CASH` | `CREDIT_CARD` | `TRANSFER`
+- **Response 200 OK:**
+```json
+{
+  "status": "success",
+  "message": "Tất toán Folio thành công. e-Invoice đã gửi qua email."
+}
+```
+- **Response 400 Bad Request:** Dữ liệu đầu vào không hợp lệ.
+- **Response 403 Forbidden:** Khi caller không có role RECEPTIONIST.
+- **Business Rules:** BR-FIN-05 (BigDecimal), BR-FIN-06 (ghi nhận từng khoản), BR-SYS-06 (RBAC).
+- **Service Method:** `CheckoutServiceImpl.settleFolio()`
+
+---
+
 ### 10. Bảng mã lỗi (Error Codes)
 | Code | HTTP Status | Message (VI) | Trigger Condition |
 | --- | --- | --- | --- |
