@@ -87,10 +87,10 @@
 | UC24.2 | Luồng tiền nhiều đợt   | *(điền sau khi code)* | TC-M5-002           | BR-FIN-06            |
 | UC24.3 | Gom hóa đơn quyết toán | *(điền sau khi code)* | TC-M5-003           | BR-FIN-01            |
 | UC24.4 | Night Audit 02:00 AM   | *(điền sau khi code)* | TC-M5-004, 005      | BR-FIN-03, BR-FIN-07 |
-| UC25.1 | Thanh toán Check-out   | *(điền sau khi code)* | TC-M5-006, 007, 008 | BR-FIN-01, BR-FO-09  |
-| UC25.2 | e-Invoice tự động      | *(điền sau khi code)* | TC-M5-009           | —                    |
-| UC26.1 | Biểu đồ tài chính      | *(điền sau khi code)* | TC-M5-010           | —                    |
-| UC26.2 | Occupancy Rate         | *(điền sau khi code)* | TC-M5-011           | —                    |
+| UC25.1 | Thanh toán Check-out   | IN PROGRESS| TC-M5-006, 007, 008 | BR-FIN-01, BR-FO-09  |
+| UC25.2 | e-Invoice tự động      | IN PROGRESS | TC-M5-009           | —                    |
+| UC26.1 | Biểu đồ tài chính      | `ReportServiceImpl.getDashboardFinancialData()` | TC-M5-010           | —                    |
+| UC26.2 | Occupancy Rate         | `ReportServiceImpl.getOccupancyRate()` | TC-M5-011           | —                    |
 | UC27   | Báo cáo USALI          | *(điền sau khi code)* | TC-M5-012           | BR-FIN-04            |
 | UC28   | Xuất PDF / Excel       | *(điền sau khi code)* | TC-M5-013, 014      | —                    |
 
