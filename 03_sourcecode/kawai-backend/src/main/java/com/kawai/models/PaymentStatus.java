@@ -1,8 +1,7 @@
 package com.kawai.models;
 
 public enum PaymentStatus {
-    PENDING,
+    INIT,
     SUCCESS,
-    FAILED,
-    EXPIRED
+    FAILED
 }

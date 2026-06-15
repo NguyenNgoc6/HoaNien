@@ -1,111 +1,43 @@
 package com.kawai.utils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class VnPayUtil {
 
-    private static final boolean DEBUG = true;
-
     public static String hmacSHA512(final String key, final String data) {
         try {
-            if (key == null || data == null) {
-                throw new NullPointerException();
-            }
-            final Mac hmac512 = Mac.getInstance("HmacSHA512");
-            byte[] hmacKeyBytes = key.getBytes(StandardCharsets.UTF_8);
-            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
-            hmac512.init(secretKey);
-            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-            byte[] result = hmac512.doFinal(dataBytes);
+            Mac hmac512 = Mac.getInstance("HmacSHA512");
+            hmac512.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
+            byte[] result = hmac512.doFinal(data.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * result.length);
             for (byte b : result) {
                 sb.append(String.format("%02x", b & 0xff));
             }
             return sb.toString();
         } catch (Exception ex) {
-            throw new RuntimeException("VNPay HMAC-SHA512 hash generation failed", ex);
+            throw new RuntimeException("HMAC-SHA512 generation failed", ex);
         }
     }
 
-    public static String getPaymentUrl(String baseUrl, Map<String, String> fields, String secretKey) {
-        // Exclude signature fields from hash calculation (VNPay spec)
-        Map<String, String> signFields = new HashMap<>(fields);
-        signFields.remove("vnp_SecureHash");
-        signFields.remove("vnp_SecureHashType");
-
-        List<String> fieldNames = new ArrayList<>(signFields.keySet());
-        Collections.sort(fieldNames);
-
-        List<String> queryParts = new ArrayList<>();
-        List<String> hashParts = new ArrayList<>();
-
-        for (String fieldName : fieldNames) {
-            String fieldValue = signFields.get(fieldName);
-            if (fieldValue != null && !fieldValue.isEmpty()) {
-                try {
-                    String encodedName = URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())
-                            .replace("+", "%20");
-                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString())
-                            .replace("+", "%20");
-
-                    hashParts.add(fieldName + "=" + encodedValue);
-                    queryParts.add(encodedName + "=" + encodedValue);
-                } catch (UnsupportedEncodingException e) {
-                    hashParts.add(fieldName + "=" + fieldValue);
-                    queryParts.add(fieldName + "=" + fieldValue);
-                }
-            }
-        }
-
-        String queryUrl = String.join("&", queryParts);
-        String hashData = String.join("&", hashParts);
-        String vnp_SecureHash = hmacSHA512(secretKey, hashData);
-
-        if (DEBUG) {
-            System.out.println("===== VNPay DEBUG =====");
-            System.out.println("HashData (before HMAC):");
-            System.out.println(hashData);
-            System.out.println("---");
-            System.out.println("Secret Key: " + secretKey);
-            System.out.println("Computed Hash: " + vnp_SecureHash);
-            System.out.println("=======================");
-        }
-
-        // Append signature fields AFTER hash calculation (not part of hash)
-        return baseUrl + "?" + queryUrl
-                + "&vnp_SecureHashType=SHA512"
-                + "&vnp_SecureHash=" + vnp_SecureHash;
+    public static String buildRawHashString(Map<String, String> params) {
+        return params.entrySet().stream()
+                .filter(e -> e.getKey().startsWith("vnp_")
+                        && !e.getKey().equalsIgnoreCase("vnp_SecureHash")
+                        && !e.getKey().equalsIgnoreCase("vnp_SecureHashType")
+                        && e.getValue() != null && !e.getValue().isEmpty())
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining("&"));
     }
 
-    public static boolean validateCallback(Map<String, String> fields, String secureHash, String secretKey) {
-        Map<String, String> signFields = new HashMap<>(fields);
-        signFields.remove("vnp_SecureHash");
-        signFields.remove("vnp_SecureHashType");
-
-        List<String> fieldNames = new ArrayList<>(signFields.keySet());
-        Collections.sort(fieldNames);
-
-        List<String> hashParts = new ArrayList<>();
-        for (String fieldName : fieldNames) {
-            String fieldValue = signFields.get(fieldName);
-            if (fieldValue != null && !fieldValue.isEmpty()) {
-                try {
-                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString())
-                            .replace("+", "%20");
-                    hashParts.add(fieldName + "=" + encodedValue);
-                } catch (UnsupportedEncodingException e) {
-                    hashParts.add(fieldName + "=" + fieldValue);
-                }
-            }
-        }
-
-        String hashData = String.join("&", hashParts);
-        String computedHash = hmacSHA512(secretKey, hashData);
-        return computedHash.equalsIgnoreCase(secureHash);
+    public static boolean validateSignature(Map<String, String> params, String receivedHash, String secret) {
+        if (receivedHash == null || receivedHash.isEmpty()) return false;
+        String rawHash = buildRawHashString(params);
+        String computedHash = hmacSHA512(secret, rawHash);
+        return computedHash.equalsIgnoreCase(receivedHash);
     }
 }

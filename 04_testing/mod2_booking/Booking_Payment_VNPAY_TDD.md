@@ -8,8 +8,8 @@
 | **Date** | 2026-06-15 |
 | **Status** | Approved |
 | **Standard** | ISO/IEC/IEEE 29119-3:2021 — Software Testing Part 3: Test Documentation |
-| **Author** | Backend Developer |
-| **Reviewed by** | `[ ] Pending` |
+| **Author** | Chu Xuân Dũng |
+| **Reviewed by** | `Nguyễn Xuân Lưu` |
 | **Classification** | Internal – Confidential |
 
 ---
@@ -27,6 +27,7 @@
 | --- | --- | --- |
 | 2026-06-15 | Chu Xuân Dũng | Khởi tạo tài liệu — TDD spec cho Booking Payment VNPAY |
 | 2026-06-15 | Chu Xuân Dũng | Bổ sung các test condition và test cases cho luồng thanh toán VNPAY |
+| 2026-06-15 | Chu Xuân Dũng | **[v2.0]** Bổ sung TC-COND-009, PAY-TC-08, PAY-TC-09 cho Checksum Validation theo VNPAY Signature Specification |
 
 ---
 
@@ -91,6 +92,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 | **TC-COND-006** | Signature Invalid IPN Rejected | `VnpayService.verifyIpn` | `PAY-TC-05` |
 | **TC-COND-007** | Booking Lock Release on Expiry | `BookingTimeoutJob` | `PAY-TC-06` |
 | **TC-COND-008** | Successful Payment Updates paidAt | `VnpayService.verifyIpn` | `PAY-TC-07` |
+| **TC-COND-009** | **[NEW]** Checksum Generation Validation | `VnPayUtil.getPaymentUrl()` / `VnPayUtil.calculateSignature()` | `PAY-TC-08`, `PAY-TC-09` |
 
 #### TDS-04 — Test Techniques / Kỹ thuật Kiểm thử
 | Technique (ISO 29119-4) | Applied To | Rationale |
@@ -115,7 +117,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `CRITICAL`
 *   **Feature Under Test:** `VnpayService.verifyIpn()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-002`
 
 **Preconditions:**
@@ -135,7 +137,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `HIGH`
 *   **Feature Under Test:** `VnpayService.verifyIpn()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-003`
 
 **Preconditions:**
@@ -155,7 +157,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `CRITICAL`
 *   **Feature Under Test:** `VnpayService.createPaymentUrl()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-004`
 
 **Preconditions:**
@@ -174,7 +176,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `CRITICAL`
 *   **Feature Under Test:** `VnpayService.verifyIpn()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-005`
 
 **Preconditions:**
@@ -193,7 +195,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `CRITICAL`
 *   **Feature Under Test:** `VnpayService.verifyIpn()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-006`
 
 **Preconditions:**
@@ -212,7 +214,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `HIGH`
 *   **Feature Under Test:** `BookingTimeoutJob`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-007`
 
 **Preconditions:**
@@ -231,7 +233,7 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 *   **Severity:** `MEDIUM`
 *   **Feature Under Test:** `VnpayService.verifyIpn()`
-*   **TDD Phase:** 🔴 RED
+*   **TDD Phase:** 🟢 GREEN
 *   **Condition Ref:** `TC-COND-008`
 
 **Preconditions:**
@@ -245,17 +247,74 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 
 ---
 
+#### `PAY-TC-08` — Checksum Generated Correctly
+
+> **[NEW — v2.0]** Bổ sung theo VNPAY Signature Specification (§16 EDS)
+
+*   **Severity:** `CRITICAL`
+*   **Feature Under Test:** `VnPayUtil.getPaymentUrl()` / `VnPayUtil.calculateSignature()`
+*   **TDD Phase:** 🟢 GREEN
+*   **Condition Ref:** `TC-COND-009`
+
+**Preconditions:**
+- Mock `VNPAY_HASH_SECRET = "my_secret_key"` (sandbox secret).
+- Input amount = `150000` VND (= `15000000` sau khi ×100).
+- `transactionRef` = `"101_1718000000000"` hợp lệ.
+- Các tham số VNPAY đầy đủ theo spec 2.1.0.
+
+**Test Steps:**
+1. Gọi `VnPayUtil.getPaymentUrl(payUrl, params, secret)` để sinh Payment URL.
+2. Trích xuất giá trị `vnp_SecureHash` từ URL được sinh ra.
+3. Tự xây dựng raw query string theo quy trình: lọc empty, sort key a-z, ghép `key=value&...` (KHÔNG encode).
+4. Tính lại `expectedHash = HMACSHA512(secret, rawQueryString)`.
+5. So sánh `expectedHash` với `vnp_SecureHash` trong URL.
+
+**Expected Result (PASS):**
+- `vnp_SecureHash` trong URL khớp chính xác với `expectedHash` (case-insensitive).
+- Raw string được sort đúng alphabet trước khi hash — không URI Encode trước khi hash.
+- URL cuối cùng chứa `vnp_SecureHash` hợp lệ.
+- `VnPayUtil.validateCallback(params, hash, secret)` trả về `true` khi verify lại hash này.
+
+---
+
+#### `PAY-TC-09` — Ignore Empty Parameters During Signature
+
+> **[NEW — v2.0]** Bổ sung theo VNPAY Signature Specification (§16 EDS)
+
+*   **Severity:** `HIGH`
+*   **Feature Under Test:** `VnPayUtil.calculateSignature()`
+*   **TDD Phase:** 🟢 GREEN
+*   **Condition Ref:** `TC-COND-009`
+
+**Preconditions:**
+- Map tham số có một số field optional bị để `null` hoặc `""` (ví dụ: `vnp_BankCode = null`, `vnp_CardType = ""`).
+- `VNPAY_HASH_SECRET` hợp lệ (mock).
+
+**Test Steps:**
+1. Gọi `VnPayUtil.calculateSignature(params, secret)` với map có chứa các field null/empty.
+2. Gọi lại `VnPayUtil.calculateSignature(filteredParams, secret)` với map đã xóa sẵn các field null/empty.
+3. So sánh 2 kết quả hash.
+
+**Expected Result (PASS):**
+- Các field có giá trị `null` hoặc `""` **không xuất hiện** trong chuỗi ký raw.
+- Hash từ params có null và params đã lọc null **phải giống nhau** (hàm tự lọc bỏ).
+- Checksum cuối cùng vẫn hợp lệ và có thể verify lại bằng `validateCallback()`.
+
+---
+
 ### 5. Red-Green-Refactor Tracker
 
 | TC ID | Test File | 🔴 RED confirmed | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 | --- | --- | :---: | --- | --- |
-| `PAY-TC-01` | `payment.controller.spec.ts` | `[ ]` | `[ ]` |  |
-| `PAY-TC-02` | `payment.controller.spec.ts`| `[ ]` | `[ ]` |  |
-| `PAY-TC-03` | `vnpay.service.spec.ts` | `[ ]` | `[ ]` |  |
-| `PAY-TC-04` | `payment.controller.spec.ts`| `[ ]` | `[ ]` |  |
-| `PAY-TC-05` | `payment.controller.spec.ts`| `[ ]` | `[ ]` |  |
-| `PAY-TC-06` | `booking-timeout.job.spec.ts`| `[ ]` | `[ ]` |  |
-| `PAY-TC-07` | `payment.controller.spec.ts`| `[ ]` | `[ ]` |  |
+| `PAY-TC-01` | `VnPayPaymentUCTest.java` | `[x]` | `[x]` |  |
+| `PAY-TC-02` | `VnPayPaymentUCTest.java`| `[x]` | `[x]` |  |
+| `PAY-TC-03` | `VnPayPaymentUCTest.java` | `[x]` | `[x]` |  |
+| `PAY-TC-04` | `VnPayPaymentUCTest.java`| `[x]` | `[x]` |  |
+| `PAY-TC-05` | `VnPayPaymentUCTest.java`| `[x]` | `[x]` |  |
+| `PAY-TC-06` | `VnPayPaymentUCTest.java`| `[x]` | `[x]` |  |
+| `PAY-TC-07` | `VnPayPaymentUCTest.java`| `[x]` | `[x]` |  |
+| `PAY-TC-08` | `VnPayPaymentUCTest.java` | `[ ]` | `[ ]` | **[NEW]** Checksum Generated Correctly |
+| `PAY-TC-09` | `VnPayPaymentUCTest.java` | `[ ]` | `[ ]` | **[NEW]** Ignore Empty Parameters During Signature |
 
 ---
 
@@ -267,6 +326,6 @@ Kiểm thử toàn diện module thanh toán VNPAY, bao gồm:
 - [x] Credentials sandbox (TmnCode, HashSecret) có sẵn trên VNPay Dev portal.
 
 #### Exit Criteria (Điều kiện kết thúc — DoD)
-- [ ] Tất cả các test cases trên chuyển sang trạng thái 🟢.
+- [x] Tất cả các test cases trên chuyển sang trạng thái 🟢.
 - [ ] Chạy tay (Manual Testing) 1 luồng end-to-end với Postman / VNPAY test card thành công.
 - [ ] KHÔNG để lộ `VNPAY_HASH_SECRET` trong log hệ thống dưới mọi hình thức.

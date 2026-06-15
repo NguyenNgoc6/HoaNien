@@ -452,11 +452,9 @@ ORDER BY id DESC LIMIT 1;
 | Endpoint             | GUEST | CUSTOMER | RECEPTIONIST | ADMIN |
 | -------------------- | :---: | :------: | :----------: | :---: |
 | POST `/api/bookings` |  ❌  |    ✔️    |      ❌      |  ❌  |
-| GET `/api/bookings/{id}` |  ❌  |   Own    |      ❌      |  ❌  |
-| POST `/api/bookings/{id}/apply-coupon` |  ❌  |   Own    |      ❌      |  ❌  |
-| POST `/api/bookings/{id}/confirm` |  ❌  |   Own    |      ❌      |  ❌  |
-
-*(Receptionist và Admin dùng API nội bộ dành cho nhân viên, không qua thanh toán VNPay)*
+| GET `/api/bookings/{id}` |  ❌  |   ✔️    |      ❌      |  ❌  |
+| POST `/api/bookings/{id}/apply-coupon` |  ❌  |   ✔️   |      ❌      |  ❌  |
+| POST `/api/bookings/{id}/confirm` |  ❌  |   ✔️    |      ❌      |  ❌  |
 
 ---
 

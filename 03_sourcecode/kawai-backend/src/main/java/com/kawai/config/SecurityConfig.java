@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
                                 "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**",
-                                "/api/tour-bookings", "/api/tour-bookings/**", "/api/bookings/vnpay-callback", "/error")
+                                "/api/tour-bookings", "/api/tour-bookings/**", "/error",
+                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasRole("MANAGER")

@@ -15,7 +15,10 @@ import com.kawai.repositories.RoomBookingRepository;
 import com.kawai.repositories.RoomBookingDetailRepository;
 import com.kawai.repositories.RoomRepository;
 import com.kawai.repositories.CustomerRepository;
+import com.kawai.repositories.PaymentTransactionRepository;
 import com.kawai.services.interfaces.BookingService;
+import com.kawai.models.PaymentTransaction;
+import com.kawai.models.PaymentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -85,6 +88,7 @@ public class BookingServiceImpl implements BookingService {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final PaymentGatewayService paymentGatewayService;
     private final NotificationService notificationService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public BookingServiceImpl(RoomBookingRepository roomBookingRepository,
             PromotionRepository promotionRepository,
@@ -92,7 +96,8 @@ public class BookingServiceImpl implements BookingService {
             CustomerRepository customerRepository,
             RoomBookingDetailRepository roomBookingDetailRepository,
             PaymentGatewayService paymentGatewayService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            PaymentTransactionRepository paymentTransactionRepository) {
         this.roomBookingRepository = roomBookingRepository;
         this.promotionRepository = promotionRepository;
         this.roomRepository = roomRepository;
@@ -100,6 +105,7 @@ public class BookingServiceImpl implements BookingService {
         this.roomBookingDetailRepository = roomBookingDetailRepository;
         this.paymentGatewayService = paymentGatewayService;
         this.notificationService = notificationService;
+        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -248,7 +254,7 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal depositVal = discountedPrice.multiply(new BigDecimal("0.3")).setScale(0, RoundingMode.HALF_UP);
 
         // ══════════════════════════════════════════════════════════════════
-        // Cập nhật giá thực và giữ nguyên trạng thái HOLD cho thanh toán VNPay
+        // Cập nhật giá thực và giữ nguyên trạng thái HOLD cho thanh toán cọc
         // ══════════════════════════════════════════════════════════════════
         savedHold.setTotalPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
         savedHold.setDepositAmount(depositVal);
@@ -524,40 +530,10 @@ public class BookingServiceImpl implements BookingService {
         }
         customerRepository.save(customer);
 
-        // Chỉ lưu ghi chú và giữ nguyên trạng thái HOLD để chờ thanh toán cọc qua VNPay
+        // Chỉ lưu ghi chú và giữ nguyên trạng thái HOLD để chờ thanh toán cọc
         booking.setNotes(notes);
         roomBookingRepository.save(booking);
     }
 
-    @Override
-    @Transactional
-    public void completePayment(Long bookingId) {
-        RoomBooking booking = roomBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BusinessException("BKG-003", "Không tìm thấy đơn đặt phòng với ID: " + bookingId));
 
-        if ("CONFIRMED".equals(booking.getBookingStatus())) {
-            log.info("[PAYMENT_SUCCESS] Booking {} is already confirmed.", bookingId);
-            return;
-        }
-
-        if ("CANCELLED".equals(booking.getBookingStatus())) {
-            // Check if rooms are still available
-            List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
-            for (RoomBookingDetail d : details) {
-                String roomNo = d.getRoom().getRoomNumber();
-                long overlapping = roomBookingRepository.countOverlappingBookingsByRoom(
-                        roomNo, booking.getCheckInDate(), booking.getCheckOutDate(), bookingId);
-                if (overlapping > 0) {
-                    log.error("[PAYMENT_ERROR] Booking {} was cancelled due to timeout, and room {} is no longer available.", bookingId, roomNo);
-                    throw new BusinessException("PAYMENT_TIMEOUT_ROOM_TAKEN", 
-                            "Giao dịch thành công nhưng đơn đặt phòng đã bị hủy do quá thời gian giữ chỗ (10 phút) và phòng đã được khách khác đặt.");
-                }
-            }
-        }
-
-        booking.setBookingStatus("CONFIRMED");
-        booking.setHoldExpiresAt(null);
-        roomBookingRepository.save(booking);
-        log.info("[PAYMENT_SUCCESS] Booking {} confirmed successfully after payment.", bookingId);
-    }
 }

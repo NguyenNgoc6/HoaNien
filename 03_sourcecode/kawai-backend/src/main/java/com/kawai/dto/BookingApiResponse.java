@@ -16,8 +16,17 @@ public class BookingApiResponse {
     private BigDecimal discountedPrice;  // Tổng chính thức từ backend (sau phụ thu + khuyến mãi)
     private LocalDateTime cancellationDeadline;
     private String message;
+    private String paymentUrl;
 
     public BookingApiResponse() {
+    }
+
+    public String getPaymentUrl() {
+        return paymentUrl;
+    }
+
+    public void setPaymentUrl(String paymentUrl) {
+        this.paymentUrl = paymentUrl;
     }
 
     public BookingApiResponse(String status, Long bookingId, BigDecimal depositAmount,

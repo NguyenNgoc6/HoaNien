@@ -34,8 +34,9 @@
 | Ngày | Người thực hiện | Nội dung thay đổi |
 | --- | --- | --- |
 | 2026-06-14 | `Chu Xuân Dũng` | Khởi tạo tài liệu — TDD spec riêng biệt cho UC-11 |
-| 2026-06-14 | `AI Agent` | Cập nhật tài liệu sang trạng thái GREEN sau khi pass toàn bộ 8 Test Cases |
 | 2026-06-15 | `Chu Xuân Dũng` | Rà soát các luồng kiểm thử ngoại lệ cho chức năng Hủy phòng |
+| 2026-06-14 | `AI Agent` | Cập nhật tài liệu sang trạng thái GREEN sau khi pass toàn bộ Test Cases |
+
 
 ---
 

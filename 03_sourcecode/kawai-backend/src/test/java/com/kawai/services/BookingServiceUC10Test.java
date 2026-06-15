@@ -68,7 +68,7 @@ import static org.mockito.Mockito.*;
  * BR-DATE-01 : checkOutDate > checkInDate bắt buộc (≥ 1 đêm)
  * BR-FIN-01 : mã promo phải isActive=true & validTo ≥ today
  * BR-FIN-02 : hủy trước 48h → hoàn 100%; hủy trong 48h → hoàn 0đ
- * BR-STATUS-01: booking vừa tạo → "Pending"; sau xác nhận VNPay → "CONFIRMED"
+ * BR-STATUS-01: booking vừa tạo → "Pending"; sau xác nhận thanh toán → "CONFIRMED"
  * BR-STATUS-02: hủy trước 48h → "Cancelled_Refunded"; hủy trong 48h →
  * "Cancelled_Forfeited"
  * BR-ERR-01 : exception message phải chứa error code dạng [ERR_PROMO_XXX]

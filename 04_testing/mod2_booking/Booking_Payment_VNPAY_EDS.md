@@ -5,14 +5,14 @@
 | Field                    | Value                                                                                       |
 | ------------------------ | ------------------------------------------------------------------------------------------- |
 | **Document ID**    | `BOOKING-PAY-IMP-001`                                                            |
-| **Version**        | 1.0                                                                                         |
+| **Version**        | 2.0                                                                                         |
 | **Date**           | 2026-06-15                                                                                  |
-| **Status**         | Draft                                                   |
-| **Document Owner** | Backend Team                                                    |
-| **Author**         | Backend Developer                                                                           |
-| **Reviewed by**    | Tech Lead                                                                             |
-| **DPO Sign-off**   | `[ ] Pending` |
-| **Approved by**    | Principal Architect                                                                   |
+| **Status**         | Approved                                               |
+| **Document Owner** | Chu Xuân Dũng                                                    |
+| **Author**         | Chu Xuân Dũng                                                                           |
+| **Reviewed by**    | Nguyễn Xuân Lưu                                                                             |
+| **DPO Sign-off**   | `[x] Approved` |
+| **Approved by**    | Nguyễn Xuân Lưu                                                                   |
 | **Last Review**    | 2026-06-15                                    |
 | **Based on EDS**   | v2.0                                                                                        |
 
@@ -25,8 +25,9 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi       |
 | ---------- | ------------------- | -------------------------- |
-| 2026-06-15 | Backend Developer  | Tạo tài liệu lần đầu - Đặc tả chức năng Payment bằng VNPAY cho UC-10 Book Room |
+| 2026-06-15 | Chu Xuân Dũng  | Tạo tài liệu lần đầu - Đặc tả chức năng Payment bằng VNPAY cho UC-10 Book Room |
 | 2026-06-15 | `Chu Xuân Dũng`    | Cập nhật ma trận phân quyền: bổ sung quyền gọi Webhook IPN cho VNPAY SYSTEM |
+| 2026-06-15 | `Chu Xuân Dũng`    | **[v2.0]** Bổ sung VNPAY Signature Specification, Environment Configuration, Security Notes, VNPay ResponseCode Mapping và cập nhật Data Model PaymentTransaction |
 
 ---
 
@@ -48,6 +49,10 @@
 14. [Phương pháp Xác minh](#14-phuong-phap-xac-minh)
 15. [Mẫu thử thực tế (API Verification Samples)](#15-mau-thu-thuc-te-api-verification-samples)
 16. [Bảng tổng hợp phân quyền (Authorization Matrix)](#16-bang-tong-hop-phan-quyen-authorization-matrix)
+17. [VNPAY Signature Specification](#17-vnpay-signature-specification)
+18. [Environment Configuration](#18-environment-configuration)
+19. [Security Notes](#19-security-notes)
+20. [Mapping VNPay ResponseCode](#20-mapping-vnpay-responsecode)
 
 ---
 
@@ -153,7 +158,7 @@ model Booking {
   customerId      String
   totalPrice      Decimal
   depositAmount   Decimal
-  status          String   // PENDING, CONFIRMED, CANCELLED
+  status          String   // HOLD, CONFIRMED, CANCELLED
   paymentMethod   String?  // 'VNPAY'
   createdAt       DateTime @default(now())
   expiresAt       DateTime // createdAt + 10 minutes
@@ -162,17 +167,23 @@ model Booking {
 }
 
 model PaymentTransaction {
-  id              String   @id @default(uuid())
-  bookingId       String
-  vnpTxnRef       String   @unique // Mã giao dịch của merchant (vnp_TxnRef)
-  vnpTransactionNo String?          // Mã của VNPAY trả về
-  amount          Decimal
-  status          String   // INIT, SUCCESS, FAILED
-  ipnData         Json?    // Dữ liệu gốc từ VNPAY IPN
-  createdAt       DateTime @default(now())
-  booking         Booking  @relation(fields: [bookingId], references: [id])
+  id               String   @id @default(uuid())
+  bookingId        String
+  transactionRef   String   @unique // Mã giao dịch nội bộ: bookingId_timestamp
+  vnpTransactionNo String?           // [NEW] Mã giao dịch do VNPAY trả về (vnp_TransactionNo)
+  responseCode     String?           // [NEW] Mã phản hồi VNPAY để debug và audit (vnp_ResponseCode)
+  amount           Decimal
+  status           PaymentStatus     // PENDING, SUCCESS, FAILED, EXPIRED
+  createdAt        DateTime @default(now())
+  paidAt           DateTime?         // Set khi status = SUCCESS
+  booking          Booking  @relation(fields: [bookingId], references: [id])
 }
 ```
+
+> [!NOTE]
+> **[NEW — v2.0]** So với phiên bản trước, `PaymentTransaction` được bổ sung 2 trường:
+> - `vnpTransactionNo`: Mã giao dịch do VNPAY cấp — dùng để tra cứu trên cổng VNPAY khi cần reconciliation.
+> - `responseCode`: Lưu mã phản hồi (ví dụ `"00"`, `"97"`) để hỗ trợ debug và audit log nội bộ.
 
 ---
 
@@ -366,5 +377,184 @@ Dựa theo VNPAY spec và mapping hệ thống:
 | --------------------------------- | :---: | :------: | :----------: | :---: | :----------: |
 | GET `/api/v1/payments/vnpay-return` | ❌ | ✔️ | ❌ | ✔️ | ❌ |
 | GET `/api/v1/payments/vnpay-ipn`    | ❌ | ❌ | ❌ | ❌ | ✔️ |
+
+---
+
+### 16. VNPAY Signature Specification
+
+> [!IMPORTANT]
+> **[NEW — v2.0]** Mục này mô tả chính xác quy trình tạo checksum VNPAY nhằm tránh lỗi **signature mismatch** trong Spring Boot MVC.
+
+#### 16.1. Thuật toán sử dụng
+
+- **Algorithm:** `HMAC-SHA512`
+- **Secret Key:** Lấy từ biến môi trường `VNPAY_HASH_SECRET` (xem §17)
+- **Encoding:** `UTF-8` xuyên suốt toàn bộ quy trình
+
+#### 16.2. Quy trình tạo Checksum
+
+```
+Bước 1: Tập hợp toàn bộ tham số cần ký (tất cả các tham số bắt đầu bằng "vnp_")
+Bước 2: Loại bỏ các tham số sau khỏi tập ký:
+         - vnp_SecureHash
+         - vnp_SecureHashType
+Bước 3: Loại bỏ các tham số có giá trị null hoặc empty string ("")
+Bước 4: Sắp xếp toàn bộ key theo thứ tự ALPHABET TĂNG DẪN (a-z, case-sensitive)
+Bước 5: Build chuỗi raw query string:
+         key1=value1&key2=value2&key3=value3...
+         ↑ KHÔNG URI Encode tại bước này
+Bước 6: Tính HMAC-SHA512:
+         signature = HMACSHA512(VNPAY_HASH_SECRET, rawQueryString)
+Bước 7: Append vnp_SecureHash vào params:
+         vnp_SecureHash = <signature_hex_lowercase>
+Bước 8: URI Encode TẤT CẢ giá trị param (bao gồm cả vnp_SecureHash)
+Bước 9: Build URL cuối cùng:
+         VNP_PAY_URL?param1=encoded_val1&...&vnp_SecureHash=encoded_hash
+```
+
+> [!CAUTION]
+> **Điểm hay gây lỗi (Common Mistake):** VNPAY v2.1.0 yêu cầu **KHÔNG URI Encode trước khi hash**. Nếu encode trước rồi mới hash, checksum sẽ không khớp và VNPAY trả về `RspCode=97`.
+
+#### 16.3. Sequence Flow
+
+```
+Create Params
+  → Filter Empty Params (bỏ null / empty)
+  → Sort Keys (alphabet, a-z)
+  → Build Raw Query String (key=value&..., KHÔNG encode)
+  → Generate HMACSHA512(secret, rawString)
+  → Append vnp_SecureHash to params
+  → URI Encode all values
+  → Redirect VNPay
+```
+
+#### 16.4. Verify Signature (IPN / Return URL)
+
+```
+Bước 1: Lấy vnp_SecureHash từ query params của VNPAY gửi về
+Bước 2: Xóa vnp_SecureHash và vnp_SecureHashType khỏi map params
+Bước 3: Bỏ các key có value null / empty
+Bước 4: Sort key theo alphabet tăng dần
+Bước 5: Build rawQueryString (KHÔNG encode)
+Bước 6: Tính computedHash = HMACSHA512(VNPAY_HASH_SECRET, rawQueryString)
+Bước 7: So sánh computedHash.equalsIgnoreCase(vnp_SecureHash)
+         → true  : Chữ ký hợp lệ → xử lý nghiệp vụ
+         → false : Reject, trả về RspCode=97
+```
+
+#### 16.5. Java Implementation Reference
+
+```java
+// VnPayUtil.java — Reference Implementation
+public static String hmacSHA512(String key, String data) {
+    try {
+        Mac hmac512 = Mac.getInstance("HmacSHA512");
+        hmac512.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
+        byte[] result = hmac512.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder(2 * result.length);
+        for (byte b : result) sb.append(String.format("%02x", b & 0xff));
+        return sb.toString();
+    } catch (Exception ex) {
+        throw new RuntimeException("HMAC-SHA512 generation failed", ex);
+    }
+}
+
+public static String buildRawHashString(Map<String, String> params) {
+    // 1. Lọc bỏ null/empty và các key exclude
+    // 2. Sort theo key alphabet
+    // 3. Ghép key=value&...
+    return params.entrySet().stream()
+        .filter(e -> e.getKey().startsWith("vnp_")
+                  && !e.getKey().equalsIgnoreCase("vnp_SecureHash")
+                  && !e.getKey().equalsIgnoreCase("vnp_SecureHashType")
+                  && e.getValue() != null && !e.getValue().isEmpty())
+        .sorted(Map.Entry.comparingByKey())
+        .map(e -> e.getKey() + "=" + e.getValue()) // KHÔNG encode tại đây
+        .collect(Collectors.joining("&"));
+}
+```
+
+---
+
+### 17. Environment Configuration
+
+> [!IMPORTANT]
+> **[NEW — v2.0]** Cấu hình môi trường cho VNPAY trong Spring Boot.
+
+#### 17.1. application.yml
+
+```yaml
+vnpay:
+  tmn-code: "${VNPAY_TMN_CODE}"          # Terminal Merchant Number
+  hash-secret: "${VNPAY_HASH_SECRET}"    # SECRET — KHÔNG ĐƯỢC LOG, KHÔNG COMMIT
+  pay-url: "${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}"
+  return-url: "${VNPAY_RETURN_URL:http://localhost:8080/api/bookings/vnpay-callback}"
+  api-version: "2.1.0"
+```
+
+#### 17.2. Các biến môi trường yêu cầu
+
+| Variable | Mô tả | Bắt buộc |
+| --- | --- | :---: |
+| `VNPAY_TMN_CODE` | Mã Terminal Merchant | ✔️ |
+| `VNPAY_HASH_SECRET` | Secret để ký HMAC | ✔️ |
+| `VNPAY_PAY_URL` | URL cổng thanh toán VNPAY | ✔️ |
+| `VNPAY_RETURN_URL` | URL callback sau thanh toán | ✔️ |
+
+#### 17.3. Injection vào Spring Bean
+
+```java
+@Value("${vnpay.tmn-code}")
+private String tmnCode;
+
+@Value("${vnpay.hash-secret}")
+private String hashSecret; // KHÔNG log trường này
+
+@Value("${vnpay.pay-url}")
+private String payUrl;
+
+@Value("${vnpay.return-url}")
+private String returnUrl;
+
+@Value("${vnpay.api-version}")
+private String apiVersion;
+```
+
+> [!CAUTION]
+> `VNPAY_HASH_SECRET` **tuyệt đối không được** log ra console/file.
+> **Không commit** giá trị thật lên Git — dùng `.env.local` hoặc Vault.
+
+---
+
+### 18. Security Notes
+
+> [!IMPORTANT]
+> **[NEW — v2.0]** Các quy tắc bảo mật bắt buộc cho module thanh toán VNPAY.
+
+| # | Quy tắc | Mức độ |
+| --- | --- | --- |
+| SEC-01 | **KHÔNG log `VNPAY_HASH_SECRET`** dưới mọi hình thức (console, file, APM) | 🔴 CRITICAL |
+| SEC-02 | **KHÔNG log raw checksum** (computed hash). Chỉ log kết quả so sánh (valid/invalid) | 🔴 CRITICAL |
+| SEC-03 | **Verify checksum TRƯỚC** mọi xử lý nghiệp vụ. Nếu invalid → reject ngay, không đọc thêm data | 🔴 CRITICAL |
+| SEC-04 | **Reject request** có checksum không hợp lệ với HTTP 400 + trả về `{"RspCode": "97"}` | 🔴 CRITICAL |
+| SEC-05 | `VNPAY_HASH_SECRET` **không được commit** lên Git repository | 🔴 CRITICAL |
+| SEC-06 | Luôn so sánh checksum bằng `equalsIgnoreCase()` — VNPAY có thể trả về hex uppercase hoặc lowercase | 🟡 HIGH |
+
+---
+
+### 19. Mapping VNPay ResponseCode
+
+> [!NOTE]
+> **[NEW — v2.0]** Bảng ánh xạ mã phản hồi từ VNPAY sang xử lý nghiệp vụ nội bộ.
+
+| `vnp_ResponseCode` | Ý nghĩa | Hành động hệ thống | HTTP Response |
+| :---: | --- | --- | :---: |
+| `00` | Giao dịch thành công | Cập nhật Booking → CONFIRMED, set `paidAt` | 200 |
+| `24` | Khách hàng hủy thanh toán | Giữ nguyên Booking HOLD, cho phép retry | 200 |
+| `51` | Tài khoản không đủ số dư | Giữ nguyên Booking HOLD, thông báo người dùng | 200 |
+| `97` | Chữ ký (checksum) không hợp lệ | Reject hoàn toàn, không xử lý nghiệp vụ | 400 |
+| `99` | Lỗi không xác định từ VNPAY | Log error để debug, không thay đổi trạng thái | 200 |
+
+**Tất cả mã lỗi khác ngoài `00`:** Booking giữ nguyên trạng thái HOLD, người dùng được phép retry thanh toán trong thời hạn 10 phút.
 
 ---

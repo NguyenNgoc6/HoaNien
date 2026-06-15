@@ -56,8 +56,5 @@ public interface BookingService {
      */
     void confirmBooking(Long bookingId, Long customerId, String fullName, String phone, String email, String cccd, String notes);
 
-    /**
-     * Hoàn tất thanh toán và chuyển trạng thái đơn hàng thành CONFIRMED.
-     */
-    void completePayment(Long bookingId);
+
 }

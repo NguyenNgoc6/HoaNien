@@ -19,8 +19,8 @@ public class PaymentTransaction {
     @ManyToOne(optional = false)
     private Booking booking;
 
-    @JoinColumn(name = "invoice_id", nullable = false)
-    @ManyToOne(optional = false)
+    @JoinColumn(name = "invoice_id", nullable = true)
+    @ManyToOne(optional = true)
     private ConsolidatedInvoice invoice;
 
     private BigDecimal amount;
@@ -29,11 +29,12 @@ public class PaymentTransaction {
     @Column(nullable = false)
     private PaymentStatus status;
 
-    private String transactionRef; // internal
+    private String transactionRef; // internal: bookingId_timestamp
 
-    private String vnpTxnRef; // gửi sang VNPAY
+    private String vnpTransactionNo; // [NEW] Mã giao dịch do VNPAY trả về (vnp_TransactionNo)
 
-    private String vnpTransactionNo; // trả về từ VNPAY
+    private String responseCode;    // [NEW] Mã phản hồi VNPAY để debug và audit (vnp_ResponseCode)
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
