@@ -13,6 +13,8 @@ public class RoomSearchRequestDTO {
     private String categoryName; // nullable: lọc theo hạng phòng
     private Integer minCapacity; // nullable: số khách tối thiểu
     private BigDecimal maxPricePerNight; // nullable: giá tối đa mỗi đêm
+    private Integer page; // nullable: số trang (0-indexed)
+    private Integer size; // nullable: kích thước trang
 
     public RoomSearchRequestDTO() {
     }
@@ -61,5 +63,21 @@ public class RoomSearchRequestDTO {
 
     public void setMaxPricePerNight(BigDecimal v) {
         this.maxPricePerNight = v;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer v) {
+        this.page = v;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer v) {
+        this.size = v;
     }
 }

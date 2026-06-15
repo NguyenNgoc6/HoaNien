@@ -206,4 +206,226 @@ class RoomServiceUC09Test {
                 assertNotNull(result, "Kết quả không được null");
                 assertTrue(result.isEmpty(), "Phải trả danh sách rỗng vì R101 đã có booking");
         }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002c | MEDIUM | Lọc bỏ phòng đang Bảo trì hoặc Ngừng hoạt động
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002c | MEDIUM | Phòng đang Bảo trì/Lỗi → loại khỏi kết quả")
+        void TC_M2_002c_searchAvailableRooms_filterOutMaintenanceAndOutOfServiceRooms() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                room1.setRoomStatus("Maintenance");
+
+                Room room2 = createRoom(2L, "R102", "Suite", new BigDecimal("3500000"), 4);
+                room2.setRoomStatus("OutOfService");
+
+                Room room3 = createRoom(3L, "R103", "Standard", new BigDecimal("1000000"), 2);
+                room3.setRoomStatus("Vacant_Clean");
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2, room3));
+                when(roomBookingRepository.countOverlappingBookings(eq("R103"), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(1, result.size());
+                assertEquals("R103", result.get(0).getRoomNumber());
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002d | LOW | Lọc theo hạng phòng
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002d | LOW | Lọc theo hạng phòng categoryName")
+        void TC_M2_002d_searchAvailableRooms_filterByCategoryName() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setCategoryName("Deluxe");
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room2 = createRoom(2L, "R201", "Suite", new BigDecimal("3500000"), 4);
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2));
+                when(roomBookingRepository.countOverlappingBookings(eq("R101"), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(1, result.size());
+                assertEquals("R101", result.get(0).getRoomNumber());
+                assertEquals("Deluxe", result.get(0).getCategoryName());
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002e | LOW | Lọc theo sức chứa tối thiểu
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002e | LOW | Lọc theo sức chứa tối thiểu minCapacity")
+        void TC_M2_002e_searchAvailableRooms_filterByMinCapacity() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setMinCapacity(3);
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room2 = createRoom(2L, "R201", "Suite", new BigDecimal("3500000"), 4);
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2));
+                when(roomBookingRepository.countOverlappingBookings(eq("R201"), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(1, result.size());
+                assertEquals("R201", result.get(0).getRoomNumber());
+                assertTrue(result.get(0).getCapacity() >= 3);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002f | LOW | Lọc theo mức giá tối đa
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002f | LOW | Lọc theo giá tối đa maxPricePerNight")
+        void TC_M2_002f_searchAvailableRooms_filterByMaxPrice() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setMaxPricePerNight(new BigDecimal("2500000"));
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room2 = createRoom(2L, "R201", "Suite", new BigDecimal("3500000"), 4);
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2));
+                when(roomBookingRepository.countOverlappingBookings(eq("R101"), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(1, result.size());
+                assertEquals("R101", result.get(0).getRoomNumber());
+                assertTrue(result.get(0).getPricePerNight().compareTo(new BigDecimal("2500000")) <= 0);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002g | HIGH | Validate ngày check-in > check-out (TC-COND-008)
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002g | HIGH | Check-in sau Check-out → ném lỗi IllegalArgumentException")
+        void TC_M2_002g_searchAvailableRooms_checkInAfterCheckOut_throwsException() {
+                // Arrange
+                LocalDate invalidCheckIn = LocalDate.of(2026, 8, 10);
+                LocalDate invalidCheckOut = LocalDate.of(2026, 8, 5);
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(invalidCheckIn, invalidCheckOut);
+
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class, () -> {
+                        roomService.searchAvailableRooms(request);
+                }, "Phải ném IllegalArgumentException khi check-in sau check-out");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002h | MEDIUM | Tìm kiếm kết hợp (Category + Price + Capacity) (TC-COND-009)
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002h | MEDIUM | Tìm kiếm kết hợp nhiều bộ lọc")
+        void TC_M2_002h_searchAvailableRooms_combinedFilters() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setCategoryName("Deluxe");
+                request.setMinCapacity(2);
+                request.setMaxPricePerNight(new BigDecimal("2500000"));
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2); // Thỏa mãn
+                Room room2 = createRoom(2L, "R102", "Deluxe", new BigDecimal("3000000"), 2); // Giá quá cao
+                Room room3 = createRoom(3L, "R201", "Suite", new BigDecimal("2200000"), 4);   // Sai category
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2, room3));
+                when(roomBookingRepository.countOverlappingBookings(eq("R101"), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(1, result.size());
+                assertEquals("R101", result.get(0).getRoomNumber());
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002i | MEDIUM | Tìm kiếm với maxPrice quá thấp (không có phòng) (TC-COND-010)
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002i | MEDIUM | Giá maxPrice quá thấp → trả danh sách rỗng, không lỗi")
+        void TC_M2_002i_searchAvailableRooms_maxPriceTooLow_returnsEmpty() {
+                // Arrange
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setMaxPricePerNight(new BigDecimal("500000")); // Quá thấp
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1));
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertTrue(result.isEmpty(), "Phải trả về danh sách rỗng");
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002j | HIGH | Tìm kiếm với đầu vào là giá trị âm (TC-COND-011)
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002j | HIGH | Đầu vào âm (capacity hoặc price) → ném lỗi")
+        void TC_M2_002j_searchAvailableRooms_negativeInput_throwsException() {
+                // Arrange 1: minCapacity âm
+                RoomSearchRequestDTO request1 = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request1.setMinCapacity(-1);
+
+                // Arrange 2: maxPrice âm
+                RoomSearchRequestDTO request2 = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request2.setMaxPricePerNight(new BigDecimal("-10000"));
+
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class, () -> roomService.searchAvailableRooms(request1));
+                assertThrows(IllegalArgumentException.class, () -> roomService.searchAvailableRooms(request2));
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // TC-M2-002k | MEDIUM | Phân trang kết quả tìm kiếm (TC-COND-012)
+        // ══════════════════════════════════════════════════════════════════════════
+        @Test
+        @DisplayName("TC-M2-002k | MEDIUM | Phân trang kết quả tìm kiếm đúng vị trí và kích thước")
+        void TC_M2_002k_searchAvailableRooms_pagination() {
+                // Arrange: Yêu cầu trang 1, kích thước trang 2
+                RoomSearchRequestDTO request = new RoomSearchRequestDTO(CHECK_IN, CHECK_OUT);
+                request.setPage(1);
+                request.setSize(2);
+
+                Room room1 = createRoom(1L, "R101", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room2 = createRoom(2L, "R102", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room3 = createRoom(3L, "R103", "Deluxe", new BigDecimal("2000000"), 2);
+                Room room4 = createRoom(4L, "R104", "Deluxe", new BigDecimal("2000000"), 2);
+
+                when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2, room3, room4));
+                when(roomBookingRepository.countOverlappingBookings(anyString(), any(), any())).thenReturn(0L);
+
+                // Act
+                List<RoomSearchResponseDTO> result = roomService.searchAvailableRooms(request);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(2, result.size(), "Trang 1 size 2 phải trả về đúng 2 kết quả");
+                assertEquals("R103", result.get(0).getRoomNumber(), "Phần tử đầu của trang 1 phải là R103");
+                assertEquals("R104", result.get(1).getRoomNumber(), "Phần tử thứ hai của trang 1 phải là R104");
+        }
 }

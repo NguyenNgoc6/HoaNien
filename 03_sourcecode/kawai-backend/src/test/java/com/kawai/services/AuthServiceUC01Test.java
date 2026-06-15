@@ -143,9 +143,12 @@ public class AuthServiceUC01Test {
                                 .andExpect(model().attributeExists("customer"));
 
                 // Edit Profile
-                mockMvc.perform(post("/profile/edit")
+                mockMvc.perform(post("/profile/update")
                                 .param("fullName", "New Name")
                                 .param("email", "new@test.com")
+                                .param("phone", "0987654321")
+                                .param("cccd", "123456789012")
+                                .param("gender", "Female")
                                 .with(csrf()))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/profile"))
@@ -154,6 +157,9 @@ public class AuthServiceUC01Test {
                 Customer updatedCustomer = customerRepository.findByAccount_Username("profileuser").get();
                 assertEquals("New Name", updatedCustomer.getFullName());
                 assertEquals("new@test.com", updatedCustomer.getEmail());
+                assertEquals("0987654321", updatedCustomer.getPhone());
+                assertEquals("123456789012", updatedCustomer.getCccdPassportEncrypted());
+                assertEquals("FEMALE", updatedCustomer.getGender());
         }
 
         @Test

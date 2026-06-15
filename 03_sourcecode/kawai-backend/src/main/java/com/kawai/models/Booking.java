@@ -2,6 +2,7 @@ package com.kawai.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
 @Entity
@@ -25,6 +26,14 @@ public class Booking {
     private String bookingSource = "Direct_Web";
     @Column(nullable = false)
     private Integer version = 1;
+
+    /**
+     * Thời điểm HOLD hết hạn (chỉ set khi bookingStatus = 'HOLD').
+     * Null đối với booking CONFIRMED/CANCELLED.
+     * Scheduler dùng field này để phát hiện HOLD quá TTL.
+     */
+    @Column(name = "hold_expires_at")
+    private LocalDateTime holdExpiresAt;
 
     public Long getId() {
         return id;
@@ -80,5 +89,24 @@ public class Booking {
 
     public void setVersion(Integer v) {
         this.version = v;
+    }
+
+    public LocalDateTime getHoldExpiresAt() {
+        return holdExpiresAt;
+    }
+
+    public void setHoldExpiresAt(LocalDateTime holdExpiresAt) {
+        this.holdExpiresAt = holdExpiresAt;
+    }
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

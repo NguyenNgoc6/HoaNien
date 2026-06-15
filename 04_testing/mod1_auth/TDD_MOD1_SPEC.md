@@ -227,8 +227,8 @@ Xác thực, tạo JWT, xử lý 2FA OTP và CRUD người dùng với PII.
 | TC-M1-012 | Token hết hạn hoặc sai → từ chối | TBD | [ ] | [ ] | |
 | TC-M1-013 | Cập nhật hồ sơ thành công — CCCD được mã hóa AES-256 | TBD | [x] | [x] | |
 | TC-M1-014 | CCCD/Hộ chiếu không lưu plaintext trong DB | TBD | [ ] | [ ] | |
-| TC-M1-015 | Admin tạo tài khoản nhân viên với Role chỉ định | TBD | [x] | [x] | |
-| TC-M1-016 | Non-Admin truy cập API quản lý nhân viên → bị chặn 403 | TBD | [ ] | [ ] | |
+| TC-M1-015 | Admin tạo tài khoản nhân viên với Role chỉ định | TBD | [x] | [x] | ✅ Extract to UserServiceUC05Test |
+| TC-M1-016 | Non-Admin truy cập API quản lý nhân viên → bị chặn 403 | TBD | [x] | [x] |✅ Test runs successfully, Controller security verified |
 | TC-M1-017 | Audit Log ghi nhận đầy đủ: ai, làm gì, lúc nào | TBD | [ ] | [ ] | |
 | TC-M1-018 | Admin CRUD hạng phòng / loại tour / menu thành công | TBD | [ ] | [ ] | |
 | TC-M1-019 | Cấu hình giá phòng theo ngày — giá đúng khi tìm kiếm | TBD | [ ] | [ ] | |

@@ -120,7 +120,10 @@ public class AdminController {
       "Tour Categories", "Tours", "Account Management", "Promotions", "Pricing Management");
 
   @GetMapping("/master-data")
-  public String masterData(@RequestParam(value = "tab", defaultValue = "Room Categories") String tab, Model model) {
+  public String masterData(@RequestParam(value = "tab", defaultValue = "Room Categories") String tab, Model model, jakarta.servlet.http.HttpServletResponse response) {
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    response.setHeader("Pragma", "no-cache");
+    response.setDateHeader("Expires", 0);
     model.addAttribute("tabs", MD_TABS);
     model.addAttribute("activeTab", tab);
     model.addAttribute("columns", buildColumns(tab));
@@ -258,22 +261,51 @@ public class AdminController {
         List<Map<String, String>> rows = new ArrayList<>();
         try {
           for (Employee e : employeeRepository.findAll()) {
-            String rn = e.getAccount().getRole().getRoleName();
-            rows.add(r("id", "E-" + e.getId(), "name", e.getFullName(), "type", "Nhân viên", "__typeStyle",
-                bs("Nhân viên"), "role", rn, "__roleStyle", bs(rn), "email", e.getEmail(), "lastLogin", "-", "status",
-                e.getAccount().getIsActive() ? "true" : "false", "username", e.getAccount().getUsername(), "phone",
-                e.getPhone() != null ? e.getPhone() : ""));
+            String rn = (e.getAccount() != null && e.getAccount().getRole() != null)
+                ? e.getAccount().getRole().getRoleName()
+                : "N/A";
+            String username = (e.getAccount() != null) ? e.getAccount().getUsername() : "";
+            String status = (e.getAccount() != null && e.getAccount().getIsActive()) ? "true" : "false";
+            rows.add(r(
+                "id", "E-" + e.getId(),
+                "name", e.getFullName(),
+                "type", "Nhân viên",
+                "__typeStyle", bs("Nhân viên"),
+                "role", rn,
+                "__roleStyle", bs(rn),
+                "email", e.getEmail(),
+                "lastLogin", "-",
+                "status", status,
+                "username", username,
+                "phone", e.getPhone() != null ? e.getPhone() : "",
+                "cccd", e.getCccd() != null ? e.getCccd() : "",
+                "gender", e.getGender() != null ? e.getGender() : "MALE",
+                "salary", e.getSalary() != null ? e.getSalary().toString() : "0"));
           }
           for (Customer c : customerRepository.findAll()) {
             String rn = c.getAccount() != null && c.getAccount().getRole() != null
                 ? c.getAccount().getRole().getRoleName()
                 : "Khách thường";
-            rows.add(r("id", "C-" + c.getId(), "name", c.getFullName(), "type", "Khách hàng", "__typeStyle",
-                bs("Khách hàng"), "role", rn, "__roleStyle", bs(rn), "email", c.getEmail() != null ? c.getEmail() : "-",
-                "lastLogin", "-", "status", c.getAccount() != null && c.getAccount().getIsActive() ? "true" : "false"));
+            String username = (c.getAccount() != null) ? c.getAccount().getUsername() : "";
+            String status = (c.getAccount() != null && c.getAccount().getIsActive()) ? "true" : "false";
+            rows.add(r(
+                "id", "C-" + c.getId(),
+                "name", c.getFullName(),
+                "type", "Khách hàng",
+                "__typeStyle", bs("Khách hàng"),
+                "role", rn,
+                "__roleStyle", bs(rn),
+                "email", c.getEmail() != null ? c.getEmail() : "-",
+                "lastLogin", "-",
+                "status", status,
+                "username", username,
+                "phone", c.getPhone() != null ? c.getPhone() : "",
+                "cccd", c.getCccdPassportEncrypted() != null ? c.getCccdPassportEncrypted() : "",
+                "gender", c.getGender() != null ? c.getGender() : "MALE"));
           }
-        } catch (Exception e) {
-          /* empty */}
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
         yield rows;
       }
       case "Pricing Management" -> {

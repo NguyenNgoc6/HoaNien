@@ -74,4 +74,19 @@ public class AccountControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Tài khoản đang có dữ liệu ràng buộc (logs, bookings...), không thể xóa cứng."));
     }
+
+    @Test
+    public void testUpdateAccount() throws Exception {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("name", "New Employee Name");
+        payload.put("email", "new_email@example.com");
+
+        mockMvc.perform(put("/admin/api/v1/accounts/E-1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Updated successfully"));
+
+        verify(userService, times(1)).updateEmployeeAccount(eq(1L), any(Map.class));
+    }
 }

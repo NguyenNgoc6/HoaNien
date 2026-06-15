@@ -62,4 +62,70 @@ public class RoomCategory {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Column(name = "base_adults", nullable = false)
+    private Integer baseAdults = 2;
+
+    @Column(name = "base_children", nullable = false)
+    private Integer baseChildren = 0;
+
+    @Column(name = "max_adults", nullable = false)
+    private Integer maxAdults = 2;
+
+    @Column(name = "max_children", nullable = false)
+    private Integer maxChildren = 1;
+
+    @Column(name = "extra_adult_surcharge", nullable = false)
+    private BigDecimal extraAdultSurcharge = BigDecimal.ZERO;
+
+    @Column(name = "extra_child_surcharge", nullable = false)
+    private BigDecimal extraChildSurcharge = BigDecimal.ZERO;
+
+    public Integer getBaseAdults() {
+        return baseAdults;
+    }
+
+    public void setBaseAdults(Integer baseAdults) {
+        this.baseAdults = baseAdults;
+    }
+
+    public Integer getBaseChildren() {
+        return baseChildren;
+    }
+
+    public void setBaseChildren(Integer baseChildren) {
+        this.baseChildren = baseChildren;
+    }
+
+    public Integer getMaxAdults() {
+        return maxAdults;
+    }
+
+    public void setMaxAdults(Integer maxAdults) {
+        this.maxAdults = maxAdults;
+    }
+
+    public Integer getMaxChildren() {
+        return maxChildren;
+    }
+
+    public void setMaxChildren(Integer maxChildren) {
+        this.maxChildren = maxChildren;
+    }
+
+    public BigDecimal getExtraAdultSurcharge() {
+        return extraAdultSurcharge;
+    }
+
+    public void setExtraAdultSurcharge(BigDecimal extraAdultSurcharge) {
+        this.extraAdultSurcharge = extraAdultSurcharge;
+    }
+
+    public BigDecimal getExtraChildSurcharge() {
+        return extraChildSurcharge;
+    }
+
+    public void setExtraChildSurcharge(BigDecimal extraChildSurcharge) {
+        this.extraChildSurcharge = extraChildSurcharge;
+    }
 }

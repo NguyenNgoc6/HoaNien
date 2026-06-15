@@ -1,6 +1,6 @@
 package com.kawai.exceptions;
 
-public class BusinessException extends RuntimeException {
+public class BusinessException extends IllegalArgumentException {
     private final String errorCode;
 
     public BusinessException(String errorCode, String errorMessage) {

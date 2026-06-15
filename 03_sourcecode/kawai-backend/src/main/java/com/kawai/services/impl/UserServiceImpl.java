@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
         Employee employee = new Employee();
         employee.setAccount(account);
         employee.setFullName(dto.getFullName());
-        employee.setGender(dto.getGender());
+        employee.setGender(dto.getGender() != null ? dto.getGender().toUpperCase() : "MALE");
         employee.setCccd(dto.getCccd());
         employee.setPhone(dto.getPhone());
         employee.setEmail(dto.getEmail());
@@ -92,9 +92,12 @@ public class UserServiceImpl implements UserService {
         Customer customer = new Customer();
         customer.setAccount(account);
         customer.setFullName(dto.getFullName());
-        customer.setGender(dto.getGender());
+        customer.setGender(dto.getGender() != null ? dto.getGender().toUpperCase() : "MALE");
         customer.setPhone(dto.getPhone());
         customer.setEmail(dto.getEmail());
+        if (dto.getCccd() != null && !dto.getCccd().trim().isEmpty()) {
+            customer.setCccdPassportEncrypted(dto.getCccd());
+        }
         return customerRepository.save(customer);
     }
 
@@ -112,8 +115,10 @@ public class UserServiceImpl implements UserService {
             employee.setPhone(payload.get("phone"));
         if (payload.containsKey("cccd"))
             employee.setCccd(payload.get("cccd"));
-        if (payload.containsKey("gender"))
-            employee.setGender(payload.get("gender"));
+        if (payload.containsKey("gender")) {
+            String genderVal = payload.get("gender");
+            employee.setGender(genderVal != null ? genderVal.toUpperCase() : "MALE");
+        }
         if (payload.containsKey("salary") && !payload.get("salary").isEmpty()) {
             employee.setSalary(new java.math.BigDecimal(payload.get("salary")));
         }
@@ -150,8 +155,16 @@ public class UserServiceImpl implements UserService {
             customer.setEmail(payload.get("email"));
         if (payload.containsKey("phone"))
             customer.setPhone(payload.get("phone"));
-        if (payload.containsKey("gender"))
-            customer.setGender(payload.get("gender"));
+        if (payload.containsKey("gender")) {
+            String genderVal = payload.get("gender");
+            customer.setGender(genderVal != null ? genderVal.toUpperCase() : "MALE");
+        }
+        if (payload.containsKey("cccd")) {
+            String cccdVal = payload.get("cccd");
+            if (cccdVal != null && !cccdVal.equals("********") && !cccdVal.trim().isEmpty()) {
+                customer.setCccdPassportEncrypted(cccdVal);
+            }
+        }
 
         Account account = customer.getAccount();
         if (account != null) {

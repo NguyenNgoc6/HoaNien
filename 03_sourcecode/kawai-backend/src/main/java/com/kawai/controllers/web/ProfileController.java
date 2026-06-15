@@ -33,18 +33,28 @@ public class ProfileController {
         return "guest/profile";
     }
 
-    @PostMapping("/edit")
+    @PostMapping("/update")
     public String editProfile(Authentication authentication, 
                               @RequestParam String fullName, 
-                              @RequestParam String email, 
+                              @RequestParam String phone,
+                              @RequestParam String cccd,
+                              @RequestParam String gender,
+                              @RequestParam(required = false) String email,
                               RedirectAttributes redirectAttributes) {
         String username = authentication.getName();
         Customer customer = customerRepository.findByAccount_Username(username).orElse(null);
         if (customer != null) {
             customer.setFullName(fullName);
-            customer.setEmail(email);
+            customer.setPhone(phone);
+            customer.setGender(gender != null ? gender.toUpperCase() : "MALE");
+            if (cccd != null && !cccd.equals("********") && !cccd.trim().isEmpty()) {
+                customer.setCccdPassportEncrypted(cccd);
+            }
+            if (email != null && !email.trim().isEmpty()) {
+                customer.setEmail(email);
+            }
             customerRepository.save(customer);
-            redirectAttributes.addFlashAttribute("success", "Cáº­p nháº­t thÃ´ng tin thÃ nh cÃ´ng!");
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công!");
         }
         return "redirect:/profile";
     }

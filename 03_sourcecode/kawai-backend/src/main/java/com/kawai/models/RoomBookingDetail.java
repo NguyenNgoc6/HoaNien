@@ -134,4 +134,37 @@ public class RoomBookingDetail {
     public void setBillingRoutingStrategy(String v) {
         this.billingRoutingStrategy = v;
     }
+
+    @Column(name = "number_of_adults", nullable = false)
+    private Integer numberOfAdults = 0;
+
+    @Column(name = "number_of_children", nullable = false)
+    private Integer numberOfChildren = 0;
+
+    @Column(name = "extra_surcharge", nullable = false)
+    private BigDecimal extraSurcharge = BigDecimal.ZERO;
+
+    public Integer getNumberOfAdults() {
+        return numberOfAdults;
+    }
+
+    public void setNumberOfAdults(Integer numberOfAdults) {
+        this.numberOfAdults = numberOfAdults;
+    }
+
+    public Integer getNumberOfChildren() {
+        return numberOfChildren;
+    }
+
+    public void setNumberOfChildren(Integer numberOfChildren) {
+        this.numberOfChildren = numberOfChildren;
+    }
+
+    public BigDecimal getExtraSurcharge() {
+        return extraSurcharge;
+    }
+
+    public void setExtraSurcharge(BigDecimal extraSurcharge) {
+        this.extraSurcharge = extraSurcharge;
+    }
 }

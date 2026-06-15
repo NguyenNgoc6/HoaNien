@@ -130,9 +130,9 @@
                                 <div class="space-y-1.5">
                                     <label class="text-xs uppercase tracking-wider opacity-70 font-semibold">Giới tính</label>
                                     <select name="gender" class="w-full bg-transparent border-b border-hoanien-text/20 pb-2 focus:border-hoanien-text focus:outline-none transition-colors text-sm" required>
-                                        <option value="Male" th:selected="${customer != null and customer.gender == 'Male'}">Nam</option>
-                                        <option value="Female" th:selected="${customer != null and customer.gender == 'Female'}">Nữ</option>
-                                        <option value="Other" th:selected="${customer != null and customer.gender == 'Other'}">Khác</option>
+                                        <option value="MALE" th:selected="${customer != null and (customer.gender == 'Male' or customer.gender == 'MALE')}">Nam</option>
+                                        <option value="FEMALE" th:selected="${customer != null and (customer.gender == 'Female' or customer.gender == 'FEMALE')}">Nữ</option>
+                                        <option value="OTHER" th:selected="${customer != null and (customer.gender == 'Other' or customer.gender == 'OTHER')}">Khác</option>
                                     </select>
                                 </div>
                             </div>

@@ -73,7 +73,10 @@ public class RoomApiController {
             @RequestParam("checkIn") String checkInStr,
             @RequestParam("checkOut") String checkOutStr,
             @RequestParam(value = "categoryName", required = false) String categoryName,
-            @RequestParam(value = "capacity", required = false) Integer capacity) {
+            @RequestParam(value = "capacity", required = false) Integer capacity,
+            @RequestParam(value = "maxPrice", required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size) {
         
         LocalDate checkIn = LocalDate.parse(checkInStr);
         LocalDate checkOut = LocalDate.parse(checkOutStr);
@@ -81,6 +84,9 @@ public class RoomApiController {
         RoomSearchRequestDTO request = new RoomSearchRequestDTO(checkIn, checkOut);
         request.setCategoryName(categoryName);
         request.setMinCapacity(capacity);
+        request.setMaxPricePerNight(maxPrice);
+        request.setPage(page);
+        request.setSize(size);
 
         List<RoomSearchResponseDTO> availableRooms = roomService.searchAvailableRooms(request);
         return ResponseEntity.ok(availableRooms);

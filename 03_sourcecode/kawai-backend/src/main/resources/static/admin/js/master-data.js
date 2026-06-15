@@ -270,13 +270,24 @@ function handleFormSubmit(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
-            .then(res => {
-                if (!res.ok) throw new Error("Lỗi API: " + res.status);
+            .then(async res => {
+                if (!res.ok) {
+                    let errMsg = "Lỗi API: " + res.status;
+                    try {
+                        const errData = await res.json();
+                        if (errData && errData.error) {
+                            errMsg = errData.error;
+                        }
+                    } catch (e) { }
+                    throw new Error(errMsg);
+                }
                 return res.json();
             })
             .then(data => {
                 closeModal("entity-modal");
-                window.location.reload();
+                const url = new URL(window.location.href);
+                url.searchParams.set('t', Date.now().toString());
+                window.location.href = url.toString();
             })
             .catch(err => {
                 console.error("API Error:", err);
@@ -438,6 +449,21 @@ document.addEventListener("click", (e) => {
     applyToggleIcon(btn, next);
     const td = btn.closest("td[data-key]");
     if (td) td.dataset.value = String(next);
+
+    const tr = btn.closest("tr[data-id]");
+    if (tr) {
+        const entityJson = tr.getAttribute('data-entity');
+        if (entityJson) {
+            try {
+                const entityData = JSON.parse(entityJson);
+                entityData.status = String(next);
+                tr.setAttribute('data-entity', JSON.stringify(entityData));
+            } catch (ex) {
+                console.error("Error updating data-entity:", ex);
+            }
+        }
+    }
+
     fetch(`/admin/api/v1/accounts/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -452,6 +478,16 @@ document.addEventListener("click", (e) => {
             // Rollback UI về trạng thái cũ nếu API thất bại
             applyToggleIcon(btn, current);
             if (td) td.dataset.value = String(current);
+            if (tr) {
+                const entityJson = tr.getAttribute('data-entity');
+                if (entityJson) {
+                    try {
+                        const entityData = JSON.parse(entityJson);
+                        entityData.status = String(current);
+                        tr.setAttribute('data-entity', JSON.stringify(entityData));
+                    } catch (ex) {}
+                }
+            }
             if (typeof showToast === "function") showToast("Lỗi cập nhật trạng thái", "error");
         });
 });

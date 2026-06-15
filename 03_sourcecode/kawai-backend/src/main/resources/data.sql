@@ -50,16 +50,16 @@ VALUES (3, 3, 'Nguyễn Minh Quân', 'Nam', '001234567892', '0912000003', 'nmqua
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary)
 VALUES (4, 4, 'Lê Linh', 'Nữ', '001234567893', '0912000004', 'lelinh@kawai.vn', 9000000);
 -- ── 4. Room Categories ───────────────────────────────────────
-UPDATE Room_Categories SET category_name = 'Nipa Pool Villa', base_price = 2500000, capacity = 2 WHERE category_id = 1;
-UPDATE Room_Categories SET category_name = 'River Pool Villa', base_price = 3500000, capacity = 3 WHERE category_id = 2;
-UPDATE Room_Categories SET category_name = 'Wellness Retreats', base_price = 8000000, capacity = 4 WHERE category_id = 3;
+UPDATE Room_Categories SET category_name = 'Nipa Pool Villa', base_price = 2500000, capacity = 2, description = 'Biệt thự sang trọng với hồ bơi riêng biệt ngoài trời, vòi sen ngoài trời hòa mình vào thiên nhiên và bồn tắm ngập tràn ánh sáng với tầm nhìn dừa nước yên bình.' WHERE category_id = 1;
+UPDATE Room_Categories SET category_name = 'River Pool Villa', base_price = 3500000, capacity = 3, description = 'Tọa lạc tại vị trí giáp sông lộng gió, River Pool Villa mang đến trải nghiệm nghỉ dưỡng riêng tư trọn vẹn với hồ bơi vô cực mini hướng thẳng ra dòng sông thơ mộng.' WHERE category_id = 2;
+UPDATE Room_Categories SET category_name = 'Wellness Retreats', base_price = 8000000, capacity = 4, description = 'Biệt thự chăm sóc sức khỏe tối cao rộng 80m2 với liệu trình trị liệu đặc quyền, không gian thiền định riêng tư và bồn ngâm thảo mộc hồi phục sinh khí.' WHERE category_id = 3;
 
-INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (1, 'Nipa Pool Villa', 2500000, 2);
-INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (2, 'River Pool Villa', 3500000, 3);
-INSERT INTO Room_Categories (category_id, category_name, base_price, capacity)
-VALUES (3, 'Wellness Retreats', 8000000, 4);
+INSERT INTO Room_Categories (category_id, category_name, base_price, capacity, description, base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge)
+VALUES (1, 'Nipa Pool Villa', 2500000, 2, 'Biệt thự sang trọng với hồ bơi riêng biệt ngoài trời, vòi sen ngoài trời hòa mình vào thiên nhiên và bồn tắm ngập tràn ánh sáng với tầm nhìn dừa nước yên bình.', 2, 0, 3, 1, 500000, 250000);
+INSERT INTO Room_Categories (category_id, category_name, base_price, capacity, description, base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge)
+VALUES (2, 'River Pool Villa', 3500000, 3, 'Tọa lạc tại vị trí giáp sông lộng gió, River Pool Villa mang đến trải nghiệm nghỉ dưỡng riêng tư trọn vẹn với hồ bơi vô cực mini hướng thẳng ra dòng sông thơ mộng.', 2, 1, 4, 2, 700000, 350000);
+INSERT INTO Room_Categories (category_id, category_name, base_price, capacity, description, base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge)
+VALUES (3, 'Wellness Retreats', 8000000, 4, 'Biệt thự chăm sóc sức khỏe tối cao rộng 80m2 với liệu trình trị liệu đặc quyền, không gian thiền định riêng tư và bồn ngâm thảo mộc hồi phục sinh khí.', 4, 0, 5, 2, 1000000, 500000);
 -- ── 5. Rooms ─────────────────────────────────────────────────
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (1, '101', 1, 'Occupied', NULL);
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (2, '102', 1, 'Vacant_Clean', NULL);
@@ -84,15 +84,15 @@ INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booki
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES (20, '314', 3, 'Vacant_Clean', NULL);
 
 -- ── 5.1. Customers & Bookings cho các phòng Occupied ──
-INSERT INTO Customers (customer_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier) VALUES 
-(1, 'Lê Hoàng Nam', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 'Regular'),
-(2, 'Nguyễn Văn An', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 'Silver'),
-(3, 'Phạm Tuấn', 'Nam', 'CCCD_308', '090308', 'tuan308@test.com', 500, 'Gold'),
-(4, 'Trần Thị Bích', 'Nữ', 'CCCD_104', '090104', 'bich104@test.com', 50, 'Regular'),
-(5, 'Lê Quang', 'Nam', 'CCCD_106', '090106', 'quang106@test.com', 0, 'Regular'),
-(6, 'Đỗ Mỹ Linh', 'Nữ', 'CCCD_207', '090207', 'linh207@test.com', 150, 'Silver'),
-(7, 'Hoàng Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 'Gold'),
-(8, 'Vũ Hùng', 'Nam', 'CCCD_311', '090311', 'hung311@test.com', 800, 'Platinum');
+INSERT INTO Customers (customer_id,account_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier) VALUES 
+(1, 5, 'Lê Hoàng Nam', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 'Regular'),
+(2, 6, 'Nguyễn Văn An', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 'Silver'),
+(3, 7, 'Phạm Tuấn', 'Nam', 'CCCD_308', '090308', 'tuan308@test.com', 500, 'Gold'),
+(4, 8, 'Trần Thị Bích', 'Nữ', 'CCCD_104', '090104', 'bich104@test.com', 50, 'Regular'),
+(5, 9, 'Lê Quang', 'Nam', 'CCCD_106', '090106', 'quang106@test.com', 0, 'Regular'),
+(6, 10, 'Đỗ Mỹ Linh', 'Nữ', 'CCCD_207', '090207', 'linh207@test.com', 150, 'Silver'),
+(7, 11, 'Hoàng Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 'Gold'),
+(8, 12, 'Vũ Hùng', 'Nam', 'CCCD_311', '090311', 'hung311@test.com', 800, 'Platinum');
 
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, version) VALUES
 (1, 1, '2026-06-01', 5000000, 'Confirmed', 'Direct_Web', 1),
@@ -114,15 +114,15 @@ INSERT INTO Room_Bookings (booking_id, check_in_date, check_out_date, deposit_am
 (7, '2026-06-10', '2026-06-15', 1500000, '2026-06-06', 5000000, 'hash'),
 (8, '2026-06-10', '2026-06-16', 3000000, '2026-06-06', 15000000, 'hash');
 
-INSERT INTO Room_Booking_Details (detail_id, booking_id, category_id, room_id, customer_id, room_charge, detail_status, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
-(1, 1, 1, 1, 1, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER'),
-(2, 2, 2, 3, 2, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER'),
-(3, 3, 3, 5, 3, 8000000, 'Pending', TRUE, 2000000, 'BILL_TO_LEADER'),
-(4, 4, 1, 7, 4, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER'),
-(5, 5, 1, 9, 5, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER'),
-(6, 6, 2, 12, 6, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER'),
-(7, 7, 2, 15, 7, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER'),
-(8, 8, 3, 18, 8, 8000000, 'Pending', TRUE, 3000000, 'BILL_TO_LEADER');
+INSERT INTO Room_Booking_Details (detail_id, booking_id, category_id, room_id, customer_id, room_charge, detail_status, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children, extra_surcharge) VALUES
+(1, 1, 1, 1, 1, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER', 2, 0, 0),
+(2, 2, 2, 3, 2, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER', 2, 0, 0),
+(3, 3, 3, 5, 3, 8000000, 'Pending', TRUE, 2000000, 'BILL_TO_LEADER', 2, 0, 0),
+(4, 4, 1, 7, 4, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER', 2, 0, 0),
+(5, 5, 1, 9, 5, 2500000, 'Pending', TRUE, 500000, 'BILL_TO_LEADER', 2, 0, 0),
+(6, 6, 2, 12, 6, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER', 2, 0, 0),
+(7, 7, 2, 15, 7, 3500000, 'Pending', TRUE, 1500000, 'BILL_TO_LEADER', 2, 0, 0),
+(8, 8, 3, 18, 8, 8000000, 'Pending', TRUE, 3000000, 'BILL_TO_LEADER', 2, 0, 0);
 
 UPDATE Rooms SET current_booking_detail_id = 1 WHERE room_id = 1;
 UPDATE Rooms SET current_booking_detail_id = 2 WHERE room_id = 3;
