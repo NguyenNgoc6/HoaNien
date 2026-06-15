@@ -56,7 +56,7 @@ foreach($mod in $mods.Keys) {
 
 | Field | Value |
 |-------|-------|
-| Document ID | KAWAI-TDD-$prefix-$ucUpper-001 |
+| Document ID | HOANIEN-TDD-$prefix-$ucUpper-001 |
 | Version | 1.0 |
 | Date | 2026-06-14 |
 | Status | Draft |
@@ -78,7 +78,7 @@ TC-$ucUpper-001 to TC-$ucUpper-XXX
 
 | Field | Value |
 |-------|-------|
-| Document ID | KAWAI-EDS-$prefix-$ucUpper-001 |
+| Document ID | HOANIEN-EDS-$prefix-$ucUpper-001 |
 | Version | 1.0 |
 | Date | 2026-06-14 |
 | Status | Draft |

@@ -3,7 +3,7 @@
 
 | Field | Value |
 | --- | --- |
-| **Document ID** | `KAWAI-MOD1-IMP-001` |
+| **Document ID** | `HOANIEN-MOD1-IMP-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-12 |
 | **Status** | Approved |
@@ -200,7 +200,7 @@ npx prisma migrate deploy
 #### 12.2. Rollback Procedure
 ```bash
 # Revert deployment
-kubectl rollout undo deployment/kawai-backend
+kubectl rollout undo deployment/hoanien-backend
 ```
 
 ---
@@ -225,7 +225,7 @@ SELECT * FROM audit_logs WHERE entity_id = 'user-123';
 ### 15. Mẫu thử thực tế (API Verification Samples)
 #### 15.1. Happy Path
 ```bash
-curl -X POST https://api.kawairesort.com/api/v1/auth/login \
+curl -X POST https://api.hoanienretreat.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "123"}'
 ```

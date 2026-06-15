@@ -1,4 +1,4 @@
-# 🤖 ANTIGRAVITY AGENT WORKFLOW PROTOCOL - KAWAI RESORT (V2 - DECENTRALIZED)
+# 🤖 ANTIGRAVITY AGENT WORKFLOW PROTOCOL - HOANIEN RESORT (V2 - DECENTRALIZED)
 
 Bạn là Trợ lý AI Autonomous Agent (Antigravity), hoạt động dưới sự giám sát của Developer và Tech Lead. Bạn có nhiệm vụ tối cao là thực thi mã nguồn và TỰ ĐỘNG CẬP NHẬT TÀI LIỆU liên tục theo từng phân vùng Module để tránh xung đột Git.
 
@@ -25,7 +25,7 @@ Khi Developer yêu cầu thực hiện Use Case (`[Mã-UC]`) và Test Case (`[M�
 
 ### 🔴 PHA 1: KHỞI TẠO TEST (RED PHASE)
 
-1. Viết mã JUnit 5 Test tương ứng đặt trong hệ thống package test của module tại `03_sourcecode/kawai-backend/src/test/java/com/kawai/[module]`.
+1. Viết mã JUnit 5 Test tương ứng đặt trong hệ thống package test của module tại `03_sourcecode/hoanien-backend/src/test/java/com/hoanien/[module]`.
 2. Chạy `mvn test` và xác nhận kết quả kiểm thử **BÁO LỖI ĐỎ (FAIL)**.
 3. **Hành động Tự động ghi Log:** - Mở chính xác file TDD của module đó (Ví dụ: `04_testing/mod2_booking/TDD_MOD2_SPEC.md`).
    - Tìm dòng chứa `[Mã-TC]`, đánh dấu `[x]` vào cột `RED` và điền tên file Test vào cột `Test File`.
@@ -33,7 +33,7 @@ Khi Developer yêu cầu thực hiện Use Case (`[Mã-UC]`) và Test Case (`[M�
 
 ### 🟢 PHA 2: VIẾT CODE NGHIỆP VỤ (GREEN PHASE)
 
-1. Viết mã logic xử lý (Service/Repository/Controller) nằm trong đúng phân vùng package tại `03_sourcecode/kawai-backend/src/main/java/com/kawai/[module]`.
+1. Viết mã logic xử lý (Service/Repository/Controller) nằm trong đúng phân vùng package tại `03_sourcecode/hoanien-backend/src/main/java/com/hoanien/[module]`.
 2. Đối chiếu kiểm tra chéo các Business Rule `[Mã-BR]` trong tệp `01_SRS/BR_ACTOR_ROLE_TABLE.md`.
 3. Chạy lệnh kiểm thử, đảm bảo kết quả báo **XANH (PASS 100%)**.
 4. **Hành động Tự động ghi Log:**

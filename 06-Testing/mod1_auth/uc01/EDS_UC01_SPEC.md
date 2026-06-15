@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC01-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC01-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -275,7 +275,7 @@ public interface AuthService {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -329,17 +329,17 @@ SELECT COUNT(*) FROM refresh_token WHERE user_id = :userId AND revoked = FALSE;
 
 ```bash
 # Login
-curl -X POST https://api.kawairesort.com/api/v1/auth/login \
+curl -X POST https://api.hoanienretreat.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@gmail.com","password":"123456"}'
 
 # Refresh
-curl -X POST https://api.kawairesort.com/api/v1/auth/refresh \
+curl -X POST https://api.hoanienretreat.com/api/v1/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{"refreshToken":"abc..."}'
 
 # Logout
-curl -X POST https://api.kawairesort.com/api/v1/auth/logout \
+curl -X POST https://api.hoanienretreat.com/api/v1/auth/logout \
   -H "Authorization: Bearer [JWT]"
 ```
 

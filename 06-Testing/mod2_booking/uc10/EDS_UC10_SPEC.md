@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD2-UC10-001` |
+| **Document ID** | `HOANIEN-EDS-MOD2-UC10-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -519,7 +519,7 @@ public class BookingResponseDTO {
 
 #### 11.2. Pre-Migration Checklist
 
-- [ ] Đã backup DB: `mysqldump -u root -p kawai_resort > backup_booking_YYYYMMDD.sql`
+- [ ] Đã backup DB: `mysqldump -u root -p hoanien_resort > backup_booking_YYYYMMDD.sql`
 - [ ] Migration đã chạy trên staging >= 24h
 - [ ] Rollback script đã test trên staging
 
@@ -528,14 +528,14 @@ public class BookingResponseDTO {
 **Chặng 1 — Database Schema**
 
 ```bash
-mysql -u root -p kawai_resort < src/main/resources/db/migration/V2__create_booking_table.sql
+mysql -u root -p hoanien_resort < src/main/resources/db/migration/V2__create_booking_table.sql
 ```
 
 **Chặng 2 — Deploy Backend**
 
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 **Chặng 3 — Verification**
@@ -573,7 +573,7 @@ Expected: HTTP 200 + booking CONFIRMED.
 ```bash
 git checkout tags/v1.0.0
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar
+java -jar target/hoanien-backend-1.0.jar
 curl -X GET http://localhost:8080/actuator/health
 ```
 
@@ -692,8 +692,8 @@ HAVING COUNT(*) > 1;
 #### 14.2. Log / Audit Verification
 
 ```bash
-kubectl logs -l app=kawai-backend | grep "BookingCreated" | head -5
-kubectl logs -l app=kawai-backend | grep -i "password\|secret\|cccd"
+kubectl logs -l app=hoanien-backend | grep "BookingCreated" | head -5
+kubectl logs -l app=hoanien-backend | grep -i "password\|secret\|cccd"
 # Expected: No output
 ```
 
@@ -701,7 +701,7 @@ kubectl logs -l app=kawai-backend | grep -i "password\|secret\|cccd"
 
 ```bash
 echo "[JWT]" | cut -d'.' -f2 | base64 -d | jq .
-openssl s_client -connect api.kawairesort.com:443 -tls1_3 2>&1 | grep "Protocol"
+openssl s_client -connect api.hoanienretreat.com:443 -tls1_3 2>&1 | grep "Protocol"
 ```
 
 ---
@@ -712,7 +712,7 @@ openssl s_client -connect api.kawairesort.com:443 -tls1_3 2>&1 | grep "Protocol"
 
 ```bash
 # [POST] Tạo đặt phòng mới
-curl -X POST https://api.kawairesort.com/api/v1/bookings \
+curl -X POST https://api.hoanienretreat.com/api/v1/bookings \
   -H "Authorization: Bearer [JWT_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -739,7 +739,7 @@ curl -X POST https://api.kawairesort.com/api/v1/bookings \
 
 ```bash
 # Thiếu required field -> 400
-curl -X POST https://api.kawairesort.com/api/v1/bookings \
+curl -X POST https://api.hoanienretreat.com/api/v1/bookings \
   -H "Authorization: Bearer [JWT]" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -761,7 +761,7 @@ curl -X POST https://api.kawairesort.com/api/v1/bookings \
 
 ```bash
 # Không có JWT -> 401
-curl -X POST https://api.kawairesort.com/api/v1/bookings
+curl -X POST https://api.hoanienretreat.com/api/v1/bookings
 ```
 
 ```json

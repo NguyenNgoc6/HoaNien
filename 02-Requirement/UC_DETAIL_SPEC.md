@@ -1,10 +1,10 @@
 # ĐẶC TẢ CHI TIẾT USE CASE (USE CASE DETAIL SPECIFICATIONS)
 
-## HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG KAWAI RETREAT RESORT & HUB
+## HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG HOANIEN RETREAT RESORT & HUB
 
 | Field          | Value                                 |
 | -------------- | ------------------------------------- |
-| **Document ID**| `KAWAI-SRS-UC-DET-001`                |
+| **Document ID**| `HOANIEN-SRS-UC-DET-001`                |
 | **Version**    | 1.0                                   |
 | **Date**       | 2026-06-13                            |
 | **Status**     | Approved                              |

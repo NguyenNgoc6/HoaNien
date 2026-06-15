@@ -1,10 +1,10 @@
 # ENGINEERING DOCUMENTATION STANDARD (EDS) & TESTING SPECIFICATION v2.0
 
-## HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG KAWAI RETREAT RESORT & HUB
+## HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG HOANIEN RETREAT RESORT & HUB
 
 | Field          | Value                        |
 | -------------- | ---------------------------- |
-| Document ID    | KAWAI-ALL-EDS-001            |
+| Document ID    | HOANIEN-ALL-EDS-001            |
 | Version        | 1.0                          |
 | Date           | 2026-06-09                   |
 | Status         | Draft / In Review / Approved |
@@ -18,7 +18,7 @@
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                    |
 | ---------- | ------------------- | ----------------------------------------------------------------------- |
 | 2026-06-11 | Lưu                | Đồng bộ mục lục, bổ sung đặc tả API chi tiết cho cả 5 Module |
-| 2026-06-09 | Lưu                | Khởi tạo tài liệu EDS cho toàn bộ hệ thống Kawai Resort         |
+| 2026-06-09 | Lưu                | Khởi tạo tài liệu EDS cho toàn bộ hệ thống Hòa Niên Resort         |
 
 ## MỤC LỤC
 
@@ -37,7 +37,7 @@
 
 | Field               | Value                                                     |
 | ------------------- | --------------------------------------------------------- |
-| Module Name         | KAWAI RETREAT RESORT SYSTEM (5 Modules)                   |
+| Module Name         | HOANIEN RETREAT RESORT SYSTEM (5 Modules)                   |
 | Bounded Context     | Quản lý lưu trú, F&B, Tour, Khách hàng, Thanh toán |
 | Data Classification | Sensitive-PII (CCCD, Hộ chiếu) / Internal (Doanh thu)   |
 | Compliance Scope    | Nghị định 13/2023/NĐ-CP, USALI (Báo cáo Kế toán)  |
@@ -439,7 +439,7 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
 ### 7.7.3. Request / Response Sample
 **[POST] Xác thực AI Face Scan**
 ```bash
-curl -X POST https://api.kawairesort.com/api/v1/tour-attendance/1/verify \
+curl -X POST https://api.hoanienretreat.com/api/v1/tour-attendance/1/verify \
   -H "Authorization: Bearer [TOUR_GUIDE_TOKEN]" \
   -F "image=@/path/to/face.jpg"
 
@@ -452,7 +452,7 @@ curl -X POST https://api.kawairesort.com/api/v1/tour-attendance/1/verify \
 
 **[POST] Điểm danh thủ công**
 ```bash
-curl -X POST https://api.kawairesort.com/api/v1/tour-attendance/1/manual?status=PRESENT \
+curl -X POST https://api.hoanienretreat.com/api/v1/tour-attendance/1/manual?status=PRESENT \
   -H "Authorization: Bearer [TOUR_GUIDE_TOKEN]"
 
 # Expected Response (200 OK):
@@ -485,7 +485,7 @@ curl -X POST https://api.kawairesort.com/api/v1/tour-attendance/1/manual?status=
 ### 7.8.3. Request / Response Sample
 **[POST] Gửi đánh giá Tour**
 ```bash
-curl -X POST "https://api.kawairesort.com/api/v1/reviews/tour?customerId=1&tourBookingId=100&rating=5&reviewText=Excellent!" \
+curl -X POST "https://api.hoanienretreat.com/api/v1/reviews/tour?customerId=1&tourBookingId=100&rating=5&reviewText=Excellent!" \
   -H "Authorization: Bearer [CUSTOMER_TOKEN]"
 
 # Expected Response (200 OK):
@@ -503,7 +503,7 @@ curl -X POST "https://api.kawairesort.com/api/v1/reviews/tour?customerId=1&tourB
 
 **[PUT] Admin kiểm duyệt đánh giá**
 ```bash
-curl -X PUT "https://api.kawairesort.com/api/v1/reviews/1/moderate?adminId=99&newStatus=Hidden&reason=Ngôn từ thô tục" \
+curl -X PUT "https://api.hoanienretreat.com/api/v1/reviews/1/moderate?adminId=99&newStatus=Hidden&reason=Ngôn từ thô tục" \
   -H "Authorization: Bearer [ADMIN_TOKEN]"
 
 # Expected Response (200 OK):
@@ -543,7 +543,7 @@ curl -X PUT "https://api.kawairesort.com/api/v1/reviews/1/moderate?adminId=99&ne
 
 ```bash
 # [POST] Tìm phòng trống theo khoảng ngày
-curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
+curl -X POST https://api.hoanienretreat.com/api/v1/rooms/search \
   -H "Authorization: Bearer [CUSTOMER_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -588,7 +588,7 @@ curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
 **[GET] Lấy danh sách sơ đồ phòng**
 ```bash
 # [GET] Lấy danh sách sơ đồ phòng Front Desk
-curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard \
+curl -X GET https://api.hoanienretreat.com/api/v1/rooms/dashboard \
   -H "Authorization: Bearer [RECEPTIONIST_TOKEN]" \
   -H "Content-Type: application/json"
 
@@ -627,7 +627,7 @@ curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard \
 
 ```bash
 # [POST] Đặt phòng
-curl -X POST https://api.kawairesort.com/api/v1/bookings \
+curl -X POST https://api.hoanienretreat.com/api/v1/bookings \
   -H "Authorization: Bearer [CUSTOMER_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -655,7 +655,7 @@ curl -X POST https://api.kawairesort.com/api/v1/bookings \
 
 ```bash
 # [DELETE] Hủy booking trước 48h
-curl -X DELETE https://api.kawairesort.com/api/v1/bookings/12345 \
+curl -X DELETE https://api.hoanienretreat.com/api/v1/bookings/12345 \
   -H "Authorization: Bearer [CUSTOMER_TOKEN]"
 
 # Expected Response (200):
@@ -698,7 +698,7 @@ GROUP BY room_id HAVING booking_count > 1;
 
 ```bash
 # [POST] POS gửi yêu cầu ghi nợ vào phòng R202
-curl -X POST https://api.kawairesort.com/api/v1/pos/post-to-room \
+curl -X POST https://api.hoanienretreat.com/api/v1/pos/post-to-room \
   -H "Authorization: Bearer [POS_STAFF_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -721,7 +721,7 @@ curl -X POST https://api.kawairesort.com/api/v1/pos/post-to-room \
 
 ```bash
 # [POST] Admin tạo tài khoản nhân viên (UC05.1 - TC-M1-015)
-curl -X POST https://api.kawairesort.com/api/v1/admin/employees \
+curl -X POST https://api.hoanienretreat.com/api/v1/admin/employees \
   -H "Authorization: Bearer [ADMIN_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{

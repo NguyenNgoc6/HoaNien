@@ -1,5 +1,5 @@
 
-# KAWAI RESORT - SỔ TAY QUY TRÌNH LÀM VIỆC NHÓM TÍCH HỢP AI (AI-HUMAN COLLABORATIVE WORKFLOW)
+# HOANIEN RESORT - SỔ TAY QUY TRÌNH LÀM VIỆC NHÓM TÍCH HỢP AI (AI-HUMAN COLLABORATIVE WORKFLOW)
 
 Tài liệu này định nghĩa quy trình phối hợp chặt chẽ giữa **Lập trình viên (Developer)**, **Trợ lý AI (Antigravity)**, và **Trưởng nhóm kỹ thuật (Tech Lead)** nhằm đảm bảo tốc độ phát triển nhanh, chất lượng code cao và Tech Lead dễ dàng giám sát tiến độ thực tế.
 
@@ -23,16 +23,16 @@ Tài liệu này định nghĩa quy trình phối hợp chặt chẽ giữa **L�
 
 **Nguyên tắc sống còn:** Việc ai nấy làm, code ai nấy sửa.
 
-1. **Thư mục Code Chính (`src/main/java/com/kawai/...`)**:
+1. **Thư mục Code Chính (`src/main/java/com/hoanien/...`)**:
    * Mỗi thành viên chỉ thêm/sửa code trong package thuộc Module được phân công.
    * **CẤM:** Tự ý sửa các Entity trong package `models` (sẽ làm hỏng Database Schema chung). Mọi thay đổi Database Schema phải được **Tech Lead phê duyệt**.
    * **CẤM:** Tự ý sửa các file cấu hình chung (`application.yml`, `pom.xml`, các file cấu hình bảo mật `SecurityConfig`).
 2. **Quyền sở hữu Module:**
-   * **Lưu (MOD 1):** Xác thực, 2FA, mã hóa PII. (`com.kawai.auth`, `com.kawai.profile`, `com.kawai.core`)
-   * **Dũng (MOD 2):** Đặt phòng, Tiền sảnh, Room Matrix. (`com.kawai.booking`, `com.kawai.frontdesk`)
-   * **Đức (MOD 3):** POS Nhà hàng, KDS, Post to Room. (`com.kawai.pos`, `com.kawai.fb`)
-   * **Ngọc (MOD 4):** Đặt Tour, AI Face Scan, Đánh giá. (`com.kawai.tour`, `com.kawai.feedback`, AI Python Service)
-   * **Lan (MOD 5):** Folio nợ, Kiểm toán đêm (Night Audit), Báo cáo. (`com.kawai.finance`, `com.kawai.report`)
+   * **Lưu (MOD 1):** Xác thực, 2FA, mã hóa PII. (`com.hoanien.auth`, `com.hoanien.profile`, `com.hoanien.core`)
+   * **Dũng (MOD 2):** Đặt phòng, Tiền sảnh, Room Matrix. (`com.hoanien.booking`, `com.hoanien.frontdesk`)
+   * **Đức (MOD 3):** POS Nhà hàng, KDS, Post to Room. (`com.hoanien.pos`, `com.hoanien.fb`)
+   * **Ngọc (MOD 4):** Đặt Tour, AI Face Scan, Đánh giá. (`com.hoanien.tour`, `com.hoanien.feedback`, AI Python Service)
+   * **Lan (MOD 5):** Folio nợ, Kiểm toán đêm (Night Audit), Báo cáo. (`com.hoanien.finance`, `com.hoanien.report`)
    * **Tech Lead:** Quản lý cấu hình chung (`config`, `pom.xml`), duyệt và merge PR.
 
 ---

@@ -6,7 +6,7 @@
 
 | Field                    | Value                                                                                 |
 | ------------------------ | ------------------------------------------------------------------------------------- |
-| **Document ID**    | `KAWAI-MOD2-IMP-001`                                                                |
+| **Document ID**    | `HOANIEN-MOD2-IMP-001`                                                                |
 | **Version**        | 1.0                                                                                   |
 | **Date**           | 2026-06-12                                                                            |
 | **Status**         | Approved                                                                              |
@@ -529,7 +529,7 @@ mvn liquibase:update -Dliquibase.changeLogFile=src/main/resources/db/changelog/d
 
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=prod
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=prod
 ```
 
 **Chặng 3 — Verification sau deploy**
@@ -571,7 +571,7 @@ Revert về commit ổn định trước đó:
 ```bash
 git checkout tags/v1.2.0
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar
+java -jar target/hoanien-backend-1.0.jar
 ```
 
 **Bước 2: Verify rollback thành công**
@@ -666,7 +666,7 @@ HAVING COUNT(*) > 1;
 
 ```bash
 # Kiểm tra audit log format ghi nhận đặt phòng
-kubectl logs -l app=kawai-backend | grep "RoomBooked"
+kubectl logs -l app=hoanien-backend | grep "RoomBooked"
 ```
 
 ---
@@ -678,7 +678,7 @@ kubectl logs -l app=kawai-backend | grep "RoomBooked"
 # [POST] Tạo đặt phòng mới
 
 ```bash
-curl -X POST https://api.kawairesort.com/api/bookings \
+curl -X POST https://api.hoanienretreat.com/api/bookings \
   -H "Authorization: Bearer [JWT_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -707,7 +707,7 @@ curl -X POST https://api.kawairesort.com/api/bookings \
 # [POST] Thiếu required field -> 400
 
 ```bash
-curl -X POST https://api.kawairesort.com/api/bookings \
+curl -X POST https://api.hoanienretreat.com/api/bookings \
   -H "Authorization: Bearer [JWT_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -730,7 +730,7 @@ curl -X POST https://api.kawairesort.com/api/bookings \
 # [GET] Không có JWT -> 401
 
 ```bash
-curl -X GET https://api.kawairesort.com/api/bookings
+curl -X GET https://api.hoanienretreat.com/api/bookings
 ```
 
 *Expected Response (401):*

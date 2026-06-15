@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD1-UC06-001` |
+| **Document ID** | `HOANIEN-TDD-MOD1-UC06-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -136,4 +136,4 @@ Logic `AuditService.logAction()`, `queryAuditLog()`, `exportAuditLog()`.
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/AuditServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/AuditServiceImpl.java`

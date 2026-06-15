@@ -1,0 +1,144 @@
+package com.hoanien.services.impl;
+
+import com.hoanien.dto.RoomSearchRequestDTO;
+import com.hoanien.dto.RoomSearchResponseDTO;
+import com.hoanien.dto.RoomDashboardDTO;
+import com.hoanien.models.Room;
+import com.hoanien.models.RoomCategory;
+import com.hoanien.repositories.RoomBookingRepository;
+import com.hoanien.repositories.RoomRepository;
+import com.hoanien.services.interfaces.RoomService;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * RoomServiceImpl — UC09: Tìm kiếm phòng trống thời gian thực.
+ *
+ * Business Rules:
+ * BR-FO-01 : Chỉ hiển thị phòng không có booking trùng ngày
+ * BR-FO-04 : Trạng thái phòng ảnh hưởng đến kết quả tìm kiếm
+ * BR-FIN-05 : Giá phòng tính bằng BigDecimal, scale 0, HALF_UP
+ */
+@Service
+public class RoomServiceImpl implements RoomService {
+
+    private static final int NO_OVERLAPPING = 0;
+
+    private final RoomRepository roomRepository;
+    private final RoomBookingRepository roomBookingRepository;
+
+    public RoomServiceImpl(RoomRepository roomRepository,
+            RoomBookingRepository roomBookingRepository) {
+        this.roomRepository = roomRepository;
+        this.roomBookingRepository = roomBookingRepository;
+    }
+
+    /**
+     * Tìm phòng trống trong khoảng [checkInDate, checkOutDate).
+     * Trả về danh sách rỗng (không null) nếu không có phòng khả dụng.
+     */
+    @Override
+    public List<RoomSearchResponseDTO> searchAvailableRooms(RoomSearchRequestDTO request) {
+        LocalDate checkIn = request.getCheckInDate();
+        LocalDate checkOut = request.getCheckOutDate();
+
+        List<Room> allRooms = roomRepository.findAll();
+        List<RoomSearchResponseDTO> available = new ArrayList<>();
+
+        for (Room room : allRooms) {
+            // Filter out rooms under maintenance
+            String status = room.getRoomStatus();
+            if ("Maintenance".equalsIgnoreCase(status) || "OutOfService".equalsIgnoreCase(status)) {
+                continue;
+            }
+
+            RoomCategory cat = room.getCategory();
+            if (cat != null) {
+                if (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty()) {
+                    if (!cat.getCategoryName().equalsIgnoreCase(request.getCategoryName().trim())) {
+                        continue;
+                    }
+                }
+                if (request.getMinCapacity() != null) {
+                    if (cat.getCapacity() < request.getMinCapacity()) {
+                        continue;
+                    }
+                }
+                if (request.getMaxPricePerNight() != null) {
+                    if (cat.getBasePrice().compareTo(request.getMaxPricePerNight()) > 0) {
+                        continue;
+                    }
+                }
+            }
+
+            if (isRoomAvailable(room.getRoomNumber(), checkIn, checkOut)) {
+                available.add(toSearchResult(room, checkIn, checkOut));
+            }
+        }
+        return available;
+    }
+
+    /**
+     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard.
+     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản (UC11).
+     * 
+     * @return Danh sách RoomDashboardDTO, rỗng nếu không có dữ liệu
+     */
+    @Override
+    public List<RoomDashboardDTO> getRoomDashboard() {
+        List<Room> allRooms = roomRepository.findAll();
+        if (allRooms == null || allRooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return allRooms.stream()
+                .map(this::toDashboardDTO)
+                .toList();
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────
+
+    private boolean isRoomAvailable(String roomNumber, LocalDate checkIn, LocalDate checkOut) {
+        long overlappingCount = roomBookingRepository.countOverlappingBookings(
+                roomNumber, checkIn, checkOut);
+        return overlappingCount == NO_OVERLAPPING;
+    }
+
+    private RoomDashboardDTO toDashboardDTO(Room room) {
+        RoomDashboardDTO dto = new RoomDashboardDTO();
+        dto.setRoomId(room.getId());
+        dto.setRoomNumber(room.getRoomNumber());
+        dto.setRoomStatus(room.getRoomStatus());
+
+        RoomCategory cat = room.getCategory();
+        if (cat != null) {
+            dto.setCategoryName(cat.getCategoryName());
+            if (cat.getBasePrice() != null) {
+                dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
+            }
+            dto.setCapacity(cat.getCapacity());
+        }
+        return dto;
+    }
+
+    private RoomSearchResponseDTO toSearchResult(Room room,
+            LocalDate checkIn,
+            LocalDate checkOut) {
+        RoomSearchResponseDTO dto = new RoomSearchResponseDTO();
+        dto.setRoomId(room.getId());
+        dto.setRoomNumber(room.getRoomNumber());
+        dto.setCheckInDate(checkIn);
+        dto.setCheckOutDate(checkOut);
+
+        RoomCategory cat = room.getCategory();
+        if (cat != null) {
+            dto.setCategoryName(cat.getCategoryName());
+            dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
+            dto.setCapacity(cat.getCapacity());
+        }
+        return dto;
+    }
+}

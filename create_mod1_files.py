@@ -146,7 +146,7 @@ for uc in uc_data:
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-TDD-MOD1-{uc['id'].upper()}-001 |
+| **Document ID** | HOANIEN-TDD-MOD1-{uc['id'].upper()}-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -201,7 +201,7 @@ for uc in uc_data:
 - [x] Unit tests pass 100%
 
 ### 7. Rollback Plan
-`git checkout -- src/main/java/com/kawai/services/impl/{uc['service']}Impl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/{uc['service']}Impl.java`
 """
     
     with open(f"{base}/TDD_{uc['uc']}_SPEC.md", 'w', encoding='utf-8') as f:
@@ -214,7 +214,7 @@ for uc in uc_data:
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-EDS-MOD1-{uc['id'].upper()}-001 |
+| **Document ID** | HOANIEN-EDS-MOD1-{uc['id'].upper()}-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -284,7 +284,7 @@ public interface {uc['service']} {
     
     eds += f"""
 ### 11. Deployment
-`mvn clean package && java -jar target/kawai-backend-1.0.jar`
+`mvn clean package && java -jar target/hoanien-backend-1.0.jar`
 
 ### 12. Rollback
 `git checkout tags/v1.0.0 && mvn clean package`

@@ -3,7 +3,7 @@
 
 | Field | Value |
 | --- | --- |
-| **Document ID** | `KAWAI-TDD-MOD2-UC09-001` |
+| **Document ID** | `HOANIEN-TDD-MOD2-UC09-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -134,4 +134,4 @@ Logic tìm kiếm phòng trống `RoomService.searchAvailableRooms()`.
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/RoomServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/RoomServiceImpl.java`

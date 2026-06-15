@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| Document ID | KAWAI-EDS-MOD5-UC25-001 |
+| Document ID | HOANIEN-EDS-MOD5-UC25-001 |
 | Version | 1.0 |
 | Date | 2026-06-14 |
 | Status | Draft |

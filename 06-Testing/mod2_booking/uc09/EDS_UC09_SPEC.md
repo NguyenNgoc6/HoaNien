@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD2-UC09-001` |
+| **Document ID** | `HOANIEN-EDS-MOD2-UC09-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -495,14 +495,14 @@ public class RoomSearchResponseDTO {
 Chạy script SQL để tạo bảng room và room_category (nếu chưa có).
 
 ```bash
-mysql -u root -p kawai_resort < src/main/resources/db/migration/V1__create_room_tables.sql
+mysql -u root -p hoanien_resort < src/main/resources/db/migration/V1__create_room_tables.sql
 ```
 
 **Chặng 2 — Deploy Backend Application**
 
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 **Chặng 3 — Verification sau deploy**
@@ -544,7 +544,7 @@ Section này là bắt buộc. Một deploy thiếu rollback plan là deploy ch�
 # Bước 1: Re-deploy phiên bản cũ
 git checkout tags/v1.0.0
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar
+java -jar target/hoanien-backend-1.0.jar
 
 # Bước 2: Verify rollback thành công
 curl -X GET http://localhost:8080/actuator/health
@@ -662,10 +662,10 @@ SELECT query FROM pg_stat_activity WHERE query ILIKE '%room%';
 
 ```bash
 # Kiểm tra audit log format
-kubectl logs -l app=kawai-backend | grep "RoomsSearched" | head -5
+kubectl logs -l app=hoanien-backend | grep "RoomsSearched" | head -5
 
 # Kiểm tra không có PII trong Log
-kubectl logs -l app=kawai-backend | grep -i "password\|secret\|cccd"
+kubectl logs -l app=hoanien-backend | grep -i "password\|secret\|cccd"
 # Expected: No output
 ```
 
@@ -676,7 +676,7 @@ kubectl logs -l app=kawai-backend | grep -i "password\|secret\|cccd"
 echo "[JWT_TOKEN]" | cut -d'.' -f2 | base64 -d | jq .
 
 # Verify TLS version
-openssl s_client -connect api.kawairesort.com:443 -tls1_3 2>&1 | grep "Protocol"
+openssl s_client -connect api.hoanienretreat.com:443 -tls1_3 2>&1 | grep "Protocol"
 # Expected Protocol: TLSv1.3
 ```
 
@@ -688,7 +688,7 @@ openssl s_client -connect api.kawairesort.com:443 -tls1_3 2>&1 | grep "Protocol"
 
 ```bash
 # [POST] Tìm phòng trống
-curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
+curl -X POST https://api.hoanienretreat.com/api/v1/rooms/search \
   -H "Authorization: Bearer [JWT_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{
@@ -721,7 +721,7 @@ curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
 
 ```bash
 # [POST] Thiếu required field -> 400
-curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
+curl -X POST https://api.hoanienretreat.com/api/v1/rooms/search \
   -H "Authorization: Bearer [JWT_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -743,7 +743,7 @@ curl -X POST https://api.kawairesort.com/api/v1/rooms/search \
 
 ```bash
 # [POST] Không có JWT -> 401
-curl -X POST https://api.kawairesort.com/api/v1/rooms/search
+curl -X POST https://api.hoanienretreat.com/api/v1/rooms/search
 ```
 
 *Expected Response (401):*

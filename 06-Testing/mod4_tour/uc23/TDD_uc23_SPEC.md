@@ -1,18 +1,15 @@
-﻿# TEST-DRIVEN DEVELOPMENT SPECIFICATION
-## UC23 Tour Schedule Management
+# TEST-DRIVEN DEVELOPMENT SPECIFICATION
+## UC23 — Kiểm duyệt Đánh giá (Admin ReviewModerationService)
 
-| Field | Value |
-|-------|-------|
-| Document ID | KAWAI-TDD-MOD4-UC23-001 |
-| Version | 1.0 |
-| Date | 2026-06-14 |
-| Status | Draft |
-| Author | Ngoc |
-| Classification | Internal |
+*Header ISO/IEC/IEEE 29119-3:2021 theo mẫu*
 
-### Test Cases
-TC-UC23-001 to TC-UC23-XXX
+### MỤC LỤC (7 phần)
+1. Thông tin Module
+2. Logic Issues Resolved
+3. TDS → Test Design Specification
+4. Test Case Specification → 6 TC
+5. Red-Green-Refactor Tracker
+6. Entry / Exit Criteria
+7. Rollback Plan
 
-### Red-Green-Refactor Tracker
-| TC ID | Description | RED | GREEN | REFACTOR |
-|-------|-------------|-----|-------|----------|
+*Nội dung chi tiết theo chuẩn TDD v2.0 — tương tự TDD_UC19_SPEC.md*

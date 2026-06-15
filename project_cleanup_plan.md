@@ -1,4 +1,4 @@
-# 🔧 KẾ HOẠCH CLEAN UP DỰ ÁN KAWAI RESORT
+# 🔧 KẾ HOẠCH CLEAN UP DỰ ÁN HOANIEN RESORT
 
 > **Ngày lập:** 2026-06-14 | **Trạng thái:** Chờ duyệt
 
@@ -330,7 +330,7 @@ File này là **entry point** cho AI agent khi mới vào dự án:
 # CONTEXT.md — AI Agent Entry Point
 
 ## Dự án
-Kawai Resort & Tour Hub — Hệ thống quản lý resort tích hợp tour
+Hòa Niên Resort & Tour Hub — Hệ thống quản lý resort tích hợp tour
 
 ## Tech Stack
 - Backend: Spring Boot 3.x, JPA, MySQL
@@ -341,18 +341,18 @@ Kawai Resort & Tour Hub — Hệ thống quản lý resort tích hợp tour
 ## Cấu trúc (đọc theo thứ tự)
 1. `02-Requirement/SRS_Document_SWP391_G2.md` — Yêu cầu hệ thống
 2. `03-Design/database_schema.md` — Schema DB
-3. `04-Implement/kawai-backend/` — Source code
+3. `04-Implement/hoanien-backend/` — Source code
 4. `06-Testing/MASTER_TDD_SPEC.md` → `mod{x}/TDD_MOD{x}_SPEC.md`
 5. `00-Policy/TEAM_WORKFLOW_GUIDE.md` — Quy trình TDD 3-phase
 
 ## Module Ownership
 | Module | Owner | Package | Test Progress |
 |--------|-------|---------|---------------|
-| MOD1 Auth | Lưu | com.kawai.auth, security | 5/22 done |
-| MOD2 Booking | Dũng | com.kawai.booking | 20/20 done ✅ |
-| MOD3 POS | Đức | com.kawai.pos | 0/12 |
-| MOD4 Tour | Ngọc | com.kawai.tour | 12/12 done ✅ |
-| MOD5 Finance | Lan | com.kawai.finance | 0/14 |
+| MOD1 Auth | Lưu | com.hoanien.auth, security | 5/22 done |
+| MOD2 Booking | Dũng | com.hoanien.booking | 20/20 done ✅ |
+| MOD3 POS | Đức | com.hoanien.pos | 0/12 |
+| MOD4 Tour | Ngọc | com.hoanien.tour | 12/12 done ✅ |
+| MOD5 Finance | Lan | com.hoanien.finance | 0/14 |
 
 ## Quy trình TDD bắt buộc
 Mỗi test case phải có evidence 3 giai đoạn:

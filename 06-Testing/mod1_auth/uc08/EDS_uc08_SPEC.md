@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-EDS-MOD1-UC08-001 |
+| **Document ID** | HOANIEN-EDS-MOD1-UC08-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -73,7 +73,7 @@ public interface PriceConfigService
 | `MOD1-013` | 409 | Price config conflict | Trung thoi gian |
 
 ### 11. Deployment
-`mvn clean package && java -jar target/kawai-backend-1.0.jar`
+`mvn clean package && java -jar target/hoanien-backend-1.0.jar`
 
 ### 12. Rollback
 `git checkout tags/v1.0.0 && mvn clean package`

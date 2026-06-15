@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD2-UC12-001` |
+| **Document ID** | `HOANIEN-EDS-MOD2-UC12-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -386,7 +386,7 @@ public class CheckinResponseDTO {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -461,7 +461,7 @@ WHERE b.id = :bookingId;
 
 ```bash
 # Check-in
-curl -X POST https://api.kawairesort.com/api/v1/checkin \
+curl -X POST https://api.hoanienretreat.com/api/v1/checkin \
   -H "Authorization: Bearer [RECEPTIONIST_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{"bookingId":12,"guests":[{"fullName":"Nguyen Van A","cccd":"123456789012","isMainGuest":true}]}'

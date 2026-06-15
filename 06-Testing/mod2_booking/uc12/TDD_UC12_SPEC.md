@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD2-UC12-001` |
+| **Document ID** | `HOANIEN-TDD-MOD2-UC12-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -72,4 +72,4 @@
 | TC-UC12-005 | `CheckinServiceUC12Test.java` | [x] | `a1b2c3e` | 2026-06-12 | [x] | `b2c3d4f` | 2026-06-12 | [x] | `c3d4e5g` | ✅ Account generator extract |
 
 ### 6. Rollback Plan
-`git checkout -- src/main/java/com/kawai/services/impl/CheckinServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/CheckinServiceImpl.java`

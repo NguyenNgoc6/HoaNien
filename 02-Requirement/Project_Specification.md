@@ -1,5 +1,5 @@
 # ĐẶC TẢ DỰ ÁN PHÁT TRIỂN PHẦN MỀM
-**HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG TÍCH HỢP KAWAI RETREAT RESORT & HUB**
+**HỆ THỐNG QUẢN LÝ NGHỈ DƯỠNG TÍCH HỢP HOANIEN RETREAT RESORT & HUB**
 
 ## CHANGELOG
 | Ngày | Người thực hiện | Nội dung thay đổi |
@@ -10,13 +10,13 @@
 ---
 
 ## 1. Bài toán đặt ra & Giải pháp tổng thể
-**Kawai Retreat Resort & Hub** là một khu nghỉ dưỡng hạng sang. Vận hành một resort cao cấp đòi hỏi sự phối hợp chặt chẽ giữa nhiều bộ phận: Tiền sảnh, Nhà hàng (F&B), Buồng phòng (Housekeeping), Bảo trì (Maintenance), Lữ hành (Tour) và Quản lý chiến lược.
+**HoaNien Retreat Resort & Hub** là một khu nghỉ dưỡng hạng sang. Vận hành một resort cao cấp đòi hỏi sự phối hợp chặt chẽ giữa nhiều bộ phận: Tiền sảnh, Nhà hàng (F&B), Buồng phòng (Housekeeping), Bảo trì (Maintenance), Lữ hành (Tour) và Quản lý chiến lược.
 
 Hiện tại, các bộ phận đang hoạt động biệt lập trên các công cụ rời rạc (Phần mềm phòng riêng, POS nhà hàng riêng, Tour và Buồng phòng quản lý bằng bảng tính thủ công). Sự thiếu kết nối này dẫn đến:
 - **Trải nghiệm khách hàng kém:** Khách bị trùng phòng do bất đồng bộ dữ liệu; khách phải thanh toán nhỏ lẻ nhiều lần (móc ví tại nhà hàng, tại quầy tour, tại lễ tân) thay vì tận hưởng kỳ nghỉ nghỉ dưỡng trọn vẹn.
 - **Vận hành rủi ro:** Phòng bẩn/hỏng chưa kịp cập nhật khiến lễ tân giao nhầm phòng cho khách; thông tin đồ uống có phí tại phòng bị thất thoát; kiểm toán đêm và tổng hợp doanh thu cuối tháng của kế toán dễ sai sót do làm thủ công từ nhiều nguồn.
 
-**Giải pháp Kawai Retreat Resort & Hub:** Một nền tảng tập trung duy nhất kết nối toàn bộ luồng vận hành và dữ liệu. Hệ thống vận hành theo cơ chế **Tích hợp Folio (Post to Room / Room Charge)**: mọi chi phí phát sinh từ nhà hàng, dịch vụ phòng, tour tuyến, tiêu dùng mini-bar hay đền bù tài sản đều tự động đổ về một hóa đơn tổng hợp theo số phòng của khách, ký gửi thanh toán một lần duy nhất khi Check-out.
+**Giải pháp HoaNien Retreat Resort & Hub:** Một nền tảng tập trung duy nhất kết nối toàn bộ luồng vận hành và dữ liệu. Hệ thống vận hành theo cơ chế **Tích hợp Folio (Post to Room / Room Charge)**: mọi chi phí phát sinh từ nhà hàng, dịch vụ phòng, tour tuyến, tiêu dùng mini-bar hay đền bù tài sản đều tự động đổ về một hóa đơn tổng hợp theo số phòng của khách, ký gửi thanh toán một lần duy nhất khi Check-out.
 
 ---
 
@@ -183,17 +183,17 @@ Hệ thống sử dụng cơ sở dữ liệu quan hệ với các nguyên tắc
 Hệ thống tuân thủ nghiêm ngặt mô hình kiến trúc MVC (Model-View-Controller) của Spring Boot kết hợp với phân lớp Layered Architecture (Controller - Service - Repository), được thiết kế tối ưu cho việc phát triển song song 5 module:
 
 ```text
-Kawai-Resort-Project/
+HoaNien-Resort-Project/
 ├── 01_SRS/                           # Tài liệu Đặc tả Yêu cầu & Kiến trúc
 ├── 02_SDS/                           # Tài liệu Thiết kế Hệ thống
 ├── 03_sourcecode/                    # Mã nguồn chính của hệ thống
 │   ├── FE_Templates/                 # (Frontend) HTML/CSS/JS tĩnh dùng để ghép Thymeleaf
 │   │
-│   ├── kawai-ai-service/             # (Microservice) Python FastAPI cho AI Face Scan
+│   ├── hoanien-ai-service/             # (Microservice) Python FastAPI cho AI Face Scan
 │   │   ├── main.py                   # API xử lý nhận diện khuôn mặt
 │   │   └── models/                   # Chứa model AI (dlib/OpenCV)
 │   │
-│   └── kawai-backend/                # (Backend) Spring Boot Core
+│   └── hoanien-backend/                # (Backend) Spring Boot Core
 │       ├── pom.xml                   # Cấu hình thư viện Maven
 │       └── src/main/
 │           ├── resources/
@@ -205,8 +205,8 @@ Kawai-Resort-Project/
 │           │       ├── staff/        # Giao diện Nhân viên (Lễ tân, POS, Buồng phòng)
 │           │       └── shared/       # Components dùng chung (Header, Footer, Modal)
 │           │
-│           └── java/com/kawai/
-│               ├── KawaiApplication.java   # File khởi chạy
+│           └── java/com/hoanien/
+│               ├── HoaNienApplication.java   # File khởi chạy
 │               ├── config/           # Cấu hình bảo mật, CORS, VNPay, Swagger
 │               ├── security/         # JWT / Session auth, Role-based Access Control
 │               ├── exceptions/       # Xử lý ngoại lệ toàn cục (Global Exception Handler)

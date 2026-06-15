@@ -1,8 +1,8 @@
 # TEST-DRIVEN DEVELOPMENT SPECIFICATION TEMPLATE
 
-## Mẫu Đặc tả Kiểm thử Hướng Phát triển - KAWAI RETREAT RESORT & HUB
+## Mẫu Đặc tả Kiểm thử Hướng Phát triển - HOANIEN RETREAT RESORT & HUB
 
-**Document ID:** KAWAI-TDD-MASTER-001
+**Document ID:** HOANIEN-TDD-MASTER-001
 **Version:** 1.0
 **Date:** 2026-06-09
 **Status:** Draft | In Review | Approved
@@ -15,9 +15,9 @@
 
 **References:**
 
-* `01_SRS/Project_Specification.md` — Functional requirements Kawai Resort
+* `01_SRS/Project_Specification.md` — Functional requirements Hòa Niên Resort
 * `04_testing/SOFTWARE_TEST_PLAN.md` — Master Test Plan
-* `03_sourcecode/kawai-backend` — Nguồn Backend Spring Boot
+* `03_sourcecode/hoanien-backend` — Nguồn Backend Spring Boot
 
 > **Quy ước TDD:** Tài liệu này mô tả test cases TRƯỚC khi viết production code.
 > Thứ tự bắt buộc: viết test (.spec.ts / .java) → chạy → xác nhận FAIL 🔴 → implement → PASS 🟢 → refactor 🔵.
@@ -27,7 +27,7 @@
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                                  |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-06-11 | Lưu                | Cập nhật đầy đủ 20 test case Module 2, chuẩn hóa cấu trúc bảng tracker cho cả 5 Module và bổ sung test case mẫu chi tiết cho 5 Module |
-| 2026-06-09 | Lưu                | Khởi tạo tài liệu — Master TDD spec cho toàn bộ 5 Module Kawai Resort                                                                          |
+| 2026-06-09 | Lưu                | Khởi tạo tài liệu — Master TDD spec cho toàn bộ 5 Module Hòa Niên Resort                                                                          |
 
 ## MỤC LỤC
 
@@ -43,7 +43,7 @@
 ## 1. Thông tin Module
 | Field               | Value　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
 | ---------------------| --------------------------------------------------------------------|
-| Feature / Gap ID    | KAWAI-ALL-001　　　　　　　　　　　　　　　　　　　　　　　　　　　|
+| Feature / Gap ID    | HOANIEN-ALL-001　　　　　　　　　　　　　　　　　　　　　　　　　　　|
 | Module              | Hệ thống quản lý nghỉ dưỡng (Tích hợp 5 Module)　　　　　　　　　　|
 | Spec gốc            | Project_Specification.md　　　　　　　　　　　　　　　　　　　　　 |
 | Priority            | 🔴 P0　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　|
@@ -234,7 +234,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 **Severity:** MEDIUM
 **CWE:** N/A
 **Feature Under Test:** `TourService.searchAvailableTours()`
-**Test File:** `03_sourcecode/kawai-backend/src/test/java/com/kawai/services/TourServiceUC19Test.java`
+**Test File:** `03_sourcecode/hoanien-backend/src/test/java/com/hoanien/services/TourServiceUC19Test.java`
 **TDD Phase:** 🟢 GREEN
 
 **Test Cases:**
@@ -272,7 +272,7 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 **Test Steps:**
 
 1. Gửi ảnh khuôn mặt lên hệ thống.
-2. Mock `kawai-ai-service` trả về match 98% với khách A trong Manifest.
+2. Mock `hoanien-ai-service` trả về match 98% với khách A trong Manifest.
 3. Verify status trong `Tour_Attendees` của khách A chuyển sang `PRESENT`.
 
 #### MOD4-TC-M4-005 — Đặt tour Post to Room (UC20.1)

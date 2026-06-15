@@ -1,4 +1,4 @@
-# BẢNG USE CASE TỔNG HỢP — KAWAI RESORT
+# BẢNG USE CASE TỔNG HỢP — HOANIEN RESORT
 
 ## CHANGELOG
 | Ngày | Người thực hiện | Nội dung thay đổi |

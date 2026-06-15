@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC06-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC06-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -266,8 +266,8 @@ public interface AuditService {
 ```json
 {
   "content": [
-    {"id":1,"userEmail":"admin@kawai.com","action":"LOGIN","details":"Login success","timestamp":"2026-06-14T10:00:00"},
-    {"id":2,"userEmail":"staff@kawai.com","action":"LOGIN","details":"Login failed - wrong password","timestamp":"2026-06-14T10:05:00"}
+    {"id":1,"userEmail":"admin@hoanien.com","action":"LOGIN","details":"Login success","timestamp":"2026-06-14T10:00:00"},
+    {"id":2,"userEmail":"staff@hoanien.com","action":"LOGIN","details":"Login failed - wrong password","timestamp":"2026-06-14T10:05:00"}
   ],
   "totalElements": 150,
   "totalPages": 8
@@ -299,7 +299,7 @@ public interface AuditService {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -359,15 +359,15 @@ SELECT * FROM audit_logs WHERE user_id = :userId ORDER BY timestamp DESC;
 
 ```bash
 # Query audit logs
-curl -X GET "https://api.kawairesort.com/api/v1/audit-logs?action=LOGIN&page=0&size=20" \
+curl -X GET "https://api.hoanienretreat.com/api/v1/audit-logs?action=LOGIN&page=0&size=20" \
   -H "Authorization: Bearer [JWT_ADMIN]"
 
 # Query by date range
-curl -X GET "https://api.kawairesort.com/api/v1/audit-logs?startDate=2026-06-01&endDate=2026-06-14" \
+curl -X GET "https://api.hoanienretreat.com/api/v1/audit-logs?startDate=2026-06-01&endDate=2026-06-14" \
   -H "Authorization: Bearer [JWT_ADMIN]"
 
 # Export CSV
-curl -X GET "https://api.kawairesort.com/api/v1/audit-logs/export?format=CSV&startDate=2026-06-01" \
+curl -X GET "https://api.hoanienretreat.com/api/v1/audit-logs/export?format=CSV&startDate=2026-06-01" \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -o audit_report.csv
 ```

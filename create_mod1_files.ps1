@@ -135,7 +135,7 @@ foreach($uc in $ucData) {
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-TDD-MOD1-$($id.ToUpper())-001 |
+| **Document ID** | HOANIEN-TDD-MOD1-$($id.ToUpper())-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -210,7 +210,7 @@ foreach($uc in $ucData) {
 - [x] Unit tests pass 100%
 
 ### 7. Rollback Plan
-``git checkout -- src/main/java/com/kawai/services/impl/$($service)Impl.java``
+``git checkout -- src/main/java/com/hoanien/services/impl/$($service)Impl.java``
 "@
 
     [System.IO.File]::WriteAllText("$base/TDD_$($ucLower)_SPEC.md", $tddContent, [System.Text.Encoding]::UTF8)
@@ -223,7 +223,7 @@ foreach($uc in $ucData) {
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-EDS-MOD1-$($id.ToUpper())-001 |
+| **Document ID** | HOANIEN-EDS-MOD1-$($id.ToUpper())-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -294,7 +294,7 @@ $(foreach($c in $cases) { "    // $($c.name)`n" })
     $edsContent += @"
 
 ### 11. Deployment
-``mvn clean package && java -jar target/kawai-backend-1.0.jar``
+``mvn clean package && java -jar target/hoanien-backend-1.0.jar``
 
 ### 12. Rollback
 ``git checkout tags/v1.0.0 && mvn clean package``

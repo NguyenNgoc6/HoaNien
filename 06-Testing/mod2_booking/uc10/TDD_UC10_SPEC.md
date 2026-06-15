@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD2-UC10-001` |
+| **Document ID** | `HOANIEN-TDD-MOD2-UC10-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -239,4 +239,4 @@ Logic đặt phòng `BookingService.createBooking()`, hủy phòng, áp mã khuy
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/BookingServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/BookingServiceImpl.java`

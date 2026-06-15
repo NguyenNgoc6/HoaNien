@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| Document ID | KAWAI-TDD-MOD5-UC26-001 |
+| Document ID | HOANIEN-TDD-MOD5-UC26-001 |
 | Version | 1.0 |
 | Date | 2026-06-14 |
 | Status | Draft |

@@ -1,4 +1,4 @@
-# BẢNG TRUY VẾT YÊU CẦU — KAWAI RESORT (TRACEABILITY MATRIX)
+# BẢNG TRUY VẾT YÊU CẦU — HOANIEN RESORT (TRACEABILITY MATRIX)
 
 ## CHANGELOG
 | Ngày | Người thực hiện | Nội dung thay đổi |

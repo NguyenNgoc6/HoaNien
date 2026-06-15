@@ -4,7 +4,7 @@
 
 | Field                    | Value                          |
 | ------------------------ | ------------------------------ |
-| **Document ID**    | `KAWAI-MOD5-IMP-001`         |
+| **Document ID**    | `HOANIEN-MOD5-IMP-001`         |
 | **Version**        | 1.0                            |
 | **Date**           | 2026-06-12                     |
 | **Status**         | Approved                       |

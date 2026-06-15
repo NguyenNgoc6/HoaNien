@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD1-UC03-001` |
+| **Document ID** | `HOANIEN-TDD-MOD1-UC03-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -91,7 +91,7 @@ Logic `EmployeeService.getEmployees()`, `createEmployee()`, `updateEmployee()`, 
 #### `TC-UC03-002` — Tạo nhân viên thành công
 * **Severity:** CRITICAL | **Feature:** `EmployeeService.createEmployee()` | **File:** `EmployeeServiceUC03Test.java` | 🟢 GREEN
 **Preconditions:** Email chưa tồn tại trong DB.
-**Steps:** Gọi `createEmployee({email:"new@kawai.com", fullName:"NV Mới", role:"RECEPTIONIST", password:"Str0ng@Pass"})` → Assert EmployeeDTO trả về có id, email đúng, password đã được hash bcrypt, isActive = true.
+**Steps:** Gọi `createEmployee({email:"new@hoanien.com", fullName:"NV Mới", role:"RECEPTIONIST", password:"Str0ng@Pass"})` → Assert EmployeeDTO trả về có id, email đúng, password đã được hash bcrypt, isActive = true.
 
 #### `TC-UC03-003` — Cập nhật nhân viên thành công
 * **Severity:** HIGH | **Feature:** `EmployeeService.updateEmployee()` | **File:** `EmployeeServiceUC03Test.java` | 🟢 GREEN
@@ -105,8 +105,8 @@ Logic `EmployeeService.getEmployees()`, `createEmployee()`, `updateEmployee()`, 
 
 #### `TC-UC03-005` — Email trùng → 409 Conflict
 * **Severity:** HIGH | **Feature:** `EmployeeService.createEmployee()` | **File:** `EmployeeServiceUC03Test.java` | 🟢 GREEN
-**Preconditions:** Email `existing@kawai.com` đã có trong DB.
-**Steps:** Gọi `createEmployee({email:"existing@kawai.com", ...})` → throws DuplicateEmailException (409).
+**Preconditions:** Email `existing@hoanien.com` đã có trong DB.
+**Steps:** Gọi `createEmployee({email:"existing@hoanien.com", ...})` → throws DuplicateEmailException (409).
 
 #### `TC-UC03-006` — Non-ADMIN truy cập → 403 Forbidden
 * **Severity:** CRITICAL | **Feature:** `@PreAuthorize("hasRole('ADMIN')")` | **File:** `EmployeeServiceUC03Test.java` | 🟢 GREEN
@@ -148,4 +148,4 @@ Logic `EmployeeService.getEmployees()`, `createEmployee()`, `updateEmployee()`, 
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/EmployeeServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/EmployeeServiceImpl.java`

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC02-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC02-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -219,7 +219,7 @@ public interface ProfileService {
 
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 ---
@@ -263,17 +263,17 @@ FROM customer WHERE id = :userId;
 
 ```bash
 # Get profile
-curl -X GET https://api.kawairesort.com/api/v1/profile \
+curl -X GET https://api.hoanienretreat.com/api/v1/profile \
   -H "Authorization: Bearer [JWT]"
 
 # Update profile
-curl -X PUT https://api.kawairesort.com/api/v1/profile \
+curl -X PUT https://api.hoanienretreat.com/api/v1/profile \
   -H "Authorization: Bearer [JWT]" \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Nguyen Van B","cccd":"123456789012","phone":"0901234567"}'
 
 # Change password
-curl -X POST https://api.kawairesort.com/api/v1/profile/change-password \
+curl -X POST https://api.hoanienretreat.com/api/v1/profile/change-password \
   -H "Authorization: Bearer [JWT]" \
   -H "Content-Type: application/json" \
   -d '{"oldPassword":"123456","newPassword":"abcdef"}'

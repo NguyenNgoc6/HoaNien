@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC05-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC05-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -281,7 +281,7 @@ public interface RoleService {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -334,21 +334,21 @@ SELECT COUNT(*) FROM user_account WHERE role = 'ADMIN' AND is_active = TRUE;
 
 ```bash
 # List all roles
-curl -X GET https://api.kawairesort.com/api/v1/roles \
+curl -X GET https://api.hoanienretreat.com/api/v1/roles \
   -H "Authorization: Bearer [JWT_ADMIN]"
 
 # Assign role
-curl -X POST https://api.kawairesort.com/api/v1/roles/assign \
+curl -X POST https://api.hoanienretreat.com/api/v1/roles/assign \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
   -d '{"userId":5,"roleName":"RECEPTIONIST"}'
 
 # Check permission
-curl -X GET "https://api.kawairesort.com/api/v1/roles/check-permission?userId=5&requiredRole=RECEPTIONIST" \
+curl -X GET "https://api.hoanienretreat.com/api/v1/roles/check-permission?userId=5&requiredRole=RECEPTIONIST" \
   -H "Authorization: Bearer [JWT]"
 
 # Remove role (reset to CUSTOMER)
-curl -X POST https://api.kawairesort.com/api/v1/roles/remove \
+curl -X POST https://api.hoanienretreat.com/api/v1/roles/remove \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
   -d '{"userId":5}'

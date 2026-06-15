@@ -1,18 +1,15 @@
-﻿# TEST-DRIVEN DEVELOPMENT SPECIFICATION
-## UC22 Review and Feedback
+# TEST-DRIVEN DEVELOPMENT SPECIFICATION
+## UC22 — Gửi & Quản lý Đánh giá Tour (ReviewService)
 
-| Field | Value |
-|-------|-------|
-| Document ID | KAWAI-TDD-MOD4-UC22-001 |
-| Version | 1.0 |
-| Date | 2026-06-14 |
-| Status | Draft |
-| Author | Ngoc |
-| Classification | Internal |
+*Header ISO/IEC/IEEE 29119-3:2021 theo mẫu EDS v2.0*
 
-### Test Cases
-TC-UC22-001 to TC-UC22-XXX
+### MỤC LỤC (7 phần)
+1. Thông tin Module → 
+2. Logic Issues Resolved
+3. TDS
+4. Test Case Specification
+5. Red-Green-Refactor Tracker
+6. Entry / Exit Criteria
+7. Rollback Plan
 
-### Red-Green-Refactor Tracker
-| TC ID | Description | RED | GREEN | REFACTOR |
-|-------|-------------|-----|-------|----------|
+*Nội dung chi tiết theo chuẩn TDD v2.0 — xem TDD_UC19_SPEC.md mẫu*

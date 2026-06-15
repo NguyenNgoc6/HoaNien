@@ -111,11 +111,11 @@ su26-swp391-se2023-g2/
 **Cấu trúc bên trong:**
 ```
 04-Implement/
-├── kawai-backend/        ← Spring Boot project (Java)
+├── hoanien-backend/        ← Spring Boot project (Java)
 │   ├── src/
 │   ├── pom.xml
 │   └── apache-maven-3.9.6/
-├── kawai-ai-service/     ← Python AI service
+├── hoanien-ai-service/     ← Python AI service
 │   └── main.py
 └── .idea/                ← IDE config
 ```
@@ -167,7 +167,7 @@ su26-swp391-se2023-g2/
 ```
 
 > [!WARNING]
-> **Phân biệt**: Unit test code (`.java`) nằm trong `04-Implement/kawai-backend/src/test/`. Tài liệu kiểm thử (`.md`) nằm ở `06-Testing/`.
+> **Phân biệt**: Unit test code (`.java`) nằm trong `04-Implement/hoanien-backend/src/test/`. Tài liệu kiểm thử (`.md`) nằm ở `06-Testing/`.
 
 ---
 

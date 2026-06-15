@@ -1,4 +1,4 @@
-# BẢNG QUY TẮC KINH DOANH & PHÂN QUYỀN — KAWAI RESORT
+# BẢNG QUY TẮC KINH DOANH & PHÂN QUYỀN — HOANIEN RESORT
 
 ## CHANGELOG
 | Ngày | Người thực hiện | Nội dung thay đổi |

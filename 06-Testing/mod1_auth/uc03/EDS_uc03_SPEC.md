@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC03-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC03-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -266,13 +266,13 @@ public interface EmployeeService {
 | DELETE | `/api/v1/employees/{id}` | JWT | ADMIN | 10/min | Yes |
 
 **POST `/api/v1/employees`**
-*Request:* `{"email":"staff@kawai.com","fullName":"Nguyen Van A","phone":"0901234567","role":"RECEPTIONIST","password":"Str0ng@Pass"}`
-*Response 201:* `{"id":5,"email":"staff@kawai.com","fullName":"Nguyen Van A","role":"RECEPTIONIST","isActive":true}`
+*Request:* `{"email":"staff@hoanien.com","fullName":"Nguyen Van A","phone":"0901234567","role":"RECEPTIONIST","password":"Str0ng@Pass"}`
+*Response 201:* `{"id":5,"email":"staff@hoanien.com","fullName":"Nguyen Van A","role":"RECEPTIONIST","isActive":true}`
 *Response 409:* `{"error":{"code":"EMP-002","message":"Email already exists"}}`
 
 **PUT `/api/v1/employees/{id}`**
 *Request:* `{"fullName":"Nguyen Van B","phone":"0907654321","role":"TOURGUIDE"}`
-*Response 200:* `{"id":5,"email":"staff@kawai.com","fullName":"Nguyen Van B","role":"TOURGUIDE","isActive":true}`
+*Response 200:* `{"id":5,"email":"staff@hoanien.com","fullName":"Nguyen Van B","role":"TOURGUIDE","isActive":true}`
 
 ---
 
@@ -297,7 +297,7 @@ public interface EmployeeService {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -348,23 +348,23 @@ SELECT COUNT(*) FROM user_account WHERE email = :email AND is_active = TRUE;
 
 ```bash
 # List employees
-curl -X GET https://api.kawairesort.com/api/v1/employees \
+curl -X GET https://api.hoanienretreat.com/api/v1/employees \
   -H "Authorization: Bearer [JWT_ADMIN]"
 
 # Create employee
-curl -X POST https://api.kawairesort.com/api/v1/employees \
+curl -X POST https://api.hoanienretreat.com/api/v1/employees \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
-  -d '{"email":"staff@kawai.com","fullName":"Nguyen Van A","phone":"0901234567","role":"RECEPTIONIST","password":"Str0ng@Pass"}'
+  -d '{"email":"staff@hoanien.com","fullName":"Nguyen Van A","phone":"0901234567","role":"RECEPTIONIST","password":"Str0ng@Pass"}'
 
 # Update employee
-curl -X PUT https://api.kawairesort.com/api/v1/employees/5 \
+curl -X PUT https://api.hoanienretreat.com/api/v1/employees/5 \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Nguyen Van B","role":"TOURGUIDE"}'
 
 # Delete employee
-curl -X DELETE https://api.kawairesort.com/api/v1/employees/5 \
+curl -X DELETE https://api.hoanienretreat.com/api/v1/employees/5 \
   -H "Authorization: Bearer [JWT_ADMIN]"
 ```
 

@@ -4,14 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Living - Hoanien River Retreat Clone</title>
+    <title>Nghỉ Dưỡng | HoaNien Retreat</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
@@ -55,7 +56,21 @@
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
 
-        /* Smooth tactile button feedback */
+        .lang-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(58, 50, 48, 0.6) !important;
+        }
+
+        .lang-btn:hover {
+            color: #3a3230 !important;
+        }
+
+        .lang-btn.active {
+            color: #3a3230 !important;
+            font-weight: 700;
+        }
+
         button:active,
         a.bg-hoanien-text:active,
         a.bg-namia-text:active,
@@ -72,84 +87,53 @@
             transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
         }
 
-        /* ── Navbar transparent → solid on scroll ── */
-        .guest-nav, .guest-sub-nav {
+        .guest-nav,
+        .guest-sub-nav {
             background: transparent !important;
-            border-bottom: 1px solid transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease, -webkit-backdrop-filter 0.4s ease;
+            border-bottom: 1px solid rgba(58, 50, 48, 0.15) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            transition: none !important;
         }
 
-        .guest-nav.scrolled {
-            background: rgba(241, 235, 227, 0.92) !important;
-            border-bottom: 1px solid rgba(58, 50, 48, 0.1) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-        }
-
-        .guest-sub-nav.scrolled {
-            background: rgba(241, 235, 227, 0.95) !important;
-            border-bottom: 1px solid rgba(58, 50, 48, 0.1) !important;
-        }
-
-        .guest-nav .nav-text {
-            color: #fff;
-            transition: color 0.4s ease;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        .guest-nav .nav-text,
+        .guest-sub-nav .sub-nav-text {
+            color: #3a3230 !important;
+            text-shadow: none !important;
         }
 
         .guest-nav .nav-text-dim {
-            color: rgba(255, 255, 255, 0.7);
-            transition: color 0.4s ease;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            color: rgba(58, 50, 48, 0.75) !important;
+            text-shadow: none !important;
         }
 
-        .guest-nav.scrolled .nav-text {
-            color: #3a3230;
-            text-shadow: none;
-        }
-
-        .guest-nav.scrolled .nav-text-dim {
-            color: rgba(58, 50, 48, 0.8);
-            text-shadow: none;
+        .guest-nav .nav-text-dim:hover,
+        .guest-sub-nav .sub-nav-text:hover {
+            color: #3a3230 !important;
+            opacity: 1 !important;
         }
 
         .guest-nav .nav-brand {
-            color: #fff;
-            transition: color 0.4s ease;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        }
-
-        .guest-nav.scrolled .nav-brand {
-            color: #3a3230;
-            text-shadow: none;
+            color: #3a3230 !important;
+            text-shadow: none !important;
         }
 
         .guest-nav .nav-btn-book {
-            background: #fff !important;
+            background: transparent !important;
             color: #3a3230 !important;
-            border: 1px solid #fff !important;
-            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(58, 50, 48, 0.5) !important;
+            box-shadow: none !important;
+            transition: all 0.3s ease !important;
         }
 
-        .guest-nav.scrolled .nav-btn-book {
-            background: #3a3230 !important;
-            color: #f1ebe3 !important;
-            border: 1px solid #3a3230 !important;
-            box-shadow: none;
+        .guest-nav .nav-btn-book:hover {
+            background: rgba(58, 50, 48, 0.06) !important;
+            border-color: #3a3230 !important;
         }
 
         .guest-nav .nav-menu-icon {
-            color: #fff;
-            transition: color 0.4s ease;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        }
-
-        .guest-nav.scrolled .nav-menu-icon {
-            color: #3a3230;
-            text-shadow: none;
+            color: #3a3230 !important;
+            text-shadow: none !important;
         }
     </style>
 </head>
@@ -157,45 +141,59 @@
 <body
     class="bg-hoanien-bg text-hoanien-text font-sans antialiased overflow-x-hidden selection:bg-hoanien-text selection:text-hoanien-bg">
 
-    <div id="header-wrapper" class="fixed top-0 left-0 w-full z-50 flex flex-col pointer-events-none">
+    <div id="header-wrapper" class="fixed top-0 left-0 w-full z-50 flex flex-col pointer-events-none text-[#3a3230]">
         <nav class="guest-nav relative w-full font-sans pointer-events-auto">
             <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between">
                 <div class="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <a href="/living" class="nav-text border-b border-current pb-0.5">Living</a>
-                    <a href="/dining" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Dining</a>
-                    <a href="/experiences" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Experiences</a>
-                    <a href="/tours" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Tours</a>
+                    <a href="/living" class="nav-text border-b border-current pb-0.5" data-i18n="nav_living">Nghỉ
+                        Dưỡng</a>
+                    <a href="/dining" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200"
+                        data-i18n="nav_dining">Ẩm Thực</a>
+                    <a href="/experiences"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200"
+                        data-i18n="nav_experiences">Trải Nghiệm</a>
+                    <a href="/tours" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200"
+                        data-i18n="nav_tours">Hành Trình</a>
                 </div>
-
                 <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-headline text-[32px] italic tracking-tighter nav-brand text-center cursor-pointer w-max"
-                    onclick="window.location.href='/booking'">
-                    HoaNien
-                </div>
-
+                    onclick="window.location.href='/booking'">HoaNien</div>
                 <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <!-- Profile / Logout if logged in -->
-                    <a href="/profile" th:if="${isLoggedIn}" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Profile</a>
+                    <div class="flex items-center gap-3 pr-4 border-r border-[#3a3230]/20">
+                        <span class="lang-btn active text-[10px] font-semibold uppercase tracking-[0.1em]"
+                            data-lang="vi" onclick="switchLang('vi')">VI</span>
+                        <span class="text-[10px] opacity-30">|</span>
+                        <span class="lang-btn text-[10px] font-semibold uppercase tracking-[0.1em]" data-lang="en"
+                            onclick="switchLang('en')">EN</span>
+                    </div>
+                    <a href="/profile" th:if="${isLoggedIn}"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200"
+                        data-i18n="nav_profile">Hồ Sơ</a>
                     <form th:action="@{/auth/logout}" method="post" th:if="${isLoggedIn}" class="inline">
-                        <button type="submit" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
+                        <button type="submit"
+                            class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer"
+                            data-i18n="nav_logout">Đăng Xuất</button>
                     </form>
-
                     <a href="/booking"
-                        class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 inline-block text-center text-[13px]">
-                        Book Now
-                    </a>
+                        class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 inline-block text-center text-[13px]"
+                        data-i18n="nav_book_now">Đặt Ngay</a>
                 </div>
-
                 <button class="lg:hidden pointer-events-auto">
                     <span class="material-symbols-outlined text-3xl nav-menu-icon">menu</span>
                 </button>
             </div>
         </nav>
-
         <div class="guest-sub-nav w-full font-sans pointer-events-auto">
-            <div class="max-w-[1440px] mx-auto px-6 py-3 flex justify-center gap-8 md:gap-12 text-xs uppercase tracking-[0.15em] font-medium text-hoanien-text/60 overflow-x-auto">
-                <a href="#pool-villas" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap">Pool Villas</a>
-                <a href="#river-suites" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap">River Suites</a>
-                <a href="#residences" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap">Residences</a>
+            <div
+                class="max-w-[1440px] mx-auto px-6 py-3 flex justify-center gap-8 md:gap-12 text-xs uppercase tracking-[0.15em] font-medium text-hoanien-text/60 overflow-x-auto">
+                <a href="#pool-villas"
+                    class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap"
+                    data-i18n="sub_pool">Pool Villas</a>
+                <a href="#river-suites"
+                    class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap"
+                    data-i18n="sub_river">River Suites</a>
+                <a href="#residences"
+                    class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors whitespace-nowrap"
+                    data-i18n="sub_residences">Residences</a>
             </div>
         </div>
     </div>
@@ -206,80 +204,78 @@
                 alt="Luxury Villa" class="w-full h-full object-cover opacity-85" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent"></div>
         </div>
-
         <div class="relative z-10 w-full max-w-[1440px] mx-auto px-6 pb-16 md:pb-24">
             <div class="max-w-2xl text-white">
-                <p class="text-[10px] md:text-xs uppercase tracking-[0.2em] mb-4 opacity-80 font-medium">Your Sanctuary
-                    in Hoi An</p>
-                <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl mb-6 font-medium">Living</h1>
-                <p class="text-sm md:text-base leading-relaxed opacity-90 max-w-lg font-light">
-                    Every villa and suite is a private haven, thoughtfully designed to harmonize with the natural
-                    surroundings and offer unparalleled comfort and serenity.
-                </p>
+                <p class="text-[10px] md:text-xs uppercase tracking-[0.2em] mb-4 opacity-80 font-medium"
+                    data-i18n="hero_badge">Thánh địa của bạn tại Hội An</p>
+                <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl mb-6 font-medium" data-i18n="hero_title">Nghỉ
+                    Dưỡng</h1>
+                <p class="text-sm md:text-base leading-relaxed opacity-90 max-w-lg font-light" data-i18n="hero_desc">Mọi
+                    biệt thự và căn hộ đều là thiên đường riêng tư, được thiết kế hài hòa với thiên nhiên xung quanh,
+                    mang đến sự thoải mái và thanh bình tuyệt đối.</p>
             </div>
         </div>
     </header>
 
     <main class="w-full">
         <section id="residences" class="max-w-4xl mx-auto px-6 py-20 md:py-32 text-center">
-            <h2 class="font-serif text-3xl md:text-5xl mb-8">A Sense of Place</h2>
-            <p class="text-hoanien-text/80 leading-loose text-sm md:text-base font-light max-w-2xl mx-auto">
-                Embracing the rich architectural heritage of Hoi An, our accommodations feature local craftsmanship,
-                natural materials, and private pools that invite the outside in.
-            </p>
+            <h2 class="font-serif text-3xl md:text-5xl mb-8" data-i18n="sense_title">Cảm giác về không gian</h2>
+            <p class="text-hoanien-text/80 leading-loose text-sm md:text-base font-light max-w-2xl mx-auto"
+                data-i18n="sense_desc">Tiếp nối di sản kiến trúc phong phú của Hội An, chỗ nghỉ của chúng tôi kết hợp
+                tinh hoa thủ công địa phương, vật liệu tự nhiên và hồ bơi riêng mời gọi không gian ngoài trời vào bên
+                trong.</p>
         </section>
 
         <div class="max-w-[1440px] mx-auto px-6 pb-section-y flex flex-col gap-24 md:gap-32">
-            <!-- Riverside Pool Villa (Image Left) -->
             <section id="pool-villas" class="flex flex-col lg:flex-row gap-12 md:gap-20 items-center">
                 <div class="w-full lg:w-[60%] img-hover-zoom aspect-[4/3] md:aspect-[16/9] lg:aspect-[4/3]">
                     <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
                         alt="Riverside Pool Villa" class="w-full h-full object-cover" />
                 </div>
                 <div class="w-full lg:w-[40%] flex flex-col items-start">
-                    <h2 class="font-serif text-3xl md:text-4xl mb-6">Riverside Pool Villa</h2>
-                    <p class="text-hoanien-text/70 mb-8 font-light leading-relaxed text-sm">
-                        Wake up to the gentle flow of the Thu Bon River. These spacious villas feature a private plunge
-                        pool, an outdoor terrace, and expansive living areas bathed in natural light.
-                    </p>
+                    <h2 class="font-serif text-3xl md:text-4xl mb-6" data-i18n="villa1_title">Biệt thự hồ bơi ven sông
+                    </h2>
+                    <p class="text-hoanien-text/70 mb-8 font-light leading-relaxed text-sm" data-i18n="villa1_desc">Thức
+                        dậy cùng dòng chảy nhẹ nhàng của sông Thu Bồn. Những biệt thự rộng rãi này có hồ bơi riêng, sân
+                        hiên ngoài trời và không gian sống rộng mở tràn ngập ánh sáng tự nhiên.</p>
                     <div class="mb-8 text-sm font-light">
-                        <p class="mb-2"><strong class="font-medium">Size:</strong> 120 sqm</p>
-                        <p><strong class="font-medium">Features:</strong> Private Pool, River View, Open-air Bath</p>
+                        <p class="mb-2" data-i18n="villa1_size"><strong class="font-medium">Diện tích:</strong> 120
+                            m&#178;</p>
+                        <p data-i18n="villa1_features"><strong class="font-medium">Tiện ích:</strong> Hồ bơi riêng, View
+                            sông, Phòng tắm ngoài trời</p>
                     </div>
                     <div class="flex gap-4 w-full sm:w-auto">
                         <a href="/booking"
-                            class="flex-1 sm:flex-none bg-hoanien-text text-hoanien-bg px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text/80 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 transition-colors text-center">
-                            Book Now
-                        </a>
+                            class="flex-1 sm:flex-none bg-hoanien-text text-hoanien-bg px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text/80 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 transition-colors text-center"
+                            data-i18n="book_now">Đặt Ngay</a>
                         <button
-                            class="flex-1 sm:flex-none border border-hoanien-text text-hoanien-text px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text hover:text-hoanien-bg transition-colors">
-                            Details
-                        </button>
+                            class="flex-1 sm:flex-none border border-hoanien-text text-hoanien-text px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text hover:text-hoanien-bg transition-colors"
+                            data-i18n="details">Chi Tiết</button>
                     </div>
                 </div>
             </section>
 
-            <!-- Garden Pool Villa (Image Right) -->
             <section id="river-suites" class="flex flex-col-reverse lg:flex-row gap-12 md:gap-20 items-center">
                 <div class="w-full lg:w-[40%] flex flex-col items-start lg:pl-12">
-                    <h2 class="font-serif text-3xl md:text-4xl mb-6">Garden Pool Villa</h2>
-                    <p class="text-hoanien-text/70 mb-8 font-light leading-relaxed text-sm">
-                        Nestled amidst lush tropical gardens, these secluded villas offer profound privacy. Perfect for
-                        couples seeking a tranquil retreat surrounded by nature's beauty.
-                    </p>
+                    <h2 class="font-serif text-3xl md:text-4xl mb-6" data-i18n="villa2_title">Biệt thự vườn nhiệt đới
+                    </h2>
+                    <p class="text-hoanien-text/70 mb-8 font-light leading-relaxed text-sm" data-i18n="villa2_desc">Nằm
+                        ẩn mình giữa những khu vườn nhiệt đới tươi tốt, những biệt thự riêng biệt này mang đến sự riêng
+                        tư tuyệt đối. Hoàn hảo cho các cặp đôi tìm kiếm một nơi nghỉ dưỡng yên tĩnh giữa vẻ đẹp thiên
+                        nhiên.</p>
                     <div class="mb-8 text-sm font-light">
-                        <p class="mb-2"><strong class="font-medium">Size:</strong> 105 sqm</p>
-                        <p><strong class="font-medium">Features:</strong> Private Pool, Lush Garden, Sun Deck</p>
+                        <p class="mb-2" data-i18n="villa2_size"><strong class="font-medium">Diện tích:</strong> 105
+                            m&#178;</p>
+                        <p data-i18n="villa2_features"><strong class="font-medium">Tiện ích:</strong> Hồ bơi riêng, Vườn
+                            cây, Sân tắm nắng</p>
                     </div>
                     <div class="flex gap-4 w-full sm:w-auto">
                         <a href="/booking"
-                            class="flex-1 sm:flex-none bg-hoanien-text text-hoanien-bg px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text/80 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 transition-colors text-center">
-                            Book Now
-                        </a>
+                            class="flex-1 sm:flex-none bg-hoanien-text text-hoanien-bg px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text/80 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 transition-colors text-center"
+                            data-i18n="book_now">Đặt Ngay</a>
                         <button
-                            class="flex-1 sm:flex-none border border-hoanien-text text-hoanien-text px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text hover:text-hoanien-bg transition-colors">
-                            Details
-                        </button>
+                            class="flex-1 sm:flex-none border border-hoanien-text text-hoanien-text px-8 py-3.5 text-[11px] uppercase tracking-[0.15em] hover:bg-hoanien-text hover:text-hoanien-bg transition-colors"
+                            data-i18n="details">Chi Tiết</button>
                     </div>
                 </div>
                 <div class="w-full lg:w-[60%] img-hover-zoom aspect-[4/3] md:aspect-[16/9] lg:aspect-[4/3]">
@@ -290,30 +286,18 @@
         </div>
     </main>
 
-
-    <!-- Footer -->
     <footer class="bg-hoanien-footer text-hoanien-footer-text py-20 px-6 font-sans site-footer">
         <div class="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
-            <!-- Footer Info -->
             <div class="space-y-6">
-                <div class="font-serif text-3xl font-medium tracking-wide">
-                    HOANIEN
-                    <span class="block text-xs font-sans tracking-[0.3em] uppercase mt-2 opacity-70">River
-                        Retreat</span>
-                </div>
-                <div class="text-sm opacity-80 leading-relaxed max-w-sm">
-                    232 Tran Nhan Tong Street,<br>
-                    Hoi An Dong Ward,<br>
-                    Danang City, Viet Nam
-                </div>
-                <div class="text-sm opacity-80">
-                    <a href="mailto:contact@hoanienretreat.com"
-                        class="hover:text-white transition-colors">contact@hoanienretreat.com</a><br>
-                    <a href="tel:+84123456789" class="hover:text-white transition-colors">+84 123 456 789</a>
-                </div>
+                <div class="font-serif text-3xl font-medium tracking-wide">HOANIEN<span
+                        class="block text-xs font-sans tracking-[0.3em] uppercase mt-2 opacity-70"
+                        data-i18n="footer_tagline">River Retreat</span></div>
+                <div class="text-sm opacity-80 leading-relaxed max-w-sm" data-i18n="footer_address">232 Trần Nhân
+                    Tông,<br>Hội An Đông,<br>Đà Nẵng, Việt Nam</div>
+                <div class="text-sm opacity-80"><a href="mailto:contact@hoanienretreat.com"
+                        class="hover:text-white transition-colors">contact@hoanienretreat.com</a><br><a
+                        href="tel:+84123456789" class="hover:text-white transition-colors">+84 123 456 789</a></div>
             </div>
-
-            <!-- Map Card -->
             <div
                 class="h-48 md:h-64 rounded-xl overflow-hidden grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-500 relative group cursor-pointer border border-hoanien-footer-text/20">
                 <iframe
@@ -322,123 +306,83 @@
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>
-
-        <!-- Footer Links -->
         <div
             class="max-w-[1440px] mx-auto mt-16 pt-8 border-t border-hoanien-footer-text/10 text-center text-[10px] uppercase tracking-[0.15em] opacity-50 flex flex-col md:flex-row justify-between gap-4">
-            <p>&copy; 2026 Hoanien River Retreat. All rights reserved.</p>
+            <p data-i18n="copyright">&copy; 2026 Hoanien River Retreat. All rights reserved.</p>
             <div class="flex gap-6 justify-center md:justify-end">
-                <a href="#" class="hover:text-white transition-colors">Privacy</a>
-                <a href="#" class="hover:text-white transition-colors">Terms</a>
-                <a href="#" class="hover:text-white transition-colors">Sitemap</a>
+                <a href="#" class="hover:text-white transition-colors" data-i18n="footer_priv">Privacy</a>
+                <a href="#" class="hover:text-white transition-colors" data-i18n="footer_terms">Terms</a>
+                <a href="#" class="hover:text-white transition-colors" data-i18n="footer_sitemap">Sitemap</a>
             </div>
         </div>
     </footer>
 
-
-
-
-
-
-    <!-- GSAP Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        const translations = {
+            vi: {
+                nav_living: "Nghỉ Dưỡng", nav_dining: "Ẩm Thực", nav_experiences: "Trải Nghiệm", nav_tours: "Hành Trình",
+                nav_profile: "Hồ Sơ", nav_logout: "Đăng Xuất", nav_book_now: "Đặt Ngay",
+                sub_pool: "Pool Villas", sub_river: "River Suites", sub_residences: "Residences",
+                hero_badge: "Thánh địa của bạn tại Hội An", hero_title: "Nghỉ Dưỡng",
+                hero_desc: "Mọi biệt thự và căn hộ đều là thiên đường riêng tư, được thiết kế hài hòa với thiên nhiên xung quanh, mang đến sự thoải mái và thanh bình tuyệt đối.",
+                sense_title: "Cảm giác về không gian",
+                sense_desc: "Tiếp nối di sản kiến trúc phong phú của Hội An, chỗ nghỉ của chúng tôi kết hợp tinh hoa thủ công địa phương, vật liệu tự nhiên và hồ bơi riêng mời gọi không gian ngoài trời vào bên trong.",
+                villa1_title: "Biệt thự hồ bơi ven sông",
+                villa1_desc: "Thức dậy cùng dòng chảy nhẹ nhàng của sông Thu Bồn. Những biệt thự rộng rãi này có hồ bơi riêng, sân hiên ngoài trời và không gian sống rộng mở tràn ngập ánh sáng tự nhiên.",
+                villa1_size: "Diện tích: 120 m²", villa1_features: "Tiện ích: Hồ bơi riêng, View sông, Phòng tắm ngoài trời",
+                details: "Chi Tiết", book_now: "Đặt Ngay",
+                villa2_title: "Biệt thự vườn nhiệt đới",
+                villa2_desc: "Nằm ẩn mình giữa những khu vườn nhiệt đới tươi tốt, những biệt thự riêng biệt này mang đến sự riêng tư tuyệt đối. Hoàn hảo cho các cặp đôi tìm kiếm một nơi nghỉ dưỡng yên tĩnh giữa vẻ đẹp thiên nhiên.",
+                villa2_size: "Diện tích: 105 m²", villa2_features: "Tiện ích: Hồ bơi riêng, Vườn cây, Sân tắm nắng",
+                footer_tagline: "River Retreat",
+                footer_address: "232 Trần Nhân Tông,<br>Hội An Đông,<br>Đà Nẵng, Việt Nam",
+                copyright: "© 2026 Hoanien River Retreat. All rights reserved.",
+                footer_priv: "Privacy", footer_terms: "Terms", footer_sitemap: "Sitemap"
+            },
+            en: {
+                nav_living: "Living", nav_dining: "Dining", nav_experiences: "Experiences", nav_tours: "Tours",
+                nav_profile: "Profile", nav_logout: "Logout", nav_book_now: "Book Now",
+                sub_pool: "Pool Villas", sub_river: "River Suites", sub_residences: "Residences",
+                hero_badge: "Your Sanctuary in Hoi An", hero_title: "Living",
+                hero_desc: "Every villa and suite is a private haven, thoughtfully designed to harmonize with the natural surroundings and offer unparalleled comfort and serenity.",
+                sense_title: "A Sense of Place",
+                sense_desc: "Embracing the rich architectural heritage of Hoi An, our accommodations feature local craftsmanship, natural materials, and private pools that invite the outside in.",
+                villa1_title: "Riverside Pool Villa",
+                villa1_desc: "Wake up to the gentle flow of the Thu Bon River. These spacious villas feature a private plunge pool, an outdoor terrace, and expansive living areas bathed in natural light.",
+                villa1_size: "Size: 120 sqm", villa1_features: "Features: Private Pool, River View, Open-air Bath",
+                details: "Details", book_now: "Book Now",
+                villa2_title: "Garden Pool Villa",
+                villa2_desc: "Nestled amidst lush tropical gardens, these secluded villas offer profound privacy. Perfect for couples seeking a tranquil retreat surrounded by nature's beauty.",
+                villa2_size: "Size: 105 sqm", villa2_features: "Features: Private Pool, Lush Garden, Sun Deck",
+                footer_tagline: "River Retreat",
+                footer_address: "232 Tran Nhan Tong Street,<br>Hoi An Dong Ward,<br>Danang City, Viet Nam",
+                copyright: "© 2026 Hoanien River Retreat. All rights reserved.",
+                footer_priv: "Privacy", footer_terms: "Terms", footer_sitemap: "Sitemap"
+            }
+        };
+        function switchLang(lang) {
+            document.querySelectorAll('.lang-btn').forEach(function (btn) { btn.classList.toggle('active', btn.dataset.lang === lang); });
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(function (el) {
+                var key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.placeholder !== undefined) { el.placeholder = translations[lang][key]; }
+                    else { el.innerHTML = translations[lang][key]; }
+                }
+            });
+        }
+        document.addEventListener("DOMContentLoaded", function () {
             gsap.registerPlugin(ScrollTrigger);
-
-
-            // Fade up sections on scroll
-            const sections = gsap.utils.toArray('main section, .feature-row, .results, .site-footer');
-            sections.forEach(section => {
-                gsap.fromTo(section,
-                    { opacity: 0, y: 40 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        duration: 1,
-                        ease: "power2.out",
-                        scrollTrigger: {
-                            trigger: section,
-                            start: "top 85%",
-                            toggleActions: "play none none none"
-                        }
-                    }
-                );
-            });
-
-            // Stagger reveal cards inside grids
-            const grids = gsap.utils.toArray('.room-grid');
-            grids.forEach(grid => {
-                const cards = grid.querySelectorAll('.room-card');
-                if (cards.length > 0) {
-                    gsap.fromTo(cards,
-                        { opacity: 0, y: 50 },
-                        {
-                            opacity: 1,
-                            y: 0,
-                            duration: 0.8,
-                            stagger: 0.15,
-                            ease: "power3.out",
-                            scrollTrigger: {
-                                trigger: grid,
-                                start: "top 85%",
-                                toggleActions: "play none none none"
-                            }
-                        }
-                    );
-                }
-            });
-
-            // Stagger reveal feature chips
-            const chipLists = gsap.utils.toArray('.chip-list');
-            chipLists.forEach(list => {
-                const chips = list.querySelectorAll('.chip');
-                if (chips.length > 0) {
-                    gsap.fromTo(chips,
-                        { opacity: 0, x: -20 },
-                        {
-                            opacity: 1,
-                            x: 0,
-                            duration: 0.6,
-                            stagger: 0.1,
-                            ease: "power2.out",
-                            scrollTrigger: {
-                                trigger: list,
-                                start: "top 90%",
-                                toggleActions: "play none none none"
-                            }
-                        }
-                    );
-                }
-            });
-
-            // ── Navbar transparent → solid on scroll ──
-            const guestNav = document.querySelector('.guest-nav');
-            const guestSubNav = document.querySelector('.guest-sub-nav');
-            
-            const onScroll = () => {
-                const scrolled = window.scrollY > 60;
-                if (guestNav) {
-                    if (scrolled) guestNav.classList.add('scrolled');
-                    else guestNav.classList.remove('scrolled');
-                }
-                if (guestSubNav) {
-                    if (scrolled) guestSubNav.classList.add('scrolled');
-                    else guestSubNav.classList.remove('scrolled');
-                }
-            };
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-
-            // Header reveal
-            gsap.fromTo('.site-header',
-                { opacity: 0, y: -20 },
-                { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }
-            );
+            var sections = gsap.utils.toArray('main section, .feature-row, .results, .site-footer');
+            sections.forEach(function (section) { gsap.fromTo(section, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1, ease: "power2.out", scrollTrigger: { trigger: section, start: "top 85%", toggleActions: "play none none none" } }); });
+            var guestNav = document.querySelector('.guest-nav');
+            var guestSubNav = document.querySelector('.guest-sub-nav');
+            var onScroll = function () { var scrolled = window.scrollY > 60; if (guestNav) { if (scrolled) guestNav.classList.add('scrolled'); else guestNav.classList.remove('scrolled'); } if (guestSubNav) { if (scrolled) guestSubNav.classList.add('scrolled'); else guestSubNav.classList.remove('scrolled'); } };
+            window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
         });
     </script>
-
 </body>
 
 </html>

@@ -1,6 +1,6 @@
 # SOFTWARE REQUIREMENT SPECIFICATION
 
-## Kawai Resort & Tour Hub
+## Hòa Niên Resort & Tour Hub
 
 **Group 2 — SE2003-NET**
 

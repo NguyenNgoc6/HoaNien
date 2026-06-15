@@ -1,4 +1,4 @@
-# BẢNG TEST CASE TỔNG HỢP — KAWAI RESORT
+# BẢNG TEST CASE TỔNG HỢP — HOANIEN RESORT
 
 ## CHANGELOG
 | Ngày | Người thực hiện | Nội dung thay đổi |

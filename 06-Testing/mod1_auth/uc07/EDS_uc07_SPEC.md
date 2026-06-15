@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-EDS-MOD1-UC07-001 |
+| **Document ID** | HOANIEN-EDS-MOD1-UC07-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -72,7 +72,7 @@ public interface PiiService
 | `MOD1-011` | 404 | Customer not found | ID khong ton tai |
 
 ### 11. Deployment
-`mvn clean package && java -jar target/kawai-backend-1.0.jar`
+`mvn clean package && java -jar target/hoanien-backend-1.0.jar`
 
 ### 12. Rollback
 `git checkout tags/v1.0.0 && mvn clean package`

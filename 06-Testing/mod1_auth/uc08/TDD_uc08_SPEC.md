@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | KAWAI-TDD-MOD1-UC08-001 |
+| **Document ID** | HOANIEN-TDD-MOD1-UC08-001 |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -73,4 +73,4 @@
 - [x] Unit tests pass 100%
 
 ### 7. Rollback Plan
-`git checkout -- src/main/java/com/kawai/services/impl/PriceConfigServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/PriceConfigServiceImpl.java`

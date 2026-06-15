@@ -1,4 +1,4 @@
-# Kawai Resort & Tour Hub
+# Hòa Niên Resort & Tour Hub
 
 **Đồ án Môn học:** SWP391 - Software Development Project
 **Lớp:** SE2003-NET
@@ -9,7 +9,7 @@
 
 ## 📖 Giới thiệu Dự án (Project Description)
 
-Kawai Resort & Tour Hub là một hệ thống phần mềm quản lý vận hành toàn diện dành cho Khu nghỉ dưỡng (Resort) tích hợp với trung tâm điều hành Tour du lịch. Dự án được thiết kế để số hóa và tự động hóa các quy trình từ Front-Desk (Lễ tân), F&B (Nhà hàng & Bếp), Dọn phòng (Housekeeping) cho đến Tour Operations (tích hợp AI Face Scan điểm danh khách).
+Hòa Niên Resort & Tour Hub là một hệ thống phần mềm quản lý vận hành toàn diện dành cho Khu nghỉ dưỡng (Resort) tích hợp với trung tâm điều hành Tour du lịch. Dự án được thiết kế để số hóa và tự động hóa các quy trình từ Front-Desk (Lễ tân), F&B (Nhà hàng & Bếp), Dọn phòng (Housekeeping) cho đến Tour Operations (tích hợp AI Face Scan điểm danh khách).
 
 ## 🚀 Công nghệ sử dụng (Tech Stack)
 

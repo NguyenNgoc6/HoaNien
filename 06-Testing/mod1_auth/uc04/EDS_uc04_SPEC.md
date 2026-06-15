@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD1-UC04-001` |
+| **Document ID** | `HOANIEN-EDS-MOD1-UC04-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -305,7 +305,7 @@ public interface MasterDataService {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -356,23 +356,23 @@ SELECT id, name, discount_percent, start_date, end_date FROM promotions WHERE is
 
 ```bash
 # List room categories
-curl -X GET https://api.kawairesort.com/api/v1/master-data/room-categories \
+curl -X GET https://api.hoanienretreat.com/api/v1/master-data/room-categories \
   -H "Authorization: Bearer [JWT_ADMIN]"
 
 # Create room category
-curl -X POST https://api.kawairesort.com/api/v1/master-data/room-categories \
+curl -X POST https://api.hoanienretreat.com/api/v1/master-data/room-categories \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
   -d '{"name":"Deluxe Ocean View","description":"Phòng view biển cao cấp","maxOccupancy":3,"basePrice":2500000}'
 
 # Update room category
-curl -X PUT https://api.kawairesort.com/api/v1/master-data/room-categories/4 \
+curl -X PUT https://api.hoanienretreat.com/api/v1/master-data/room-categories/4 \
   -H "Authorization: Bearer [JWT_ADMIN]" \
   -H "Content-Type: application/json" \
   -d '{"name":"Premium Ocean View","basePrice":3000000}'
 
 # Delete room category
-curl -X DELETE https://api.kawairesort.com/api/v1/master-data/room-categories/4 \
+curl -X DELETE https://api.hoanienretreat.com/api/v1/master-data/room-categories/4 \
   -H "Authorization: Bearer [JWT_ADMIN]"
 ```
 

@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD2-UC13-001` |
+| **Document ID** | `HOANIEN-TDD-MOD2-UC13-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -192,4 +192,4 @@ Logic `HousekeepingService` quản lý trạng thái phòng vật lý: auto-task
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/HousekeepingServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/HousekeepingServiceImpl.java`

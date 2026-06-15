@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD2-UC11-001` |
+| **Document ID** | `HOANIEN-EDS-MOD2-UC11-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -365,7 +365,7 @@ public class DashboardStats {
 
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 **Chặng 2 — Verification**
@@ -399,7 +399,7 @@ Expected: HTTP 200 + danh sách phòng + thống kê.
 ```bash
 git checkout tags/v1.0.0
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar
+java -jar target/hoanien-backend-1.0.jar
 ```
 
 ---
@@ -453,7 +453,7 @@ FROM room;
 #### 14.2. Log / Audit Verification
 
 ```bash
-kubectl logs -l app=kawai-backend | grep "DashboardViewed" | head -5
+kubectl logs -l app=hoanien-backend | grep "DashboardViewed" | head -5
 ```
 
 ---
@@ -463,7 +463,7 @@ kubectl logs -l app=kawai-backend | grep "DashboardViewed" | head -5
 #### 15.1. Happy Path
 
 ```bash
-curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard \
+curl -X GET https://api.hoanienretreat.com/api/v1/rooms/dashboard \
   -H "Authorization: Bearer [RECEPTIONIST_TOKEN]"
 ```
 
@@ -488,7 +488,7 @@ curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard \
 #### 15.2. Error Path
 
 ```bash
-curl -X GET https://api.kawairesort.com/api/v1/rooms/dashboard
+curl -X GET https://api.hoanienretreat.com/api/v1/rooms/dashboard
 ```
 *Response 401:*
 ```json

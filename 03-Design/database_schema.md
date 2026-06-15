@@ -1,6 +1,6 @@
-# KAWAI RESORT & TOUR HUB - DATABASE SCHEMA (V3.1 - FULL CONSTRAINTS)
+# HOANIEN RESORT & TOUR HUB - DATABASE SCHEMA (V3.1 - FULL CONSTRAINTS)
 
-Tài liệu này mô tả chi tiết kiến trúc Cơ sở dữ liệu cho dự án Kawai Resort & Tour Hub. Ở phiên bản V3.1 này, toàn bộ cấu trúc bảng được chuẩn hóa trường dữ liệu theo đặc tả nghiệp vụ 2026, đồng thời hệ thống Ràng buộc (Constraints) và Triggers nghiệp vụ được thiết kế chi tiết để bẻ gãy mọi rủi ro dữ liệu ngay từ tầng Database Engine.
+Tài liệu này mô tả chi tiết kiến trúc Cơ sở dữ liệu cho dự án Hòa Niên Resort & Tour Hub. Ở phiên bản V3.1 này, toàn bộ cấu trúc bảng được chuẩn hóa trường dữ liệu theo đặc tả nghiệp vụ 2026, đồng thời hệ thống Ràng buộc (Constraints) và Triggers nghiệp vụ được thiết kế chi tiết để bẻ gãy mọi rủi ro dữ liệu ngay từ tầng Database Engine.
 
 ## PHẦN I: CẤU TRÚC BẢNG (TABLE STRUCTURES)
 

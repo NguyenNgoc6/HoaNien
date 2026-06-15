@@ -3,7 +3,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-TDD-MOD2-UC11-001` |
+| **Document ID** | `HOANIEN-TDD-MOD2-UC11-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -116,4 +116,4 @@ Logic `RoomService.getDashboardData()` — truy vấn tổng hợp trạng thái
 
 ### 7. Rollback Plan
 
-`git checkout -- src/main/java/com/kawai/services/impl/RoomServiceImpl.java`
+`git checkout -- src/main/java/com/hoanien/services/impl/RoomServiceImpl.java`

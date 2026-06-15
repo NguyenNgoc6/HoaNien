@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD2-UC13-001` |
+| **Document ID** | `HOANIEN-EDS-MOD2-UC13-001` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-14 |
 | **Status** | Approved |
@@ -394,7 +394,7 @@ public class HotelOperationDTO {
 #### 11.2. Deployment
 ```bash
 mvn clean package -DskipTests
-java -jar target/kawai-backend-1.0.jar --spring.profiles.active=staging
+java -jar target/hoanien-backend-1.0.jar --spring.profiles.active=staging
 ```
 
 #### 11.3. Verification
@@ -460,11 +460,11 @@ WHERE r.room_status IN ('Dirty', 'Maintenance');
 
 ```bash
 # Xem tasks pending
-curl -X GET https://api.kawairesort.com/api/v1/housekeeping/tasks \
+curl -X GET https://api.hoanienretreat.com/api/v1/housekeeping/tasks \
   -H "Authorization: Bearer [HOUSEKEEPING_TOKEN]"
 
 # Cập nhật trạng thái phòng
-curl -X PATCH https://api.kawairesort.com/api/v1/housekeeping/rooms/1/status \
+curl -X PATCH https://api.hoanienretreat.com/api/v1/housekeeping/rooms/1/status \
   -H "Authorization: Bearer [HOUSEKEEPING_TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{"status": "CLEAN"}'
