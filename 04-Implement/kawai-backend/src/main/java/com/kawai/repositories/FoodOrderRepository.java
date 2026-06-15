@@ -24,4 +24,7 @@ public interface FoodOrderRepository extends JpaRepository<FoodOrder, Long> {
     BigDecimal totalCompletedRevenue();
 
     List<FoodOrder> findByBooking_Customer(com.kawai.models.Customer customer);
+
+    @Query("SELECT DISTINCT fo FROM FoodOrder fo LEFT JOIN FETCH fo.details d LEFT JOIN FETCH d.menuItem WHERE fo.roomBookingDetail.id = :bookingDetailId ORDER BY fo.id DESC")
+    List<FoodOrder> findByBookingDetailWithDetails(@org.springframework.data.repository.query.Param("bookingDetailId") Long bookingDetailId);
 }

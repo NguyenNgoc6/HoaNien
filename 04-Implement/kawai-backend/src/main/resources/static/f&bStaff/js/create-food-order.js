@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const totalEl = document.getElementById('summary-total');
 
   const btnSendKitchen = document.getElementById('btn-send-kitchen');
+  const tableSelect = document.getElementById('tableSelect');
   const searchInput = document.getElementById('food-search');
   const catPills = document.querySelectorAll('.cat-pill');
 
@@ -296,10 +297,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Expose send logic
   window.sendToKitchen = function() {
+    const custNameInput = document.querySelector('input[placeholder="Nhập tên khách hàng..."]');
     const payload = {
       orderType: state.orderType,
       roomNumber: state.orderType === 'room-svc' ? roomInput.value.trim().toUpperCase() : null,
       tableId: state.orderType === 'dine-in' ? tableSelect.value : null,
+      customerName: state.orderType === 'dine-in' && custNameInput ? custNameInput.value.trim() : null,
       paymentType: 'Pay_Later',
       items: Object.values(state.cart).map(item => ({
         id: item.id,
@@ -319,15 +322,21 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify(payload)
     })
     .then(res => {
-      if (!res.ok) throw new Error('API Error');
-      return res.json();
+      return res.json().then(data => ({ ok: res.ok, status: res.status, data }));
     })
-    .then(data => {
-      alert("Đã sinh Kitchen Order Ticket (KOT) và chuyển xuống bếp!");
-      window.location.href = "/fbStaff/dashboard";
+    .then(({ ok, status, data }) => {
+      if (ok && data.status === 'success') {
+        alert("Đã sinh Kitchen Order Ticket (KOT) và chuyển xuống bếp!");
+        window.location.href = "/fbStaff/dashboard";
+      } else {
+        const errMsg = data.message || data.error || JSON.stringify(data);
+        alert("Lỗi khi tạo đơn (" + status + "): " + errMsg);
+        btnSendKitchen.disabled = false;
+        btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
+      }
     })
     .catch(err => {
-      alert("Lỗi khi tạo đơn: " + err.message);
+      alert("Lỗi kết nối: " + err.message);
       btnSendKitchen.disabled = false;
       btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
     });

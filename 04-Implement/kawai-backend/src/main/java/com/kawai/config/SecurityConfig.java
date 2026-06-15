@@ -42,31 +42,47 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // --- 🟨 CẤU HÌNH BẢO MẬT: CHẶN ĐĂNG NHẬP STAFF TỪ IP LẠ ---
-                        // Chỉ máy nằm trong mạng nội bộ (ví dụ: 192.168.1.0 đến 192.168.1.255) mới được
-                        // truy cập cổng ops-login
-                        // Thay vì dùng .hasIpAddress("192.168.1.0/24")
+                        // --- CẤU HÌNH BẢO MẬT: CHẶN ĐĂNG NHẬP STAFF TỪ IP LẠ ---
                         .requestMatchers("/ops-login")
                         .access(new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
                                 "hasIpAddress('192.168.1.0/24')"))
 
-                        // Các URL public còn lại của hệ thống (giữ nguyên của bạn)
+                        // Các URL public của hệ thống
                         .requestMatchers("/", "/booking", "/auth/register", "/auth/login",
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
-                                "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**",
+                                "/experiences", "/tours", "/tours/**", "/profile", "/AnhTour/**",
+                                "/api/menu-items/**", "/api/rooms/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error")
                         .permitAll()
 
-                        // Phân quyền các Role hệ thống (giữ nguyên của bạn)
+                        // API đặt món (cả khách và staff đều gọi chung API này nên chỉ cần đăng nhập)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/pos/orders").authenticated()
+
+                        // F&B Staff phải đăng nhập với role FB_STAFF (hoặc ADMIN/MANAGER)
+                        .requestMatchers("/fbStaff/**", "/f&bStaff/**", "/api/pos/**")
+                        .hasAnyRole("FB_STAFF", "ADMIN", "MANAGER")
+
+                        // Phân quyền các Role hệ thống
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/tourguide/**").hasRole("TOURGUIDE")
-                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/profile/**", "/order-food", "/order-success").authenticated()
                         .anyRequest().authenticated())
 
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                // Trả 401 JSON cho API thay vì redirect HTML
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            String path = request.getRequestURI();
+                            if (path.startsWith("/api/")) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json;charset=UTF-8");
+                                response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Vui long dang nhap de tiep tuc\"}");
+                            } else {
+                                response.sendRedirect("/ops-login");
+                            }
+                        }))
                 .formLogin(form -> form
                         .loginPage("/ops-login")
                         .loginProcessingUrl("/auth/login")

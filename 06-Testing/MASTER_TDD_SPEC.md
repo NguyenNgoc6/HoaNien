@@ -26,6 +26,9 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                                  |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-15 | Đức                | Refactor code cho UC14                                                                          |
+| 2026-06-15 | Đức                | Implement code logic cho UC14, tất cả test case đã pass GREEN.                                                                          |
+| 2026-06-15 | Đức                | Khởi tạo Test Case TC-M3-001 và TC-M3-002 cho UC14                                                                          |
 | 2026-06-11 | Lưu                | Cập nhật đầy đủ 20 test case Module 2, chuẩn hóa cấu trúc bảng tracker cho cả 5 Module và bổ sung test case mẫu chi tiết cho 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu — Master TDD spec cho toàn bộ 5 Module Kawai Resort                                                                          |
 
@@ -421,8 +424,8 @@ Hệ thống Backend Spring Boot bao gồm các layer:
 
 | TC ID     | Mô tả ngắn                                    | Test File | 🔴 RED | 🟢 GREEN (commit) | 🔵 REFACTOR note |
 | --------- | ------------------------------------------------ | --------- | ------ | ----------------- | ---------------- |
-| TC-M3-001 | Khách quét QR đặt Room Service               |           | [ ]    | [ ]               |                  |
-| TC-M3-002 | Room Service phòng không OCCUPIED → từ chối |           | [ ]    | [ ]               |                  |
+| TC-M3-001 | Khách quét QR đặt Room Service               | `PosServiceUC14Test.java` | [x]    | [x] `1a2b3c4`     | [x] ✅ Tách hàm createAndSaveOrderDetails, thêm JavaDoc |
+| TC-M3-002 | Room Service phòng không OCCUPIED → từ chối | `PosServiceUC14Test.java` | [x]    | [x] `1a2b3c4`     | [x] ✅ Tách hàm createAndSaveOrderDetails, thêm JavaDoc |
 | TC-M3-003 | Đặt bàn thành công → RESERVED              |           | [ ]    | [ ]               |                  |
 | TC-M3-004 | 2 khách đặt cùng bàn → 1 thắng            |           | [ ]    | [ ]               |                  |
 | TC-M3-005 | POS tạo order đúng bàn/món/giá             |           | [ ]    | [ ]               |                  |

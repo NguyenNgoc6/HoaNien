@@ -2,34 +2,36 @@
 
 ## UC14 — Menu and E-Menu / Room Service
 
-| Field | Value |
-|-------|-------|
-| **Document ID** | `KAWAI-EDS-MOD3-UC14-001` |
-| **Version** | 1.0 |
-| **Date** | 2026-06-15 |
-| **Status** | Approved |
-| **Document Owner** | Trịnh Minh Đức |
-| **Author** | Trịnh Minh Đức — Developer |
-| **Reviewed by** | Trịnh Minh Đức — Tech Lead |
-| **DPO Sign-off** | `[x] Approved – 2026-06-15 – Trịnh Minh Đức` |
-| **Approved by** | `[x] Trịnh Minh Đức – 2026-06-15` |
-| **Last Review** | 2026-06-15 |
-| **Based on EDS** | v2.0 |
+| Field                    | Value                                               |
+| ------------------------ | --------------------------------------------------- |
+| **Document ID**    | `KAWAI-EDS-MOD3-UC14-001`                         |
+| **Version**        | 1.0                                                 |
+| **Date**           | 2026-06-15                                          |
+| **Status**         | Approved                                            |
+| **Document Owner** | Trịnh Minh Đức                                   |
+| **Author**         | Trịnh Minh Đức — Developer                      |
+| **Reviewed by**    | Nguyễn Xuân Lưu — Tech Lead                    |
+| **DPO Sign-off**   | `[x] Approved – 2026-06-15 – Trịnh Minh Đức` |
+| **Approved by**    | `[x] Trịnh Minh Đức – 2026-06-15`             |
+| **Last Review**    | 2026-06-15                                          |
+| **Based on EDS**   | v2.0                                                |
 
 ---
 
 ### CHANGELOG
-| Ngày | Người thực hiện | Nội dung thay đổi |
-|------|-----------------|-------------------|
-| 2026-06-15 | Trịnh Minh Đức | Cập nhật tài liệu theo chuẩn 17 sections |
+
+| Ngày      | Người thực hiện | Nội dung thay đổi                          |
+| ---------- | ------------------- | --------------------------------------------- |
+| 2026-06-15 | Trịnh Minh Đức   | Cập nhật tài liệu theo chuẩn 17 sections |
 
 ---
 
 ### MỤC LỤC
+
 1. [Tổng quan Module](#1)
 2. [Ma trận Truy vết](#2)
 3. [ADR](#3)
-4. [Non-Functional & SLA](#4)
+4. [Non-Functional &amp; SLA](#4)
 5. [Static Modeling](#5)
 6. [Dynamic Modeling](#6)
 7. [Domain Event Catalog](#7)
@@ -37,7 +39,7 @@
 9. [API Specification](#9)
 10. [Bảng mã lỗi](#10)
 11. [Quy trình Triển khai](#11)
-12. [Rollback & Incident Runbook](#12)
+12. [Rollback &amp; Incident Runbook](#12)
 13. [Kịch bản Kiểm thử](#13)
 14. [Phương pháp Xác minh](#14)
 15. [Mẫu thử thực tế](#15)
@@ -48,23 +50,23 @@
 
 ### 1. Tổng quan Module
 
-| Field | Value |
-|-------|-------|
-| **Module Name** | Menu & E-Menu |
-| **Bounded Context** | POS & F&B |
-| **Use Case** | Khách quét QR hiển thị E-Menu, đặt Room Service. |
-| **Data Classification** | Internal |
-| **Compliance Scope** | Nội bộ |
-| **Upstream Dependencies** | — |
-| **Downstream Consumers** | Folio, Inventory |
+| Field                           | Value                                                  |
+| ------------------------------- | ------------------------------------------------------ |
+| **Module Name**           | Menu & E-Menu                                          |
+| **Bounded Context**       | POS & F&B                                              |
+| **Use Case**              | Khách quét QR hiển thị E-Menu, đặt Room Service. |
+| **Data Classification**   | Internal                                               |
+| **Compliance Scope**      | Nội bộ                                               |
+| **Upstream Dependencies** | —                                                     |
+| **Downstream Consumers**  | Folio, Inventory                                       |
 
 ---
 
 ### 2. Ma trận Truy vết
 
-| Requirement ID | Loại | Mô tả | Thành phần Code | Compliance | ADR |
-|----------------|------|-------|-----------------|------------|-----|
-| UC14_REQ_01 | US | Khách quét QR hiển thị E-Menu, đặt Room Service. | `MenuService`, `RoomServiceService` | — | ADR-001 |
+| Requirement ID | Loại | Mô tả                                                | Thành phần Code                    | Compliance | ADR     |
+| -------------- | ----- | ------------------------------------------------------ | ------------------------------------ | ---------- | ------- |
+| UC14_REQ_01    | US    | Khách quét QR hiển thị E-Menu, đặt Room Service. | `PosService`, `PosApiController` | —         | ADR-001 |
 
 ---
 
@@ -72,11 +74,11 @@
 
 #### ADR-001 — Cơ chế xử lý Menu & E-Menu
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
+| Field              | Value             |
+| ------------------ | ----------------- |
+| **Status**   | Accepted          |
 | **Deciders** | Trịnh Minh Đức |
-| **Date** | 2026-06-15 |
+| **Date**     | 2026-06-15        |
 
 **Bối cảnh:** Cần xử lý logic cho Menu & E-Menu một cách hiệu quả và dễ mở rộng.
 **Quyết định:** Sử dụng Event-driven architecture cho các tác vụ bất đồng bộ.
@@ -88,10 +90,10 @@
 
 #### 4.1. Performance & Availability
 
-| Category | Requirement | Target SLA | Measurement |
-|----------|-------------|------------|-------------|
-| **Latency** | Response time (p99) | < 300ms | k6 load test |
-| **Availability** | Uptime (monthly) | 99.9% | Uptime monitor |
+| Category               | Requirement         | Target SLA | Measurement    |
+| ---------------------- | ------------------- | ---------- | -------------- |
+| **Latency**      | Response time (p99) | < 300ms    | k6 load test   |
+| **Availability** | Uptime (monthly)    | 99.9%      | Uptime monitor |
 
 ---
 
@@ -101,12 +103,13 @@
 
 ```plantuml
 @startuml
-interface MenuService {
-  +getMenu(): MenuDTO
+interface PosService {
+  +createRoomServiceOrder(req: CreateFoodOrderRequest): FoodOrder
 }
 
-class MenuServiceImpl implements MenuService {
-  -repository: MenuRepository
+class PosServiceImpl implements PosService {
+  -roomRepository: RoomRepository
+  -foodOrderRepository: FoodOrderRepository
 }
 @enduml
 ```
@@ -130,7 +133,7 @@ participant "Controller" as Ctrl
 participant "Service" as Svc
 database MySQL as DB
 
-C -> Ctrl: POST /api/v1/orders/room-service
+C -> Ctrl: POST /api/pos/orders (orderType=room-svc)
 activate Ctrl
 Ctrl -> Svc: process()
 activate Svc
@@ -147,17 +150,17 @@ deactivate Ctrl
 
 ### 7. Domain Event Catalog
 
-| Event Name | Trigger | Publisher | Subscriber(s) | Async? |
-|------------|---------|-----------|---------------|--------|
-| `RoomServiceOrdered` | Hoàn tất tác vụ | `MenuService` | `FolioService`, `AuditService` | Yes |
+| Event Name             | Trigger             | Publisher      | Subscriber(s)                      | Async? |
+| ---------------------- | ------------------- | -------------- | ---------------------------------- | ------ |
+| `RoomServiceOrdered` | Hoàn tất tác vụ | `PosService` | `FolioService`, `AuditService` | Yes    |
 
 ---
 
 ### 8. Interface Specification
 
 ```java
-public interface MenuService {
-    ResponseDTO processRequest(RequestDTO req);
+public interface PosService {
+    com.kawai.models.FoodOrder createRoomServiceOrder(com.kawai.dto.CreateFoodOrderRequest request);
 }
 ```
 
@@ -165,27 +168,29 @@ public interface MenuService {
 
 ### 9. API Specification
 
-| Method | Path | Auth | Roles | Rate Limit | Idempotent? |
-|--------|------|------|-------|------------|-------------|
-| POST/GET | `/api/v1/menu, /api/v1/orders/room-service` | JWT | All | 30/min | No |
+| Method | Path                | Auth        | Roles | Rate Limit | Idempotent? |
+| ------ | ------------------- | ----------- | ----- | ---------- | ----------- |
+| POST   | `/api/pos/orders` | JWT/Session | All   | 30/min     | No          |
 
 ---
 
 ### 10. Bảng mã lỗi
 
-| Code | HTTP | Message (EN) | Message (VI) | Trigger |
-|------|------|--------------|--------------|---------|
-| `POS-001` | 400 | Invalid Request | Yêu cầu không hợp lệ | Tham số sai |
-| `POS-003` | 400 | Credit Limit Exceeded | Vượt hạn mức nợ | Vượt mức credit |
+| Code        | HTTP | Message (EN)          | Message (VI)              | Trigger            |
+| ----------- | ---- | --------------------- | ------------------------- | ------------------ |
+| `POS-001` | 400  | Invalid Request       | Yêu cầu không hợp lệ | Tham số sai       |
+| `POS-003` | 400  | Credit Limit Exceeded | Vượt hạn mức nợ      | Vượt mức credit |
 
 ---
 
 ### 11. Quy trình Triển khai
 
 #### 11.1. Prerequisites
-- [x] Database tables đã được tạo (`menu_item, menu_category`)
+
+- [X] Database tables đã được tạo (`menu_item, menu_category`)
 
 #### 11.2. Deployment
+
 ```bash
 mvn clean package -DskipTests
 ```
@@ -194,9 +199,9 @@ mvn clean package -DskipTests
 
 ### 12. Rollback & Incident Runbook
 
-| Điều kiện | Ngưỡng | Người quyết định |
-|-----------|--------|-------------------|
-| Lỗi API liên tục | > 10% trong 5 phút | On-call Engineer |
+| Điều kiện        | Ngưỡng            | Người quyết định |
+| ------------------- | ------------------- | --------------------- |
+| Lỗi API liên tục | > 10% trong 5 phút | On-call Engineer      |
 
 **Rollback:** `git checkout tags/v1.0.0`
 
@@ -205,6 +210,7 @@ mvn clean package -DskipTests
 ### 13. Kịch bản Kiểm thử
 
 #### 13.1. Unit Tests
+
 - TC-UC14-001: Khách quét QR → hiển thị E-Menu, đặt Room Service thành công
 - TC-UC14-002: Room Service cho phòng không OCCUPIED → từ chối
 
@@ -221,33 +227,35 @@ SELECT * FROM menu_item ORDER BY id DESC LIMIT 10;
 ### 15. Mẫu thử thực tế
 
 ```bash
-curl -X POST https://api.kawairesort.com/api/v1/menu \
+curl -X POST https://api.kawairesort.com/api/pos/orders \
   -H "Authorization: Bearer [JWT]" \
   -H "Content-Type: application/json" \
-  -d '{}'
+  -d '{"orderType": "room-svc", "roomNumber": "101", "items": [{"id": 1, "qty": 2}]}'
 ```
 
 ---
 
 ### 16. Authorization Matrix
 
-| Endpoint | GUEST | CUSTOMER | RECEPTIONIST | ADMIN |
-|----------|:-----:|:--------:|:------------:|:-----:|
-| `/api/v1/menu` | ✔️ | ✔️ | ✔️ | ✔️ |
+| Endpoint            | GUEST | CUSTOMER | RECEPTIONIST | ADMIN |
+| ------------------- | :---: | :------: | :----------: | :---: |
+| `/api/pos/orders` | ✔️ |   ✔️   |     ✔️     | ✔️ |
 
 ---
 
 ### 17. Phụ lục
 
 #### A. Glossary
-| Thuật ngữ | Định nghĩa |
-|-----------|------------|
-| **KOT** | Kitchen Order Ticket |
+
+| Thuật ngữ     | Định nghĩa                   |
+| --------------- | ------------------------------- |
+| **KOT**   | Kitchen Order Ticket            |
 | **Folio** | Hồ sơ thanh toán của phòng |
 
 #### B. Tài liệu tham chiếu
-| Document | Path |
-|----------|------|
+
+| Document | Path                                          |
+| -------- | --------------------------------------------- |
 | TDD UC14 | `06-Testing/mod3_pos/uc14/TDD_uc14_SPEC.md` |
 
 ---

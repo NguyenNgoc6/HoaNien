@@ -40,8 +40,9 @@ public class RoomBookingDetail {
     @Column(name = "is_charge_to_room_allowed", nullable = false)
     private Boolean isChargeToRoomAllowed = true;
 
+    // Duc sua khoi tao cho credit limit la 2 triệu
     @Column(name = "sub_credit_limit", nullable = false)
-    private BigDecimal subCreditLimit = BigDecimal.ZERO;
+    private BigDecimal subCreditLimit = new BigDecimal("2000000.00");
 
     @Column(name = "billing_routing_strategy", nullable = false)
     private String billingRoutingStrategy = "BILL_TO_LEADER";

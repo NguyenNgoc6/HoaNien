@@ -158,10 +158,13 @@
                             </select>
                             
                             <div id="roomField">
-                                <select id="roomNumberInput" class="w-full bg-transparent border border-hoanien-text/20 p-2.5 rounded focus:border-hoanien-text focus:outline-none transition-colors text-xs">
-                                    <option value="">-- Chọn phòng của bạn --</option>
-                                    <option th:each="room : ${rooms}" th:value="${room.roomNumber}" th:text="'Phòng ' + ${room.roomNumber} + ' (' + ${room.category.categoryName} + ')'"></option>
+                                <select id="roomNumberInput" onchange="displayCustomerName()" class="w-full bg-transparent border border-hoanien-text/20 p-2.5 rounded focus:border-hoanien-text focus:outline-none transition-colors text-xs mb-2">
+                                    <option value="" data-customer="" data-credit="0">-- Chọn phòng của bạn --</option>
+                                    <option th:each="room : ${rooms}" th:value="${room.roomNumber}" th:data-customer="${room.customerInfo}" th:data-credit="${room.creditLimit}" th:text="${room.displayName}"></option>
                                 </select>
+                                <input type="text" id="customerDisplayBox" readonly placeholder="Thông tin khách hàng..." class="w-full bg-hoanien-bg/50 border border-hoanien-text/10 p-2.5 rounded text-xs opacity-70 cursor-not-allowed mb-2">
+                                <input type="text" id="creditLimitDisplayBox" readonly placeholder="Hạn mức khả dụng..." class="w-full bg-hoanien-bg/50 border border-hoanien-text/10 p-2.5 rounded text-xs opacity-70 cursor-not-allowed text-red-700 font-medium hidden">
+                                <div id="creditLimitError" class="text-red-600 text-[11px] mt-1 font-semibold hidden">Đơn hàng vượt quá Credit Limit của phòng!</div>
                             </div>
                             
                             <div id="tableField" style="display: none;">
@@ -240,6 +243,8 @@
     <script>
         let cart = [];
         let isDrawerOpen = false;
+        let currentRoomCreditLimit = 0;
+        let currentTotalAmount = 0;
         
         function toggleOrderFields() {
             const type = document.getElementById('orderType').value;
@@ -250,6 +255,54 @@
                 document.getElementById('roomField').style.display = 'none';
                 document.getElementById('tableField').style.display = 'block';
             }
+            validateCreditLimitUI();
+        }
+
+        function displayCustomerName() {
+            const select = document.getElementById('roomNumberInput');
+            const box = document.getElementById('customerDisplayBox');
+            const creditBox = document.getElementById('creditLimitDisplayBox');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (selectedOption && selectedOption.value !== "") {
+                const customerName = selectedOption.getAttribute('data-customer');
+                box.value = customerName ? customerName : 'Không tìm thấy thông tin';
+                
+                const creditVal = selectedOption.getAttribute('data-credit');
+                currentRoomCreditLimit = creditVal ? parseFloat(creditVal) : 0;
+                if(currentRoomCreditLimit > 0) {
+                    creditBox.value = 'Hạn mức: ' + currentRoomCreditLimit.toLocaleString('vi-VN') + 'đ';
+                    creditBox.classList.remove('hidden');
+                } else {
+                    creditBox.value = '';
+                    creditBox.classList.add('hidden');
+                }
+            } else {
+                box.value = '';
+                if(creditBox) {
+                    creditBox.value = '';
+                    creditBox.classList.add('hidden');
+                }
+                currentRoomCreditLimit = 0;
+            }
+            validateCreditLimitUI();
+        }
+
+        function validateCreditLimitUI() {
+            const errorDiv = document.getElementById('creditLimitError');
+            const orderTypeSelect = document.getElementById('orderType') ? document.getElementById('orderType').value : 'ROOM_SERVICE';
+            
+            let isOverLimit = false;
+            if (orderTypeSelect === 'ROOM_SERVICE' && currentTotalAmount > currentRoomCreditLimit && document.getElementById('roomNumberInput').value !== "") {
+                isOverLimit = true;
+            }
+            
+            if (isOverLimit) {
+                if (errorDiv) errorDiv.classList.remove('hidden');
+            } else {
+                if (errorDiv) errorDiv.classList.add('hidden');
+            }
+            return !isOverLimit;
         }
 
         function addToCart(id, name, price) {
@@ -307,10 +360,12 @@
             
             const fee = subtotal * 0.05;
             const total = subtotal + fee;
+            currentTotalAmount = total;
             
             document.getElementById('subtotal').innerText = subtotal.toLocaleString('vi-VN') + 'đ';
             document.getElementById('serviceFee').innerText = fee.toLocaleString('vi-VN') + 'đ';
             document.getElementById('total').innerText = total.toLocaleString('vi-VN') + 'đ';
+            validateCreditLimitUI();
         }
 
         function toggleOrderButton() {
@@ -340,6 +395,11 @@
             
             if (reqOrderType === 'room-svc' && !roomNumber) {
                 alert("Vui lòng nhập số phòng để nhận món!");
+                return;
+            }
+            
+            if (!validateCreditLimitUI()) {
+                alert("Đơn hàng vượt quá Hạn Mức Tín Dụng (Credit Limit). Vui lòng giảm bớt món ăn!");
                 return;
             }
 
@@ -376,10 +436,16 @@
                 btn.disabled = false;
                 
                 if(data.status === 'success' || data.status === 'CONFIRMED') {
-                    alert('Đặt món thành công! Đơn hàng sẽ sớm được phục vụ.\nMã đơn: ' + data.orderId);
                     cart = [];
                     document.getElementById('orderNote').value = '';
                     renderCart();
+                    
+                    if (reqOrderType === 'room-svc' && roomNumber) {
+                        window.location.href = '/order-success?roomNumber=' + encodeURIComponent(roomNumber);
+                    } else {
+                        alert('Đặt món thành công! Đơn hàng sẽ sớm được phục vụ.\nMã đơn: ' + data.orderId);
+                        window.location.reload();
+                    }
                 } else {
                     alert('Lỗi: ' + (data.message || 'Không thể đặt món. Kiểm tra lại thông tin phòng/bàn.'));
                 }

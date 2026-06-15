@@ -17,6 +17,7 @@
 
 | Ngày      | Người thực hiện | Nội dung thay đổi                                                    |
 | ---------- | ------------------- | ----------------------------------------------------------------------- |
+| 2026-06-15 | Đức                | Đặc tả API endpoint cho UC14 trong Module 3                                          |
 | 2026-06-11 | Lưu                | Đồng bộ mục lục, bổ sung đặc tả API chi tiết cho cả 5 Module |
 | 2026-06-09 | Lưu                | Khởi tạo tài liệu EDS cho toàn bộ hệ thống Kawai Resort         |
 
@@ -344,6 +345,37 @@ Feature: Luồng vận hành lõi tích hợp 3 Modules (Front Desk, POS, Folio)
   ```
 
 ### 7.4. MODULE 3 — DỊCH VỤ ẨM THỰC & NHÀ HÀNG (UC14-UC18)
+
+#### Endpoint: POST `/api/pos/orders`
+
+* **Mô tả:** Khách quét QR hiển thị E-Menu và đặt Room Service. Đơn hàng tự cộng thêm 10% phí phục vụ theo quy tắc BR-FB-05.
+* **Auth Level:** JWT / Session
+* **Required Roles:** Khách (Customer), F&B Staff, Admin
+* **Request Body:**
+  ```json
+  {
+    "orderType": "room-svc",
+    "roomNumber": "101",
+    "paymentType": "Pay_Later",
+    "items": [
+      {
+        "id": 1,
+        "qty": 2,
+        "price": 50000
+      }
+    ]
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "status": "success",
+    "orderId": 10
+  }
+  ```
+* **Error Codes & Business Rules:**
+  - `ROOM_NOT_FOUND` (400): Phòng không tồn tại.
+  - `ROOM_NOT_OCCUPIED` (400): Phòng không ở trạng thái OCCUPIED (BR-FB-01).
 
 #### Endpoint: POST `/api/v1/pos/post-to-room`
 

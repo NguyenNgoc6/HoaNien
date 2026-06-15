@@ -6,11 +6,14 @@ import com.kawai.models.RestaurantTable;
 import com.kawai.repositories.FoodItemRepository;
 import com.kawai.repositories.FoodOrderRepository;
 import com.kawai.repositories.RestaurantTableRepository;
+import com.kawai.repositories.TableReservationRepository;
+import com.kawai.models.TableReservation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,9 @@ public class PosController {
 
     @Autowired
     private RestaurantTableRepository restaurantTableRepository;
+
+    @Autowired
+    private TableReservationRepository tableReservationRepository;
 
     @Autowired
     private FoodItemRepository foodItemRepository;
@@ -51,7 +57,50 @@ public class PosController {
     }
 
     @GetMapping("/create-food-order")
-    public String createFoodOrder() {
+    public String createFoodOrder(Model model) {
+        List<RestaurantTable> vacantTables = restaurantTableRepository.findAll().stream()
+                .filter(t -> "Vacant".equalsIgnoreCase(t.getTableStatus()))
+                .toList();
+        model.addAttribute("vacantTables", vacantTables);
+
+        List<MenuItem> rawItems = foodItemRepository.findAll();
+        List<Map<String, Object>> mappedItems = new ArrayList<>();
+        for (MenuItem item : rawItems) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", item.getId());
+            map.put("name", item.getItemName());
+            map.put("desc", item.getDescription() != null ? item.getDescription() : "");
+            map.put("price", item.getPrice());
+            map.put("catLabel", item.getCategory());
+
+            String cat = "starter";
+            String category = item.getCategory() != null ? item.getCategory().toLowerCase() : "";
+            if (category.contains("khai vị")) cat = "starter";
+            else if (category.contains("chính")) cat = "main";
+            else if (category.contains("tráng miệng")) cat = "dessert";
+            else if (category.contains("uống") || category.contains("drink")) cat = "drink";
+            else if (category.contains("salad")) cat = "salad";
+            else cat = category;
+            map.put("cat", cat);
+
+            map.put("status", item.getIsAvailable() ? "available" : "out-of-stock");
+
+            if ("starter".equals(cat)) {
+                map.put("bgFrom", "#fff4eb"); map.put("bgTo", "#ffe8d6"); map.put("icon", "set_meal"); map.put("iconColor", "#e27221");
+            } else if ("main".equals(cat)) {
+                map.put("bgFrom", "#fbebeb"); map.put("bgTo", "#f7d5d5"); map.put("icon", "outdoor_grill"); map.put("iconColor", "#be3131");
+            } else if ("dessert".equals(cat)) {
+                map.put("bgFrom", "#fbf0f6"); map.put("bgTo", "#f7dceb"); map.put("icon", "cake"); map.put("iconColor", "#be318a");
+            } else if ("drink".equals(cat)) {
+                map.put("bgFrom", "#eaf5fb"); map.put("bgTo", "#d3eafd"); map.put("icon", "local_bar"); map.put("iconColor", "#218be2");
+            } else if ("salad".equals(cat)) {
+                map.put("bgFrom", "#ebfbf0"); map.put("bgTo", "#d6f7dc"); map.put("icon", "eco"); map.put("iconColor", "#21be55");
+            } else {
+                map.put("bgFrom", "#f5f5f5"); map.put("bgTo", "#e0e0e0"); map.put("icon", "restaurant"); map.put("iconColor", "#757575");
+            }
+            mappedItems.add(map);
+        }
+        model.addAttribute("menuItems", mappedItems);
         return "f&bStaff/create-food-order";
     }
 
@@ -151,7 +200,32 @@ public class PosController {
     }
 
     @GetMapping("/order-detail")
-    public String orderDetail() {
+    public String orderDetail(@RequestParam(name = "type", required = false) String type,
+                              @RequestParam(name = "id", required = false) String id,
+                              Model model) {
+        if ("food".equals(type) && id != null) {
+            try {
+                Long orderId;
+                if (id.startsWith("ORD-")) {
+                    orderId = Long.parseLong(id.substring(4));
+                } else {
+                    orderId = Long.parseLong(id);
+                }
+                FoodOrder foodOrder = foodOrderRepository.findById(orderId).orElse(null);
+                model.addAttribute("foodOrder", foodOrder);
+            } catch (Exception e) {}
+        } else if ("table".equals(type) && id != null) {
+            try {
+                Long resId;
+                if (id.startsWith("RES-")) {
+                    resId = Long.parseLong(id.substring(4));
+                } else {
+                    resId = Long.parseLong(id);
+                }
+                TableReservation tableOrder = tableReservationRepository.findById(resId).orElse(null);
+                model.addAttribute("tableOrder", tableOrder);
+            } catch (Exception e) {}
+        }
         return "f&bStaff/order-detail";
     }
 }

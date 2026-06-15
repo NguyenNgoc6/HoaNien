@@ -107,8 +107,8 @@
           </div>
           <div class="dh-right">
             <span id="order-status-chip" class="order-status-chip" 
-                  th:with="status=${foodOrder != null ? foodOrder.orderStatus : tableOrder.status}"
-                  th:classappend="${status == 'Pending' ? 'chip-pending' : (status == 'Serving' || status == 'Preparing' ? 'chip-cooking' : 'chip-ready')}" 
+                  th:with="status=${foodOrder != null ? foodOrder.orderStatus : (tableOrder != null ? tableOrder.status : 'N/A')}"
+                  th:classappend="${status == 'Pending' ? 'chip-pending' : (status == 'Serving' || status == 'Preparing' ? 'chip-cooking' : (status == 'Paid' ? 'chip-ready' : 'chip-ready'))}" 
                   style="font-size:0.8rem; padding:6px 14px;">
               <span class="dot"></span><span th:text="${status}">Processing</span>
             </span>
@@ -121,13 +121,13 @@
             <div class="step-icon"><span class="material-symbols-outlined">receipt_long</span></div>
             <div class="step-label">Created</div>
           </div>
-          <div class="step" th:classappend="${foodOrder.orderStatus == 'Preparing' || foodOrder.orderStatus == 'Ready' || foodOrder.orderStatus == 'Served' ? 'completed' : 'active'}" id="step-2">
+          <div class="step" th:classappend="${foodOrder != null && (foodOrder.orderStatus == 'Preparing' || foodOrder.orderStatus == 'Ready' || foodOrder.orderStatus == 'Served' || foodOrder.orderStatus == 'Paid') ? 'completed' : 'active'}" id="step-2">
             <div class="step-icon"><span class="material-symbols-outlined">skillet</span></div>
             <div class="step-label" id="lbl-step-2">Processing</div>
           </div>
-          <div class="step" th:classappend="${(foodOrder != null && foodOrder.orderStatus == 'Served') || (tableOrder != null && tableOrder.status == 'Completed') ? 'completed' : ''}" id="step-3">
-            <div class="step-icon"><span class="material-symbols-outlined" id="icon-step-3" th:text="${tableOrder != null ? 'done_all' : 'room_service'}">room_service</span></div>
-            <div class="step-label" id="lbl-step-3" th:text="${tableOrder != null ? 'Completed' : 'Served'}">Served</div>
+          <div class="step" th:classappend="${(foodOrder != null && (foodOrder.orderStatus == 'Served' || foodOrder.orderStatus == 'Paid')) || (tableOrder != null && tableOrder.status == 'Completed') ? 'completed' : ''}" id="step-3">
+            <div class="step-icon"><span class="material-symbols-outlined" id="icon-step-3" th:text="${foodOrder != null && foodOrder.orderStatus == 'Paid' ? 'payments' : (tableOrder != null ? 'done_all' : 'room_service')}">room_service</span></div>
+            <div class="step-label" id="lbl-step-3" th:text="${foodOrder != null && foodOrder.orderStatus == 'Paid' ? 'Paid' : (tableOrder != null ? 'Completed' : 'Served')}">Served</div>
           </div>
         </div>
 
@@ -135,7 +135,15 @@
         <div class="info-grid" th:if="${foodOrder != null || tableOrder != null}">
           <div class="info-box">
             <div class="info-label">Khách hàng / NV tạo</div>
-            <div class="info-value" id="info-customer" th:text="${foodOrder != null && foodOrder.createdByStaff != null ? foodOrder.createdByStaff.fullName : (tableOrder != null && tableOrder.customer != null ? tableOrder.customer.fullName : '')}">Nguyễn Minh Quân</div>
+            <div class="info-value" id="info-customer" th:text="${foodOrder != null ? 
+                (foodOrder.orderType == 'Room Service' && foodOrder.roomBookingDetail != null && foodOrder.roomBookingDetail.customer != null ? foodOrder.roomBookingDetail.customer.fullName : 
+                 (foodOrder.booking != null && foodOrder.booking.customer != null ? foodOrder.booking.customer.fullName : 
+                  (foodOrder.customerName != null && !foodOrder.customerName.isEmpty() ? foodOrder.customerName : 
+                   (foodOrder.createdByStaff != null ? 'Khách vãng lai (NV: ' + foodOrder.createdByStaff.fullName + ')' : 'Khách vãng lai')
+                  )
+                 )
+                ) 
+                : (tableOrder != null && tableOrder.customer != null ? tableOrder.customer.fullName : '')}">Nguyễn Minh Quân</div>
           </div>
           <div class="info-box" id="box-service-type">
             <div class="info-label">Hình thức</div>
@@ -143,11 +151,11 @@
           </div>
           <div class="info-box" id="box-location">
             <div class="info-label" id="lbl-location">Bàn / Phòng</div>
-            <div class="info-value" id="info-location" th:text="${foodOrder != null ? (foodOrder.orderType == 'Room Service' ? 'Room Service' : 'Bàn ' + (foodOrder.table != null ? foodOrder.table.tableNumber : '?')) : 'Bàn ' + (tableOrder.table != null ? tableOrder.table.tableNumber : '?')}">Bàn 05</div>
+            <div class="info-value" id="info-location" th:text="${foodOrder != null ? (foodOrder.orderType == 'Room Service' ? 'Phòng ' + (foodOrder.roomBookingDetail != null && foodOrder.roomBookingDetail.room != null ? foodOrder.roomBookingDetail.room.roomNumber : '?') : 'Bàn ' + (foodOrder.table != null ? foodOrder.table.tableNumber : '?')) : (tableOrder != null ? 'Bàn ' + (tableOrder.table != null ? tableOrder.table.tableNumber : '?') : 'N/A')}">Bàn 05</div>
           </div>
           <div class="info-box">
             <div class="info-label" id="lbl-pax">Thanh toán / Pax</div>
-            <div class="info-value" id="info-pax" th:text="${foodOrder != null ? (foodOrder.isPaidInPos ? 'Đã thanh toán' : 'Chưa (' + foodOrder.paymentType + ')') : tableOrder.pax + ' người'}"></div>
+            <div class="info-value" id="info-pax" th:text="${foodOrder != null ? (foodOrder.isPaidInPos ? 'Đã thanh toán' : 'Chưa (' + foodOrder.paymentType + ')') : (tableOrder != null ? tableOrder.pax + ' người' : 'N/A')}"></div>
           </div>
         </div>
 
@@ -221,6 +229,9 @@
           <button class="btn btn-outline btn-danger" id="btn-cancel"><span class="material-symbols-outlined">close</span> Hủy đơn</button>
           <div style="margin-left:auto; display:flex; gap:10px;">
             <button class="btn btn-outline" id="btn-print"><span class="material-symbols-outlined">print</span> In hóa đơn</button>
+            <button class="btn btn-success" id="btn-pay" th:if="${foodOrder != null && foodOrder.isPaidInPos != true && foodOrder.orderStatus != 'Paid' && foodOrder.orderStatus != 'Completed' && foodOrder.orderType != 'Room Service'}" style="background-color: #28a745; color: white; border: none; padding: 0 16px; border-radius: 4px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+                <span class="material-symbols-outlined">payments</span> Thanh toán
+            </button>
             <button class="btn btn-primary" id="btn-action"><span class="material-symbols-outlined">check</span> <span id="btn-action-lbl" th:text="${foodOrder != null ? 'Cập nhật món' : 'Xác nhận khách đến'}">Hoàn thành</span></button>
           </div>
         </div>

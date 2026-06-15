@@ -8,6 +8,7 @@ public class CreateFoodOrderRequest {
     private String orderType; // "Room Service" or "Dine In"
     private String roomNumber;
     private Long tableId;
+    private String customerName;
     private String paymentType;
     private String note;
     private List<CartItemDto> items;

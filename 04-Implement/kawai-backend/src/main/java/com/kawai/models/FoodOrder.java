@@ -11,8 +11,9 @@ public class FoodOrder {
     @Column(name="order_status", nullable=false) private String orderStatus = "Pending";
     @Column(name="payment_type", nullable=false) private String paymentType;
     @Column(name="is_paid_in_pos", nullable=false) private Boolean isPaidInPos = false;
-    @ManyToOne @JoinColumn(name="created_by_staff_id", nullable=false) private Employee createdByStaff;
+    @ManyToOne @JoinColumn(name="created_by_staff_id", nullable=true) private Employee createdByStaff;
     @ManyToOne @JoinColumn(name="kitchen_processed_by_id") private Employee kitchenProcessedBy;
+    @Column(name="customer_name") private String customerName;
     @Column(name="note", length=500) private String note;
 
     @OneToMany(mappedBy = "foodOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -56,7 +56,7 @@
 
 | UC ID | Mô tả | Class / Method | TC ID | BR |
 |-------|-------|---------------|-------|-----|
-| UC14 | Room Service (QR) | *(điền sau khi code)* | TC-M3-001, 002 | BR-FB-05 |
+| UC14 | Room Service (QR) | `PosServiceImpl.createRoomServiceOrder()` | TC-M3-001, 002 | BR-FB-05 |
 | UC15 | Đặt bàn nhà hàng | *(điền sau khi code)* | TC-M3-003, 004 | BR-FB-03 |
 | UC16 | POS tạo order Dine-In | *(điền sau khi code)* | TC-M3-005, 006 | BR-FB-04 |
 | UC17.1 | KDS — KOT bếp nhận đơn | *(điền sau khi code)* | TC-M3-007, 008 | BR-FB-04 |
