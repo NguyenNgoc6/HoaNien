@@ -84,9 +84,15 @@
     <main class="checkout-page">
 
         <!-- Hero heading -->
-        <div class="checkout-hero">
+        <div class="checkout-hero" style="text-align: center;">
             <h1>Hoàn tất đặt phòng</h1>
             <p>Vui lòng điền đầy đủ thông tin để hoàn tất quá trình đặt phòng của bạn.</p>
+            
+            <div id="payment-timer-container" class="hidden" style="margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; background-color: #fef2f2; color: #dc2626; padding: 0.5rem 1rem; border-radius: 9999px; border: 1px solid #fecaca;">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                <span class="text-sm font-medium">Thời gian giữ phòng còn lại:</span>
+                <span id="payment-timer" class="font-bold text-lg">--:--</span>
+            </div>
         </div>
 
         <div class="checkout-grid">
@@ -191,7 +197,7 @@
                         <div class="terms-row">
                             <input type="checkbox" id="termsCheck" onchange="onTermsChange(this)" />
                             <label for="termsCheck">
-                                Tôi đồng ý với các <a href="#">điều khoản</a> và <a href="#">chính sách đặt phòng</a> của HoaNien Resort.
+                                Tôi đồng ý với các <a href="javascript:void(0)" onclick="openTermsModal()">điều khoản</a> và <a href="javascript:void(0)" onclick="openTermsModal()">chính sách đặt phòng</a> của HoaNien Resort.
                             </label>
                         </div>
 
@@ -334,11 +340,87 @@
         </div><!-- checkout-grid -->
     </main>
 
+    <!-- Terms & Conditions Modal -->
+    <div id="termsModal" class="tc-modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="tc-modal" onclick="event.stopPropagation()">
+            <div class="tc-modal-header">
+                <h3>Điều khoản & Chính sách đặt phòng</h3>
+                <button type="button" class="tc-modal-close" onclick="closeTermsModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="tc-modal-body">
+                <h4>Xác nhận đặt phòng</h4>
+                <ul>
+                    <li>Tất cả đặt phòng trực tuyến yêu cầu thanh toán tiền đặt cọc để được xác nhận.</li>
+                    <li>Đơn đặt phòng sẽ được giữ trong vòng 10 phút ở trạng thái chờ thanh toán.</li>
+                    <li>Nếu không nhận được tiền đặt cọc trong thời gian này, đơn đặt phòng sẽ tự động bị hủy.</li>
+                </ul>
+                
+                <h4>Chính sách giá phòng</h4>
+                <ul>
+                    <li>Giá phòng có thể thay đổi theo mùa, thời điểm đặt phòng, chương trình khuyến mại và tình trạng phòng trống.</li>
+                    <li>Mức giá được xác nhận tại thời điểm đặt phòng sẽ được giữ nguyên cho toàn bộ thời gian lưu trú của đặt phòng đó.</li>
+                </ul>
+                
+                <h4>Chính sách thanh toán</h4>
+                <ul>
+                    <li>Khách sạn hỗ trợ thanh toán trực tuyến bằng chuyển khoản ngân hàng.</li>
+                    <li>Khoản thanh toán chỉ được xem là hoàn tất sau khi được hệ thống thanh toán hoặc bộ phận tài chính xác nhận thành công.</li>
+                </ul>
+
+                <h4>Chính sách hủy phòng và hoàn tiền</h4>
+                <ul>
+                    <li>Hủy đặt phòng từ 48 giờ trở lên trước thời điểm nhận phòng sẽ được hoàn lại 100% tiền đặt cọc.</li>
+                    <li>Hủy đặt phòng dưới 48 giờ trước thời điểm nhận phòng sẽ không được hoàn tiền.</li>
+                    <li>Khách không đến nhận phòng (No-show) sẽ không được hoàn tiền.</li>
+                    <li>Sau khi đã hoàn tất thủ tục nhận phòng (Check-in), mọi khoản thanh toán sẽ không được hoàn lại.</li>
+                </ul>
+
+                <h4>Chính sách nhận phòng và trả phòng</h4>
+                <ul>
+                    <li>Giờ nhận phòng (Check-in): từ 14:00.</li>
+                    <li>Giờ trả phòng (Check-out): trước 12:00.</li>
+                    <li>Yêu cầu nhận phòng sớm hoặc trả phòng muộn phụ thuộc vào tình trạng phòng thực tế và có thể phát sinh phụ phí.</li>
+                    <li>Người đại diện thực hiện thủ tục nhận phòng phải từ đủ 18 tuổi trở lên và xuất trình giấy tờ tùy thân hợp lệ (CCCD hoặc Hộ chiếu).</li>
+                </ul>
+
+                <h4>Dịch vụ phát sinh</h4>
+                <ul>
+                    <li>Các khoản chi tiêu phát sinh trong thời gian lưu trú (ẩm thực, dịch vụ phòng, tour, dịch vụ bổ sung...) sẽ được cộng vào hóa đơn lưu trú.</li>
+                    <li>Khách hàng phải hoàn tất mọi khoản thanh toán trước khi thực hiện thủ tục trả phòng.</li>
+                </ul>
+
+                <h4>Chính sách bảo mật thông tin</h4>
+                <ul>
+                    <li>Thông tin cá nhân của khách hàng chỉ được sử dụng cho mục đích đặt phòng, thanh toán, chăm sóc khách hàng và tuân thủ các quy định pháp luật hiện hành.</li>
+                    <li>Khách sạn cam kết áp dụng các biện pháp bảo mật phù hợp nhằm bảo vệ thông tin khách hàng và không cung cấp cho bên thứ ba trái phép, trừ trường hợp pháp luật yêu cầu.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast container -->
     <div id="co-toast-container"></div>
 
     <!-- Page JS -->
     <script th:src="@{/guest/js/payment.js}" src="/guest/js/payment.js"></script>
+
+    <script>
+        function openTermsModal() {
+            document.getElementById('termsModal').classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function handleOverlayClick(event) {
+            closeTermsModal();
+        }
+    </script>
 
 </body>
 </html>

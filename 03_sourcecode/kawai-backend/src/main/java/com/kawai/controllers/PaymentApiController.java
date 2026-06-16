@@ -3,8 +3,10 @@ package com.kawai.controllers;
 import com.kawai.services.interfaces.VnPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.Map;
 
 @RestController
@@ -15,8 +17,18 @@ public class PaymentApiController {
     private VnPayService vnPayService;
 
     @GetMapping("/vnpay-return")
-    public ResponseEntity<?> vnpayReturn(@RequestParam Map<String, String> queryParams) {
-        return ResponseEntity.ok(queryParams);
+    public ResponseEntity<Void> vnpayReturn(@RequestParam Map<String, String> queryParams) {
+        String rspCode = queryParams.get("vnp_ResponseCode");
+
+        // VNPay IPN cannot reach localhost, so we trigger IPN logic manually here
+        try {
+            vnPayService.verifyIpn(queryParams);
+        } catch (Exception e) {
+            // Ignore if already verified or error
+        }
+
+        String redirectUrl = "/profile?payment=" + ("00".equals(rspCode) ? "success" : "failed") + "#bookings";
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(redirectUrl)).build();
     }
 
     @GetMapping("/vnpay-ipn")

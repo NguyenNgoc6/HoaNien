@@ -10,8 +10,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.kawai.models.Customer;
+
 @Repository
 public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> {
+       List<RoomBooking> findByCustomerOrderByBookingDateDesc(Customer customer);
 
        @Query("SELECT COALESCE(SUM(rb.depositAmount), 0) FROM RoomBooking rb WHERE rb.checkInDate >= :since")
        BigDecimal totalDepositsSince(LocalDate since);

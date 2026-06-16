@@ -30,7 +30,13 @@ public class VnPayUtil {
                         && !e.getKey().equalsIgnoreCase("vnp_SecureHashType")
                         && e.getValue() != null && !e.getValue().isEmpty())
                 .sorted(Map.Entry.comparingByKey())
-                .map(e -> e.getKey() + "=" + e.getValue())
+                .map(e -> {
+                    try {
+                        return e.getKey() + "=" + java.net.URLEncoder.encode(e.getValue(), java.nio.charset.StandardCharsets.US_ASCII.toString());
+                    } catch (java.io.UnsupportedEncodingException ex) {
+                        return e.getKey() + "=" + e.getValue();
+                    }
+                })
                 .collect(Collectors.joining("&"));
     }
 

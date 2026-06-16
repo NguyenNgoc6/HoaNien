@@ -70,6 +70,7 @@ function nightsBetween(checkIn, checkOut) {
 
 let bookingData   = null;   // data từ API
 let appliedCoupon = null;   // { code, discountAmount }
+let paymentTimerInterval = null;
 
 // ── Load Booking Detail ───────────────────────────────────────────────────────
 
@@ -153,6 +154,42 @@ function renderOrderSummary(data) {
             btnPay.textContent = `THANH TOÁN ĐẶT CỌC: ${fmtVnd(deposit)}`;
         }
     }
+
+    // Handle timer
+    const timerContainer = document.getElementById('payment-timer-container');
+    const timerEl = document.getElementById('payment-timer');
+    
+    if (data.bookingStatus === 'CANCELLED' || (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds <= 0)) {
+        if (timerContainer) timerContainer.classList.add('hidden');
+        if (btnPay) btnPay.disabled = true;
+        coToast('Đơn đặt phòng đã bị hủy do quá hạn thanh toán.', 'error');
+        setTimeout(() => window.location.href = '/booking', 2500);
+        return;
+    }
+
+    if (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds > 0) {
+        if (timerContainer) timerContainer.classList.remove('hidden');
+        startPaymentTimer(data.remainingHoldSeconds, timerEl);
+    }
+}
+
+function startPaymentTimer(seconds, timerEl) {
+    if (paymentTimerInterval) clearInterval(paymentTimerInterval);
+    
+    paymentTimerInterval = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(paymentTimerInterval);
+            timerEl.textContent = '00:00';
+            document.getElementById('btnPayNow').disabled = true;
+            coToast('Đã hết thời gian thanh toán! Đơn phòng đã bị hủy.', 'error');
+            setTimeout(() => window.location.href = '/booking', 2500);
+            return;
+        }
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+    }, 1000);
 }
 
 function setText(id, val) {
@@ -319,5 +356,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Coupon enter key
     document.getElementById('couponInput')?.addEventListener('keydown', e => {
         if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+    });
+
+    // Cập nhật lại thời gian khi chuyển qua lại giữa các tab
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            loadBookingDetail(bookingId);
+        }
     });
 });

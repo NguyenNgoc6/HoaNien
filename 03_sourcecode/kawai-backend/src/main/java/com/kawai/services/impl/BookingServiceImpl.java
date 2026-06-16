@@ -322,6 +322,17 @@ public class BookingServiceImpl implements BookingService {
             staleHolds.forEach(h -> {
                 h.setBookingStatus("CANCELLED");
                 h.setHoldExpiresAt(null); // clear sau khi xử lý
+                if (h.getCustomer() != null) {
+                    try {
+                        notificationService.sendNotification(
+                            h.getCustomer().getId(),
+                            "Hủy đơn phòng tự động",
+                            "Đơn đặt phòng #" + h.getId() + " của quý khách đã bị hủy tự động do quá hạn 10 phút chờ thanh toán."
+                        );
+                    } catch (Exception e) {
+                        log.error("Failed to send cancellation notification for booking {}", h.getId(), e);
+                    }
+                }
             });
             roomBookingRepository.saveAll(staleHolds);
             log.warn("[SOFT_LOCK] 🧹 Auto-cancelled {} expired HOLD booking(s) after {} min TTL at {}",
@@ -395,26 +406,25 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
 
         long hoursUntilCheckIn = java.time.temporal.ChronoUnit.HOURS.between(now, checkInTime);
-
-        if (hoursUntilCheckIn < 48) {
-            notificationService.sendNotification(customerId, "Cancel Failed",
-                    "Booking cannot be canceled as more than 48 hours have passed.");
-            throw new BusinessException("BKG-004", "Booking cannot be canceled as more than 48 hours have passed.");
-        }
+        boolean isEligibleForRefund = hoursUntilCheckIn >= 48;
 
         try {
-            paymentGatewayService.processRefund("TXN_" + bookingId, booking.getDepositAmount());
+            if (isEligibleForRefund) {
+                paymentGatewayService.processRefund("TXN_" + bookingId, booking.getDepositAmount());
+                notificationService.sendNotification(customerId, "Cancel Success",
+                        "Your booking has been cancelled and refunded.");
+            } else {
+                notificationService.sendNotification(customerId, "Cancel Success (No Refund)",
+                        "Your booking has been cancelled. No refund is issued as cancellation is within 48 hours of check-in.");
+            }
 
             booking.setBookingStatus("CANCELLED");
             roomBookingRepository.save(booking);
 
-            notificationService.sendNotification(customerId, "Cancel Success",
-                    "Your booking has been cancelled and refunded.");
-
             BookingResponseDTO response = new BookingResponseDTO();
             response.setBookingId(bookingId);
             response.setBookingStatus("CANCELLED");
-            response.setDepositAmount(booking.getDepositAmount());
+            response.setDepositAmount(isEligibleForRefund ? booking.getDepositAmount() : BigDecimal.ZERO);
             return response;
         } catch (Exception e) {
             notificationService.sendNotification(customerId, "Cancel Failed",
@@ -476,6 +486,14 @@ public class BookingServiceImpl implements BookingService {
         dto.setTotalAmount(totalAmount.setScale(0, RoundingMode.HALF_UP));
         dto.setDepositAmount(booking.getDepositAmount() != null ? booking.getDepositAmount().setScale(0, RoundingMode.HALF_UP) : BigDecimal.ZERO);
 
+        dto.setBookingStatus(booking.getBookingStatus());
+        long remainingSeconds = 0L;
+        if ("HOLD".equals(booking.getBookingStatus()) && booking.getHoldExpiresAt() != null) {
+            remainingSeconds = java.time.temporal.ChronoUnit.SECONDS.between(LocalDateTime.now(), booking.getHoldExpiresAt());
+            if (remainingSeconds < 0) remainingSeconds = 0L;
+        }
+        dto.setRemainingHoldSeconds(remainingSeconds);
+
         return dto;
     }
 
@@ -516,6 +534,10 @@ public class BookingServiceImpl implements BookingService {
 
         if (!booking.getCustomer().getId().equals(customerId)) {
             throw new BusinessException("BKG-003", "Đơn đặt phòng không thuộc về tài khoản này!");
+        }
+
+        if ("CANCELLED".equals(booking.getBookingStatus())) {
+            throw new BusinessException("BKG-EXPIRED", "Đơn đặt phòng này đã bị hủy do quá thời gian thanh toán. Vui lòng đặt lại phòng mới!");
         }
 
         Customer customer = customerRepository.findById(customerId)

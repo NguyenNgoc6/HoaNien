@@ -31,7 +31,6 @@ public class BookingApiController {
 
     private static final Logger log = LoggerFactory.getLogger(BookingApiController.class);
 
-
     @Autowired
     private BookingService bookingService;
 
@@ -48,7 +47,8 @@ public class BookingApiController {
     private com.kawai.services.interfaces.VnPayService vnPayService;
 
     @PostMapping
-    public ResponseEntity<?> createBooking(Principal principal, @RequestBody BookingRequestDTO request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+    public ResponseEntity<?> createBooking(Principal principal, @RequestBody BookingRequestDTO request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
         if (principal == null) {
             return ResponseEntity.status(401).body(new BookingApiResponse(
                     "error", null, null, null, "Quý khách cần đăng nhập để thực hiện đặt phòng!"));
@@ -112,13 +112,18 @@ public class BookingApiController {
 
             BookingResponseDTO response = bookingService.cancelBooking(bookingId, customer.getId());
 
+            String msg = (response.getDepositAmount() != null
+                    && response.getDepositAmount().compareTo(BigDecimal.ZERO) > 0)
+                            ? "Hủy phòng thành công! Tiền cọc sẽ được hoàn lại."
+                            : "Hủy phòng thành công! Rất tiếc, bạn không được hoàn lại tiền do hủy quá sát ngày nhận phòng (< 48h).";
+
             return ResponseEntity.ok(new BookingApiResponse(
                     "success",
                     response.getBookingStatus(),
                     response.getBookingId(),
                     response.getDepositAmount(),
                     null,
-                    "Hủy phòng thành công!"));
+                    msg));
         } catch (com.kawai.exceptions.PaymentGatewayException e) {
             return ResponseEntity.status(500).body(new BookingApiResponse(
                     "error", null, null, null, e.getMessage()));
@@ -136,12 +141,14 @@ public class BookingApiController {
     @GetMapping("/{bookingId}")
     public ResponseEntity<?> getBookingDetail(Principal principal, @PathVariable Long bookingId) {
         if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("message", "Quý khách cần đăng nhập để thực hiện thao tác này!"));
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Quý khách cần đăng nhập để thực hiện thao tác này!"));
         }
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng cho tài khoản: " + username));
+                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND",
+                            "Không tìm thấy thông tin khách hàng cho tài khoản: " + username));
 
             BookingDetailResponseDTO detail = bookingService.getBookingDetail(bookingId, customer.getId());
             return ResponseEntity.ok(detail);
@@ -149,19 +156,22 @@ public class BookingApiController {
             return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(400).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
+            return ResponseEntity.status(400)
+                    .body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
         }
     }
 
     @PostMapping("/{bookingId}/apply-coupon")
-    public ResponseEntity<?> applyCoupon(Principal principal, @PathVariable Long bookingId, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> applyCoupon(Principal principal, @PathVariable Long bookingId,
+            @RequestBody Map<String, String> payload) {
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("status", "error", "message", "Quý khách cần đăng nhập!"));
         }
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
+                    .orElseThrow(
+                            () -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
 
             String couponCode = payload.get("couponCode");
             BigDecimal discountAmount = bookingService.applyCoupon(bookingId, couponCode, customer.getId());
@@ -173,7 +183,8 @@ public class BookingApiController {
             return ResponseEntity.status(400).body(Map.of("status", "error", "message", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(400).body(Map.of("status", "error", "message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
+            return ResponseEntity.status(400).body(
+                    Map.of("status", "error", "message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
         }
     }
 
@@ -189,7 +200,8 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
+                    .orElseThrow(
+                            () -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
 
             String fullName = (String) payload.get("fullName");
             String phone = (String) payload.get("phone");
@@ -215,9 +227,9 @@ public class BookingApiController {
             return ResponseEntity.status(400).body(Map.of("status", "error", "message", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(400).body(Map.of("status", "error", "message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
+            return ResponseEntity.status(400).body(
+                    Map.of("status", "error", "message", e.getMessage() != null ? e.getMessage() : "Đã xảy ra lỗi"));
         }
     }
-
 
 }

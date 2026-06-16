@@ -5,7 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * DTO chứa thông tin chi tiết của RoomBooking để hiển thị ở trang thanh toán (payment.html).
+ * DTO chứa thông tin chi tiết của RoomBooking để hiển thị ở trang thanh toán
+ * (payment.html).
  */
 public class BookingDetailResponseDTO {
 
@@ -20,6 +21,8 @@ public class BookingDetailResponseDTO {
     private BigDecimal promotionDiscount;
     private BigDecimal totalAmount;
     private BigDecimal depositAmount;
+    private String bookingStatus;
+    private Long remainingHoldSeconds;
 
     // Constructors
     public BookingDetailResponseDTO() {
@@ -112,5 +115,21 @@ public class BookingDetailResponseDTO {
 
     public void setDepositAmount(BigDecimal depositAmount) {
         this.depositAmount = depositAmount;
+    }
+
+    public String getBookingStatus() {
+        return bookingStatus;
+    }
+
+    public void setBookingStatus(String bookingStatus) {
+        this.bookingStatus = bookingStatus;
+    }
+
+    public Long getRemainingHoldSeconds() {
+        return remainingHoldSeconds;
+    }
+
+    public void setRemainingHoldSeconds(Long remainingHoldSeconds) {
+        this.remainingHoldSeconds = remainingHoldSeconds;
     }
 }
