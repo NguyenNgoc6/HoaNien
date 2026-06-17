@@ -360,6 +360,45 @@
             </div>
         </section>
     </main>
+    <!-- Bottom Fixed Bar -->
+    <footer
+        class="fixed bottom-0 left-0 w-full bg-background border-t border-outline-variant py-4 px-margin-desktop z-50">
+        <div class="max-w-container-max mx-auto flex justify-between items-center">
+            <p class="font-caption text-caption text-on-surface-variant opacity-60">© 2026 HoaNien Retreat. A Quiet
+                Luxury Travel Group.</p>
+            <div class="flex items-center gap-8">
+                <button
+                    class="flex items-center gap-2 font-label-caps text-label-caps text-primary border-b border-primary/20 hover:border-primary transition-all duration-300 py-1"
+                    onclick="toggleAlert()">
+                    <span class="material-symbols-outlined text-[16px]">report_problem</span>
+                    BÁO CÁO SỰ CỐ / THỜI TIẾT
+                </button>
+            </div>
+        </div>
+    </footer>
+    <!-- Simple Toast/Alert Interaction -->
+    <div class="fixed bottom-24 right-margin-desktop bg-primary text-white p-8 max-w-sm hidden faded-entry shadow-2xl"
+        id="incident-report">
+        <h4 class="font-headline-md text-headline-md mb-2 text-champagne">Gửi báo cáo</h4>
+        <p class="font-body-md text-body-md mb-6 opacity-80">Thông báo cho Ban Quản trị về các thay đổi đột xuất hoặc sự
+            cố vận hành.</p>
+        <textarea
+            class="w-full bg-primary-container border border-on-primary-container p-4 text-white font-body-md mb-6 focus:ring-0 focus:border-champagne"
+            placeholder="Mô tả sự cố..." rows="3"></textarea>
+        <div class="flex justify-end gap-4">
+            <button class="font-label-caps text-label-caps opacity-60 hover:opacity-100 transition-opacity"
+                onclick="toggleAlert()">Hủy</button>
+            <button
+                class="font-label-caps text-label-caps text-champagne border border-champagne px-4 py-2 hover:bg-champagne hover:text-primary transition-all"
+                onclick="toggleAlert()">GỬI ADMIN</button>
+        </div>
+    </div>
+    <script>
+        function toggleAlert() {
+            const el = document.getElementById('incident-report');
+            el.classList.toggle('hidden');
+        }
+
     </script>
 
 
