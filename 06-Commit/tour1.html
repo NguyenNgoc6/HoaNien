@@ -530,6 +530,34 @@
             showToast('Đã tạo tour thành công!');
             openTourManager();
         }
+        function editTour(id) {
+            const t = TourCRUD.getById(id);
+            if (!t) return;
+            showCrudModal('Sửa Tour', `
+                <form onsubmit="handleUpdateTour(event, ${id})" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Tên tour (VI)</label><input id="ed-title" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.title}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Tên tour (EN)</label><input id="ed-titleEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.titleEn}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Điểm đến (VI)</label><input id="ed-dest" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.destination}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Điểm đến (EN)</label><input id="ed-destEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.destinationEn}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Thời gian (VI)</label><input id="ed-dur" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.duration}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Thời gian (EN)</label><input id="ed-durEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.durationEn}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Giá (VI)</label><input id="ed-price" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.price}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Giá (EN)</label><input id="ed-priceEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.priceEn}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Đặt cọc (VI)</label><input id="ed-dep" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.deposit}" required></div>
+                        <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Đặt cọc (EN)</label><input id="ed-depEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.depositEn}" required></div>
+                    </div>
+                    <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Mô tả (VI)</label><textarea id="ed-desc" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" rows="2" required>${t.description}</textarea></div>
+                    <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Mô tả (EN)</label><textarea id="ed-descEn" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" rows="2" required>${t.descriptionEn}</textarea></div>
+                    <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Link trang</label><input id="ed-link" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.link}" required></div>
+                    <div><label class="block text-[10px] uppercase tracking-wider text-primary/50 mb-1">Ảnh</label><input id="ed-img" class="w-full border border-primary/20 rounded px-3 py-2 text-sm text-primary bg-transparent focus:border-primary outline-none" value="${t.image}" required></div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="openTourManager()" class="px-4 py-2 border border-primary/20 text-primary text-sm rounded hover:bg-primary/5 transition-colors">Quay lại</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-background text-sm font-semibold uppercase tracking-wider rounded hover:bg-primary-container transition-colors">Cập nhật</button>
+                    </div>
+                </form>
+            `);
+        }
 
     </script>
 </body>
