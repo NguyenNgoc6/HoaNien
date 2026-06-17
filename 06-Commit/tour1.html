@@ -429,6 +429,59 @@
                 });
             });
         });
+        // ============ TOUR CRUD UI ============
+        function openTourManager() {
+            const tours = TourCRUD.getAll();
+            let tableRows = tours.map(t => `
+                <tr class="border-b border-primary/10 hover:bg-primary/5">
+                    <td class="py-3 px-4 text-sm text-primary">${t.id}</td>
+                    <td class="py-3 px-4 text-sm text-primary font-medium">${t.title}</td>
+                    <td class="py-3 px-4 text-sm text-primary/70">${t.destination}</td>
+                    <td class="py-3 px-4 text-sm text-primary/70">${t.duration}</td>
+                    <td class="py-3 px-4 text-sm text-gold-accent font-medium">${t.price}</td>
+                    <td class="py-3 px-4">
+                        <div class="flex gap-2">
+                            <button onclick="editTour(${t.id})" class="text-blue-500 hover:text-blue-700 transition-colors" title="Sửa">
+                                <span class="material-symbols-outlined text-lg">edit</span>
+                            </button>
+                            <button onclick="deleteTour(${t.id})" class="text-red-500 hover:text-red-700 transition-colors" title="Xóa">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const content = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm text-primary/60">Tổng cộng: <strong>${tours.length}</strong> tours</p>
+                        <button onclick="openCreateTourForm()" class="px-4 py-2 bg-primary text-background text-sm font-semibold uppercase tracking-wider rounded hover:bg-primary-container transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">add</span> Thêm Tour
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b-2 border-primary/20">
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">ID</th>
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">Tên Tour</th>
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">Điểm đến</th>
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">Thời gian</th>
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">Giá</th>
+                                    <th class="py-2 px-4 text-[10px] uppercase tracking-wider text-primary/50">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button onclick="resetTours()" class="text-[10px] text-primary/40 hover:text-primary/70 uppercase tracking-wider transition-colors">Khôi phục mặc định</button>
+                    </div>
+                </div>
+            `;
+            showCrudModal('Quản lý Tours', content);
+        }
 
     </script>
 </body>
