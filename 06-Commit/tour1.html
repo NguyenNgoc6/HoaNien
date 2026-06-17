@@ -558,6 +558,45 @@
                 </form>
             `);
         }
+        function handleUpdateTour(e, id) {
+            e.preventDefault();
+            TourCRUD.update(id, {
+                title: document.getElementById('ed-title').value,
+                titleEn: document.getElementById('ed-titleEn').value,
+                destination: document.getElementById('ed-dest').value,
+                destinationEn: document.getElementById('ed-destEn').value,
+                duration: document.getElementById('ed-dur').value,
+                durationEn: document.getElementById('ed-durEn').value,
+                price: document.getElementById('ed-price').value,
+                priceEn: document.getElementById('ed-priceEn').value,
+                deposit: document.getElementById('ed-dep').value,
+                depositEn: document.getElementById('ed-depEn').value,
+                description: document.getElementById('ed-desc').value,
+                descriptionEn: document.getElementById('ed-descEn').value,
+                link: document.getElementById('ed-link').value,
+                image: document.getElementById('ed-img').value
+            });
+            showToast('Đã cập nhật tour!');
+            openTourManager();
+        }
+
+        function deleteTour(id) {
+            const t = TourCRUD.getById(id);
+            if (!t) return;
+            showConfirmDialog(`Bạn muốn xóa tour "${t.title}"?`, () => {
+                TourCRUD.remove(id);
+                showToast('Đã xóa tour!', 'error');
+                openTourManager();
+            });
+        }
+
+        function resetTours() {
+            showConfirmDialog('Khôi phục tất cả tours về mặc định?', () => {
+                TourCRUD.reset();
+                showToast('Đã khôi phục tours mặc định!');
+                openTourManager();
+            });
+        }
 
     </script>
 </body>
