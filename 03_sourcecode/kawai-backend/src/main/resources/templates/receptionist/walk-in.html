@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walk-In Booking - Kawai Reception</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
+    <link rel="stylesheet" href="/receptionist/css/check-in.css">
+    <link rel="stylesheet" href="/receptionist/css/walk-in.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Walk-In')}"></div>
+
+            <div class="page-date">Front Desk</div>
+            <h1 class="page-title" style="margin-bottom:8px;">Walk-In Booking</h1>
+            <p style="color:#666; margin-bottom: 32px; font-size:14px;">Create a new booking and check in a guest arriving directly at the resort</p>
+
+            <div class="stepper">
+                <div class="step active">
+                    <div class="step-icon">1</div>
+                    <span class="step-label">Select Room</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-icon">2</div>
+                    <span class="step-label">Guest Info & ID</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-icon">3</div>
+                    <span class="step-label">Assign & Pay</span>
+                </div>
+            </div>
+
+            <div class="card walkin-card">
+                <h3 class="card-title" style="margin-bottom:16px;">Search Available Rooms</h3>
+                
+                <div class="walkin-form">
+                    <div class="form-group">
+                        <label>CHECK-IN</label>
+                        <div class="input-with-icon">
+                            <input type="text" value="17/06/2026" readonly>
+                            <i class="fa-regular fa-calendar"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>CHECK-OUT</label>
+                        <div class="input-with-icon">
+                            <input type="text" value="18/06/2026">
+                            <i class="fa-regular fa-calendar"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ADULTS / CHILDREN</label>
+                        <div class="guest-counter">
+                            <div class="input-with-icon guest-input">
+                                <i class="fa-solid fa-user-group"></i>
+                                <input type="text" value="2A + 0C" readonly>
+                            </div>
+                            <div class="counter-btns">
+                                <button type="button"><i class="fa-solid fa-minus"></i></button>
+                                <button type="button"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ROOM TYPE</label>
+                        <select class="form-select">
+                            <option>All</option>
+                            <option>Deluxe</option>
+                            <option>Suite</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group btn-group">
+                        <button class="btn btn-primary" onclick="searchRooms()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="roomResults" style="display:none; margin-top:24px;">
+                <!-- Mock Results -->
+                <div class="card" style="padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="font-family:var(--font-heading); font-size:18px; margin-bottom:4px;">Deluxe Room</h4>
+                        <p style="font-size:13px; color:#666;">2 Adults · 35m² · Garden View</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:600; color:#b08d5b; font-size:16px;">3.500.000 ₫ <span style="font-size:11px; color:#999; font-weight:400;">/ night</span></div>
+                        <button class="btn btn-outline-gold" style="margin-top:8px; padding:6px 16px;">Select</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="/receptionist/js/receptionist.js"></script>
+    <script src="/receptionist/js/walk-in.js"></script>
+</body>
+</html>

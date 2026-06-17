@@ -391,12 +391,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDTO cancelBooking(Long bookingId, Long customerId) {
-        RoomBooking booking = roomBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BusinessException("BKG-003", "Booking not found"));
-
-        if (!booking.getCustomer().getId().equals(customerId)) {
-            throw new BusinessException("BKG-003", "Booking not found");
-        }
+        RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
+                .orElseThrow(() -> new BusinessException("FORBIDDEN", "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
         if ("CHECKED_IN".equals(booking.getBookingStatus()) || "CANCELLED".equals(booking.getBookingStatus())) {
             throw new BusinessException("BKG-005", "Invalid booking status");
@@ -436,12 +432,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public BookingDetailResponseDTO getBookingDetail(Long bookingId, Long customerId) {
-        RoomBooking booking = roomBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BusinessException("BKG-003", "Không tìm thấy đơn đặt phòng với ID: " + bookingId));
-
-        if (!booking.getCustomer().getId().equals(customerId)) {
-            throw new BusinessException("BKG-003", "Đơn đặt phòng không thuộc về tài khoản này!");
-        }
+        RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
+                .orElseThrow(() -> new BusinessException("FORBIDDEN", "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
         List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
 
@@ -500,12 +492,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BigDecimal applyCoupon(Long bookingId, String couponCode, Long customerId) {
-        RoomBooking booking = roomBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BusinessException("BKG-003", "Không tìm thấy đơn đặt phòng với ID: " + bookingId));
-
-        if (!booking.getCustomer().getId().equals(customerId)) {
-            throw new BusinessException("BKG-003", "Đơn đặt phòng không thuộc về tài khoản này!");
-        }
+        RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
+                .orElseThrow(() -> new BusinessException("FORBIDDEN", "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
         List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
         BigDecimal baseRoomPrice = BigDecimal.ZERO;
@@ -529,12 +517,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void confirmBooking(Long bookingId, Long customerId, String fullName, String phone, String email, String cccd, String notes) {
-        RoomBooking booking = roomBookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BusinessException("BKG-003", "Không tìm thấy đơn đặt phòng với ID: " + bookingId));
-
-        if (!booking.getCustomer().getId().equals(customerId)) {
-            throw new BusinessException("BKG-003", "Đơn đặt phòng không thuộc về tài khoản này!");
-        }
+        RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
+                .orElseThrow(() -> new BusinessException("FORBIDDEN", "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
         if ("CANCELLED".equals(booking.getBookingStatus())) {
             throw new BusinessException("BKG-EXPIRED", "Đơn đặt phòng này đã bị hủy do quá thời gian thanh toán. Vui lòng đặt lại phòng mới!");

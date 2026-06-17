@@ -1,0 +1,150 @@
+.page-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.dot-pulse {
+    width: 8px;
+    height: 8px;
+    background-color: #2e7d32;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(46, 125, 50, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+}
+
+.matrix-legend {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #666;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.floor-section {
+    background-color: white;
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.floor-title {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.room-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.room-card {
+    width: 80px;
+    height: 90px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: #faf9f6;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.room-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.room-type {
+    font-size: 10px;
+    color: #999;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-weight: 600;
+}
+
+.room-number {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.room-icon {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 10px;
+}
+
+/* Status Colors */
+.status-vacant-clean {
+    border-color: #a5d6a7;
+    background-color: #f1f8e9;
+}
+.status-vacant-clean .room-number { color: #2e7d32; }
+
+.status-occupied-clean {
+    border-color: #556b2f;
+    background-color: #f5f5dc;
+}
+.status-occupied-clean .room-number { color: #556b2f; }
+
+.status-occupied-dirty {
+    border-color: #e6cba5;
+    background-color: #fcf6ef;
+}
+.status-occupied-dirty .room-number { color: #b08d5b; }
+
+.status-vacant-dirty {
+    border-color: #d2b48c;
+    background-color: #faf0e6;
+}
+.status-vacant-dirty .room-number { color: #8b7355; }
+.status-vacant-dirty .room-icon { color: #e57373; }
+
+.status-maintenance {
+    border-color: #d1c4e9;
+    background-color: #f3e5f5;
+}
+.status-maintenance .room-number { color: #673ab7; }

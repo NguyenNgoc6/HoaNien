@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings - Kawai Reception</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Bookings')}"></div>
+
+            <h1 class="page-title">Manage Bookings</h1>
+            
+            <div class="card">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; padding-bottom: 16px; border-bottom: 1px solid #eee;">Booking ID</th>
+                            <th style="text-align: left; padding-bottom: 16px; border-bottom: 1px solid #eee;">Guest Name</th>
+                            <th style="text-align: left; padding-bottom: 16px; border-bottom: 1px solid #eee;">Total Price</th>
+                            <th style="text-align: left; padding-bottom: 16px; border-bottom: 1px solid #eee;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${reservations}">
+                            <td style="padding: 16px 0; border-bottom: 1px solid #fafafa;" th:text="${r.id}"></td>
+                            <td style="padding: 16px 0; border-bottom: 1px solid #fafafa;" th:text="${r.customerName}"></td>
+                            <td style="padding: 16px 0; border-bottom: 1px solid #fafafa;" th:text="${r.totalPrice}"></td>
+                            <td style="padding: 16px 0; border-bottom: 1px solid #fafafa;">
+                                <span class="badge" th:text="${r.status}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+    <script src="/receptionist/js/receptionist.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header class="top-header" th:fragment="header(title)">
+        <div class="breadcrumb">
+            Reception Hub > <span th:text="${title}">Dashboard</span>
+        </div>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search guest, booking...">
+            </div>
+            <button class="icon-btn">
+                <i class="fa-regular fa-bell"></i>
+            </button>
+            <div class="user-profile">
+                <i class="fa-regular fa-user"></i>
+            </div>
+        </div>
+    </header>
+</body>
+</html>

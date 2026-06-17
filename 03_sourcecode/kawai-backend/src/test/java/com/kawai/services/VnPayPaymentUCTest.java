@@ -60,7 +60,7 @@ class VnPayPaymentUCTest {
         RoomBooking booking = new RoomBooking();
         booking.setId(123L);
         booking.setDepositAmount(new BigDecimal("150000")); // 150k
-        
+
         when(roomBookingRepository.findById(123L)).thenReturn(Optional.of(booking));
         when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -87,7 +87,7 @@ class VnPayPaymentUCTest {
         String secureHash = VnPayUtil.hmacSHA512(HASH_SECRET, rawString);
 
         assertNotNull(secureHash);
-        
+
         // Add hash back to verify validation works
         params.put("vnp_SecureHash", secureHash);
         assertTrue(VnPayUtil.validateSignature(params, secureHash, HASH_SECRET));
@@ -112,7 +112,7 @@ class VnPayPaymentUCTest {
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Amount", "20000000"); // 200k from VNPay
         params.put("vnp_TxnRef", "123_123456");
-        
+
         String rawString = VnPayUtil.buildRawHashString(params);
         String secureHash = VnPayUtil.hmacSHA512(HASH_SECRET, rawString);
         params.put("vnp_SecureHash", secureHash);
@@ -133,15 +133,15 @@ class VnPayPaymentUCTest {
     @DisplayName("Duplicate IPN - Idempotency - Returns 02")
     void testVerifyIpn_DuplicateIPN() {
         Map<String, String> params = new HashMap<>();
-        params.put("vnp_Amount", "15000000"); 
+        params.put("vnp_Amount", "15000000");
         params.put("vnp_TxnRef", "123_123456");
-        
+
         String rawString = VnPayUtil.buildRawHashString(params);
         String secureHash = VnPayUtil.hmacSHA512(HASH_SECRET, rawString);
         params.put("vnp_SecureHash", secureHash);
 
         PaymentTransaction txn = new PaymentTransaction();
-        txn.setAmount(new BigDecimal("150000")); 
+        txn.setAmount(new BigDecimal("150000"));
         txn.setStatus(PaymentStatus.SUCCESS); // Already SUCCESS
 
         when(paymentTransactionRepository.findByTransactionRef("123_123456")).thenReturn(Optional.of(txn));
@@ -156,19 +156,19 @@ class VnPayPaymentUCTest {
     @DisplayName("Successful Payment - Returns 00")
     void testVerifyIpn_SuccessfulPayment() {
         Map<String, String> params = new HashMap<>();
-        params.put("vnp_Amount", "15000000"); 
+        params.put("vnp_Amount", "15000000");
         params.put("vnp_TxnRef", "123_123456");
         params.put("vnp_ResponseCode", "00");
         params.put("vnp_TransactionNo", "VNP123456");
-        
+
         String rawString = VnPayUtil.buildRawHashString(params);
         String secureHash = VnPayUtil.hmacSHA512(HASH_SECRET, rawString);
         params.put("vnp_SecureHash", secureHash);
 
         PaymentTransaction txn = new PaymentTransaction();
-        txn.setAmount(new BigDecimal("150000")); 
+        txn.setAmount(new BigDecimal("150000"));
         txn.setStatus(PaymentStatus.INIT);
-        
+
         RoomBooking booking = new RoomBooking();
         booking.setBookingStatus("PENDING");
         txn.setBooking(booking);

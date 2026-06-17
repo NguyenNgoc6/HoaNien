@@ -49,14 +49,15 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setAmount(booking.getDepositAmount());
         txn.setStatus(PaymentStatus.INIT);
         txn.setCreatedAt(LocalDateTime.now());
-        
+
         // 2. Sinh transactionRef mới
         String transactionRef = bookingId + "_" + System.currentTimeMillis();
         txn.setTransactionRef(transactionRef);
         paymentTransactionRepository.save(txn);
 
         // 3. Build params VNPay
-        long amountVal = booking.getDepositAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
+        long amountVal = booking.getDepositAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP)
+                .longValue();
         String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -84,11 +85,11 @@ public class VnPayServiceImpl implements VnPayService {
             String fieldValue = vnp_Params.get(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 try {
-                    //Build hash data
+                    // Build hash data
                     hashData.append(fieldName);
                     hashData.append('=');
                     hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    //Build query
+                    // Build query
                     query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
                     query.append('=');
                     query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
@@ -101,7 +102,7 @@ public class VnPayServiceImpl implements VnPayService {
                 }
             }
         }
-        
+
         String queryUrl = query.toString();
         String vnp_SecureHash = VnPayUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
@@ -135,7 +136,8 @@ public class VnPayServiceImpl implements VnPayService {
 
         // 10. Validate Amount
         long vnpAmount = Long.parseLong(params.getOrDefault("vnp_Amount", "0"));
-        long expectedAmount = txn.getAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
+        long expectedAmount = txn.getAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP)
+                .longValue();
         if (vnpAmount != expectedAmount) {
             response.put("RspCode", "04");
             response.put("Message", "Invalid Amount");
@@ -159,7 +161,7 @@ public class VnPayServiceImpl implements VnPayService {
         if ("00".equals(rspCode)) {
             txn.setStatus(PaymentStatus.SUCCESS);
             txn.setPaidAt(LocalDateTime.now());
-            
+
             if ("PENDING".equals(booking.getBookingStatus()) || "HOLD".equals(booking.getBookingStatus())) {
                 booking.setBookingStatus("CONFIRMED");
             }
@@ -168,7 +170,7 @@ public class VnPayServiceImpl implements VnPayService {
         }
 
         paymentTransactionRepository.save(txn);
-        
+
         response.put("RspCode", "00");
         response.put("Message", "Confirm Success");
         return response;

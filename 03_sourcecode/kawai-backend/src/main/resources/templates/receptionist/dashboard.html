@@ -1,229 +1,138 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receptionist Dashboard - Hoanien Retreat</title>
+    <title>Dashboard - Kawai Reception</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
     <link rel="stylesheet" href="/receptionist/css/dashboard.css">
 </head>
-
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-logo">K</div>
-                <div class="brand-text">
-                    <h1 class="brand-title">Hoanien Retreat</h1>
-                    <p class="brand-subtitle">Resort & Hub</p>
-                </div>
-            </div>
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
 
-            <div class="sidebar-section-title">RECEPTIONIST</div>
-
-            <nav class="sidebar-nav">
-                <a href="/receptionist/dashboard" class="nav-item active">
-                    <i class="fa-solid fa-border-all"></i>
-                    <div class="nav-text">
-                        <span class="nav-main-text">Dashboard</span>
-                        <span class="nav-sub-text">Sơ đồ phòng</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-right nav-arrow"></i>
-                </a>
-                <a href="/receptionist/reservations" class="nav-item">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <div class="nav-text">
-                        <span class="nav-main-text">Reservations</span>
-                        <span class="nav-sub-text">Đặt phòng</span>
-                    </div>
-                </a>
-                <a href="/receptionist/check-in-out" class="nav-item">
-                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                    <div class="nav-text">
-                        <span class="nav-main-text">Check-in / out</span>
-                    </div>
-                </a>
-                <a href="/receptionist/folio" class="nav-item">
-                    <i class="fa-regular fa-file-lines"></i>
-                    <div class="nav-text">
-                        <span class="nav-main-text">Folio Management</span>
-                        <span class="nav-sub-text">Quản lý hóa đơn</span>
-                    </div>
-                </a>
-                <a href="/receptionist/night-audit" class="nav-item">
-                    <i class="fa-solid fa-moon"></i>
-                    <div class="nav-text">
-                        <span class="nav-main-text">Night Audit</span>
-                        <span class="nav-sub-text">Giao ca & Báo cáo</span>
-                    </div>
-                </a>
-            </nav>
-
-            <div class="sidebar-user">
-                <div class="user-avatar">MH</div>
-                <div class="user-info">
-                    <div class="user-name">Minh Hoàng</div>
-                    <div class="user-role">Receptionist</div>
-                </div>
-                <div class="user-status"></div>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
-            <header class="top-header">
-                <div class="header-datetime">
-                    <div class="time" id="currentTime">--:--:--</div>
-                    <div class="date" th:text="${todayLabel}">Wednesday, June 10, 2026</div>
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Dashboard')}"></div>
+
+            <div class="alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Data sync delayed — last updated 09:42 (AF-02)</span>
+                <i class="fa-solid fa-xmark close-alert"></i>
+            </div>
+
+            <div class="page-date" th:text="${todayLabel}">Wednesday, 17 June 2026</div>
+            <h1 class="page-title">Reception Dashboard</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Expected Arrivals</span>
+                        <div class="stat-icon bg-green"><i class="fa-solid fa-right-to-bracket text-green"></i></div>
+                    </div>
+                    <div class="stat-value" th:text="${pendingCheckIns}">5</div>
+                    <div class="stat-trend"><i class="fa-solid fa-arrow-trend-up"></i> +2 vs yesterday</div>
                 </div>
 
-                <div class="header-search">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" placeholder="Search guest, room no., phone">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Booked Rooms</span>
+                        <div class="stat-icon bg-gold"><i class="fa-solid fa-bed text-gold"></i></div>
+                    </div>
+                    <div class="stat-value" th:text="${occupiedRooms}">42</div>
+                    <div class="stat-trend"><i class="fa-solid fa-arrow-trend-up"></i> 86% occupancy</div>
                 </div>
 
-                <div class="header-actions">
-                    <button class="notification-btn">
-                        <i class="fa-regular fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
-                    <button class="user-profile-btn">
-                        <i class="fa-solid fa-user"></i>
-                        <span>Receptionist</span>
-                    </button>
-                    <button class="logout-btn">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span>Logout</span>
-                    </button>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Available Rooms</span>
+                        <div class="stat-icon bg-green"><i class="fa-solid fa-arrow-trend-up text-green"></i></div>
+                    </div>
+                    <div class="stat-value" th:text="${totalRooms - occupiedRooms}">18</div>
+                    <div class="stat-desc">Vacant & clean</div>
                 </div>
-            </header>
 
-            <!-- Dashboard Content -->
-            <div class="dashboard-scroll-area">
-
-                <!-- Stat Cards -->
-                <div class="stat-cards-container">
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <span class="stat-title">Occupancy Rate</span>
-                            <div class="stat-icon-wrapper bg-purple-light">
-                                <i class="fa-solid fa-arrow-trend-up text-purple"></i>
-                            </div>
-                        </div>
-                        <div class="stat-value"
-                            th:text="${totalRooms > 0 ? (occupiedRooms * 100 / totalRooms) + '%' : '0%'}">38%</div>
-                        <div class="stat-subtitle" th:text="${occupiedRooms} + ' / ' + ${totalRooms} + ' rooms'">9/24
-                            rooms</div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Pending Check-Outs</span>
+                        <div class="stat-icon bg-gold"><i class="fa-solid fa-right-from-bracket text-gold"></i></div>
                     </div>
+                    <div class="stat-value" th:text="${checkoutsToday}">3</div>
+                    <div class="stat-desc">By 12:00 today</div>
+                </div>
+            </div>
 
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <span class="stat-title">Checking In Today</span>
-                            <div class="stat-icon-wrapper bg-green-light">
-                                <i class="fa-solid fa-arrow-right-to-bracket text-green"></i>
-                            </div>
-                        </div>
-                        <div class="stat-value" th:text="${pendingCheckIns}">5</div>
-                        <div class="stat-subtitle">Arrivals scheduled</div>
+            <div class="filter-bar">
+                <select class="filter-select"><option>Floor: All</option></select>
+                <select class="filter-select"><option>Room Type: All</option></select>
+                <div class="search-box-inline">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search guest name...">
+                </div>
+            </div>
+
+            <div class="dashboard-widgets">
+                <div class="widget-card timeline-widget">
+                    <div class="widget-header">
+                        <h3>Today's Arrival Timeline</h3>
+                        <span class="widget-date">17 Jun 2026</span>
                     </div>
-
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <span class="stat-title">Checking Out Today</span>
-                            <div class="stat-icon-wrapper bg-orange-light">
-                                <i class="fa-solid fa-arrow-right-from-bracket text-orange"></i>
-                            </div>
-                        </div>
-                        <div class="stat-value" th:text="${checkoutsToday}">3</div>
-                        <div class="stat-subtitle">Departures today</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-card-header">
-                            <span class="stat-title">Dirty Rooms</span>
-                            <div class="stat-icon-wrapper bg-red-light">
-                                <i class="fa-solid fa-wand-magic-sparkles text-red"></i>
-                            </div>
-                        </div>
-                        <div class="stat-value" th:text="${dirtyRooms}">4</div>
-                        <div class="stat-subtitle">Awaiting housekeeping</div>
+                    <div class="timeline-placeholder">
+                        <div class="timeline-hour">8h</div><div class="timeline-hour">9h</div><div class="timeline-hour">10h</div>
+                        <div class="timeline-hour">11h</div><div class="timeline-hour">12h</div><div class="timeline-hour">13h</div>
+                        <div class="timeline-hour">14h</div><div class="timeline-hour">15h</div><div class="timeline-hour">16h</div>
+                        
+                        <!-- Timeline items from mockup -->
+                        <div class="timeline-item t-201" style="left: 15%;">201 · N</div>
+                        <div class="timeline-item t-305" style="left: 35%;">305 · Trần</div>
+                        <div class="timeline-item t-102" style="left: 45%;">102</div>
                     </div>
                 </div>
 
-
-                <!-- Room Grid Matrix Section -->
-                <div class="room-matrix-section">
-                    <div class="room-matrix-header">
-                        <div class="matrix-title-area">
-                            <h2>Room Grid Matrix</h2>
-                            <p>Sơ đồ phòng — Live status</p>
-                        </div>
+                <div class="widget-card checkouts-widget">
+                    <div class="widget-header">
+                        <h3>Pending Check-Outs</h3>
+                        <span class="badge-round">3</span>
                     </div>
-
-                    <div class="matrix-legend-area">
-                        <div class="legend-items">
-                            <div class="legend-item"><span class="legend-dot dot-available"></span>Available</div>
-                            <div class="legend-item"><span class="legend-dot dot-occupied"></span>Occupied</div>
-                            <div class="legend-item"><span class="legend-dot dot-housekeeping"></span>Housekeeping</div>
-                            <div class="legend-item"><span class="legend-dot dot-ooo"></span>Out of Order</div>
-                        </div>
-                        <div class="matrix-count" th:text="${#lists.size(rooms)} + ' rooms'">Showing rooms</div>
-                    </div>
-
-                    <!-- Room Grid - all rooms in one grid -->
-                    <div class="floor-section">
-                        <div class="floor-header">
-                            <span class="floor-badge">All Rooms</span>
-                            <div class="floor-line"></div>
-                            <span class="floor-count" th:text="${#lists.size(rooms)} + ' rooms'"></span>
-                        </div>
-
-                        <div class="room-grid">
-                            <div th:each="room : ${rooms}" class="room-card"
-                                th:classappend="${room.status} == 'Occupied' ? 'card-occupied' : (${room.status} == 'Vacant_Dirty' ? 'card-housekeeping' : (${room.status} == 'Maintenance' ? 'card-ooo' : 'card-available'))">
-                                <div class="room-card-top">
-                                    <span class="room-number" th:text="${room.roomNumber}"></span>
-                                    <span class="room-indicator" th:if="${room.status} == 'Occupied'"></span>
-                                    <i class="fa-solid fa-wand-magic-sparkles" th:if="${room.status} == 'Vacant_Dirty'"
-                                        style="color:#c9a96e;font-size:14px;"></i>
-                                    <i class="fa-solid fa-wrench" th:if="${room.status} == 'Maintenance'"
-                                        style="color:#7a7a9a;font-size:14px;"></i>
-                                    <span class="room-indicator" th:if="${room.status} == 'Vacant_Clean'"></span>
-                                </div>
-                                <div class="room-type">
-                                    <span class="type-badge" th:text="${room.category}"></span>
-                                </div>
-                                <div class="room-status-text"
-                                    th:text="${room.status == 'Vacant_Clean' ? 'Ready' : (room.status == 'Vacant_Dirty' ? 'Needs cleaning' : (room.status == 'Maintenance' ? 'Maintenance' : (room.status == 'Occupied' ? 'Occupied' : room.status)))}">
+                    <div class="checkout-list">
+                        <div class="checkout-item">
+                            <div class="co-info">
+                                <span class="co-room">203</span>
+                                <div class="co-details">
+                                    <span class="co-name">Hoàng Văn Dũng</span>
+                                    <span class="co-time">By 11:00</span>
                                 </div>
                             </div>
+                            <div class="co-actions">
+                                <span class="status-paid">PAID</span>
+                                <button class="btn btn-outline">Process</button>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Fallback when no data -->
-                    <div th:if="${#lists.isEmpty(rooms)}" style="padding:40px;text-align:center;color:#999;">
-                        <i class="fa-solid fa-bed" style="font-size:48px;margin-bottom:16px;display:block;"></i>
-                        <p>Chưa có dữ liệu phòng từ database.</p>
+                        <div class="checkout-item">
+                            <div class="co-info">
+                                <span class="co-room">107</span>
+                                <div class="co-details">
+                                    <span class="co-name">Ngô Thị Thu</span>
+                                    <span class="co-time">By 12:00</span>
+                                </div>
+                            </div>
+                            <div class="co-actions">
+                                <span class="status-unpaid">UNPAID</span>
+                                <button class="btn btn-outline">Process</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    <script src="/receptionist/js/receptionist.js"></script>
     <script src="/receptionist/js/dashboard.js"></script>
-    <script>
-        // Auto-refresh every 15 seconds for real-time synchronization
-        setTimeout(function() {
-            location.reload();
-        }, 15000);
-    </script>
 </body>
-
 </html>

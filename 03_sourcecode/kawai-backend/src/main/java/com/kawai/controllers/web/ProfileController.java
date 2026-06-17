@@ -66,6 +66,7 @@ public class ProfileController {
                     .filter(b -> !"HOLD".equals(b.getBookingStatus()))
                     .collect(java.util.stream.Collectors.toList());
             Map<Long, RoomBookingDetail> firstDetails = new HashMap<>();
+            
             for (RoomBooking booking : bookings) {
                 List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(booking.getId());
                 if (!details.isEmpty()) {

@@ -27,7 +27,7 @@ public class PaymentApiController {
             // Ignore if already verified or error
         }
 
-        String redirectUrl = "/profile?payment=" + ("00".equals(rspCode) ? "success" : "failed") + "#bookings";
+        String redirectUrl = "/profile/bookings?payment=" + ("00".equals(rspCode) ? "success" : "failed");
         return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(redirectUrl)).build();
     }
 

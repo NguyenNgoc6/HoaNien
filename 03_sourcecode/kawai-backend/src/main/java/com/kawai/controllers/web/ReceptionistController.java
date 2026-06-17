@@ -70,8 +70,41 @@ public class ReceptionistController {
         return "receptionist/dashboard";
     }
 
-    @GetMapping("/reservations")
-    public String reservations(Model model) {
+    @GetMapping("/room-matrix")
+    public String roomMatrix(Model model) {
+        // Room Matrix from DB
+        List<Map<String, Object>> rooms = new ArrayList<>();
+        try {
+            for (Room r : roomRepository.findAll()) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("roomNumber", r.getRoomNumber());
+                m.put("status", r.getRoomStatus());
+                m.put("category", r.getCategory() != null ? r.getCategory().getCategoryName() : "");
+                rooms.add(m);
+            }
+        } catch (Exception e) {
+        }
+        model.addAttribute("rooms", rooms);
+        return "receptionist/room-matrix";
+    }
+
+    @GetMapping("/check-in")
+    public String checkIn(Model model) {
+        return "receptionist/check-in";
+    }
+
+    @GetMapping("/check-out")
+    public String checkOut(Model model) {
+        return "receptionist/check-out";
+    }
+
+    @GetMapping("/walk-in")
+    public String walkIn(Model model) {
+        return "receptionist/walk-in";
+    }
+
+    @GetMapping("/bookings")
+    public String bookings(Model model) {
         List<Map<String, Object>> reservations = new ArrayList<>();
         try {
             for (Booking b : bookingRepository.findConfirmed()) {
@@ -86,21 +119,6 @@ public class ReceptionistController {
         }
         model.addAttribute("reservations", reservations);
         model.addAttribute("reservationCount", reservations.size());
-        return "receptionist/reservations";
-    }
-
-    @GetMapping("/check-in-out")
-    public String checkInOut(Model model) {
-        return "receptionist/check-in-out";
-    }
-
-    @GetMapping("/folio")
-    public String folio(Model model) {
-        return "receptionist/folio";
-    }
-
-    @GetMapping("/night-audit")
-    public String nightAudit(Model model) {
-        return "receptionist/night-audit";
+        return "receptionist/bookings";
     }
 }

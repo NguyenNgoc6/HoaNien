@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <aside class="sidebar" th:fragment="sidebar">
+        <div class="sidebar-brand">
+            <h1 class="brand-title">KAWAI</h1>
+            <p class="brand-subtitle">RESORT & TOUR HUB</p>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="menu-group">
+                <div class="menu-label">OPERATIONS</div>
+                <a href="/receptionist/dashboard" class="nav-item">
+                    <i class="fa-solid fa-border-all nav-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/receptionist/room-matrix" class="nav-item">
+                    <i class="fa-solid fa-table-cells nav-icon"></i>
+                    <span>Room Matrix</span>
+                    <span class="badge">3</span>
+                </a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">FRONT DESK</div>
+                <a href="/receptionist/check-in" class="nav-item">
+                    <i class="fa-solid fa-right-to-bracket nav-icon"></i>
+                    <span>Check-In</span>
+                    <span class="badge">5</span>
+                </a>
+                <a href="/receptionist/check-out" class="nav-item">
+                    <i class="fa-solid fa-right-from-bracket nav-icon"></i>
+                    <span>Check-Out</span>
+                    <span class="badge">3</span>
+                </a>
+                <a href="/receptionist/walk-in" class="nav-item">
+                    <i class="fa-solid fa-person-walking-luggage nav-icon"></i>
+                    <span>Walk-In</span>
+                </a>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">MANAGEMENT</div>
+                <a href="/receptionist/bookings" class="nav-item">
+                    <i class="fa-regular fa-calendar-check nav-icon"></i>
+                    <span>Bookings</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="user-section">
+            <div class="user-avatar">R</div>
+            <div class="user-info">
+                <span class="user-name">Receptionist</span>
+                <span class="user-role">Front Desk</span>
+            </div>
+            <button class="user-menu-btn">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+        </div>
+    </aside>
+</body>
+</html>

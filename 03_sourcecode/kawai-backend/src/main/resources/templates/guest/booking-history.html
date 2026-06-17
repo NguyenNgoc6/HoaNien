@@ -166,8 +166,287 @@
                 <div class="lg:col-span-2 space-y-8">
 
 
-                    <!-- Booking Orders -->
-                    <div th:replace="~{guest/fragments/booking-orders :: bookingOrders}"></div>
+                    <!-- Booking Orders Fragment -->
+                    <div id="bookings"
+                        class="bg-white/50 backdrop-blur-sm border border-hoanien-text/10 p-8 rounded-xl">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                            <h3 class="font-serif text-2xl flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[#6e7869]">calendar_today</span>
+                                Đơn đặt phòng
+                            </h3>
+                            <!-- Filter -->
+                            <div class="w-full md:w-48 relative">
+                                <select id="bookingStatusFilter" onchange="filterBookings()"
+                                    class="w-full bg-transparent border-b border-hoanien-text/20 pb-2 focus:border-hoanien-text focus:outline-none transition-colors text-sm appearance-none cursor-pointer">
+                                    <option value="all">Tất cả</option>
+                                    <option value="paid">Đã thanh toán</option>
+                                    <option value="cancelled">Đã hủy</option>
+                                </select>
+                                <span
+                                    class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-hoanien-text/40 pointer-events-none text-sm">expand_more</span>
+                            </div>
+                        </div>
+
+                        <div th:if="${bookings == null or bookings.empty}"
+                            class="text-center py-8 opacity-50 border border-dashed border-hoanien-text/30 rounded-lg">
+                            <span class="material-symbols-outlined text-4xl mb-2">event_busy</span>
+                            <p class="text-sm">Bạn chưa có đơn đặt phòng nào.</p>
+                        </div>
+
+                        <div th:each="booking : ${bookings}"
+                            class="booking-item flex flex-col md:flex-row gap-4 p-4 border border-hoanien-text/10 rounded-lg bg-white/30 hover:bg-white/50 transition-colors"
+                            th:data-status="${#strings.toUpperCase(booking.bookingStatus)}"
+                            th:classappend="${#strings.toUpperCase(booking.bookingStatus) == 'CANCELLED' ? 'opacity-70' : ''}">
+                            <div class="w-full md:w-[150px] h-[100px] shrink-0 rounded-md overflow-hidden">
+                                <img th:src="${'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'}"
+                                    alt="Room Image" class="w-full h-full object-cover" />
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex justify-between items-start mb-1">
+                                        <h4 class="font-serif text-lg font-medium"
+                                            th:text="${bookingFirstDetails[booking.id] != null and bookingFirstDetails[booking.id].category != null ? bookingFirstDetails[booking.id].category.categoryName : 'Phòng tiêu chuẩn'}">
+                                            Tên phòng</h4>
+
+                                        <!-- Status Badge -->
+                                        <span th:if="${#strings.toUpperCase(booking.bookingStatus) == 'CONFIRMED'}"
+                                            class="text-[11px] bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Đã xác nhận
+                                        </span>
+                                        <span th:if="${#strings.toUpperCase(booking.bookingStatus) == 'PENDING'}"
+                                            class="text-[11px] bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-600"></span> Chờ xử lý
+                                        </span>
+                                        <span th:if="${#strings.toUpperCase(booking.bookingStatus) == 'CANCELLED'}"
+                                            class="text-[11px] bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> Đã hủy
+                                        </span>
+                                        <!-- Default fallback -->
+                                        <span
+                                            th:unless="${#lists.contains({'CONFIRMED', 'PENDING', 'CANCELLED'}, #strings.toUpperCase(booking.bookingStatus))}"
+                                            class="text-[11px] bg-gray-200 text-gray-600 px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> <span
+                                                th:text="${booking.bookingStatus}">Trạng thái</span>
+                                        </span>
+                                    </div>
+
+                                    <span
+                                        class="inline-block text-[10px] bg-hoanien-text/5 text-hoanien-text px-2 py-0.5 rounded mb-2 font-medium"
+                                        th:text="'#HN' + ${booking.id}">#HN...</span>
+
+                                    <p class="text-[12px] opacity-70 mb-1 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                        <span
+                                            th:text="${'Nhận: ' + #temporals.format(booking.checkInDate, 'dd/MM/yyyy') + ' - Trả: ' + #temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}">Dates</span>
+                                    </p>
+
+                                    <p class="text-[12px] opacity-70 flex items-center gap-1"
+                                        th:if="${bookingFirstDetails[booking.id] != null}">
+                                        <span class="material-symbols-outlined text-[14px]">person</span>
+                                        <span
+                                            th:text="${bookingFirstDetails[booking.id].numberOfAdults + ' người lớn' + (bookingFirstDetails[booking.id].numberOfChildren > 0 ? ', ' + bookingFirstDetails[booking.id].numberOfChildren + ' trẻ em' : '')}">Người</span>
+                                    </p>
+                                </div>
+
+                                <div class="flex justify-between items-end mt-2">
+                                    <div>
+                                        <p class="text-[9px] uppercase tracking-widest opacity-60 mb-0.5">Tiền cọc</p>
+                                        <p class="font-serif text-lg font-medium"><span
+                                                th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">Price</span>
+                                            <span class="text-[10px] font-sans">VNĐ</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button
+                                            th:if="${#strings.toUpperCase(booking.bookingStatus) == 'PENDING' or #strings.toUpperCase(booking.bookingStatus) == 'CONFIRMED'}"
+                                            th:onclick="'cancelBooking(' + ${booking.id} + ')'"
+                                            class="text-[10px] uppercase tracking-widest font-semibold border border-hoanien-text/20 bg-white px-4 py-2 rounded hover:bg-gray-50 transition-colors">Hủy
+                                            đơn</button>
+                                        <button type="button" th:onclick="'viewBookingDetails(' + ${booking.id} + ')'"
+                                            class="text-[10px] uppercase tracking-widest font-semibold bg-hoanien-text text-hoanien-bg px-4 py-2 rounded hover:bg-hoanien-text/90 transition-colors">Xem
+                                            chi tiết</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Booking Detail Modal -->
+                        <div id="bookingDetailModal"
+                            class="hidden fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div
+                                class="bg-hoanien-bg text-hoanien-text rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-hoanien-text/10">
+                                <div class="p-6 border-b border-hoanien-text/10 flex justify-between items-center">
+                                    <h3 class="font-serif text-2xl">Chi tiết Đơn <span id="detailBookingId"
+                                            class="text-hoanien-text/70"></span></h3>
+                                    <button onclick="closeBookingDetails()"
+                                        class="material-symbols-outlined hover:text-red-500 transition-colors">close</button>
+                                </div>
+                                <div class="p-6 space-y-4 font-sans text-sm">
+                                    <div>
+                                        <p class="uppercase tracking-widest text-[10px] opacity-60 mb-1">Các loại phòng
+                                            đã đặt</p>
+                                        <ul id="detailRoomCategories" class="list-disc pl-5 font-medium space-y-1"></ul>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="uppercase tracking-widest text-[10px] opacity-60 mb-1">Nhận - Trả
+                                                phòng</p>
+                                            <p id="detailDates" class="font-medium"></p>
+                                        </div>
+                                        <div>
+                                            <p class="uppercase tracking-widest text-[10px] opacity-60 mb-1">Số lượng
+                                                khách</p>
+                                            <p id="detailGuests" class="font-medium"></p>
+                                        </div>
+                                    </div>
+                                    <hr class="border-hoanien-text/10 my-4" />
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Tiền phòng cơ bản:</span>
+                                            <span id="detailBasePrice" class="font-medium"></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="opacity-70">Phụ thu (Dịch vụ / Thêm người):</span>
+                                            <span id="detailServicesFee" class="font-medium"></span>
+                                        </div>
+                                        <div class="flex justify-between text-green-700">
+                                            <span class="opacity-70">Khuyến mãi áp dụng:</span>
+                                            <span id="detailPromoDiscount" class="font-medium"></span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between font-serif text-lg pt-2 border-t border-hoanien-text/10">
+                                            <span>Tổng cộng:</span>
+                                            <span id="detailTotal" class="font-bold"></span>
+                                        </div>
+                                        <div class="flex justify-between text-hoanien-text/60 text-xs mt-1">
+                                            <span>Đã cọc:</span>
+                                            <span id="detailDeposit"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6 border-t border-hoanien-text/10 bg-hoanien-text/5 text-right">
+                                    <button onclick="closeBookingDetails()"
+                                        class="text-xs uppercase tracking-widest font-semibold border border-hoanien-text/20 bg-white px-6 py-2 rounded hover:bg-gray-50 transition-colors">Đóng</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                if (window.location.search.includes("payment=")) {
+                                    setTimeout(() => {
+                                        const bookingsEl = document.getElementById("bookings");
+                                        if (bookingsEl) {
+                                            bookingsEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                                            bookingsEl.classList.add("ring-2", "ring-green-500", "transition-all", "duration-1000");
+                                            setTimeout(() => {
+                                                bookingsEl.classList.remove("ring-2", "ring-green-500");
+                                            }, 2500);
+                                        }
+                                    }, 300);
+                                }
+                            });
+
+                            const formatter = new Intl.NumberFormat('vi-VN');
+
+                            function viewBookingDetails(bookingId) {
+                                fetch(`/api/bookings/${bookingId}`)
+                                    .then(res => res.json().then(data => ({ status: res.status, body: data })))
+                                    .then(resObj => {
+                                        if (resObj.status !== 200) {
+                                            alert(resObj.body.message || "Lỗi tải chi tiết đơn phòng.");
+                                            return;
+                                        }
+                                        const data = resObj.body;
+                                        document.getElementById('detailBookingId').innerText = `#HN${bookingId}`;
+
+                                        const ul = document.getElementById('detailRoomCategories');
+                                        ul.innerHTML = '';
+                                        if (data.roomCategories && data.roomCategories.length > 0) {
+                                            data.roomCategories.forEach(cat => {
+                                                const li = document.createElement('li');
+                                                li.innerText = cat;
+                                                ul.appendChild(li);
+                                            });
+                                        } else {
+                                            ul.innerHTML = '<li>Phòng tiêu chuẩn</li>';
+                                        }
+
+                                        document.getElementById('detailDates').innerText = `${formatDate(data.checkInDate)} - ${formatDate(data.checkOutDate)}`;
+                                        let guests = `${data.totalAdults} người lớn`;
+                                        if (data.totalChildren > 0) guests += `, ${data.totalChildren} trẻ em`;
+                                        document.getElementById('detailGuests').innerText = guests;
+
+                                        document.getElementById('detailBasePrice').innerText = formatter.format(data.baseRoomPrice) + ' đ';
+                                        document.getElementById('detailServicesFee').innerText = formatter.format(data.servicesFee) + ' đ';
+                                        document.getElementById('detailPromoDiscount').innerText = '-' + formatter.format(data.promotionDiscount) + ' đ';
+                                        document.getElementById('detailTotal').innerText = formatter.format(data.totalAmount) + ' đ';
+                                        document.getElementById('detailDeposit').innerText = formatter.format(data.depositAmount) + ' đ';
+
+                                        document.getElementById('bookingDetailModal').classList.remove('hidden');
+                                    })
+                                    .catch(e => {
+                                        console.error(e);
+                                        alert("Lỗi tải chi tiết đơn phòng.");
+                                    });
+                            }
+
+                            function closeBookingDetails() {
+                                document.getElementById('bookingDetailModal').classList.add('hidden');
+                            }
+
+                            function cancelBooking(bookingId) {
+                                if (!confirm(`Bạn có chắc chắn muốn hủy đơn đặt phòng #HN${bookingId}? Hành động này không thể hoàn tác.`)) return;
+
+                                fetch(`/api/bookings/${bookingId}/cancel`, { method: 'POST' })
+                                    .then(res => res.json().then(data => ({ status: res.status, body: data })))
+                                    .then(resObj => {
+                                        if (resObj.status !== 200) {
+                                            alert(`Không thể hủy đơn: ${resObj.body.message || 'Lỗi hệ thống'}`);
+                                        } else {
+                                            alert(resObj.body.message || 'Hủy phòng thành công!');
+                                            location.reload();
+                                        }
+                                    })
+                                    .catch(e => {
+                                        console.error(e);
+                                        alert("Đã xảy ra lỗi hệ thống khi hủy đơn.");
+                                    });
+                            }
+
+                            function formatDate(dateStr) {
+                                if (!dateStr) return '';
+                                const d = new Date(dateStr);
+                                return d.toLocaleDateString('vi-VN');
+                            }
+
+                            function filterBookings() {
+                                const filterValue = document.getElementById('bookingStatusFilter').value;
+                                const items = document.querySelectorAll('.booking-item');
+
+                                items.forEach(item => {
+                                    const status = item.getAttribute('data-status');
+
+                                    if (filterValue === 'all') {
+                                        item.style.display = 'flex';
+                                    } else if (filterValue === 'paid') {
+                                        if (status === 'CONFIRMED') {
+                                            item.style.display = 'flex';
+                                        } else {
+                                            item.style.display = 'none';
+                                        }
+                                    } else if (filterValue === 'cancelled') {
+                                        if (status === 'CANCELLED') {
+                                            item.style.display = 'flex';
+                                        } else {
+                                            item.style.display = 'none';
+                                        }
+                                    }
+                                });
+                            }
+                        </script>
+                    </div>
                 </div>
             </div>
         </section>

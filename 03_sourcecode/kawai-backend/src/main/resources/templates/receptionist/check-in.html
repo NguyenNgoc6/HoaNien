@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-In - Kawai Reception</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
+    <link rel="stylesheet" href="/receptionist/css/check-in.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Check-In')}"></div>
+
+            <div class="page-date">Front Desk</div>
+            <h1 class="page-title">Check-In Processing</h1>
+
+            <div class="stepper">
+                <div class="step active">
+                    <div class="step-icon">1</div>
+                    <span class="step-label">Search</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-icon">2</div>
+                    <span class="step-label">Verify & Assign</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-icon">3</div>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+
+            <div class="card search-card">
+                <h3 class="card-title">Reservation Search</h3>
+                <p class="card-subtitle">Booking ID / Confirmation / Guest Name</p>
+                <form id="searchForm" class="search-form" onsubmit="event.preventDefault(); showSearchResult();">
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="R001 · KW-88421 · Nguyễn Thị Lan" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+
+            <!-- This section is hidden initially and shown via JS when search succeeds -->
+            <div id="searchResultSection" class="result-section" style="display: none;">
+                <!-- Guest Information Preview -->
+                <div class="card guest-preview-card">
+                    <div class="guest-info-header">
+                        <div class="guest-avatar">NL</div>
+                        <div class="guest-details">
+                            <h3>Nguyễn Thị Lan</h3>
+                            <p>Booking: KW-88421 • Room: Premier Suite</p>
+                        </div>
+                        <span class="status-badge">Confirmed</span>
+                    </div>
+                </div>
+
+                <!-- Dependent Info Form added per user request -->
+                <div class="card dependent-card">
+                    <div class="card-header-flex">
+                        <h3 class="card-title">Dependent Information</h3>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addDependentRow()">
+                            <i class="fa-solid fa-plus"></i> Add Dependent
+                        </button>
+                    </div>
+                    <p class="card-subtitle">Enter details for people accompanying the main guest.</p>
+                    
+                    <div class="dependent-form-container">
+                        <table class="dependent-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>ID Card / Passport</th>
+                                    <th>Date of Birth</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dependentTableBody">
+                                <!-- Dynamic rows go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="action-bar-right">
+                        <button class="btn btn-primary" onclick="proceedToVerify()">Proceed to Verify <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="/receptionist/js/receptionist.js"></script>
+    <script src="/receptionist/js/check-in.js"></script>
+</body>
+</html>

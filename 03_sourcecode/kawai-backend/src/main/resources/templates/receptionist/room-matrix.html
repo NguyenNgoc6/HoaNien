@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Matrix - Kawai Reception</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
+    <link rel="stylesheet" href="/receptionist/css/room-matrix.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Room Matrix')}"></div>
+
+            <div class="page-header-flex">
+                <div>
+                    <div class="page-date" th:text="${todayLabel}">Wednesday, 17 June 2026</div>
+                    <h1 class="page-title">Room Status Matrix</h1>
+                </div>
+                <div class="live-badge">
+                    <div class="dot-pulse"></div>
+                    <span>LIVE</span>
+                </div>
+            </div>
+
+            <div class="matrix-legend">
+                <div class="legend-item"><span class="legend-dot" style="background: #2e7d32;"></span>Vacant / Clean</div>
+                <div class="legend-item"><span class="legend-dot" style="background: #556b2f;"></span>Occupied / Clean</div>
+                <div class="legend-item"><span class="legend-dot" style="background: #c5a880;"></span>Occupied / Dirty</div>
+                <div class="legend-item"><span class="legend-dot" style="background: #8b7355;"></span>Vacant / Dirty</div>
+                <div class="legend-item"><span class="legend-dot" style="background: #673ab7;"></span>Maintenance</div>
+            </div>
+
+            <div class="filter-bar">
+                <select class="filter-select"><option>Floor: All</option></select>
+                <select class="filter-select"><option>Type: All</option></select>
+                <select class="filter-select"><option>Status: All</option></select>
+            </div>
+
+            <!-- Floor 1 -->
+            <div class="floor-section">
+                <h3 class="floor-title">FLOOR 1</h3>
+                <div class="room-grid">
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">101</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">102</span>
+                    </div>
+                    <div class="room-card status-occupied-dirty">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">103</span>
+                    </div>
+                    <div class="room-card status-vacant-dirty">
+                        <span class="room-type">STE</span>
+                        <span class="room-number">104</span>
+                        <i class="fa-solid fa-broom room-icon"></i>
+                    </div>
+                    <div class="room-card status-maintenance">
+                        <span class="room-type">STE</span>
+                        <span class="room-number">105</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">106</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">BGL</span>
+                        <span class="room-number">107</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">108</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floor 2 -->
+            <div class="floor-section">
+                <h3 class="floor-title">FLOOR 2</h3>
+                <div class="room-grid">
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">STE</span>
+                        <span class="room-number">201</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">STE</span>
+                        <span class="room-number">202</span>
+                    </div>
+                    <div class="room-card status-occupied-dirty">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">203</span>
+                    </div>
+                    <div class="room-card status-vacant-dirty">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">204</span>
+                    </div>
+                    <div class="room-card status-maintenance">
+                        <span class="room-type">STE</span>
+                        <span class="room-number">205</span>
+                    </div>
+                    <div class="room-card status-vacant-clean">
+                        <span class="room-type">DLX</span>
+                        <span class="room-number">206</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floor 3 -->
+            <div class="floor-section">
+                <h3 class="floor-title">FLOOR 3</h3>
+                <div class="room-grid" id="dynamic-rooms">
+                    <!-- Dynamic rooms will go here from thymeleaf -->
+                    <div th:each="r : ${rooms}" class="room-card" th:classappend="'status-' + ${#strings.replace(r.status, '_', '-').toLowerCase()}" th:if="${r.roomNumber != null and #strings.startsWith(r.roomNumber, '3')}">
+                        <span class="room-type" th:text="${r.category}">DLX</span>
+                        <span class="room-number" th:text="${r.roomNumber}">301</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="/receptionist/js/receptionist.js"></script>
+    <script src="/receptionist/js/room-matrix.js"></script>
+</body>
+</html>

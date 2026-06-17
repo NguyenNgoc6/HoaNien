@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-Out - Kawai Reception</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/receptionist/css/layout.css">
+    <link rel="stylesheet" href="/receptionist/css/sidebar.css">
+    <link rel="stylesheet" href="/receptionist/css/check-out.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Fragment -->
+        <div th:replace="~{receptionist/fragments/sidebar :: sidebar}"></div>
+
+        <main class="main-content">
+            <!-- Header Fragment -->
+            <div th:replace="~{receptionist/fragments/header :: header('Check-Out')}"></div>
+
+            <div class="guest-header">
+                <div class="guest-avatar">N</div>
+                <div class="guest-info">
+                    <h1 class="page-title" style="margin-bottom:4px;">Nguyễn Thị Lan</h1>
+                    <p class="guest-meta">Room 201 · 2026-06-13 &rarr; 2026-06-16</p>
+                </div>
+                <div class="guest-status">
+                    <span class="status-outline">Active Stay</span>
+                </div>
+            </div>
+
+            <div class="alert-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Checkout not allowed until all balances are settled (BR-FIN-01)</span>
+            </div>
+
+            <div class="checkout-grid">
+                <!-- Itemized Charges -->
+                <div class="charges-column">
+                    <!-- Room Charges -->
+                    <div class="card charge-card">
+                        <div class="charge-header">
+                            <h3 class="charge-category">ROOM CHARGES</h3>
+                            <span class="charge-category-total">23.400.000 ₫</span>
+                        </div>
+                        <table class="charge-table">
+                            <thead>
+                                <tr>
+                                    <th>DESCRIPTION</th>
+                                    <th>DATE</th>
+                                    <th>AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Room Charge — Premier Suite</td>
+                                    <td>2026-06-13</td>
+                                    <td>7.800.000 ₫</td>
+                                </tr>
+                                <tr class="highlight-row">
+                                    <td>Room Charge — Premier Suite</td>
+                                    <td>2026-06-14</td>
+                                    <td>7.800.000 ₫</td>
+                                </tr>
+                                <tr>
+                                    <td>Room Charge — Premier Suite</td>
+                                    <td>2026-06-15</td>
+                                    <td>7.800.000 ₫</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- F&B Charges -->
+                    <div class="card charge-card">
+                        <div class="charge-header">
+                            <h3 class="charge-category">F&B CHARGES</h3>
+                            <span class="charge-category-total">2.970.000 ₫</span>
+                        </div>
+                        <table class="charge-table">
+                            <thead>
+                                <tr>
+                                    <th>DESCRIPTION</th>
+                                    <th>DATE</th>
+                                    <th>AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Breakfast (x2)</td>
+                                    <td>2026-06-14</td>
+                                    <td>650.000 ₫</td>
+                                </tr>
+                                <tr>
+                                    <td>Dinner — Riverside Restaurant</td>
+                                    <td>2026-06-14</td>
+                                    <td>1.200.000 ₫</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bill Summary -->
+                <div class="summary-column">
+                    <div class="card summary-card">
+                        <h3 class="summary-title">Bill Summary</h3>
+                        
+                        <div class="summary-row">
+                            <span>Room</span>
+                            <span>23.400.000 ₫</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>F&B</span>
+                            <span>2.970.000 ₫</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tour</span>
+                            <span>1.500.000 ₫</span>
+                        </div>
+                        <div class="summary-row penalty-row">
+                            <span>Late Fee</span>
+                            <span>500.000 ₫</span>
+                        </div>
+
+                        <div class="promo-section">
+                            <p class="promo-label">Apply Promotion</p>
+                            <div class="promo-input-group">
+                                <input type="text" placeholder="Voucher code">
+                                <button class="btn btn-outline-gold">Apply</button>
+                            </div>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Pre-paid Deposit</span>
+                            <span class="text-gray">-8.511.000 ₫</span>
+                        </div>
+
+                        <div class="summary-total-row">
+                            <span>Outstanding</span>
+                            <span class="total-amount">19.859.000 ₫</span>
+                        </div>
+
+                        <button class="btn btn-primary-full" onclick="proceedToPayment()">Proceed to Payment</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="/receptionist/js/receptionist.js"></script>
+    <script src="/receptionist/js/check-out.js"></script>
+</body>
+</html>
