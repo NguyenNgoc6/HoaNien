@@ -398,6 +398,17 @@
             const el = document.getElementById('incident-report');
             el.classList.toggle('hidden');
         }
+        // Micro-interaction: Subtle hover for table rows
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transition = 'all 0.3s ease';
+                row.style.backgroundColor = '#F6ECE3';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.backgroundColor = row.classList.contains('bg-surface-container-low') ? '#fcf2e9' : 'transparent';
+            });
+        });
 
     </script>
 
