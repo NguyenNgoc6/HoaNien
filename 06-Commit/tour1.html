@@ -403,6 +403,32 @@
                     }
                 }
             });
+            // Update html lang attribute
+            document.documentElement.lang = lang;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollContainer = document.querySelector('.scroll-container');
+            const sections = document.querySelectorAll('.snap-section');
+            const backgrounds = document.querySelectorAll('.parallax-bg');
+
+            scrollContainer.addEventListener('scroll', () => {
+                const scrollTop = scrollContainer.scrollTop;
+                const height = window.innerHeight;
+
+                backgrounds.forEach((bg, index) => {
+                    const section = sections[index];
+                    if (section) {
+                        const rect = section.getBoundingClientRect();
+                        if (rect.top < height && rect.bottom > 0) {
+                            const speed = 0.15;
+                            const yPos = -(rect.top * speed);
+                            bg.style.transform = `translateY(${yPos}px) scale(1.1)`;
+                        }
+                    }
+                });
+            });
+        });
 
     </script>
 </body>
