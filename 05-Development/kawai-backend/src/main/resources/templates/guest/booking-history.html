@@ -6,34 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lịch sử đặt dịch vụ - Hoanien River Retreat</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'hoanien-bg': '#f1ebe3',
-                        'hoanien-text': '#3a3230',
-                        'hoanien-footer': '#3c3530',
-                        'hoanien-footer-text': '#e5dfd8'
-                    },
-                    fontFamily: {
-                        'serif': ['"Playfair Display"', 'serif'],
-                        'sans': ['"Montserrat"', 'sans-serif'],
-                        "headline": ["EB Garamond", "serif"],
-                        "body": ["Inter", "sans-serif"],
-                    }
-                }
-            }
-        }
-    </script>
+    <th:block th:replace="~{guest/fragments/common-head :: head}"></th:block>
 
     <!-- Custom styling -->
     <style>
@@ -50,25 +23,23 @@
     <!-- ============ NAVIGATION BAR ============ -->
     <nav class="fixed top-0 left-0 w-full z-50 bg-hoanien-bg/90 backdrop-blur-md border-b border-hoanien-text/10 transition-all duration-300 font-sans site-header">
         <div class="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between relative">
-            <div class="hidden lg:flex items-center gap-8 text-[11px] uppercase tracking-[0.2em] font-semibold text-hoanien-text/80">
+            <div class="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.2em] font-semibold text-hoanien-text/80">
                 <a href="/living" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors">Living</a>
                 <a href="/dining" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors">Dining</a>
                 <a href="/experiences" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors">Experiences</a>
-                <a href="/tours" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors">Tours</a>
+                <a href="/tours/search" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors">Tours</a>
             </div>
 
             <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-headline text-[32px] italic tracking-tighter text-hoanien-text text-center cursor-pointer w-max" onclick="window.location.href='/'">
                 HoaNien
             </div>
 
-            <div class="hidden lg:flex items-center gap-6 text-[11px] uppercase tracking-[0.2em] font-semibold">
-                <a href="/profile" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors border-b border-hoanien-text">Profile</a>
+            <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold text-hoanien-text/80">
+                <a href="/profile" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors border-b border-hoanien-text pb-0.5 text-hoanien-text">Profile</a>
                 <form th:action="@{/auth/logout}" method="post" class="inline">
                     <button type="submit" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                 </form>
-                <a href="/booking" class="bg-hoanien-text text-hoanien-bg px-6 py-3 hover:bg-hoanien-text/80 active:scale-[0.98] active:translate-y-[0.5px] transition-all duration-200 transition-colors inline-block text-center border border-hoanien-text">
-                    Book Now
-                </a>
+                <a href="/booking" class="hover:text-hoanien-text active:scale-95 transition-all duration-200 transition-colors inline-block">Book Now</a>
             </div>
             <button class="lg:hidden"><span class="material-symbols-outlined text-3xl">menu</span></button>
         </div>
@@ -562,6 +533,9 @@
             });
         }
     </script>
+
+    <script src="/guest/js/utils.js"></script>
+    <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 </body>
 
 </html>
