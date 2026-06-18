@@ -17,8 +17,8 @@
     --color-housekeeping-text: #f6c042;
     --color-available-border: #64d18a;
     --color-available-text: #64d18a;
-    --color-ooo-border: #c4c4c4;
-    --color-ooo-text: #9ca3af;
+    --color-ooo-border: #eb5757;
+    --color-ooo-text: #eb5757;
     
     /* Stat colors */
     --stat-purple: #7b61ff;
@@ -560,6 +560,15 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.room-grid.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: -16px; /* Counteract any gap/margin if needed, or simply hide */
+    pointer-events: none;
 }
 
 .room-card {

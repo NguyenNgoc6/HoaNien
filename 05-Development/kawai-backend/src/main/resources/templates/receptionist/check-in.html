@@ -92,8 +92,10 @@
                 </div>
 
                 <div class="header-search">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" placeholder="Search guest, room no., phone">
+                    <form action="/receptionist/check-in" method="get" style="display: flex; align-items: center; width: 100%;">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" name="keyword" th:value="${param.keyword}" placeholder="Search guest, room no., phone" style="border: none; background: transparent; outline: none; width: 100%;">
+                    </form>
                 </div>
 
                 <div class="header-actions">
@@ -162,13 +164,13 @@
                         <div class="pagination"
                             style="display: flex; justify-content: flex-end; padding: 1rem; gap: 0.5rem; align-items: center;"
                             th:if="${totalPages > 1}">
-                            <a th:href="@{/receptionist/check-in(page=${currentPage - 1})}"
+                            <a th:href="@{/receptionist/check-in(page=${currentPage - 1}, keyword=${param.keyword})}"
                                 th:style="'padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none; color: #374151;' + (${currentPage == 1} ? ' opacity: 0.5; pointer-events: none;' : '')">Previous</a>
 
                             <span th:text="'Page ' + ${currentPage} + ' of ' + ${totalPages}"
                                 style="color: #6b7280; font-size: 0.875rem;"></span>
 
-                            <a th:href="@{/receptionist/check-in(page=${currentPage + 1})}"
+                            <a th:href="@{/receptionist/check-in(page=${currentPage + 1}, keyword=${param.keyword})}"
                                 th:style="'padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none; color: #374151;' + (${currentPage == totalPages} ? ' opacity: 0.5; pointer-events: none;' : '')">Next</a>
                         </div>
 
