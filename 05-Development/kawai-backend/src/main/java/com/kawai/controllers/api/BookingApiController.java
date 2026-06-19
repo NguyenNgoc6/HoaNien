@@ -57,8 +57,11 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND",
-                            "Không tìm thấy thông tin khách hàng cho tài khoản: " + username));
+                    .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+            if (customer == null) {
+                throw new BusinessException("CUSTOMER_NOT_FOUND",
+                        "Không tìm thấy thông tin khách hàng cho tài khoản: " + username);
+            }
 
             // Gán customerId lấy từ user đang đăng nhập
             request.setCustomerId(customer.getId());
@@ -76,7 +79,7 @@ public class BookingApiController {
                     response.getDepositAmount(),
                     cancellationDeadlineLDT,
                     "Đặt phòng thành công!");
-            // ✅ Trả về tổng chính thức từ backend (bao gồm phụ thu + khuyến mãi)
+            // Trả về tổng chính thức từ backend (bao gồm phụ thu + khuyến mãi)
             apiResponse.setDiscountedPrice(response.getDiscountedPrice());
 
             // TẠO URL THANH TOÁN VNPAY VÀ TRẢ VỀ CHO FRONTEND
@@ -107,8 +110,11 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND",
-                            "Không tìm thấy thông tin khách hàng cho tài khoản: " + username));
+                    .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+            if (customer == null) {
+                throw new BusinessException("CUSTOMER_NOT_FOUND",
+                        "Không tìm thấy thông tin khách hàng cho tài khoản: " + username);
+            }
 
             BookingResponseDTO response = bookingService.cancelBooking(bookingId, customer.getId());
 
@@ -147,8 +153,11 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND",
-                            "Không tìm thấy thông tin khách hàng cho tài khoản: " + username));
+                    .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+            if (customer == null) {
+                throw new BusinessException("CUSTOMER_NOT_FOUND",
+                        "Không tìm thấy thông tin khách hàng cho tài khoản: " + username);
+            }
 
             BookingDetailResponseDTO detail = bookingService.getBookingDetail(bookingId, customer.getId());
             return ResponseEntity.ok(detail);
@@ -170,8 +179,10 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(
-                            () -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
+                    .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+            if (customer == null) {
+                throw new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng");
+            }
 
             String couponCode = payload.get("couponCode");
             BigDecimal discountAmount = bookingService.applyCoupon(bookingId, couponCode, customer.getId());
@@ -200,8 +211,10 @@ public class BookingApiController {
         try {
             String username = principal.getName();
             Customer customer = customerRepository.findByAccount_Username(username)
-                    .orElseThrow(
-                            () -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng"));
+                    .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+            if (customer == null) {
+                throw new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng");
+            }
 
             String fullName = (String) payload.get("fullName");
             String phone = (String) payload.get("phone");
