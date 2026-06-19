@@ -17,29 +17,15 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 16px;
-            max-height: 142px; /* Height of exactly one card row (140px) */
+            max-height: 142px;
+            /* Height of exactly one card row */
             overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .room-grid.expanded {
-            max-height: 5000px; /* Arbitrary large value to show all rows */
-        }
+        /* Removed .room-grid.expanded max-height hack */
     </style>
-    <script>
-        function toggleCategory(headerElement) {
-            const grid = headerElement.nextElementSibling;
-            const icon = headerElement.querySelector('.toggle-icon');
-            
-            if (grid.classList.contains('expanded')) {
-                grid.classList.remove('expanded');
-                icon.style.transform = "rotate(0deg)";
-            } else {
-                grid.classList.add('expanded');
-                icon.style.transform = "rotate(180deg)";
-            }
-        }
-    </script>
+
 </head>
 
 <body>
@@ -47,7 +33,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-logo">K</div>
+                <div class="brand-logo">◆</div>
                 <div class="brand-text">
                     <h1 class="brand-title">Hoanien Retreat</h1>
                     <p class="brand-subtitle">Resort & Hub</p>
@@ -60,7 +46,7 @@
                 <a href="/receptionist/dashboard" class="nav-item active">
                     <i class="fa-solid fa-border-all"></i>
                     <div class="nav-text">
-                        <span class="nav-main-text">Dashboard</span>
+                        <span class="nav-main-text">Room Matrix</span>
                         <span class="nav-sub-text">Sơ đồ phòng</span>
                     </div>
                     <i class="fa-solid fa-chevron-right nav-arrow"></i>
@@ -111,13 +97,7 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-datetime">
-                    <div class="time" id="currentTime">--:--:--</div>
-                    <div class="date" th:text="${todayLabel}">Wednesday, June 10, 2026</div>
-                </div>
-
-                <div class="header-search">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" placeholder="Search guest, room no., phone">
+                    <div class="date" id="currentDate" th:text="${todayLabel}">Wednesday, June 10, 2026</div>
                 </div>
 
                 <div class="header-actions">
@@ -200,21 +180,23 @@
 
                     <div class="matrix-legend-area">
                         <div class="legend-items">
-                            <div class="legend-item"><span class="legend-dot dot-available"></span>Available</div>
-                            <div class="legend-item"><span class="legend-dot dot-occupied"></span>Occupied</div>
-                            <div class="legend-item"><span class="legend-dot dot-housekeeping"></span>Housekeeping</div>
-                            <div class="legend-item"><span class="legend-dot dot-ooo"></span>Maintenance</div>
+                            <div class="legend-item" onclick="toggleFilter('card-available', this)" style="cursor: pointer; transition: opacity 0.3s;"><span class="legend-dot dot-available"></span>Available</div>
+                            <div class="legend-item" onclick="toggleFilter('card-occupied', this)" style="cursor: pointer; transition: opacity 0.3s;"><span class="legend-dot dot-occupied"></span>Occupied</div>
+                            <div class="legend-item" onclick="toggleFilter('card-housekeeping', this)" style="cursor: pointer; transition: opacity 0.3s;"><span class="legend-dot dot-housekeeping"></span>Housekeeping</div>
+                            <div class="legend-item" onclick="toggleFilter('card-ooo', this)" style="cursor: pointer; transition: opacity 0.3s;"><span class="legend-dot dot-ooo"></span>Maintenance</div>
                         </div>
                         <div class="matrix-count" th:text="${#lists.size(rooms)} + ' rooms'">Showing rooms</div>
                     </div>
 
                     <!-- Room Grid - grouped by category -->
                     <div th:each="entry : ${categorizedRooms}" class="floor-section">
-                        <div class="floor-header" onclick="toggleCategory(this)" style="cursor: pointer; display: flex; align-items: center;">
+                        <div class="floor-header" onclick="toggleCategory(this)"
+                            style="cursor: pointer; display: flex; align-items: center;">
                             <span class="floor-badge" th:text="${entry.key}">Category Name</span>
                             <div class="floor-line" style="flex-grow: 1;"></div>
                             <span class="floor-count" th:text="${#lists.size(entry.value)} + ' rooms'"></span>
-                            <i class="fa-solid fa-chevron-down toggle-icon" style="transition: transform 0.3s; margin-left: 12px; color: #8b8b8b;"></i>
+                            <i class="fa-solid fa-chevron-down toggle-icon"
+                                style="transition: transform 0.3s; margin-left: 12px; color: #8b8b8b;"></i>
                         </div>
 
                         <div class="room-grid">
@@ -249,12 +231,6 @@
         </main>
     </div>
     <script src="/receptionist/js/dashboard.js"></script>
-    <script>
-        // Auto-refresh every 15 seconds for real-time synchronization
-        setTimeout(function() {
-            location.reload();
-        }, 15000);
-    </script>
 </body>
 
 </html>

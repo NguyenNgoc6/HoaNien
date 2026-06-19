@@ -25,6 +25,11 @@ public class ReceptionistController {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final RestaurantTableRepository restaurantTableRepository;
 
+    @org.springframework.web.bind.annotation.ModelAttribute("todayLabel")
+    public String getTodayLabel() {
+        return LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi")));
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         // KPI
@@ -68,9 +73,6 @@ public class ReceptionistController {
         model.addAttribute("categorizedRooms", categorizedRooms);
         model.addAttribute("rooms", new ArrayList<>()); // fallback for isEmpty check
 
-        // Today label
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi")));
-        model.addAttribute("todayLabel", today);
         return "receptionist/dashboard";
     }
 
@@ -95,6 +97,14 @@ public class ReceptionistController {
 
     @GetMapping("/walk-in")
     public String walkIn(Model model) {
+        Map<String, List<String>> inventory = new HashMap<>();
+        try {
+            for (Room r : roomRepository.findVacant()) {
+                String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
+                inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
+            }
+        } catch (Exception e) {}
+        model.addAttribute("roomInventory", inventory);
         return "receptionist/walk-in";
     }
 

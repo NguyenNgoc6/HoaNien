@@ -74,14 +74,13 @@ body {
 .brand-logo {
     width: 40px;
     height: 40px;
-    background-color: #f2a63b; /* Orange yellow */
-    color: #000;
-    font-weight: bold;
-    font-size: 20px;
+    border-radius: 50%;
+    background: rgba(201, 169, 110, 0.20);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    color: #C9A96E;
+    font-size: 14px;
 }
 
 .brand-text {

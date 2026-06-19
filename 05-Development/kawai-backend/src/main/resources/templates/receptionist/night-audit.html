@@ -19,7 +19,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-logo">K</div>
+                <div class="brand-logo">◆</div>
                 <div class="brand-text">
                     <h1 class="brand-title">Hoanien Retreat</h1>
                     <p class="brand-subtitle">Resort & Hub</p>
@@ -32,7 +32,7 @@
                 <a href="/receptionist/dashboard" class="nav-item">
                     <i class="fa-solid fa-border-all"></i>
                     <div class="nav-text">
-                        <span class="nav-main-text">Dashboard</span>
+                        <span class="nav-main-text">Room Matrix</span>
                         <span class="nav-sub-text">Sơ đồ phòng</span>
                     </div>
                     <i class="fa-solid fa-chevron-right nav-arrow"></i>
@@ -83,8 +83,7 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-datetime">
-                    <div class="time" id="currentTime">10:47:24 AM</div>
-                    <div class="date" id="currentDate">Wednesday, June 10, 2026</div>
+                    <div class="date" id="currentDate" th:text="${todayLabel}">Wednesday, June 10, 2026</div>
                 </div>
                 
                 <div class="header-search">
