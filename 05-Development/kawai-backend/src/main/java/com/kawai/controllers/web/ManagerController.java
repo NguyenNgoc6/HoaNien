@@ -75,7 +75,7 @@ public class ManagerController {
             avgStay = roomBookingRepository.getAverageStayDuration();
             if (avgStay == null) avgStay = 0.0;
         } catch (Exception e) {}
-        model.addAttribute("avgStayDays", String.format(Locale.US, "%.1f", avgStay));
+        model.addAttribute("avgStayDays", String.format(Locale.US, "%.0f", avgStay));
 
         long totalGuests = 0;
         try {
@@ -276,7 +276,19 @@ public class ManagerController {
         
         BigDecimal totalYear = ytdRoom.add(ytdFnb).add(ytdTour);
         model.addAttribute("totalYear", fmt(totalYear));
-        model.addAttribute("growthYoY", "-");
+        
+        // Tính toán YoY (Tăng trưởng so với cùng kỳ năm trước)
+        BigDecimal ytdRoomLastYear = roomBookingRepository.revenueBetween(LocalDate.of(now.getYear() - 1, 1, 1), LocalDate.of(now.getYear() - 1, now.getMonthValue(), now.lengthOfMonth()));
+        BigDecimal ytdFnbLastYear = foodOrderRepository.revenueBetween(java.time.LocalDateTime.of(now.getYear() - 1, 1, 1, 0, 0), LocalDate.of(now.getYear() - 1, now.getMonthValue(), now.lengthOfMonth()).atTime(23, 59, 59));
+        BigDecimal ytdTourLastYear = tourBookingRepository.revenueBetween(LocalDate.of(now.getYear() - 1, 1, 1), LocalDate.of(now.getYear() - 1, now.getMonthValue(), now.lengthOfMonth()));
+        
+        BigDecimal totalLastYear = ytdRoomLastYear.add(ytdFnbLastYear).add(ytdTourLastYear);
+        String yoyStr = "-";
+        if (totalLastYear.compareTo(BigDecimal.ZERO) > 0) {
+            double yoy = (totalYear.doubleValue() - totalLastYear.doubleValue()) / totalLastYear.doubleValue() * 100;
+            yoyStr = (yoy >= 0 ? "+" : "") + String.format(java.util.Locale.US, "%.1f%%", yoy);
+        }
+        model.addAttribute("growthYoY", yoyStr);
 
         List<RevenueRowMock> rows = new ArrayList<>();
         List<String> chartLabels = new ArrayList<>();
@@ -558,7 +570,7 @@ public class ManagerController {
             if (avgStay == null) avgStay = 0.0;
         } catch (Exception e) {}
         
-        model.addAttribute("avgStay", String.format(Locale.US, "%.1f", avgStay));
+        model.addAttribute("avgStay", String.format(Locale.US, "%.0f", avgStay));
         
         long guests = 0;
         try {
@@ -576,7 +588,7 @@ public class ManagerController {
             for (RoomCategory cat : roomCategoryRepository.findAll()) {
                 long catTotal = roomCounts.stream().filter(r -> cat.getCategoryName().equals(r[0])).mapToLong(r -> (Long) r[1]).findFirst().orElse(0);
                 long catGuests = (guests * catTotal) / 50; // simple rough estimation for display
-                rows.add(new StayRowMock(cat.getCategoryName(), String.format(Locale.US, "%.1f ngày", avgStay), (int) catGuests, (int) catTotal));
+                rows.add(new StayRowMock(cat.getCategoryName(), String.format(Locale.US, "%.0f ngày", avgStay), (int) catGuests, (int) catTotal));
             }
         } catch (Exception e) {}
         
