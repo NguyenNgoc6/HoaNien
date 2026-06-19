@@ -65,7 +65,7 @@ public class ReceptionistController {
                 m.put("status", r.getRoomStatus());
                 String catName = r.getCategory() != null ? r.getCategory().getCategoryName() : "Uncategorized";
                 m.put("category", catName);
-                
+
                 categorizedRooms.computeIfAbsent(catName, k -> new ArrayList<>()).add(m);
             }
         } catch (Exception e) {
@@ -103,15 +103,16 @@ public class ReceptionistController {
                 String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
                 inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         model.addAttribute("roomInventory", inventory);
         return "receptionist/walk-in";
     }
 
     @GetMapping("/check-in")
-    public String checkIn(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page, 
-                          @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword, 
-                          Model model) {
+    public String checkIn(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword,
+            Model model) {
         List<Map<String, Object>> arrivals = new ArrayList<>();
         try {
             for (Booking b : bookingRepository.findConfirmed()) {
@@ -127,9 +128,10 @@ public class ReceptionistController {
                 if (keyword != null && !keyword.trim().isEmpty()) {
                     String kw = keyword.trim().toLowerCase();
                     boolean match = guestName.toLowerCase().contains(kw) ||
-                                    phone.toLowerCase().contains(kw) ||
-                                    cccd.toLowerCase().contains(kw);
-                    if (!match) continue;
+                            phone.toLowerCase().contains(kw) ||
+                            cccd.toLowerCase().contains(kw);
+                    if (!match)
+                        continue;
                 }
 
                 Map<String, Object> map = new HashMap<>();
@@ -137,33 +139,42 @@ public class ReceptionistController {
                 map.put("guestName", guestName);
                 map.put("phone", phone);
                 map.put("cccd", cccd);
-                map.put("bookingDate", b.getBookingDate() != null ? b.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "");
-                
+                map.put("bookingDate",
+                        b.getBookingDate() != null
+                                ? b.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                                : "");
+
                 // Construct Room Summary from RoomBookingDetail
                 String roomSummary = "N/A";
                 try {
                     Map<String, Long> categoryCount = details.stream()
-                        .filter(d -> d.getCategory() != null)
-                        .collect(Collectors.groupingBy(d -> d.getCategory().getCategoryName(), Collectors.counting()));
-                    
+                            .filter(d -> d.getCategory() != null)
+                            .collect(Collectors.groupingBy(d -> d.getCategory().getCategoryName(),
+                                    Collectors.counting()));
+
                     roomSummary = categoryCount.entrySet().stream()
-                        .map(entry -> entry.getValue() + "x " + entry.getKey())
-                        .collect(Collectors.joining(", "));
-                } catch (Exception e) {}
-                
+                            .map(entry -> entry.getValue() + "x " + entry.getKey())
+                            .collect(Collectors.joining(", "));
+                } catch (Exception e) {
+                }
+
                 map.put("roomSummary", roomSummary);
                 arrivals.add(map);
             }
-        } catch (Exception e) {}
-        
+        } catch (Exception e) {
+        }
+
         // Pagination logic
         int pageSize = 10;
         int totalItems = arrivals.size();
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
-        
+        if (totalPages == 0)
+            totalPages = 1;
+        if (page < 1)
+            page = 1;
+        if (page > totalPages)
+            page = totalPages;
+
         int startItem = (page - 1) * pageSize;
         List<Map<String, Object>> pagedArrivals = new ArrayList<>();
         if (totalItems >= startItem) {
@@ -182,7 +193,8 @@ public class ReceptionistController {
                 String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
                 inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         model.addAttribute("roomInventory", inventory);
 
         return "receptionist/check-in";
@@ -191,6 +203,11 @@ public class ReceptionistController {
     @GetMapping("/folio")
     public String folio(Model model) {
         return "receptionist/folio";
+    }
+
+    @GetMapping("/folio/detail")
+    public String folioDetail(Model model) {
+        return "receptionist/folio-detail";
     }
 
     @GetMapping("/night-audit")
