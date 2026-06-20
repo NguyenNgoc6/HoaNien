@@ -252,7 +252,7 @@ class BookingServiceUC10Test {
         void TC_M2_004_createBooking_concurrency_onlyOneConfirmed() throws Exception {
                 // Arrange: lần 1 phòng trống, lần 2 đã bị chiếm
                 when(roomBookingRepository.countOverlappingBookingsByRoom(
-                                anyString(), any(LocalDate.class), any(LocalDate.class), anyLong()))
+                                anyString(), any(LocalDate.class), any(LocalDate.class), any(Long.class)))
                                 .thenReturn(0L) // Thread thắng
                                 .thenReturn(1L); // Thread thua
 
