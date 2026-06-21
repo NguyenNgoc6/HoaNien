@@ -206,7 +206,23 @@
                         </form>
                     </div>
                 </div>
-                <span class="material-symbols-outlined text-[24px] text-primary">person</span>
+                <div class="relative inline-block text-left">
+                    <button onclick="toggleProfileDropdown(event)" class="hover:text-primary transition-colors duration-300 flex items-center justify-center focus:outline-none" title="Tài khoản">
+                        <span class="material-symbols-outlined text-[24px] text-primary">person</span>
+                    </button>
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-[#f1ebe3] border border-[#3a3230]/20 shadow-lg text-[#3a3230] font-sans z-[100] rounded">
+                        <div class="p-4 border-b border-[#3a3230]/10 text-left">
+                            <p class="text-[10px] uppercase tracking-wider text-[#3a3230]/60 font-semibold">Tài khoản</p>
+                            <p class="font-medium text-sm mt-1 text-[#3a3230] font-semibold" th:text="${username}">Guide</p>
+                            <p class="text-[11px] text-[#3a3230]/80 mt-0.5">Vai trò: Hướng dẫn viên</p>
+                        </div>
+                        <div class="p-2 text-left">
+                            <form th:action="@{/auth/logout}" method="post" class="w-full">
+                                <button type="submit" class="w-full text-left px-3 py-2 text-xs text-red-700 hover:bg-[#3a3230]/5 transition-colors font-bold uppercase tracking-wider">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </nav>
 
@@ -577,6 +593,17 @@
                     label.style.letterSpacing = '0.15em';
                 }
             });
+        });
+
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', () => {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) dropdown.classList.add('hidden');
         });
 
         document.addEventListener('DOMContentLoaded', () => {
