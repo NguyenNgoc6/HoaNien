@@ -22,7 +22,14 @@ public class ReceptionistController {
     private final RoomRepository roomRepository;
     private final BookingRepository bookingRepository;
     private final RoomBookingRepository roomBookingRepository;
+    private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final RestaurantTableRepository restaurantTableRepository;
+    private final com.kawai.services.interfaces.DependentService dependentService;
+
+    @org.springframework.web.bind.annotation.ModelAttribute("todayLabel")
+    public String getTodayLabel() {
+        return LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi")));
+    }
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -51,52 +58,251 @@ public class ReceptionistController {
         model.addAttribute("checkoutsToday", checkoutsToday);
 
         // Room Matrix from DB
-        List<Map<String, Object>> rooms = new ArrayList<>();
+        Map<String, List<Map<String, Object>>> categorizedRooms = new LinkedHashMap<>();
         try {
             for (Room r : roomRepository.findAll()) {
                 Map<String, Object> m = new HashMap<>();
                 m.put("roomNumber", r.getRoomNumber());
                 m.put("status", r.getRoomStatus());
-                m.put("category", r.getCategory() != null ? r.getCategory().getCategoryName() : "");
-                rooms.add(m);
+                String catName = r.getCategory() != null ? r.getCategory().getCategoryName() : "Uncategorized";
+                m.put("category", catName);
+
+                categorizedRooms.computeIfAbsent(catName, k -> new ArrayList<>()).add(m);
             }
         } catch (Exception e) {
         }
-        model.addAttribute("rooms", rooms);
+        model.addAttribute("categorizedRooms", categorizedRooms);
+        model.addAttribute("rooms", new ArrayList<>()); // fallback for isEmpty check
 
-        // Today label
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi")));
-        model.addAttribute("todayLabel", today);
         return "receptionist/dashboard";
     }
 
     @GetMapping("/reservations")
     public String reservations(Model model) {
         List<Map<String, Object>> reservations = new ArrayList<>();
-        try {
-            for (Booking b : bookingRepository.findConfirmed()) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("id", b.getId());
-                m.put("customerName", b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách");
-                m.put("totalPrice", b.getTotalPrice() != null ? b.getTotalPrice().toString() : "0");
-                m.put("status", b.getBookingStatus());
-                reservations.add(m);
-            }
-        } catch (Exception e) {
+        for (Booking b : bookingRepository.findConfirmed()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", b.getId());
+            m.put("customerName", b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách");
+            m.put("totalPrice", b.getTotalPrice() != null ? b.getTotalPrice().toString() : "0");
+            m.put("status", b.getBookingStatus());
+            reservations.add(m);
         }
         model.addAttribute("reservations", reservations);
         model.addAttribute("reservationCount", reservations.size());
         return "receptionist/reservations";
     }
 
-    @GetMapping("/check-in-out")
-    public String checkInOut(Model model) {
-        return "receptionist/check-in-out";
+    @GetMapping("/walk-in")
+    public String walkIn(Model model) {
+        Map<String, List<String>> inventory = new HashMap<>();
+        for (Room r : roomRepository.findVacant()) {
+            String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
+            inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
+        }
+        model.addAttribute("roomInventory", inventory);
+        return "receptionist/walk-in";
+    }
+
+    @GetMapping("/check-in")
+    public String checkIn(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword,
+            Model model) {
+        List<Booking> allConfirmed = bookingRepository.findConfirmed();
+        List<Booking> filteredArrivals = new ArrayList<>();
+
+        // 1. Lọc theo keyword và loại Booking (chỉ lấy RoomBooking)
+        if (allConfirmed != null) {
+            for (Booking b : allConfirmed) {
+                if (!(b instanceof RoomBooking))
+                    continue;
+
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "";
+                    String phone = b.getCustomer() != null ? b.getCustomer().getPhone() : "";
+                    String cccd = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+
+                    String kw = keyword.trim().toLowerCase();
+                    boolean match = guestName.toLowerCase().contains(kw) ||
+                            phone.toLowerCase().contains(kw) ||
+                            cccd.toLowerCase().contains(kw);
+                    if (!match)
+                        continue;
+                }
+                filteredArrivals.add(b);
+            }
+        }
+        // Sắp xếp đơn Arrival gần đây lên đầu (Booking Date giảm dần)
+        filteredArrivals.sort(
+                java.util.Comparator
+                        .comparing(Booking::getBookingDate,
+                                java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder()))
+                        .thenComparing(Booking::getId,
+                                java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())));
+
+        // 2. Tính toán phân trang cho Arrivals
+        int pageSize = 10;
+        int totalItems = filteredArrivals.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages == 0)
+            totalPages = 1;
+        if (page < 1)
+            page = 1;
+        if (page > totalPages)
+            page = totalPages;
+
+        int startItem = (page - 1) * pageSize;
+        List<Booking> pagedPendingList = new ArrayList<>();
+        if (totalItems >= startItem) {
+            int toIndex = Math.min(startItem + pageSize, totalItems);
+            pagedPendingList = filteredArrivals.subList(startItem, toIndex);
+        }
+
+        // 3. Truy vấn DB Detail và map dữ liệu CHỈ cho 10 đơn vị của trang hiện tại
+        List<Map<String, Object>> pagedArrivals = new ArrayList<>();
+        for (Booking b : pagedPendingList) {
+            List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(b.getId());
+            if (details == null || details.isEmpty()) {
+                continue;
+            }
+
+            String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách";
+            String phone = b.getCustomer() != null ? b.getCustomer().getPhone() : "";
+            String cccd = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", b.getId());
+            map.put("guestName", guestName);
+            map.put("phone", phone);
+            map.put("cccd", cccd);
+            map.put("bookingDate",
+                    b.getBookingDate() != null
+                            ? b.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                            : "");
+
+            String roomSummary = "N/A";
+            Map<String, Long> categoryCount = details.stream()
+                    .filter(d -> d.getCategory() != null)
+                    .collect(Collectors.groupingBy(d -> d.getCategory().getCategoryName(),
+                            Collectors.counting()));
+
+            if (!categoryCount.isEmpty()) {
+                roomSummary = categoryCount.entrySet().stream()
+                        .map(entry -> entry.getValue() + "x " + entry.getKey())
+                        .collect(Collectors.joining(", "));
+            }
+            map.put("roomSummary", roomSummary);
+            pagedArrivals.add(map);
+        }
+
+        // --- IN-HOUSE GUESTS (ĐÃ CHECK-IN) ---
+        pageSize = 10;
+        List<Booking> allInHouseBookings = bookingRepository.findCheckedIn();
+
+        int totalInHouseItems = allInHouseBookings.size();
+        int totalInHousePages = (int) Math.ceil((double) totalInHouseItems / pageSize);
+        if (totalInHousePages == 0)
+            totalInHousePages = 1;
+
+        int inHousePage = page;
+        if (inHousePage < 1)
+            inHousePage = 1;
+        if (inHousePage > totalInHousePages)
+            inHousePage = totalInHousePages;
+
+        int startInHouseItem = (inHousePage - 1) * pageSize;
+        List<Booking> pagedInHouseBookings = new ArrayList<>();
+        if (totalInHouseItems >= startInHouseItem) {
+            int toIndex = Math.min(startInHouseItem + pageSize, totalInHouseItems);
+            pagedInHouseBookings = allInHouseBookings.subList(startInHouseItem, toIndex);
+        }
+
+        List<Map<String, Object>> pagedInHouse = new ArrayList<>();
+        for (Booking b : pagedInHouseBookings) {
+            List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(b.getId());
+            if (details == null || details.isEmpty()) {
+                continue;
+            }
+
+            String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Unknown";
+            String phone = b.getCustomer() != null ? b.getCustomer().getPhone() : "";
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", b.getId());
+            map.put("guestName", guestName);
+            map.put("phone", phone);
+
+            String checkInStr = "";
+            String checkOutStr = "";
+            if (b instanceof RoomBooking) {
+                RoomBooking rb = (RoomBooking) b;
+                checkInStr = rb.getCheckInDate() != null
+                        ? rb.getCheckInDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        : "";
+                checkOutStr = rb.getCheckOutDate() != null
+                        ? rb.getCheckOutDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        : "";
+            }
+            map.put("checkInDate", checkInStr);
+            map.put("checkOutDate", checkOutStr);
+
+            // Tính toán Quy mô đơn (Số lượng phòng và số lượng khách)
+            int roomCount = (int) details.stream().filter(d -> d.getRoom() != null).count();
+
+            // Lấy danh sách người phụ thuộc
+            List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
+            map.put("dependents", deps);
+
+            int guestCount = 1 + deps.size(); // 1 Chủ đơn + số người phụ thuộc
+            String bookingScale = roomCount + " Phòng, " + guestCount + " Khách";
+            map.put("bookingScale", bookingScale);
+
+            // roomSummary vẫn giữ để truyền vào Modal Chi tiết
+            String roomSummary = details.stream()
+                    .filter(d -> d.getRoom() != null)
+                    .map(d -> d.getRoom().getRoomNumber() + " ("
+                            + (d.getCategory() != null ? d.getCategory().getCategoryName() : "Unknown") + ")")
+                    .collect(Collectors.joining(", "));
+
+            if (roomSummary.isEmpty()) {
+                roomSummary = "N/A";
+            }
+
+            map.put("roomSummary", roomSummary);
+
+            pagedInHouse.add(map);
+        }
+
+        // --- Xóa logic Pagination cũ bị trùng ---
+
+        model.addAttribute("inHouseBookings", pagedInHouse);
+        model.addAttribute("totalInHouseCount", totalInHouseItems);
+        model.addAttribute("currentInHousePage", inHousePage);
+        model.addAttribute("totalInHousePages", totalInHousePages);
+
+        model.addAttribute("arrivals", pagedArrivals);
+        model.addAttribute("pendingArrivalsCount", totalItems);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+
+        Map<String, List<String>> inventory = new HashMap<>();
+        for (Room r : roomRepository.findVacant()) {
+            String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
+            inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
+        }
+        model.addAttribute("roomInventory", inventory);
+
+        return "receptionist/check-in";
     }
 
     @GetMapping("/folio")
     public String folio(Model model) {
         return "receptionist/folio";
+    }
+
+    @GetMapping("/folio/detail")
+    public String folioDetail(Model model) {
+        return "receptionist/folio-detail";
     }
 
     @GetMapping("/night-audit")

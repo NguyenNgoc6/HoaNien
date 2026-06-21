@@ -87,17 +87,17 @@ INSERT INTO Dependents (dependent_id, customer_id, dependent_name, birth_date, g
 -- ── 6. Room Categories (10 rows) ─────────────────────────────
 -- Columns: category_id, category_name, cover_img_url, base_price, capacity, description,
 --          base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge
-INSERT INTO Room_Categories (category_id, category_name, cover_img_url, base_price, capacity, description, base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge) VALUES 
-(1,  'Nipa Pool Villa',          'https://images.unsplash.com/photo-1540541338287-41700207dee6', 2500000,  2, 'Villa thanh tịnh bên hồ sen thơm mát.',             2, 0, 3, 1, 500000,  250000),
-(2,  'River Pool Villa',         'https://images.unsplash.com/photo-1566073771259-6a8506099945', 3500000,  3, 'Villa cao cấp ven sông Thu Bồn lộng gió.',          2, 0, 3, 2, 600000,  300000),
-(3,  'Wellness Retreats',        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4', 8000000,  4, 'Hành trình tĩnh lặng, chăm sóc sức khoẻ toàn diện.', 2, 0, 4, 2, 1000000, 500000),
-(4,  'Garden View Suite',        'https://images.unsplash.com/photo-1578683010236-d716f9a3f461', 2000000,  2, 'Suite hướng vườn nhiệt đới xanh mướt.',             2, 0, 3, 1, 400000,  200000),
-(5,  'Presidential Ocean Suite', 'https://images.unsplash.com/photo-1590490360182-c33d57733427', 15000000, 6, 'Hạng phòng cao cấp bậc nhất hướng biển.',           4, 0, 6, 3, 2000000, 1000000),
-(6,  'Ocean View Bungalow',      'https://images.unsplash.com/photo-1582719508461-905c673771fd', 3000000,  2, 'Bungalow bãi cát đón gió biển tươi mát.',           2, 0, 3, 1, 600000,  300000),
-(7,  'Family Connecting Room',   'https://images.unsplash.com/photo-1568495248636-6432b97bd949', 4500000,  5, 'Phòng thông nhau phù hợp cho cả gia đình.',         2, 2, 4, 4, 500000,  250000),
-(8,  'Superior Mountain View',   'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6', 1800000,  2, 'Phòng hướng núi thanh tịnh bình yên.',              2, 0, 2, 1, 350000,  150000),
-(9,  'Luxury Penthouse',         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688', 12000000, 4, 'Căn hộ tầng mái đẳng cấp ngắm toàn cảnh resort.',  2, 0, 4, 2, 1500000, 750000),
-(10, 'Cozy Studio Room',         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af', 1500000,  2, 'Phòng Studio nhỏ gọn, đầy đủ tiện nghi.',          2, 0, 2, 1, 300000,  150000);
+INSERT INTO Room_Categories (category_id, category_name, cover_img_url, base_price, capacity, description, base_adults, base_children, max_adults, max_children, extra_adult_surcharge, extra_child_surcharge, is_active) VALUES 
+(1,  'Nipa Pool Villa',          'https://images.unsplash.com/photo-1540541338287-41700207dee6', 2500000,  2, 'Villa thanh tịnh bên hồ sen thơm mát.',             2, 0, 3, 1, 500000,  250000, TRUE),
+(2,  'River Pool Villa',         'https://images.unsplash.com/photo-1566073771259-6a8506099945', 3500000,  3, 'Villa cao cấp ven sông Thu Bồn lộng gió.',          2, 0, 3, 2, 600000,  300000, TRUE),
+(3,  'Wellness Retreats',        'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4', 8000000,  4, 'Hành trình tĩnh lặng, chăm sóc sức khoẻ toàn diện.', 2, 0, 4, 2, 1000000, 500000, TRUE),
+(4,  'Garden View Suite',        'https://images.unsplash.com/photo-1578683010236-d716f9a3f461', 2000000,  2, 'Suite hướng vườn nhiệt đới xanh mướt.',             2, 0, 3, 1, 400000,  200000, TRUE),
+(5,  'Presidential Ocean Suite', 'https://images.unsplash.com/photo-1590490360182-c33d57733427', 15000000, 6, 'Hạng phòng cao cấp bậc nhất hướng biển.',           4, 0, 6, 3, 2000000, 1000000, TRUE),
+(6,  'Ocean View Bungalow',      'https://images.unsplash.com/photo-1582719508461-905c673771fd', 3000000,  2, 'Bungalow bãi cát đón gió biển tươi mát.',           2, 0, 3, 1, 600000,  300000, TRUE),
+(7,  'Family Connecting Room',   'https://images.unsplash.com/photo-1568495248636-6432b97bd949', 4500000,  5, 'Phòng thông nhau phù hợp cho cả gia đình.',         2, 2, 4, 4, 500000,  250000, TRUE),
+(8,  'Superior Mountain View',   'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6', 1800000,  2, 'Phòng hướng núi thanh tịnh bình yên.',              2, 0, 2, 1, 350000,  150000, TRUE),
+(9,  'Luxury Penthouse',         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688', 12000000, 4, 'Căn hộ tầng mái đẳng cấp ngắm toàn cảnh resort.',  2, 0, 4, 2, 1500000, 750000, TRUE),
+(10, 'Cozy Studio Room',         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af', 1500000,  2, 'Phòng Studio nhỏ gọn, đầy đủ tiện nghi.',          2, 0, 2, 1, 300000,  150000, TRUE);
 
 -- ── 7. Room Surcharges (10 rows) ─────────────────────────────
 INSERT INTO Room_Surcharges (surcharge_id, category_id, surcharge_type, age_from, age_to, price_modifier, is_active) VALUES 
@@ -112,40 +112,58 @@ INSERT INTO Room_Surcharges (surcharge_id, category_id, surcharge_type, age_from
 (9, 5, 'EXTRA_ADULT_BED', 12, 100, 2000000, TRUE),
 (10, 6, 'EXTRA_ADULT_BED', 12, 100, 600000, TRUE);
 
--- ── 8. Rooms (20 rows) ───────────────────────────────────────
+-- ── 8. Rooms (50 rows) ───────────────────────────────────────
 INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES 
 (1, '101', 1, 'Occupied', NULL),
 (2, '102', 1, 'Vacant_Clean', NULL),
-(3, '204', 2, 'Occupied', NULL),
-(4, '205', 2, 'Vacant_Dirty', NULL),
-(5, '308', 3, 'Occupied', NULL),
-(6, '103', 1, 'Vacant_Clean', NULL),
-(7, '104', 1, 'Occupied', NULL),
-(8, '105', 1, 'Vacant_Dirty', NULL),
-(9, '106', 1, 'Occupied', NULL),
-(10, '107', 1, 'Vacant_Clean', NULL),
-(11, '206', 2, 'Vacant_Clean', NULL),
-(12, '207', 2, 'Occupied', NULL),
-(13, '208', 2, 'Vacant_Dirty', NULL),
-(14, '209', 2, 'Vacant_Clean', NULL),
-(15, '210', 2, 'Occupied', NULL),
-(16, '309', 3, 'Vacant_Clean', NULL),
-(17, '310', 3, 'Vacant_Dirty', NULL),
-(18, '311', 3, 'Occupied', NULL),
-(19, '312', 3, 'Vacant_Clean', NULL),
-(20, '314', 3, 'Vacant_Clean', NULL),
-(21, '401', 4, 'Vacant_Clean', NULL),
-(22, '402', 4, 'Vacant_Clean', NULL),
-(23, '501', 5, 'Vacant_Clean', NULL),
-(24, '601', 6, 'Vacant_Clean', NULL),
-(25, '602', 6, 'Vacant_Clean', NULL),
-(26, '701', 7, 'Vacant_Clean', NULL),
-(27, '702', 7, 'Vacant_Clean', NULL),
-(28, '801', 8, 'Vacant_Clean', NULL),
-(29, '802', 8, 'Vacant_Clean', NULL),
-(30, '901', 9, 'Vacant_Clean', NULL),
-(31, '1001', 10, 'Vacant_Clean', NULL),
-(32, '1002', 10, 'Vacant_Clean', NULL);
+(3, '103', 1, 'Vacant_Dirty', NULL),
+(4, '104', 1, 'Vacant_Clean', NULL),
+(5, '105', 1, 'Occupied', NULL),
+(6, '106', 4, 'Vacant_Clean', NULL),
+(7, '107', 4, 'Vacant_Dirty', NULL),
+(8, '108', 4, 'Occupied', NULL),
+(9, '109', 4, 'Vacant_Clean', NULL),
+(10, '110', 4, 'Vacant_Clean', NULL),
+(11, '201', 2, 'Occupied', NULL),
+(12, '202', 2, 'Vacant_Clean', NULL),
+(13, '203', 2, 'Vacant_Dirty', NULL),
+(14, '204', 2, 'Vacant_Clean', NULL),
+(15, '205', 2, 'Occupied', NULL),
+(16, '206', 10, 'Vacant_Clean', NULL),
+(17, '207', 10, 'Vacant_Dirty', NULL),
+(18, '208', 10, 'Occupied', NULL),
+(19, '209', 10, 'Vacant_Clean', NULL),
+(20, '210', 10, 'Vacant_Clean', NULL),
+(21, '301', 7, 'Occupied', NULL),
+(22, '302', 7, 'Vacant_Clean', NULL),
+(23, '303', 7, 'Vacant_Dirty', NULL),
+(24, '304', 7, 'Vacant_Clean', NULL),
+(25, '305', 7, 'Occupied', NULL),
+(26, '306', 8, 'Vacant_Clean', NULL),
+(27, '307', 8, 'Vacant_Dirty', NULL),
+(28, '308', 8, 'Occupied', NULL),
+(29, '309', 8, 'Vacant_Clean', NULL),
+(30, '310', 8, 'Vacant_Clean', NULL),
+(31, '401', 6, 'Occupied', NULL),
+(32, '402', 6, 'Vacant_Clean', NULL),
+(33, '403', 6, 'Vacant_Dirty', NULL),
+(34, '404', 6, 'Vacant_Clean', NULL),
+(35, '405', 6, 'Occupied', NULL),
+(36, '406', 3, 'Vacant_Clean', NULL),
+(37, '407', 3, 'Vacant_Dirty', NULL),
+(38, '408', 3, 'Occupied', NULL),
+(39, '409', 3, 'Vacant_Clean', NULL),
+(40, '410', 3, 'Vacant_Clean', NULL),
+(41, '501', 5, 'Occupied', NULL),
+(42, '502', 5, 'Vacant_Clean', NULL),
+(43, '503', 5, 'Vacant_Dirty', NULL),
+(44, '504', 5, 'Vacant_Clean', NULL),
+(45, '505', 5, 'Occupied', NULL),
+(46, '506', 9, 'Vacant_Clean', NULL),
+(47, '507', 9, 'Vacant_Dirty', NULL),
+(48, '508', 9, 'Occupied', NULL),
+(49, '509', 9, 'Vacant_Clean', NULL),
+(50, '510', 9, 'Vacant_Clean', NULL);
 
 -- ── 9. Dynamic Pricing (10 rows) ─────────────────────────────
 INSERT INTO Dynamic_Pricing (price_id, category_id, start_date, end_date, price_modifier, reason) VALUES 
@@ -229,8 +247,8 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 
 -- ── 14. Room Booking Details (10 rows) ───────────────────────
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
-(1, 1, 1, 1, 2500000, 'Pending', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(2, 2, 2, 3, 3500000, 'Pending', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
+(1, 1, 1, 1, 2500000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
+(2, 2, 2, 3, 3500000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
 (3, 3, 3, 5, 8000000, 'Pending', 'KING_SIZE', NULL, TRUE, 2000000, 'BILL_TO_LEADER'),
 (4, 4, 1, 7, 2500000, 'Pending', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
 (5, 5, 1, 9, 2500000, 'Pending', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
@@ -266,77 +284,106 @@ UPDATE Rooms SET current_booking_detail_id = 9 WHERE room_id = 2;
 UPDATE Rooms SET current_booking_detail_id = 10 WHERE room_id = 4;
 
 -- ── 16. Restaurant Tables (20 rows) ──────────────────────────
-INSERT INTO Restaurant_Tables (table_id, table_number, capacity, table_status) VALUES 
-(1, 'T01', 4, 'Occupied'),
-(2, 'T02', 2, 'Vacant'),
-(3, 'T03', 6, 'Occupied'),
-(4, 'T04', 4, 'Reserved'),
-(5, 'T05', 8, 'Vacant'),
-(6, 'T06', 4, 'Vacant'),
-(7, 'T07', 2, 'Occupied'),
-(8, 'T08', 4, 'Reserved'),
-(9, 'T09', 10, 'Vacant'),
-(10, 'T10', 2, 'Vacant'),
-(11, 'T11', 4, 'Occupied'),
-(12, 'T12', 6, 'Vacant'),
-(13, 'T13', 4, 'Vacant'),
-(14, 'T14', 8, 'Reserved'),
-(15, 'T15', 2, 'Occupied'),
-(16, 'T16', 4, 'Vacant'),
-(17, 'T17', 4, 'Vacant'),
-(18, 'T18', 6, 'Occupied'),
-(19, 'T19', 2, 'Vacant'),
-(20, 'T20', 12, 'Reserved');
+INSERT INTO Restaurant_Tables (table_id, table_number, capacity, table_status, is_active) VALUES 
+(1, 'T01', 4, 'Occupied', TRUE),
+(2, 'T02', 2, 'Vacant', TRUE),
+(3, 'T03', 6, 'Occupied', TRUE),
+(4, 'T04', 4, 'Reserved', TRUE),
+(5, 'T05', 8, 'Vacant', TRUE),
+(6, 'T06', 4, 'Vacant', TRUE),
+(7, 'T07', 2, 'Occupied', TRUE),
+(8, 'T08', 4, 'Reserved', TRUE),
+(9, 'T09', 10, 'Vacant', TRUE),
+(10, 'T10', 2, 'Vacant', TRUE),
+(11, 'T11', 4, 'Occupied', TRUE),
+(12, 'T12', 6, 'Vacant', TRUE),
+(13, 'T13', 4, 'Vacant', TRUE),
+(14, 'T14', 8, 'Reserved', TRUE),
+(15, 'T15', 2, 'Occupied', TRUE),
+(16, 'T16', 4, 'Vacant', TRUE),
+(17, 'T17', 4, 'Vacant', TRUE),
+(18, 'T18', 6, 'Occupied', TRUE),
+(19, 'T19', 2, 'Vacant', TRUE),
+(20, 'T20', 12, 'Reserved', TRUE);
+
 
 -- ── 17. Table Reservations (10 rows) ─────────────────────────
-INSERT INTO Table_Reservations (reservation_id, customer_id, table_id, reserve_date, reserve_time, deposit_amount, status) VALUES 
-(1, 1, 1, '2026-06-13', '18:30:00', 100000, 'Confirmed'),
-(2, 2, 3, '2026-06-13', '19:00:00', 100000, 'Confirmed'),
-(3, 3, 4, '2026-06-13', '19:30:00', 200000, 'Confirmed'),
-(4, 4, 8, '2026-06-14', '18:00:00', 100000, 'Pending'),
-(5, 5, 14, '2026-06-14', '19:00:00', 200000, 'Pending'),
-(6, 6, 20, '2026-06-14', '20:00:00', 300000, 'Confirmed'),
-(7, 7, 7, '2026-06-13', '21:00:00', 100000, 'Confirmed'),
-(8, 8, 15, '2026-06-13', '20:30:00', 100000, 'Confirmed'),
-(9, 12, 11, '2026-06-13', '19:00:00', 100000, 'Confirmed'),
-(10, 13, 18, '2026-06-13', '18:00:00', 150000, 'Confirmed');
+INSERT INTO Table_Reservations (reservation_id, customer_id, table_id, reserve_date, reserve_time, end_time, deposit_amount, status) VALUES 
+(1, 1, 1, '2026-06-13', '18:30:00', '20:30:00', 100000, 'Confirmed'),
+(2, 2, 3, '2026-06-13', '19:00:00', '21:00:00', 100000, 'Confirmed'),
+(3, 3, 4, '2026-06-13', '19:30:00', '21:30:00', 200000, 'Confirmed'),
+(4, 4, 8, '2026-06-14', '18:00:00', '20:00:00', 100000, 'Pending'),
+(5, 5, 14, '2026-06-14', '19:00:00', '21:00:00', 200000, 'Pending'),
+(6, 6, 20, '2026-06-14', '20:00:00', '22:00:00', 300000, 'Confirmed'),
+(7, 7, 7, '2026-06-13', '21:00:00', '23:00:00', 100000, 'Confirmed'),
+(8, 8, 15, '2026-06-13', '20:30:00', '22:30:00', 100000, 'Confirmed'),
+(9, 12, 11, '2026-06-13', '19:00:00', '21:00:00', 100000, 'Confirmed'),
+(10, 13, 18, '2026-06-13', '18:00:00', '20:00:00', 150000, 'Confirmed'),
+(11, 14, 1, '2026-06-20', '18:00:00', '20:00:00', 100000, 'Confirmed'),
+(12, 15, 2, '2026-06-20', '19:00:00', '21:00:00', 150000, 'Confirmed'),
+(13, 1, 3, '2026-06-20', '12:00:00', '14:00:00', 100000, 'Confirmed'),
+(14, 2, 4, '2026-06-20', '20:00:00', '22:30:00', 200000, 'Pending'),
+(15, 3, 5, '2026-06-21', '08:00:00', '10:00:00', 150000, 'Confirmed'),
+(16, 4, 6, '2026-06-21', '11:30:00', '13:30:00', 100000, 'Confirmed'),
+(17, 5, 7, '2026-06-21', '19:00:00', '21:00:00', 200000, 'Confirmed'),
+(18, 6, 8, '2026-06-22', '18:30:00', '20:30:00', 100000, 'Pending'),
+(19, 7, 9, '2026-06-22', '20:00:00', '22:00:00', 300000, 'Confirmed'),
+(20, 8, 10, '2026-06-23', '09:00:00', '11:00:00', 100000, 'Confirmed'),
+(21, 9, 11, '2026-06-23', '12:00:00', '14:00:00', 150000, 'Confirmed'),
+(22, 10, 12, '2026-06-24', '18:00:00', '21:00:00', 200000, 'Pending'),
+(23, 11, 13, '2026-06-24', '19:30:00', '21:30:00', 100000, 'Confirmed'),
+(24, 12, 14, '2026-06-25', '11:00:00', '13:00:00', 300000, 'Confirmed'),
+(25, 13, 15, '2026-06-25', '20:00:00', '22:00:00', 100000, 'Confirmed'),
+(26, 14, 16, '2026-06-26', '18:00:00', '20:00:00', 100000, 'Confirmed'),
+(27, 15, 17, '2026-06-26', '19:00:00', '21:00:00', 100000, 'Pending'),
+(28, 1, 18, '2026-06-27', '08:30:00', '10:30:00', 150000, 'Confirmed'),
+(29, 2, 19, '2026-06-27', '12:30:00', '14:30:00', 100000, 'Confirmed'),
+(30, 3, 20, '2026-06-28', '19:00:00', '21:00:00', 400000, 'Confirmed'),
+(31, 4, 1, '2026-06-28', '20:00:00', '22:00:00', 100000, 'Pending'),
+(32, 5, 2, '2026-06-29', '18:00:00', '20:30:00', 100000, 'Confirmed'),
+(33, 6, 3, '2026-06-29', '19:00:00', '21:00:00', 100000, 'Confirmed'),
+(34, 7, 4, '2026-06-30', '11:00:00', '13:00:00', 200000, 'Confirmed'),
+(35, 8, 5, '2026-06-30', '18:30:00', '20:30:00', 150000, 'Confirmed'),
+(36, 9, 6, '2026-07-01', '12:00:00', '14:00:00', 100000, 'Pending'),
+(37, 10, 7, '2026-07-01', '18:00:00', '20:00:00', 100000, 'Confirmed'),
+(38, 11, 8, '2026-07-01', '19:00:00', '21:00:00', 100000, 'Confirmed');
 
 -- ── 18. Menu Items (34 rows) ─────────────────────────────────
 INSERT INTO Menu_Items (item_id, item_name, price, category, is_available, description, image_url, allergy_tags) VALUES 
 (1, 'Súp Bí Đỏ Kem Tươi Truffle', 180000, 'Khai vị', TRUE, 'Súp bí đỏ béo ngậy kết hợp kem tươi và dầu truffle nguyên chất.', 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80', 'Sữa'),
-(2, 'Gỏi Cuốn Tôm Thịt', 95000, 'Khai vị', TRUE, 'Gỏi cuốn tôm thịt tươi ngon kèm rau sống và tương đậu phộng.', 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&q=80', 'Đậu phộng, Hải sản'),
-(3, 'Chả Giò Hải Sản', 110000, 'Khai vị', TRUE, 'Chả giò chiên giòn nhân hải sản tươi sống.', 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=500&q=80', 'Hải sản'),
-(4, 'Salad Cá Hồi Xông Khói', 150000, 'Khai vị', TRUE, 'Salad rau xanh tươi mát kết hợp cá hồi xông khói nhập khẩu.', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', 'Hải sản'),
-(5, 'Súp Hải Sản Măng Tây', 130000, 'Khai vị', TRUE, 'Súp hải sản nấu cùng măng tây tươi ngon ngọt.', 'https://images.unsplash.com/photo-1605902711831-8b11abb0e23c?w=500&q=80', 'Hải sản'),
-(6, 'Bánh Mì Bơ Tỏi', 65000, 'Khai vị', TRUE, 'Bánh mì Pháp nướng giòn phết bơ tỏi thơm lừng.', 'https://images.unsplash.com/photo-1598373182133-52452f7691ef?w=500&q=80', 'Gluten, Sữa'),
-(7, 'Nem Chua Rán', 75000, 'Khai vị', TRUE, 'Nem chua rán giòn rụm chấm tương ớt.', 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=500&q=80', NULL),
-(8, 'Hoành Thánh Chiên Giòn', 85000, 'Khai vị', TRUE, 'Hoành thánh chiên giòn nhân tôm thịt.', 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500&q=80', 'Gluten, Hải sản'),
-(9, 'Bò Bít Tết Wagyu Kèm Sốt Tiêu Xanh', 850000, 'Món chính', TRUE, 'Bò Wagyu Nhật Bản áp chảo sốt tiêu xanh, kèm rau củ nướng.', 'https://images.unsplash.com/photo-1558030006-450675393462?w=500&q=80', NULL),
-(10, 'Cá Hồi Nướng Sốt Miso Nhật Bản', 520000, 'Món chính', TRUE, 'Cá hồi tươi nướng sốt miso thanh nhẹ, ăn kèm cơm trắng.', 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500&q=80', 'Hải sản'),
-(11, 'Phở Bò Truyền Thống', 120000, 'Món chính', TRUE, 'Phở bò nước dùng đậm đà, thịt bò tái chín mềm.', 'https://images.unsplash.com/photo-1555126634-323283e090fa?w=500&q=80', NULL),
+(2, 'Gỏi Cuốn Tôm Thịt', 95000, 'Khai vị', TRUE, 'Gỏi cuốn tôm thịt tươi ngon kèm rau sống và tương đậu phộng.', 'https://www.cet.edu.vn/wp-content/uploads/2018/11/goi-cuon-tom-thit.jpg', 'Đậu phộng, Hải sản'),
+(3, 'Chả Giò Hải Sản', 110000, 'Khai vị', TRUE, 'Chả giò chiên giòn nhân hải sản tươi sống.', 'https://cdn.tgdd.vn/2022/01/CookDish/2-cach-lam-cha-gio-hai-san-don-gian-gion-thom-beo-ngay-ai-avt-1200x676.jpg', 'Hải sản'),
+(4, 'Salad Cá Hồi Xông Khói', 150000, 'Khai vị', TRUE, 'Salad rau xanh tươi mát kết hợp cá hồi xông khói nhập khẩu.', 'https://file.hstatic.net/200000356095/file/salad_ca_hoi__xong_khoi__3__59eaf296ddc644849699579b210c7855.jpg', 'Hải sản'),
+(5, 'Súp Hải Sản Măng Tây', 130000, 'Khai vị', TRUE, 'Súp hải sản nấu cùng măng tây tươi ngon ngọt.', 'https://cdn.tgdd.vn/Files/2020/10/09/1297483/tro-tai-voi-mon-sup-tom-mang-tay-vi-lau-thai-vua-la-vua-quen-ai-an-cung-tam-tac-khen-202010091742198445.jpg', 'Hải sản'),
+(6, 'Bánh Mì Bơ Tỏi', 65000, 'Khai vị', TRUE, 'Bánh mì Pháp nướng giòn phết bơ tỏi thơm lừng.', 'https://www.lorca.vn/wp-content/uploads/2021/10/Cach-lam-mong-banh-mi-bo-toi-phomai-bang-lo-nuong.jpg', 'Gluten, Sữa'),
+(7, 'Nem Chua Rán', 75000, 'Khai vị', TRUE, 'Nem chua rán giòn rụm chấm tương ớt.', 'https://trumfood.vn/wp-content/uploads/2022/09/trumfood_decor00865.jpg', NULL),
+(8, 'Hoành Thánh Chiên Giòn', 85000, 'Khai vị', TRUE, 'Hoành thánh chiên giòn nhân tôm thịt.', 'https://cdn.tgdd.vn/2020/09/CookProduct/Untitled-2-1200x676-1.jpg', 'Gluten, Hải sản'),
+(9, 'Bò Bít Tết Wagyu Kèm Sốt Tiêu Xanh', 850000, 'Món chính', TRUE, 'Bò Wagyu Nhật Bản áp chảo sốt tiêu xanh, kèm rau củ nướng.', 'https://live.staticflickr.com/65535/50489573886_fa160b7292_b.jpg', NULL),
+(10, 'Cá Hồi Nướng Sốt Miso Nhật Bản', 520000, 'Món chính', TRUE, 'Cá hồi tươi nướng sốt miso thanh nhẹ, ăn kèm cơm trắng.', 'https://www.theforkbite.com/wp-content/uploads/2024/02/Teriyaki-Salmon-featured-2.9.24-500x500.jpg', 'Hải sản'),
+(11, 'Phở Bò Truyền Thống', 120000, 'Món chính', TRUE, 'Phở bò nước dùng đậm đà, thịt bò tái chín mềm.', 'https://daotaobeptruong.vn/wp-content/uploads/2020/03/cach-nau-pho-bo.jpg', NULL),
 (12, 'Cơm Chiên Dương Châu', 85000, 'Món chính', TRUE, 'Cơm chiên dương châu thập cẩm tôm, lạp xưởng, trứng.', 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&q=80', 'Hải sản, Trứng'),
 (13, 'Sườn Heo Nướng BBQ', 250000, 'Món chính', TRUE, 'Sườn heo non nướng sốt BBQ đậm vị, ăn kèm khoai tây chiên.', 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80', NULL),
-(14, 'Mì Ý Sốt Bò Băm', 140000, 'Món chính', TRUE, 'Mì Ý spaghetti sốt bolognese thịt bò băm.', 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=500&q=80', 'Gluten'),
-(15, 'Gà Nướng Mật Ong', 180000, 'Món chính', TRUE, 'Đùi gà nướng mật ong thơm ngọt, ăn kèm salad.', 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=500&q=80', NULL),
-(16, 'Lẩu Thái Hải Sản', 350000, 'Món chính', TRUE, 'Lẩu Thái chua cay hải sản tươi sống, kèm bún tươi.', 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=500&q=80', 'Hải sản'),
-(17, 'Bún Chả Hà Nội', 95000, 'Món chính', TRUE, 'Bún chả Hà Nội thịt nướng than hồng, nước mắm chua ngọt.', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=500&q=80', NULL),
-(18, 'Pizza Hải Sản', 210000, 'Món chính', TRUE, 'Pizza đế mỏng nhân hải sản phô mai mozzarella.', 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&q=80', 'Gluten, Hải sản, Sữa'),
-(19, 'Cơm Gà Hải Nam', 110000, 'Món chính', TRUE, 'Cơm gà Hải Nam nước dùng gà thanh ngọt.', 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=500&q=80', NULL),
-(20, 'Mực Ống Nhồi Thịt', 170000, 'Món chính', TRUE, 'Mực ống nhồi thịt chiên giòn, chấm sốt tương xoài.', 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=500&q=80', 'Hải sản'),
-(21, 'Bánh Tiramisu Truyền Thống Ý', 120000, 'Tráng miệng', FALSE, 'Bánh Tiramisu Ý nguyên bản vị cà phê, kem mascarpone.', 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=500&q=80', 'Sữa, Gluten'),
-(22, 'Chè Xoài Dừa Tươi', 65000, 'Tráng miệng', TRUE, 'Chè xoài chín ngọt kết hợp nước cốt dừa béo ngậy.', 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500&q=80', NULL),
-(23, 'Kem Xôi Dừa', 55000, 'Tráng miệng', TRUE, 'Kem xôi dừa mát lạnh, topping dừa nạo sấy.', 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=500&q=80', 'Sữa'),
-(24, 'Bánh Flan Caramel', 45000, 'Tráng miệng', TRUE, 'Bánh flan caramel mềm mịn, thơm ngon.', 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500&q=80', 'Trứng, Sữa'),
-(25, 'Panna Cotta Dâu Tây', 75000, 'Tráng miệng', TRUE, 'Panna cotta Ý sốt dâu tây tươi mát.', 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&q=80', 'Sữa'),
-(26, 'Trái Cây Thập Cẩm', 110000, 'Tráng miệng', TRUE, 'Đĩa trái cây tươi thập cẩm theo mùa.', 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=500&q=80', NULL),
-(27, 'Bánh Mousse Chocolate', 90000, 'Tráng miệng', TRUE, 'Bánh mousse chocolate Bỉ mịn màng, đắng nhẹ.', 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=500&q=80', 'Sữa, Trứng'),
-(28, 'Nước Cam Tươi Ép Lạnh', 95000, 'Đồ uống', TRUE, 'Nước cam tươi nguyên chất ép lạnh.', 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=500&q=80', NULL),
+(14, 'Mì Ý Sốt Bò Băm', 140000, 'Món chính', TRUE, 'Mì Ý spaghetti sốt bolognese thịt bò băm.', 'https://meoeva.com/wp-content/uploads/2019/05/Spaghetti.jpg', 'Gluten'),
+(15, 'Gà Nướng Mật Ong', 180000, 'Món chính', TRUE, 'Đùi gà nướng mật ong thơm ngọt, ăn kèm salad.', 'https://lh3.googleusercontent.com/p/AF1QipOYKsd6yLm0iH-NJGsbyVcSl6woaZT1DpHGG1LM=s680-w680-h510', NULL),
+(16, 'Lẩu Thái Hải Sản', 350000, 'Món chính', TRUE, 'Lẩu Thái chua cay hải sản tươi sống, kèm bún tươi.', 'https://i.ytimg.com/vi/p1ejp7z4mc4/sddefault.jpg', 'Hải sản'),
+(17, 'Bún Chả Hà Nội', 95000, 'Món chính', TRUE, 'Bún chả Hà Nội thịt nướng than hồng, nước mắm chua ngọt.', 'https://www.seriouseats.com/thmb/J0g7JWjk9r6CHESo1CIrD1BfGd0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/20231204-SEA-VyTran-BunChaHanoi-19-f623913c6ef34a9185bcd6e5680c545f.jpg', NULL),
+(18, 'Pizza Hải Sản', 210000, 'Món chính', TRUE, 'Pizza đế mỏng nhân hải sản phô mai mozzarella.', 'https://doiduavang.vn/wp-content/uploads/2021/01/pizza-nhan-hai-san-doi-dua-vang-scaled.jpg', 'Gluten, Hải sản, Sữa'),
+(19, 'Cơm Gà Hải Nam', 110000, 'Món chính', TRUE, 'Cơm gà Hải Nam nước dùng gà thanh ngọt.', 'https://cdn.tgdd.vn/Files/2021/08/16/1375575/cach-nau-com-ga-hai-nam-don-gian-ga-chin-vang-uom-da-gion-dung-chuan-202112281045139511.jpg', NULL),
+(20, 'Mực Ống Nhồi Thịt', 170000, 'Món chính', TRUE, 'Mực ống nhồi thịt chiên giòn, chấm sốt tương xoài.', 'https://cdn.tgdd.vn/2021/03/CookProduct/1200-1200x676-31.jpg', 'Hải sản'),
+(21, 'Bánh Tiramisu Truyền Thống Ý', 120000, 'Tráng miệng', FALSE, 'Bánh Tiramisu Ý nguyên bản vị cà phê, kem mascarpone.', 'https://thermomixvietnam.vn/wp-content/uploads/2021/08/tiramisu-truyen-thong.jpg', 'Sữa, Gluten'),
+(22, 'Chè Xoài Dừa Tươi', 65000, 'Tráng miệng', TRUE, 'Chè xoài chín ngọt kết hợp nước cốt dừa béo ngậy.', 'https://img.freepik.com/premium-photo/mango-cheese-milka-dessert-made-from-jelly-nata-de-coco-basil-seed-mango-cream-cheese-milk_583400-4287.jpg', NULL),
+(23, 'Kem Xôi Dừa', 55000, 'Tráng miệng', TRUE, 'Kem xôi dừa mát lạnh, topping dừa nạo sấy.', 'https://beptruong.edu.vn/wp-content/uploads/2016/02/kem-xoi-dua.jpg', 'Sữa'),
+(24, 'Bánh Flan Caramel', 45000, 'Tráng miệng', TRUE, 'Bánh flan caramel mềm mịn, thơm ngon.', 'https://img.freepik.com/premium-photo/cream-caramel-pudding_599862-23796.jpg', 'Trứng, Sữa'),
+(25, 'Panna Cotta Dâu Tây', 75000, 'Tráng miệng', TRUE, 'Panna cotta Ý sốt dâu tây tươi mát.', 'https://bloganchoi.com/wp-content/uploads/2022/06/cach-lam-panna-cotta.jpg', 'Sữa'),
+(26, 'Trái Cây Thập Cẩm', 110000, 'Tráng miệng', TRUE, 'Đĩa trái cây tươi thập cẩm theo mùa.', 'https://bolcereales.com.ar/wp-content/uploads/2021/01/alimentos-con-cobre-frutas.jpeg', NULL),
+(27, 'Bánh Mousse Chocolate', 90000, 'Tráng miệng', TRUE, 'Bánh mousse chocolate Bỉ mịn màng, đắng nhẹ.', 'https://i.ytimg.com/vi/pESVrDm6yIM/maxresdefault.jpg', 'Sữa, Trứng'),
+(28, 'Nước Cam Tươi Ép Lạnh', 95000, 'Đồ uống', TRUE, 'Nước cam tươi nguyên chất ép lạnh.', 'https://www.sieuthidonglanh.com/wp-content/uploads/2023/03/Nuoc-ep-cam-giup-chong-lao-hoa-da-hieu-qua.png', NULL),
 (29, 'Cà Phê Phin Việt Nam', 55000, 'Đồ uống', TRUE, 'Cà phê phin Việt Nam đậm đà truyền thống.', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80', NULL),
-(30, 'Trà Đào Cam Sả', 65000, 'Đồ uống', TRUE, 'Trà đào cam sả tươi mát giải nhiệt.', 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80', NULL),
-(31, 'Sinh Tố Bơ', 75000, 'Đồ uống', TRUE, 'Sinh tố bơ tươi xay nhuyễn béo ngậy.', 'https://images.unsplash.com/photo-1563531555-d62cf34b8d50?w=500&q=80', 'Sữa'),
-(32, 'Mojito Chanh Bạc Hà', 85000, 'Đồ uống', TRUE, 'Mojito không cồn chanh bạc hà tươi mát.', 'https://images.unsplash.com/photo-1544252890-c3e95e867389?w=500&q=80', NULL),
-(33, 'Bia Heineken', 45000, 'Đồ uống', TRUE, 'Bia Heineken nhập khẩu lạnh.', 'https://images.unsplash.com/photo-1586994930637-0c0f2ff4a3f0?w=500&q=80', 'Gluten'),
-(34, 'Nước Khoáng Evian', 40000, 'Đồ uống', TRUE, 'Nước khoáng Evian Pháp.', 'https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=500&q=80', NULL);
+(30, 'Trà Đào Cam Sả', 65000, 'Đồ uống', TRUE, 'Trà đào cam sả tươi mát giải nhiệt.', 'https://img.meta.com.vn/Data/image/2021/05/20/tra-dao-cam-sa-2.jpg', NULL),
+(31, 'Sinh Tố Bơ', 75000, 'Đồ uống', TRUE, 'Sinh tố bơ tươi xay nhuyễn béo ngậy.', 'https://img.freepik.com/premium-photo/avocado-smoothie-with-avocado-wooden-board-dark-background_490636-2675.jpg', 'Sữa'),
+(32, 'Mojito Chanh Bạc Hà', 85000, 'Đồ uống', TRUE, 'Mojito không cồn chanh bạc hà tươi mát.', 'https://img.freepik.com/premium-photo/refreshing-glass-coconut-water-garnished-with-mint-leaves-slice-lime_198067-290311.jpg', NULL),
+(33, 'Bia Heineken', 45000, 'Đồ uống', TRUE, 'Bia Heineken nhập khẩu lạnh.', 'https://tse2.mm.bing.net/th/id/OIP.h3ptwUpaWsyCB7MAVaLGhwHaEK?w=680&h=382&rs=1&pid=ImgDetMain&o=7&rm=3', 'Gluten'),
+(34, 'Nước Khoáng Evian', 40000, 'Đồ uống', TRUE, 'Nước khoáng Evian Pháp.', 'https://gangnamkong.co.kr/web/upload/NNEditor/20230424/33378a1a3af8ff1869c4b1faf8da8863.jpg', NULL);
 
 -- ── 19. Food Orders (19 rows) ────────────────────────────────
 INSERT INTO Food_Orders (order_id, booking_id, room_booking_detail_id, table_id, order_type, order_status, payment_type, is_paid_in_pos, created_by_staff_id, kitchen_processed_by_id) VALUES 
@@ -463,17 +510,17 @@ INSERT INTO Payment_Transactions (transaction_id, invoice_id, booking_id, amount
 (10, 10, 15, 1000000, 'Deposit', 'VNPAY', 'SUCCESS', 'TXN-0010-DEP', '2026-06-16 14:06:00');
 
 -- ── 27. Tours (10 rows) ──────────────────────────────────────
-INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capacity, short_quote, description, created_at) VALUES 
-(1, 'Đoàn tụ - Huế', 'Full-Day', '12 Giờ', 1500000, 20, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Hành trình di sản cố đô Huế trải nghiệm văn hoá ẩm thực cung đình Huế.', CURRENT_TIMESTAMP),
-(2, 'Tinh túy đồng nội - Quảng Nam', 'Half-Day', '6 Giờ', 1200000, 15, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Tham quan phố cổ Hội An, làng rau Trà Quế và làng gốm Thanh Hà.', CURRENT_TIMESTAMP),
-(3, 'Di sản thủ công - Ninh Bình', 'Half-Day', '5 Giờ', 1800000, 15, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Khám phá đầm Vân Long và làng nghề thêu ren truyền thống Văn Lâm.', CURRENT_TIMESTAMP),
-(4, 'Tĩnh lặng liên hoa - Tháp Mười', 'Full-Day', '10 Giờ', 2500000, 10, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Đi xuồng ba lá ngắm sen nở rộ Đồng Tháp Mười thiền định thư thái.', CURRENT_TIMESTAMP),
-(5, 'Huyền thoại vịnh xanh - Hạ Long', 'Half-Day', '4 Giờ', 1000000, 30, 'Du thuyền sang trọng ngắm kỳ quan thiên nhiên thế giới.', 'Lướt sóng vịnh Bắc Bộ ngắm động Thiên Cung hoành tráng.', CURRENT_TIMESTAMP),
-(6, 'Bình yên bản nhỏ - Sapa', 'Full-Day', '8 Giờ', 1300000, 20, 'Gặp gỡ nụ cười hồn hậu vùng cao mây phủ.', 'Leo ruộng bậc thang bản Cát Cát trải nghiệm văn hoá đồng bào H’mông.', CURRENT_TIMESTAMP),
-(7, 'Nhịp đập hoang dã - Cát Tiên', 'Full-Day', '14 Giờ', 2200000, 12, 'Lắng nghe tiếng gọi rừng xanh thẳm huyền bí.', 'Xem thú ban đêm rừng Nam Cát Tiên ngắm chim muông kì thú.', CURRENT_TIMESTAMP),
-(8, 'Bình minh cồn cát - Mũi Né', 'Half-Day', '5 Giờ', 900000, 15, 'Trượt cát đón mặt trời mọc rực rỡ.', 'Khám phá Đồi Cát Trắng, Đồi Cát Đỏ Mũi Né bằng xe địa hình ATV.', CURRENT_TIMESTAMP),
-(9, 'Sóng hát san hô - Phú Quốc', 'Half-Day', '6 Giờ', 1400000, 25, 'Hoà mình vào làn nước xanh lục bảo óng ánh.', 'Lặn cano 4 đảo ngắm san hô thiên nhiên rực rỡ Phú Quốc.', CURRENT_TIMESTAMP),
-(10, 'Hương sắc miệt vườn - Cần Thơ', 'Half-Day', '5 Giờ', 800000, 20, 'Ngọt lịm trái chín trĩu cành miền Tây sông nước.', 'Đi chợ nổi Cái Răng thưởng thức bữa sáng trên ghe thuyền mộc mạc.', CURRENT_TIMESTAMP);
+INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capacity, short_quote, description, created_at, is_active) VALUES 
+(1, 'Đoàn tụ - Huế', 'Full-Day', '12 Giờ', 1500000, 20, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Hành trình di sản cố đô Huế trải nghiệm văn hoá ẩm thực cung đình Huế.', CURRENT_TIMESTAMP, TRUE),
+(2, 'Tinh túy đồng nội - Quảng Nam', 'Half-Day', '6 Giờ', 1200000, 15, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Tham quan phố cổ Hội An, làng rau Trà Quế và làng gốm Thanh Hà.', CURRENT_TIMESTAMP, TRUE),
+(3, 'Di sản thủ công - Ninh Bình', 'Half-Day', '5 Giờ', 1800000, 15, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Khám phá đầm Vân Long và làng nghề thêu ren truyền thống Văn Lâm.', CURRENT_TIMESTAMP, TRUE),
+(4, 'Tĩnh lặng liên hoa - Tháp Mười', 'Full-Day', '10 Giờ', 2500000, 10, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Đi xuồng ba lá ngắm sen nở rộ Đồng Tháp Mười thiền định thư thái.', CURRENT_TIMESTAMP, TRUE),
+(5, 'Huyền thoại vịnh xanh - Hạ Long', 'Half-Day', '4 Giờ', 1000000, 30, 'Du thuyền sang trọng ngắm kỳ quan thiên nhiên thế giới.', 'Lướt sóng vịnh Bắc Bộ ngắm động Thiên Cung hoành tráng.', CURRENT_TIMESTAMP, TRUE),
+(6, 'Bình yên bản nhỏ - Sapa', 'Full-Day', '8 Giờ', 1300000, 20, 'Gặp gỡ nụ cười hồn hậu vùng cao mây phủ.', 'Leo ruộng bậc thang bản Cát Cát trải nghiệm văn hoá đồng bào H’mông.', CURRENT_TIMESTAMP, TRUE),
+(7, 'Nhịp đập hoang dã - Cát Tiên', 'Full-Day', '14 Giờ', 2200000, 12, 'Lắng nghe tiếng gọi rừng xanh thẳm huyền bí.', 'Xem thú ban đêm rừng Nam Cát Tiên ngắm chim muông kì thú.', CURRENT_TIMESTAMP, TRUE),
+(8, 'Bình minh cồn cát - Mũi Né', 'Half-Day', '5 Giờ', 900000, 15, 'Trượt cát đón mặt trời mọc rực rỡ.', 'Khám phá Đồi Cát Trắng, Đồi Cát Đỏ Mũi Né bằng xe địa hình ATV.', CURRENT_TIMESTAMP, TRUE),
+(9, 'Sóng hát san hô - Phú Quốc', 'Half-Day', '6 Giờ', 1400000, 25, 'Hoà mình vào làn nước xanh lục bảo óng ánh.', 'Lặn cano 4 đảo ngắm san hô thiên nhiên rực rỡ Phú Quốc.', CURRENT_TIMESTAMP, TRUE),
+(10, 'Hương sắc miệt vườn - Cần Thơ', 'Half-Day', '5 Giờ', 800000, 20, 'Ngọt lịm trái chín trĩu cành miền Tây sông nước.', 'Đi chợ nổi Cái Răng thưởng thức bữa sáng trên ghe thuyền mộc mạc.', CURRENT_TIMESTAMP, TRUE);
 
 -- ── 28. Tour Images (10 rows) ────────────────────────────────
 INSERT INTO Tour_Images (image_id, tour_id, image_url, is_primary) VALUES 
@@ -717,3 +764,24 @@ ALTER TABLE Food_Order_Details AUTO_INCREMENT = 100;
 ALTER TABLE Tours AUTO_INCREMENT = 100;
 ALTER TABLE Tour_Schedules AUTO_INCREMENT = 100;
 ALTER TABLE Tour_Attendees AUTO_INCREMENT = 100;
+
+-- ── 49. Export History (Mock Data) ───────────────────────────
+INSERT IGNORE INTO Export_History (id, report_name, format, exported_at, exported_by, file_size) VALUES
+(1, 'Doanh thu tháng 5/2026', 'Excel', '2026-06-01 09:15:00', 'Manager ', '2.4 MB'),
+(2, 'Tỷ lệ lấp đầy Q2', 'PDF', '2026-05-30 14:30:00', 'Manager ', '1.1 MB'),
+(3, 'Báo cáo tour tháng 4', 'CSV', '2026-05-02 10:00:00', 'Manager ', '320 KB'),
+(4, 'Doanh thu năm 2025', 'Excel', '2026-01-15 08:45:00', 'Manager ', '5.8 MB');
+
+-- ── 50. Mock Data for YoY Comparison (Năm 2025) ───────────────────────────
+INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
+(991, 1, '2025-06-01', 65000000, 'Confirmed', 'Direct_Web', NULL, 1),
+(992, 2, '2025-06-05', 45000000, 'Confirmed', 'OTA', NULL, 1);
+
+INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
+(991, '2025-06-10', '2025-06-15', 5000000, '2025-06-05', 10000000, 'hash');
+
+INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
+(991, 991, 1, 1, 65000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER');
+
+INSERT INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, is_walk_in_tour) VALUES 
+(992, 1, 4, 45000000, FALSE);

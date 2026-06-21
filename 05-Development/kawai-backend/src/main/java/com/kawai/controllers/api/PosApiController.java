@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Map;
 
@@ -69,7 +72,10 @@ public class PosApiController {
             if ("room-svc".equals(request.getOrderType())) {
                 order.setOrderType("Room Service");
                 Optional<Room> roomOpt = roomRepository.findByRoomNumber(request.getRoomNumber());
-                if (roomOpt.isPresent() && roomOpt.get().getCurrentBookingDetailId() != null) {
+                if (roomOpt.isEmpty()) {
+                    return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Phòng không tồn tại!"));
+                }
+                if (roomOpt.get().getCurrentBookingDetailId() != null) {
                     Optional<RoomBookingDetail> detailOpt = roomBookingDetailRepository
                             .findById(roomOpt.get().getCurrentBookingDetailId());
                     if (detailOpt.isPresent()) {
@@ -84,7 +90,11 @@ public class PosApiController {
                 order.setOrderType("Dine In");
                 if (request.getTableId() != null) {
                     Optional<RestaurantTable> tableOpt = restaurantTableRepository.findById(request.getTableId());
-                    tableOpt.ifPresent(order::setTable);
+                    if (tableOpt.isPresent()) {
+                        order.setTable(tableOpt.get());
+                    } else {
+                        return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Bàn ăn không tồn tại!"));
+                    }
                 }
             }
 
@@ -107,14 +117,29 @@ public class PosApiController {
                 order.setBooking(activeBooking);
             }
 
-            order.setOrderStatus("Pending");
-            order.setPaymentType(request.getPaymentType() != null ? request.getPaymentType() : "Pay_Later");
-            if ("ONLINE".equalsIgnoreCase(request.getPaymentType())) {
+            if (Boolean.TRUE.equals(request.getIsPaid())) {
+                order.setOrderStatus("PAID");
                 order.setIsPaidInPos(true);
             } else {
-                order.setIsPaidInPos(false);
+                order.setOrderStatus("Pending");
+                order.setPaymentType(request.getPaymentType() != null ? request.getPaymentType() : "Pay_Later");
+                if ("ONLINE".equalsIgnoreCase(request.getPaymentType())) {
+                    order.setIsPaidInPos(true);
+                } else if ("VNPAY".equalsIgnoreCase(request.getPaymentType())) {
+                    order.setIsPaidInPos(false);
+                } else {
+                    order.setIsPaidInPos(false);
+                }
             }
-            order.setNote(request.getNote());
+            
+            String finalNote = "";
+            if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
+                finalNote = "GUEST:" + request.getGuestName().trim() + "|";
+            }
+            if (request.getNote() != null) {
+                finalNote += request.getNote();
+            }
+            order.setNote(finalNote);
 
             // Mock createdByStaff to Employee ID 2 (Trần Phương)
             Optional<Employee> empOpt = employeeRepository.findById(2L);
@@ -126,6 +151,8 @@ public class PosApiController {
             }
 
             FoodOrder savedOrder = foodOrderRepository.save(order);
+
+            BigDecimal subtotal = BigDecimal.ZERO;
 
             // Save Details
             if (request.getItems() != null) {
@@ -139,7 +166,30 @@ public class PosApiController {
                         detail.setPriceAtOrder(itemDto.getPrice());
                         detail.setKotStatus("Pending");
                         foodOrderDetailRepository.save(detail);
+
+                        // Accumulate subtotal
+                        if (itemDto.getPrice() != null && itemDto.getQty() != null) {
+                            subtotal = subtotal.add(itemDto.getPrice().multiply(new BigDecimal(itemDto.getQty())));
+                        }
+                    } else {
+                        return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Món ăn không tồn tại!"));
                     }
+                }
+            }
+
+            // Deduct credit limit for CHARGE_TO_ROOM
+            if ("CHARGE_TO_ROOM".equalsIgnoreCase(request.getPaymentType()) && activeBooking != null && activeBooking instanceof RoomBooking) {
+                RoomBooking roomBooking = (RoomBooking) activeBooking;
+                BigDecimal feePercent = new BigDecimal("0.05");
+                BigDecimal fee = subtotal.multiply(feePercent);
+                BigDecimal totalAmount = subtotal.add(fee);
+
+                BigDecimal currentLimit = roomBooking.getCreditLimit() != null ? roomBooking.getCreditLimit() : BigDecimal.ZERO;
+                if (currentLimit.compareTo(totalAmount) >= 0) {
+                    roomBooking.setCreditLimit(currentLimit.subtract(totalAmount));
+                    roomBookingRepository.save(roomBooking);
+                } else {
+                    return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Hạn mức tín dụng của phòng không đủ để thanh toán!"));
                 }
             }
 
@@ -150,5 +200,18 @@ public class PosApiController {
                     "error", e.getClass().getName(),
                     "message", e.getMessage() != null ? e.getMessage() : "null message"));
         }
+    }
+
+    @PostMapping("/orders/{id}/pay")
+    public ResponseEntity<?> payOrder(@PathVariable Long id) {
+        Optional<FoodOrder> orderOpt = foodOrderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            FoodOrder order = orderOpt.get();
+            order.setOrderStatus("PAID");
+            order.setIsPaidInPos(true);
+            foodOrderRepository.save(order);
+            return ResponseEntity.ok(Map.of("status", "success"));
+        }
+        return ResponseEntity.status(404).body(Map.of("error", "Order not found"));
     }
 }

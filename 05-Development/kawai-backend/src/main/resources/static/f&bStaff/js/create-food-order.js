@@ -171,11 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentQty = state.cart[item.id] ? state.cart[item.id].qty : 0;
       return `
         <div class="food-card ${isOut ? 'disabled' : ''}" data-name="${item.name}" data-cat="${item.cat}">
-          <div class="food-img-wrapper" style="--food-bg: linear-gradient(135deg, ${item.bgFrom}, ${item.bgTo}); --food-icon-color: ${item.iconColor};">
+          <div class="food-img-wrapper" style="${item.imageUrl ? `background-image: url('${item.imageUrl}'); background-size: cover; background-position: center;` : `--food-bg: linear-gradient(135deg, ${item.bgFrom}, ${item.bgTo}); --food-icon-color: ${item.iconColor};`}">
+            ${item.imageUrl ? '' : `
             <div class="food-icon-bg"></div>
             <div class="food-icon-wrapper">
               <span class="material-symbols-outlined">${item.icon}</span>
             </div>
+            `}
             ${isOut ? '<span class="food-stock-badge out-of-stock">Hết món</span>' : ''}
           </div>
           <div class="food-details">
@@ -296,10 +298,16 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Expose send logic
   window.sendToKitchen = function() {
+    const tableSelect = document.querySelector('#fields-dine-in select');
+    const guestInput = document.getElementById('guestNameInput');
+    const dineInNote = document.getElementById('dineInNoteInput');
+    const roomSvcNote = document.getElementById('roomSvcNoteInput');
     const payload = {
       orderType: state.orderType,
       roomNumber: state.orderType === 'room-svc' ? roomInput.value.trim().toUpperCase() : null,
-      tableId: state.orderType === 'dine-in' ? tableSelect.value : null,
+      tableId: state.orderType === 'dine-in' && tableSelect ? tableSelect.value : null,
+      guestName: state.orderType === 'dine-in' && guestInput ? guestInput.value.trim() : null,
+      note: state.orderType === 'dine-in' && dineInNote ? dineInNote.value.trim() : (state.orderType === 'room-svc' && roomSvcNote ? roomSvcNote.value.trim() : null),
       paymentType: 'Pay_Later',
       items: Object.values(state.cart).map(item => ({
         id: item.id,
@@ -332,5 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
     });
   }
+
+
 
 });

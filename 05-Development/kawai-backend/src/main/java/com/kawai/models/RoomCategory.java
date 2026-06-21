@@ -3,7 +3,10 @@ package com.kawai.models;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+import org.hibernate.envers.Audited;
+
 @Entity
+@Audited
 @Table(name = "Room_Categories")
 public class RoomCategory {
     @Id
@@ -41,6 +44,17 @@ public class RoomCategory {
 
     @Column(name = "extra_child_surcharge")
     private BigDecimal extraChildSurcharge;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 
     public Integer getBaseAdults() {
         return baseAdults;

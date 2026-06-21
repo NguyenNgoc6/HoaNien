@@ -2,7 +2,12 @@ package com.kawai.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
-@Entity @Table(name="Tours") @Data
+import org.hibernate.envers.Audited;
+
+@Entity 
+@Audited 
+@Table(name="Tours") 
+@Data
 public class Tour {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="tour_id") private Long id;
     @Column(name="tour_name", nullable=false) private String tourName;
@@ -13,4 +18,5 @@ public class Tour {
     @Column(name="duration") private String duration;
     @Column(name="short_quote") private String shortQuote;
     @Column(name="created_at") private java.time.LocalDateTime createdAt;
+    @Column(name="is_active", nullable=false) private Boolean isActive = true;
 }

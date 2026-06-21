@@ -5,7 +5,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.hibernate.envers.Audited;
+
 @Entity
+@Audited
 @Table(name = "Promotions")
 public class Promotion {
     @Id
@@ -30,6 +33,16 @@ public class Promotion {
     private Boolean isActive = true;
     @Column(name = "description", length = 1000)
     private String description;
+    @Column(name = "combo_config", columnDefinition = "TEXT")
+    private String comboConfig;
+
+    public String getComboConfig() {
+        return comboConfig;
+    }
+
+    public void setComboConfig(String comboConfig) {
+        this.comboConfig = comboConfig;
+    }
 
     public Long getId() {
         return id;

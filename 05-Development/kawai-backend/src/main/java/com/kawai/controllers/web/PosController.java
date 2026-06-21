@@ -12,6 +12,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.kawai.models.TableReservation;
+import com.kawai.repositories.TableReservationRepository;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +34,9 @@ public class PosController {
 
     @Autowired
     private FoodItemRepository foodItemRepository;
+
+    @Autowired
+    private TableReservationRepository tableReservationRepository;
 
     @GetMapping({"/dashboard", ""})
     public String dashboard(Model model) {
@@ -51,14 +59,80 @@ public class PosController {
     }
 
     @GetMapping("/create-food-order")
-    public String createFoodOrder() {
+    public String createFoodOrder(Model model) {
+        List<RestaurantTable> tables = restaurantTableRepository.findAll();
+        
+        List<RestaurantTable> vacantTables = tables.stream()
+                .filter(t -> "Vacant".equalsIgnoreCase(t.getTableStatus()) || "Cleaning".equalsIgnoreCase(t.getTableStatus()))
+                .toList();
+                
+        List<RestaurantTable> reservedTables = tables.stream()
+                .filter(t -> "Reserved".equalsIgnoreCase(t.getTableStatus()))
+                .toList();
+                
+        List<RestaurantTable> occupiedTables = tables.stream()
+                .filter(t -> "Occupied".equalsIgnoreCase(t.getTableStatus()))
+                .toList();
+
+        Map<Long, String> tableAvailabilityText = new HashMap<>();
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        for (RestaurantTable table : vacantTables) {
+            List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
+            String availability = "Trống cả ngày";
+            for (TableReservation res : reservations) {
+                if (("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus())) 
+                        && res.getReserveTime().isAfter(now)) {
+                    availability = "Trống đến " + res.getReserveTime().toString();
+                    break;
+                }
+            }
+            if ("Cleaning".equalsIgnoreCase(table.getTableStatus())) {
+                availability = "Đang dọn - " + availability;
+            }
+            tableAvailabilityText.put(table.getId(), availability);
+        }
+        for (RestaurantTable table : reservedTables) {
+            List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
+            String availability = "Trống cả ngày";
+            for (TableReservation res : reservations) {
+                if (("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus())) 
+                        && res.getReserveTime().isAfter(now)) {
+                    availability = "Trống đến " + res.getReserveTime().toString();
+                    break;
+                }
+            }
+            tableAvailabilityText.put(table.getId(), availability);
+        }
+        
+        model.addAttribute("vacantTables", vacantTables);
+        model.addAttribute("reservedTables", reservedTables);
+        model.addAttribute("occupiedTables", occupiedTables);
+        model.addAttribute("tableAvailabilityText", tableAvailabilityText);
+
+        model.addAttribute("menuItems", getMappedMenuItems());
         return "f&bStaff/create-food-order";
     }
 
     @GetMapping("/table-management")
     public String tableManagement(Model model) {
         List<RestaurantTable> tables = restaurantTableRepository.findAll();
+        
+        List<FoodOrder> activeOrders = foodOrderRepository.findAll().stream()
+                .filter(o -> ("Dine-In".equalsIgnoreCase(o.getOrderType()) || "Dine In".equalsIgnoreCase(o.getOrderType()) || "Table".equalsIgnoreCase(o.getOrderType()))
+                        && ("Pending".equalsIgnoreCase(o.getOrderStatus()) || "Preparing".equalsIgnoreCase(o.getOrderStatus()) || "Served".equalsIgnoreCase(o.getOrderStatus())))
+                .toList();
+
+        Map<Long, Long> tableActiveOrderMap = new HashMap<>();
+        for (FoodOrder order : activeOrders) {
+            if (order.getTable() != null) {
+                tableActiveOrderMap.put(order.getTable().getId(), order.getId());
+            }
+        }
+        
         model.addAttribute("tables", tables);
+        model.addAttribute("tableActiveOrderMap", tableActiveOrderMap);
         return "f&bStaff/table-management";
     }
 
@@ -74,6 +148,11 @@ public class PosController {
 
     @GetMapping("/emenu")
     public String emenu(Model model) {
+        model.addAttribute("menuItems", getMappedMenuItems());
+        return "f&bStaff/e-menu";
+    }
+
+    private List<Map<String, Object>> getMappedMenuItems() {
         List<MenuItem> rawItems = foodItemRepository.findAll();
         List<Map<String, Object>> mappedItems = new ArrayList<>();
 
@@ -84,6 +163,7 @@ public class PosController {
             map.put("desc", item.getDescription() != null ? item.getDescription() : "");
             map.put("price", item.getPrice());
             map.put("catLabel", item.getCategory());
+            map.put("imageUrl", item.getImageUrl());
 
             // Determine category slug
             String cat = "starter";
@@ -140,9 +220,7 @@ public class PosController {
 
             mappedItems.add(map);
         }
-
-        model.addAttribute("menuItems", mappedItems);
-        return "f&bStaff/e-menu";
+        return mappedItems;
     }
 
     @GetMapping("/shift-report")
@@ -151,7 +229,26 @@ public class PosController {
     }
 
     @GetMapping("/order-detail")
-    public String orderDetail() {
+    public String orderDetail(@org.springframework.web.bind.annotation.RequestParam("id") String idParam, Model model) {
+        try {
+            String cleanId = idParam.replace("ORD-", "").replace("RES-", "");
+            Long id = Long.parseLong(cleanId);
+            foodOrderRepository.findById(id).ifPresent(order -> {
+                String extractedGuestName = "";
+                String realNote = order.getNote();
+                if (realNote != null && realNote.startsWith("GUEST:")) {
+                    int pipeIndex = realNote.indexOf("|");
+                    if (pipeIndex != -1) {
+                        extractedGuestName = realNote.substring(6, pipeIndex);
+                        order.setNote(realNote.substring(pipeIndex + 1));
+                    }
+                }
+                model.addAttribute("extractedGuestName", extractedGuestName);
+                model.addAttribute("foodOrder", order);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "f&bStaff/order-detail";
     }
 }

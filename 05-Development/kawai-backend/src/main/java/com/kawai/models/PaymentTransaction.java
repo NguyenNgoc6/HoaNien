@@ -15,9 +15,13 @@ public class PaymentTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "booking_id", nullable = false)
-    @ManyToOne(optional = false)
+    @JoinColumn(name = "booking_id", nullable = true)
+    @ManyToOne(optional = true)
     private Booking booking;
+
+    @JoinColumn(name = "food_order_id", nullable = true)
+    @ManyToOne(optional = true)
+    private FoodOrder foodOrder;
 
     @JoinColumn(name = "invoice_id", nullable = true)
     @ManyToOne(optional = true)
@@ -28,6 +32,10 @@ public class PaymentTransaction {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus status;
+
+    private String transactionType; // e.g., DEPOSIT, FINAL_PAYMENT, REFUND
+    private String paymentMethod; // e.g., CASH, VNPAY, CREDIT_CARD
+    private String gatewayStatus; // e.g., SUCCESS, PENDING, FAILED
 
     private String transactionRef; // internal: bookingId_timestamp
 

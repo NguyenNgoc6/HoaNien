@@ -29,11 +29,14 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomBookingRepository roomBookingRepository;
+    private final com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
 
     public RoomServiceImpl(RoomRepository roomRepository,
-            RoomBookingRepository roomBookingRepository) {
+            RoomBookingRepository roomBookingRepository,
+            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository) {
         this.roomRepository = roomRepository;
         this.roomBookingRepository = roomBookingRepository;
+        this.roomCategoryRepository = roomCategoryRepository;
     }
 
     /**
@@ -70,37 +73,57 @@ public class RoomServiceImpl implements RoomService {
         }
 
         List<Room> allRooms = roomRepository.findAll();
-        List<RoomSearchResponseDTO> available = new ArrayList<>();
+        if (allRooms == null) {
+            allRooms = new ArrayList<>();
+        }
 
+        List<Room> availableRooms = new ArrayList<>();
         for (Room room : allRooms) {
-            // Filter out rooms under maintenance, out of service, or currently occupied
-            String status = room.getRoomStatus();
-            if ("Maintenance".equalsIgnoreCase(status) || "OutOfService".equalsIgnoreCase(status) || "Occupied".equalsIgnoreCase(status)) {
+            if (!isRoomAvailable(room.getRoomNumber(), checkIn, checkOut)) {
                 continue;
             }
 
             RoomCategory cat = room.getCategory();
-            if (cat != null) {
-                if (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty()) {
-                    if (!cat.getCategoryName().equalsIgnoreCase(request.getCategoryName().trim())) {
-                        continue;
-                    }
+            if (cat == null) {
+                continue;
+            }
+
+            if (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty()) {
+                String searchCategoryName = request.getCategoryName().trim().toLowerCase();
+                if (!cat.getCategoryName().toLowerCase().contains(searchCategoryName)) {
+                    continue;
                 }
-                if (request.getMinCapacity() != null) {
-                    if (cat.getCapacity() < request.getMinCapacity()) {
-                        continue;
-                    }
+            }
+            if (request.getMinCapacity() != null) {
+                if (cat.getCapacity() < request.getMinCapacity()) {
+                    continue;
                 }
-                if (request.getMaxPricePerNight() != null) {
-                    if (cat.getBasePrice().compareTo(request.getMaxPricePerNight()) > 0) {
-                        continue;
-                    }
+            }
+            if (request.getMaxPricePerNight() != null) {
+                if (cat.getBasePrice() != null && cat.getBasePrice().compareTo(request.getMaxPricePerNight()) > 0) {
+                    continue;
                 }
             }
 
-            if (isRoomAvailable(room.getRoomNumber(), checkIn, checkOut)) {
-                available.add(toSearchResult(room, checkIn, checkOut));
-            }
+            availableRooms.add(room);
+        }
+
+        // Đếm số phòng trống theo từng hạng phòng để set availableCount
+        java.util.Map<String, Long> categoryCounts = availableRooms.stream()
+                .filter(r -> r.getCategory() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        r -> r.getCategory().getCategoryName(),
+                        java.util.stream.Collectors.counting()
+                ));
+
+        List<RoomSearchResponseDTO> available = new ArrayList<>();
+        for (Room room : availableRooms) {
+            RoomCategory cat = room.getCategory();
+            RoomSearchResponseDTO dto = toSearchResult(cat, checkIn, checkOut, room.getRoomNumber());
+            dto.setRoomId(room.getId());
+            long count = categoryCounts.getOrDefault(cat.getCategoryName(), 0L);
+            dto.setAvailableCount((int) count);
+            available.add(dto);
         }
 
         // ── Pagination ─────────────────────────────────────────────────────
@@ -131,8 +154,27 @@ public class RoomServiceImpl implements RoomService {
         }
 
         return allRooms.stream()
-                .map(this::toDashboardDTO)
-                .toList();
+                .map(room -> toDashboardDTO(room))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public Room createRoom(String roomNumber, Long categoryId) {
+        // Check for duplicate room number (Unique Constraint validation)
+        boolean exists = roomRepository.findAll().stream()
+                .anyMatch(r -> r.getRoomNumber().equalsIgnoreCase(roomNumber));
+        if (exists) {
+            throw new org.springframework.dao.DataIntegrityViolationException(
+                    "Duplicate entry '" + roomNumber + "' for key 'room_number'");
+        }
+
+        Room room = new Room();
+        room.setRoomNumber(roomNumber);
+        RoomCategory category = new RoomCategory();
+        category.setId(categoryId);
+        room.setCategory(category);
+        room.setRoomStatus("Available");
+        return roomRepository.save(room);
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
@@ -160,16 +202,16 @@ public class RoomServiceImpl implements RoomService {
         return dto;
     }
 
-    private RoomSearchResponseDTO toSearchResult(Room room,
+    private RoomSearchResponseDTO toSearchResult(RoomCategory cat,
             LocalDate checkIn,
-            LocalDate checkOut) {
+            LocalDate checkOut,
+            String dummyRoomNumber) {
         RoomSearchResponseDTO dto = new RoomSearchResponseDTO();
-        dto.setRoomId(room.getId());
-        dto.setRoomNumber(room.getRoomNumber());
+        dto.setRoomId(cat.getId()); // Use category ID as roomId for frontend compatibility if needed
+        dto.setRoomNumber(dummyRoomNumber);
         dto.setCheckInDate(checkIn);
         dto.setCheckOutDate(checkOut);
 
-        RoomCategory cat = room.getCategory();
         if (cat != null) {
             dto.setCategoryName(cat.getCategoryName());
             dto.setPricePerNight(cat.getBasePrice().setScale(0, java.math.RoundingMode.HALF_UP));
