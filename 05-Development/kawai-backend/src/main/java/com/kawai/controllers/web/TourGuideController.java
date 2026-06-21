@@ -16,6 +16,9 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourScheduleRepository tourScheduleRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourRepository tourRepository;
+
     @GetMapping("/dashboard")
     public String dashboard(Principal principal, Model model) {
         if (principal != null) {
@@ -84,6 +87,7 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
+        tourRepository.findByTourType("doantu").ifPresent(t -> model.addAttribute("tour", t));
         return "tour/DoanTu";
     }
 
@@ -92,6 +96,7 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
+        tourRepository.findByTourType("dongnoi").ifPresent(t -> model.addAttribute("tour", t));
         return "tour/DongNoi";
     }
 
@@ -100,6 +105,7 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
+        tourRepository.findByTourType("disan").ifPresent(t -> model.addAttribute("tour", t));
         return "tour/DiSan";
     }
 
@@ -108,6 +114,84 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
+        tourRepository.findByTourType("tinhlang").ifPresent(t -> model.addAttribute("tour", t));
         return "tour/TinhLang";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/tour/update")
+    public String updateTour(
+            @org.springframework.web.bind.annotation.RequestParam("id") Long id,
+            @org.springframework.web.bind.annotation.RequestParam("tourName") String tourName,
+            @org.springframework.web.bind.annotation.RequestParam("description") String description,
+            @org.springframework.web.bind.annotation.RequestParam("duration") String duration,
+            @org.springframework.web.bind.annotation.RequestParam("basePrice") java.math.BigDecimal basePrice,
+            @org.springframework.web.bind.annotation.RequestParam("shortQuote") String shortQuote,
+            @org.springframework.web.bind.annotation.RequestParam("tourType") String tourType) {
+        
+        com.kawai.models.Tour tour = tourRepository.findById(id).orElse(new com.kawai.models.Tour());
+        tour.setTourName(tourName);
+        tour.setDescription(description);
+        tour.setDuration(duration);
+        tour.setBasePrice(basePrice);
+        tour.setShortQuote(shortQuote);
+        tour.setTourType(tourType);
+        tourRepository.save(tour);
+        
+        return "redirect:/tourguide/" + tourType;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/tour/delete")
+    public String deleteTour(
+            @org.springframework.web.bind.annotation.RequestParam("id") Long id,
+            @org.springframework.web.bind.annotation.RequestParam("tourType") String tourType) {
+        
+        tourRepository.findById(id).ifPresent(t -> {
+            t.setIsActive(false);
+            tourRepository.save(t);
+        });
+        
+        return "redirect:/tourguide/" + tourType;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/tour/reactivate")
+    public String reactivateTour(
+            @org.springframework.web.bind.annotation.RequestParam("id") Long id,
+            @org.springframework.web.bind.annotation.RequestParam("tourType") String tourType) {
+        
+        tourRepository.findById(id).ifPresent(t -> {
+            t.setIsActive(true);
+            tourRepository.save(t);
+        });
+        
+        return "redirect:/tourguide/" + tourType;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/tour/create")
+    public String createTour(
+            @org.springframework.web.bind.annotation.RequestParam("tourName") String tourName,
+            @org.springframework.web.bind.annotation.RequestParam("description") String description,
+            @org.springframework.web.bind.annotation.RequestParam("duration") String duration,
+            @org.springframework.web.bind.annotation.RequestParam("basePrice") java.math.BigDecimal basePrice,
+            @org.springframework.web.bind.annotation.RequestParam("shortQuote") String shortQuote,
+            @org.springframework.web.bind.annotation.RequestParam("tourType") String tourType) {
+        
+        // Deactivate existing tour of this type so only one is active at a time
+        tourRepository.findByTourType(tourType).ifPresent(t -> {
+            t.setIsActive(false);
+            tourRepository.save(t);
+        });
+
+        com.kawai.models.Tour tour = new com.kawai.models.Tour();
+        tour.setTourName(tourName);
+        tour.setDescription(description);
+        tour.setDuration(duration);
+        tour.setBasePrice(basePrice);
+        tour.setShortQuote(shortQuote);
+        tour.setTourType(tourType);
+        tour.setIsActive(true);
+        tour.setCreatedAt(java.time.LocalDateTime.now());
+        tourRepository.save(tour);
+        
+        return "redirect:/tourguide/" + tourType;
     }
 }
