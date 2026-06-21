@@ -231,8 +231,8 @@
                             <p class="font-body-md text-body-md" th:text="${tour != null ? tour.duration : '3 Ngày 2 Đêm'}">3 Ngày 2 Đêm</p>
                         </div>
                         <div class="flex justify-between border-b border-white/20 pb-4">
-                            <p class="font-label-caps text-label-caps opacity-60" data-i18n="members">Sức chứa tối đa</p>
-                            <p class="font-body-md text-body-md" th:text="${tour != null ? tour.maxCapacity + ' khách' : '30 khách'}">30 khách</p>
+                            <p class="font-label-caps text-label-caps opacity-60" data-i18n="weather_lbl">Thời tiết dự kiến</p>
+                            <p id="tourWeatherVal" class="font-body-md text-body-md">⛅ 26°C • Nhiều mây</p>
                         </div>
                         <div class="flex justify-between pt-4">
                             <p class="font-label-caps text-label-caps opacity-60" data-i18n="total">Tổng cộng</p>
@@ -441,6 +441,84 @@
             }
         };
 
+        function translateWeatherDesc(desc) {
+            if (!desc) return "";
+            const dict = {
+                "Sunny": "Nắng rực rỡ",
+                "Rainy": "Có mưa",
+                "Cloudy": "Nhiều mây",
+                "Partly cloudy": "Nắng nhẹ",
+                "Partly Cloudy": "Nắng nhẹ",
+                "Clear": "Trời trong xanh",
+                "Clear Sky": "Trời trong xanh",
+                "Overcast": "U ám",
+                "Mist": "Sương mù",
+                "Light rain": "Mưa nhẹ",
+                "Heavy rain": "Mưa lớn",
+                "Thunderstorm": "Giông bão",
+                "Light drizzle": "Mưa phùn",
+                "Patchy rain possible": "Có thể mưa rải rác",
+                "Moderate rain": "Mưa vừa"
+            };
+            if (dict[desc]) return dict[desc];
+            const d = desc.toLowerCase();
+            if (d.includes("thunderstorm") || d.includes("thunder") || d.includes("lightning")) return "Có giông bão";
+            if (d.includes("heavy rain") || d.includes("torrential") || d.includes("heavy shower")) return "Mưa lớn";
+            if (d.includes("light rain") || d.includes("drizzle") || d.includes("shower") || d.includes("patchy rain")) return "Mưa nhẹ / Mưa rào";
+            if (d.includes("rain")) return "Có mưa";
+            if (d.includes("partly cloudy")) return "Nắng nhẹ";
+            if (d.includes("cloudy") || d.includes("overcast")) return "Nhiều mây";
+            if (d.includes("clear") || d.includes("sunny")) return "Trời quang / Nắng";
+            if (d.includes("mist") || d.includes("fog") || d.includes("haze")) return "Có sương mù";
+            return desc;
+        }
+
+        function getWeatherIcon(desc) {
+            const d = desc.toLowerCase();
+            if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
+            if (d.includes('cloud') || d.includes('overcast')) return '⛅';
+            if (d.includes('mist') || d.includes('fog')) return '🌫️';
+            return '☀️';
+        }
+
+        let cachedWeather = null;
+
+        function fetchWeather(location) {
+            const weatherEl = document.getElementById('tourWeatherVal');
+            if (!weatherEl) return;
+            const lang = document.documentElement.lang || 'vi';
+            weatherEl.textContent = lang === 'vi' ? '⏳ Đang tải...' : '⏳ Loading...';
+            
+            fetch(`/tours/api/weather?location=${encodeURIComponent(location)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Weather fetch failed');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.temperature !== undefined) {
+                        const rawDesc = data.description || 'Unknown';
+                        const temp = Math.round(data.temperature);
+                        const icon = getWeatherIcon(rawDesc);
+                        cachedWeather = { temp, rawDesc, icon };
+                        displayWeather();
+                    }
+                })
+                .catch(error => {
+                    console.warn('Weather API error:', error);
+                    const fallbackVi = "⛅ 26°C • Nhiều mây";
+                    const fallbackEn = "⛅ 26°C • Partly Cloudy";
+                    weatherEl.textContent = lang === 'vi' ? fallbackVi : fallbackEn;
+                });
+        }
+
+        function displayWeather() {
+            const weatherEl = document.getElementById('tourWeatherVal');
+            if (!weatherEl || !cachedWeather) return;
+            const lang = document.documentElement.lang || 'vi';
+            const desc = lang === 'vi' ? translateWeatherDesc(cachedWeather.rawDesc) : cachedWeather.rawDesc;
+            weatherEl.textContent = `${cachedWeather.icon} ${cachedWeather.temp}°C • ${desc}`;
+        }
+
         function switchLang(lang) {
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -456,31 +534,28 @@
                 }
             });
             document.documentElement.lang = lang;
+            displayWeather();
         }
-
-        document.getElementById('paymentForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const btn = this.querySelector('button');
-            btn.innerHTML = 'Quý khách xin vui lòng chờ trong giây lát...';
-            btn.style.opacity = '0.7';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.innerHTML = 'ĐÃ XÁC NHẬN';
-                btn.classList.remove('bg-primary');
-                btn.classList.add('bg-gold-accent');
-                alert('Yêu cầu đặt chỗ của quý khách đã được gửi thành công. Chúng tôi sẽ liên hệ sớm nhất.');
-            }, 2000);
-        });
 
         const inputs = document.querySelectorAll('input[type="text"], input[type="email"]');
         inputs.forEach(input => {
             input.addEventListener('focus', () => {
-                input.parentElement.querySelector('label').style.letterSpacing = '0.25em';
-                input.parentElement.querySelector('label').style.transition = 'all 0.4s ease';
+                const label = input.parentElement.querySelector('label');
+                if (label) {
+                    label.style.letterSpacing = '0.25em';
+                    label.style.transition = 'all 0.4s ease';
+                }
             });
             input.addEventListener('blur', () => {
-                input.parentElement.querySelector('label').style.letterSpacing = '0.15em';
+                const label = input.parentElement.querySelector('label');
+                if (label) {
+                    label.style.letterSpacing = '0.15em';
+                }
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchWeather('Ninh Binh');
         });
     </script>
 </body>
