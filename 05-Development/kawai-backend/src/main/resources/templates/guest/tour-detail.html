@@ -926,8 +926,13 @@
                     btn.classList.remove('bg-primary');
                     btn.classList.add('bg-gold-accent');
 
-                    // Show success alert
-                    const successMsg = lang === 'vi' ? 'Đặt tour thành công! Chúng tôi đã ghi nhận yêu cầu của quý khách.' : 'Booking success! Your reservation has been recorded.';
+                    // Show success alert with customer info
+                    const name = data.customerName || '';
+                    const email = data.customerEmail || '';
+                    const phone = data.customerPhone || '';
+                    const successMsgVi = `Đặt tour thành công!\nKhách hàng: ${name}\nEmail: ${email}\nSĐT: ${phone}`;
+                    const successMsgEn = `Booking success!\nCustomer: ${name}\nEmail: ${email}\nPhone: ${phone}`;
+                    const successMsg = lang === 'vi' ? successMsgVi : successMsgEn;
                     alert(successMsg);
                 })
                 .catch(error => {
@@ -1099,8 +1104,23 @@
             if (customerPhone && document.getElementById('phone')) {
                 document.getElementById('phone').value = customerPhone;
             }
+
+            fetch('/api/bookings/recent')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('bookingHistoryContainer');
+                    container.innerHTML = data.map(b => `<p>${b.date} - ${b.tourName}</p>`).join('');
+                })
+                .catch(() => {
+                    document.getElementById('bookingHistoryContainer').innerText = 'Không thể tải lịch sử.';
+                });
         });
     </script>
+
+    <div id="recentBookings" style="margin-top:2rem;">
+        <h3 class="text-xl font-semibold" data-i18n="booking_history">Lịch sử đặt tour</h3>
+        <div id="bookingHistoryContainer">Đang tải...</div>
+    </div>
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 </body>
