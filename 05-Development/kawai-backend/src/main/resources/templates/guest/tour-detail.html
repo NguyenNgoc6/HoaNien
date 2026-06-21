@@ -515,6 +515,7 @@
         const customerEmail = /*[[${customerEmail}]]*/ null;
         const customerPhone = /*[[${customerPhone}]]*/ null;
         const initialTourType = /*[[${type}]]*/ 'doantu';
+        const dynamicPrice = /*[[${dynamicPrice}]]*/ null;
         /*]]>*/
     </script>
 
@@ -584,6 +585,11 @@
             }
         };
 
+        // Ghi đè giá tiền thực tế lấy từ Database
+        if (dynamicPrice && tourData[currentTour]) {
+            tourData[currentTour].price = dynamicPrice;
+        }
+
         function formatVND(amount) {
             return amount.toLocaleString('vi-VN') + ' VNĐ';
         }
@@ -652,7 +658,9 @@
             document.getElementById('tourDestVal').textContent = lang === 'vi' ? tourInfo.destVi : tourInfo.destEn;
             document.getElementById('tourDurationVal').textContent = lang === 'vi' ? tourInfo.durationVi : tourInfo.durationEn;
             document.getElementById('tourQuote').textContent = lang === 'vi' ? tourInfo.quoteVi : tourInfo.quoteEn;
-            document.getElementById('tourWeatherVal').textContent = lang === 'vi' ? tourInfo.weatherVi : tourInfo.weatherEn;
+
+            // Re-render cached live weather in current language (don't overwrite with hardcoded)
+            displayCachedWeather();
 
             // Recalculate price
             updateTotalPrice();
@@ -790,7 +798,7 @@
             const roomNumber = document.getElementById('roomNumber') ? document.getElementById('roomNumber').value.trim() : null;
 
             // 1. Validate Full Name
-            const nameRegex = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠƯưăâêôơư\s]{2,}(?:\s+[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠƯưăâêôơư\s]+)+$/;
+            const nameRegex = /^[\p{L}]+(?:\s+[\p{L}]+)+$/u;
             if (!nameRegex.test(fullName)) {
                 alert(lang === 'vi' ? 'Họ và tên không hợp lệ. Vui lòng nhập cả họ và tên (tối thiểu 2 từ, chỉ chứa chữ và khoảng trắng).' : 'Invalid Full Name. Please enter at least 2 words containing letters and spaces only.');
                 return;
@@ -896,39 +904,127 @@
                 "Sunny": "Nắng rực rỡ",
                 "Rainy": "Có mưa",
                 "Cloudy": "Nhiều mây",
+                "Partly cloudy": "Nắng nhẹ",
                 "Partly Cloudy": "Nắng nhẹ",
-                "Clear Sky": "Trời trong xanh"
+                "Clear": "Trời trong xanh",
+                "Clear Sky": "Trời trong xanh",
+                "Overcast": "U ám",
+                "Mist": "Sương mù",
+                "Light rain": "Mưa nhẹ",
+                "Heavy rain": "Mưa lớn",
+                "Thunderstorm": "Giông bão",
+                "Light drizzle": "Mưa phùn",
+                "Patchy rain possible": "Có thể mưa rải rác",
+                "Moderate rain": "Mưa vừa"
             };
-            return dict[desc] || desc;
+            if (dict[desc]) return dict[desc];
+
+            // Smart keyword match fallback for custom/complex description strings from wttr.in
+            const d = desc.toLowerCase();
+            if (d.includes("thunderstorm") || d.includes("thunder") || d.includes("lightning")) {
+                return "Có giông bão";
+            }
+            if (d.includes("heavy rain") || d.includes("torrential") || d.includes("heavy shower")) {
+                return "Mưa lớn";
+            }
+            if (d.includes("light rain") || d.includes("drizzle") || d.includes("shower") || d.includes("patchy rain")) {
+                return "Mưa nhẹ / Mưa rào";
+            }
+            if (d.includes("rain")) {
+                return "Có mưa";
+            }
+            if (d.includes("partly cloudy")) {
+                return "Nắng nhẹ";
+            }
+            if (d.includes("cloudy") || d.includes("overcast")) {
+                return "Nhiều mây";
+            }
+            if (d.includes("clear") || d.includes("sunny")) {
+                return "Trời quang / Nắng";
+            }
+            if (d.includes("mist") || d.includes("fog") || d.includes("haze")) {
+                return "Có sương mù";
+            }
+            
+            return desc;
+        }
+
+        // Cache for live weather data from API
+        let cachedWeather = null;
+
+        // Display cached weather in current language
+        function displayCachedWeather() {
+            const weatherEl = document.getElementById('tourWeatherVal');
+            const lang = document.documentElement.lang || 'vi';
+            if (cachedWeather) {
+                const temp = cachedWeather.temp;
+                const rawDesc = cachedWeather.rawDesc;
+                const desc = lang === 'vi' ? translateWeatherDesc(rawDesc) : rawDesc;
+                weatherEl.textContent = `${cachedWeather.icon} ${temp}°C • ${desc}`;
+            } else {
+                // No cache yet, show fallback from tourData
+                const tourInfo = tourData[currentTour];
+                if (tourInfo) {
+                    weatherEl.textContent = lang === 'vi' ? tourInfo.weatherVi : tourInfo.weatherEn;
+                }
+            }
+        }
+
+        // Get weather icon based on description
+        function getWeatherIcon(desc) {
+            const d = desc.toLowerCase();
+            if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
+            if (d.includes('cloud') || d.includes('overcast')) return '⛅';
+            if (d.includes('mist') || d.includes('fog')) return '🌫️';
+            return '☀️';
+        }
+
+        // Reusable function to fetch and display live weather
+        function fetchWeather(dateStr) {
+            const url = dateStr ? `/tours/api/weather?date=${dateStr}` : '/tours/api/weather';
+            const weatherEl = document.getElementById('tourWeatherVal');
+            const lang = document.documentElement.lang || 'vi';
+
+            // Show loading indicator (bilingual)
+            weatherEl.textContent = lang === 'vi' ? '⏳ Đang tải...' : '⏳ Loading...';
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Weather request failed');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.temperature !== undefined) {
+                        const rawDesc = data.description || 'Unknown';
+                        cachedWeather = {
+                            temp: Math.round(data.temperature),
+                            rawDesc: rawDesc,
+                            icon: getWeatherIcon(rawDesc)
+                        };
+                        displayCachedWeather();
+                    }
+                })
+                .catch(error => {
+                    console.warn('Weather API fetch error, falling back to static weather:', error);
+                    cachedWeather = null;
+                    displayCachedWeather();
+                });
         }
 
         // Fetch weather dynamically when date is selected
         document.getElementById('departureDate').addEventListener('change', function () {
             const selectedDate = this.value;
             if (!selectedDate) return;
-
-            fetch(`/tours/api/weather?date=${selectedDate}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Weather request failed");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.temperature !== undefined) {
-                        const temp = data.temperature;
-                        const lang = document.documentElement.lang || 'vi';
-                        const desc = lang === 'vi' ? translateWeatherDesc(data.description) : data.description;
-                        const icon = data.description.includes("Rain") ? "🌧️" : (data.description.includes("Cloud") ? "⛅" : "☀️");
-                        document.getElementById('tourWeatherVal').textContent = `${icon} ${temp}°C • ${desc}`;
-                    }
-                })
-                .catch(error => {
-                    console.warn("Weather API fetch error, falling back to static weather:", error);
-                });
+            fetchWeather(selectedDate);
         });
 
         // Initialize view
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
+
+            // Auto-fetch live weather on page load (current weather)
+            fetchWeather(null);
+
             if (customerName && document.getElementById('fullName')) {
                 document.getElementById('fullName').value = customerName;
             }
