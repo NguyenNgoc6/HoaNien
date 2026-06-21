@@ -926,12 +926,38 @@
                     btn.classList.remove('bg-primary');
                     btn.classList.add('bg-gold-accent');
 
-                    // Show success alert with customer info
+                    // Show success alert with detailed booking info
                     const name = data.customerName || '';
-                    const email = data.customerEmail || '';
                     const phone = data.customerPhone || '';
-                    const successMsgVi = `Đặt tour thành công!\nKhách hàng: ${name}\nEmail: ${email}\nSĐT: ${phone}`;
-                    const successMsgEn = `Booking success!\nCustomer: ${name}\nEmail: ${email}\nPhone: ${phone}`;
+                    const tourName = data.tourName || '';
+                    const totalPriceFormatted = formatVND(parseFloat(data.totalPrice) || 0);
+                    const paymentMethod = data.paymentMethod;
+                    
+                    let paymentDetailVi = '';
+                    let paymentDetailEn = '';
+                    if (paymentMethod === 'post-room') {
+                        paymentDetailVi = `Số phòng gán: ${data.roomNumber || ''}\nPhương thức: Ghi nợ phòng nghỉ`;
+                        paymentDetailEn = `Assigned Room: ${data.roomNumber || ''}\nMethod: Charge to room`;
+                    } else {
+                        const depositAmtFormatted = formatVND(parseFloat(data.depositAmount) || 0);
+                        paymentDetailVi = `Tiền đặt cọc (30%): ${depositAmtFormatted}\nPhương thức: Đặt cọc trực tuyến`;
+                        paymentDetailEn = `Deposit (30%): ${depositAmtFormatted}\nMethod: Online Deposit`;
+                    }
+
+                    const successMsgVi = `Đặt tour thành công!\n` +
+                                         `Tên tour: ${tourName}\n` +
+                                         `Khách hàng: ${name}\n` +
+                                         `SĐT: ${phone}\n` +
+                                         `Tổng giá trị: ${totalPriceFormatted}\n` +
+                                         `${paymentDetailVi}`;
+                                         
+                    const successMsgEn = `Booking success!\n` +
+                                         `Tour: ${tourName}\n` +
+                                         `Customer: ${name}\n` +
+                                         `Phone: ${phone}\n` +
+                                         `Total Price: ${totalPriceFormatted}\n` +
+                                         `${paymentDetailEn}`;
+                                         
                     const successMsg = lang === 'vi' ? successMsgVi : successMsgEn;
                     alert(successMsg);
                 })
@@ -1105,22 +1131,10 @@
                 document.getElementById('phone').value = customerPhone;
             }
 
-            fetch('/api/bookings/recent')
-                .then(res => res.json())
-                .then(data => {
-                    const container = document.getElementById('bookingHistoryContainer');
-                    container.innerHTML = data.map(b => `<p>${b.date} - ${b.tourName}</p>`).join('');
-                })
-                .catch(() => {
-                    document.getElementById('bookingHistoryContainer').innerText = 'Không thể tải lịch sử.';
-                });
         });
     </script>
 
-    <div id="recentBookings" style="margin-top:2rem;">
-        <h3 class="text-xl font-semibold" data-i18n="booking_history">Lịch sử đặt tour</h3>
-        <div id="bookingHistoryContainer">Đang tải...</div>
-    </div>
+
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 </body>
