@@ -168,38 +168,59 @@
     </style>
 </head>
 
-<body class="overflow-x-hidden pt-20">
-    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20" style="background: transparent !important; border-bottom: 1px solid rgba(58, 50, 48, 0.15) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
-        <div class="flex items-center gap-10">
-            <a href="/tourguide/dashboard"
-                class="font-headline-md text-headline-md italic text-primary no-underline">Hòa Niên Resort</a>
-            <nav class="hidden md:flex gap-6">
-                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
-                    href="/tourguide/dashboard">
-                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">dashboard</span>Tổng quan
-                </a>
-                <a class="font-label-caps text-label-caps text-primary border-b border-primary pb-1 no-underline"
-                    href="/tourguide/tour">
-                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">route</span>Lịch trình
-                </a>
-                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
-                    href="/tourguide/dashboard#manifest-section">
-                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">group</span>Hành khách
-                </a>
-                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
-                    href="/tourguide/dashboard#faceid-section">
-                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">face</span>Quét FaceID
-                </a>
-            </nav>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p class="font-label-caps text-[11px] text-on-surface-variant">Hướng dẫn viên</p>
-                <p class="font-body-md text-body-md text-primary font-medium"
-                    th:text="${username != null ? username : 'Guide'}">Guide</p>
+<body class="overflow-x-hidden pt-32">
+    <header id="header-wrapper" class="fixed top-0 left-0 w-full z-50 flex flex-col" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <!-- Main Nav -->
+        <nav class="w-full px-margin-desktop py-gutter flex justify-between items-center h-20" style="background: transparent !important; border-bottom: 1px solid rgba(58, 50, 48, 0.15) !important;">
+            <div class="flex items-center gap-10">
+                <a href="/tourguide/dashboard"
+                    class="font-headline-md text-headline-md italic text-primary no-underline">Hòa Niên Resort</a>
+                <nav class="hidden md:flex gap-6">
+                    <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                        href="/tourguide/dashboard">
+                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">dashboard</span>Tổng quan
+                    </a>
+                    <a class="font-label-caps text-label-caps text-primary border-b border-primary pb-1 no-underline"
+                        href="/tourguide/tour">
+                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">route</span>Lịch trình
+                    </a>
+                    <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                        href="/tourguide/dashboard#manifest-section">
+                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">group</span>Hành khách
+                    </a>
+                    <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                        href="/tourguide/dashboard#faceid-section">
+                        <span class="material-symbols-outlined text-[14px] align-middle mr-1">face</span>Quét FaceID
+                    </a>
+                </nav>
             </div>
-            <div class="w-10 h-10 bg-surface-container-highest overflow-hidden flex items-center justify-center">
-                <span class="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="font-label-caps text-[11px] text-on-surface-variant">Hướng dẫn viên</p>
+                    <p class="font-body-md text-body-md text-primary font-medium"
+                        th:text="${username != null ? username : 'Guide'}">Guide</p>
+                </div>
+                <div class="w-10 h-10 bg-surface-container-highest overflow-hidden flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sub-navigation -->
+        <div class="w-full font-sans" style="border-bottom: 1px solid rgba(58, 50, 48, 0.15) !important;">
+            <div class="max-w-[1440px] mx-auto px-6 py-3 flex justify-center gap-8 md:gap-12 text-xs uppercase tracking-[0.15em] font-medium overflow-x-auto">
+                <a href="/tourguide/doantu"
+                    class="sub-nav-link hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap text-[#3a3230] no-underline opacity-70"
+                    id="sub-nav-doantu">Đoàn Tụ</a>
+                <a href="/tourguide/dongnoi"
+                    class="sub-nav-link hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap text-[#3a3230] no-underline opacity-70"
+                    id="sub-nav-dongnoi">Đồng Nội</a>
+                <a href="/tourguide/disan"
+                    class="sub-nav-link hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap text-[#3a3230] no-underline border-b border-current"
+                    id="sub-nav-disan">Di Sản</a>
+                <a href="/tourguide/tinhlang"
+                    class="sub-nav-link hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap text-[#3a3230] no-underline opacity-70"
+                    id="sub-nav-tinhlang">Tĩnh Lặng</a>
             </div>
         </div>
     </header>
