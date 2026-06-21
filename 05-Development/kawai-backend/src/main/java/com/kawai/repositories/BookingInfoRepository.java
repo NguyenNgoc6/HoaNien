@@ -14,13 +14,13 @@ public interface BookingInfoRepository extends JpaRepository<Booking, Long> {
             "c.full_name AS customerName, " +
             "c.email AS customerEmail, " +
             "c.phone AS customerPhone, " +
-            "COUNT(rb.room_booking_id) AS roomQuantity, " +
-            "GROUP_CONCAT(r.room_name SEPARATOR ', ') AS roomNames " +
+            "COUNT(rbd.detail_id) AS roomQuantity, " +
+            "GROUP_CONCAT(r.room_number SEPARATOR ', ') AS roomNames " +
             "FROM Tour_Bookings tb " +
             "JOIN Bookings b ON tb.booking_id = b.booking_id " +
             "JOIN Customers c ON b.customer_id = c.customer_id " +
-            "LEFT JOIN Room_Bookings rb ON rb.booking_id = b.booking_id " +
-            "LEFT JOIN Rooms r ON rb.room_id = r.room_id " +
+            "LEFT JOIN Room_Booking_Details rbd ON rbd.room_booking_id = b.booking_id " +
+            "LEFT JOIN Rooms r ON rbd.room_id = r.room_id " +
             "GROUP BY tb.booking_id, c.full_name, c.email, c.phone " +
             "ORDER BY tb.booking_id DESC LIMIT 5",
             nativeQuery = true)
