@@ -195,17 +195,7 @@
                 </nav>
             </div>
             <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <p class="font-label-caps text-[11px] text-on-surface-variant">Hướng dẫn viên</p>
-                    <div class="flex items-center justify-end gap-2 mt-0.5">
-                        <p class="font-body-md text-body-md text-primary font-medium"
-                            th:text="${username != null ? username : 'Guide'}">Guide</p>
-                        <span class="text-[11px] text-on-surface-variant/40">|</span>
-                        <form th:action="@{/auth/logout}" method="post" class="inline">
-                            <button type="submit" class="font-label-caps text-[11px] text-on-surface-variant hover:text-primary transition-colors duration-300 bg-transparent border-none p-0 cursor-pointer">Đăng xuất</button>
-                        </form>
-                    </div>
-                </div>
+
                 <div class="relative inline-block text-left">
                     <button onclick="toggleProfileDropdown(event)" class="hover:text-primary transition-colors duration-300 flex items-center justify-center focus:outline-none" title="Tài khoản">
                         <span class="material-symbols-outlined text-[24px] text-primary">person</span>
