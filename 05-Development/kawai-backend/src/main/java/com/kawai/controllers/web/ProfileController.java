@@ -30,6 +30,18 @@ import com.kawai.repositories.FoodOrderRepository;
 @RequestMapping("/profile")
 public class ProfileController {
 
+    private String extractUsername(Authentication authentication) {
+        if (authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+            org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken = 
+                (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication;
+            String email = oauthToken.getPrincipal().getAttribute("email");
+            if (email != null) {
+                return email;
+            }
+        }
+        return authentication.getName();
+    }
+
     @Autowired
     private AccountRepository accountRepository;
 
@@ -57,13 +69,16 @@ public class ProfileController {
     @Autowired
     private com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
 
+    @Autowired
+    private com.kawai.repositories.TableReservationRepository tableReservationRepository;
+
     @GetMapping
     public String viewProfile(Authentication authentication, Model model) {
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Customer customer = customerRepository.findByAccount_Username(username)
                 .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
         model.addAttribute("customer", customer);
@@ -110,11 +125,15 @@ public class ProfileController {
 
             List<com.kawai.models.Dependent> dependents = dependentRepository.findByCustomer(customer);
             model.addAttribute("dependents", dependents);
+
+            List<com.kawai.models.TableReservation> tableReservations = tableReservationRepository.findByCustomerOrderByIdDesc(customer);
+            model.addAttribute("tableReservations", tableReservations);
         } else {
             model.addAttribute("roomBookings", Collections.emptyList());
             model.addAttribute("tourBookings", Collections.emptyList());
             model.addAttribute("foodOrders", Collections.emptyList());
             model.addAttribute("dependents", Collections.emptyList());
+            model.addAttribute("tableReservations", Collections.emptyList());
         }
         return "guest/profile";
     }
@@ -125,7 +144,7 @@ public class ProfileController {
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Customer customer = customerRepository.findByAccount_Username(username)
                 .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
         model.addAttribute("customer", customer);
@@ -180,11 +199,15 @@ public class ProfileController {
                 }
             }
             model.addAttribute("foodOrders", foodOrders);
+
+            List<com.kawai.models.TableReservation> tableReservations = tableReservationRepository.findByCustomerOrderByIdDesc(customer);
+            model.addAttribute("tableReservations", tableReservations);
         } else {
             model.addAttribute("bookings", Collections.emptyList());
             model.addAttribute("bookingFirstDetails", Collections.emptyMap());
             model.addAttribute("tourBookings", Collections.emptyList());
             model.addAttribute("foodOrders", Collections.emptyList());
+            model.addAttribute("tableReservations", Collections.emptyList());
         }
         return "guest/booking-history";
     }
@@ -206,7 +229,7 @@ public class ProfileController {
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Customer customer = customerRepository.findByAccount_Username(username)
                 .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
         if (customer != null) {
@@ -238,7 +261,7 @@ public class ProfileController {
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Account account = accountRepository.findByUsername(username).orElse(null);
 
         if (account != null) {
@@ -264,7 +287,7 @@ public class ProfileController {
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Customer customer = customerRepository.findByAccount_Username(username)
                 .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
         if (customer != null) {
@@ -295,7 +318,7 @@ public class ProfileController {
                 || "anonymousUser".equals(authentication.getName())) {
             return "redirect:/booking";
         }
-        String username = authentication.getName();
+        String username = extractUsername(authentication);
         Customer customer = customerRepository.findByAccount_Username(username)
                 .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
         if (customer != null) {

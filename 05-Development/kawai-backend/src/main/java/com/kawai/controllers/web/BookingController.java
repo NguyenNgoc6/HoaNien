@@ -29,6 +29,11 @@ public class BookingController {
 
         if (principal != null) {
             String username = principal.getName();
+            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken = 
+                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                username = oauthToken.getPrincipal().getAttribute("email");
+            }
             Optional<Customer> customerOpt = customerRepository
                     .findByAccount_Username(username);
             if (customerOpt.isEmpty()) {
@@ -68,6 +73,17 @@ public class BookingController {
     public String showExperiencesPage(Principal principal, Model model) {
         model.addAttribute("isLoggedIn", principal != null);
         return "guest/experiences";
+    }
+
+    @Autowired
+    private com.kawai.repositories.RestaurantTableRepository restaurantTableRepository;
+
+    @GetMapping("/book-table")
+    public String showTableBookingPage(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
+        java.util.List<com.kawai.models.RestaurantTable> tables = restaurantTableRepository.findAll();
+        model.addAttribute("tables", tables);
+        return "guest/book-table";
     }
 
 }

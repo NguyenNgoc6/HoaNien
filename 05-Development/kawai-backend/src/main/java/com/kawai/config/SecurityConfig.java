@@ -68,10 +68,11 @@ public class SecurityConfig {
                                 "/auth/google-login",
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/pos/**",
+                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**", "/api/pos/**",
                                 "/api/bookings", "/api/bookings/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error",
-                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn")
+                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn", 
+                                "/api/v1/payments/food-order/**", "/book-table")
                         .permitAll()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -151,15 +152,16 @@ public class SecurityConfig {
                     }
                 }
 
+                String deviceId = request.getParameter("device_id");
+                boolean isFromOpsPortal = (deviceId != null);
+
                 if (isOpsUser) {
-                    // String deviceId = request.getParameter("device_id");
-                    // if (deviceId == null || deviceId.trim().isEmpty()
-                    //         || !authorizedDeviceRepository.existsByDeviceCodeAndIsApprovedTrue(deviceId)) {
-                    //     new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                    //             .logout(request, response, authentication);
-                    //     response.sendRedirect("/ops-login?device_error=true");
-                    //     return;
-                    // }
+                    if (!isFromOpsPortal) {
+                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                                .logout(request, response, authentication);
+                        response.sendRedirect("/booking?login_error=true");
+                        return;
+                    }
 
                     String redirectTo = request.getParameter("redirect_to");
                     if (redirectTo != null && !redirectTo.trim().isEmpty()) {
@@ -190,6 +192,13 @@ public class SecurityConfig {
                     response.sendRedirect(redirect);
                 } else {
                     // Normal Customer / Guest
+                    if (isFromOpsPortal) {
+                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                                .logout(request, response, authentication);
+                        response.sendRedirect("/ops-login?error=true");
+                        return;
+                    }
+
                     Account account = accountRepository.findByUsername(authentication.getName()).orElse(null);
                     if (account != null) {
                         request.getSession().setAttribute("user", account);
