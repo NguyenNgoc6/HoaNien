@@ -169,8 +169,8 @@
                             <td>${formatCurrency(folio.totalCharges)}</td>
                             <td>${formatCurrency(folio.totalPayments)}</td>
                             <td><strong class="${balanceClass}">${formatCurrency(folio.balance)}</strong></td>
-                            <td><span class="status-badge status-pending">${folio.status}</span></td>
-                            <td><a href="/receptionist/folio/detail?id=${folio.roomBookingDetailId}" class="btn btn-outline btn-sm" style="text-decoration:none; white-space: nowrap;">View Details</a></td>
+                            <td><span class="status-badge status-pending" style="text-transform: capitalize;">${folio.status.toLowerCase()}</span></td>
+                            <td><a href="/receptionist/folio/detail?id=${folio.roomBookingDetailId}" class="btn btn-view" style="text-decoration:none; white-space: nowrap;">View Details</a></td>
                         `;
                         tbody.appendChild(tr);
                     });

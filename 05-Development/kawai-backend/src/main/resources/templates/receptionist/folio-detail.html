@@ -152,8 +152,12 @@
             border: 1px solid #e8e4db;
             border-radius: 12px;
             padding: 24px;
+        }
+
+        .folio-right {
             position: sticky;
             top: 24px;
+            align-self: start;
         }
 
         .bill-summary-card h3 {
@@ -274,6 +278,58 @@
         .back-link:hover {
             color: #c19b6c;
         }
+
+        .item-settled {
+            opacity: 0.6;
+        }
+        .item-settled td.amount {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #c19b6c;
+        }
+        .floating-action-bar {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            z-index: 100;
+            border: 1px solid #e8e4db;
+        }
+        .split-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .split-modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+        }
     </style>
 </head>
 
@@ -354,219 +410,48 @@
 
                 <div class="folio-container">
                     <div class="folio-left">
-                        <!-- ROOM CHARGES -->
-                        <div class="charge-card">
-                            <div class="charge-card-header">
-                                <div class="charge-title">ROOM CHARGES</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div class="charge-total">23.400.000 ₫</div>
-                                    <button class="btn-pay-partial" onclick="payPartial('Room', '23.400.000 ₫')"><i
-                                            class="fa-solid fa-wallet"></i> Thanh toán riêng</button>
-                                </div>
-                            </div>
-                            <table class="charge-table">
-                                <thead>
-                                    <tr>
-                                        <th>DESCRIPTION</th>
-                                        <th>DATE</th>
-                                        <th style="text-align: right;">AMOUNT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Room Charge – Premier Suite</td>
-                                        <td>2026-06-13</td>
-                                        <td class="amount">7.800.000 ₫</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Room Charge – Premier Suite</td>
-                                        <td>2026-06-14</td>
-                                        <td class="amount">7.800.000 ₫</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Room Charge – Premier Suite</td>
-                                        <td>2026-06-15</td>
-                                        <td class="amount">7.800.000 ₫</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- F&B CHARGES -->
-                        <div class="charge-card">
-                            <div class="charge-card-header">
-                                <div class="charge-title">F&B CHARGES</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div class="charge-total">2.970.000 ₫</div>
-                                    <button class="btn-pay-partial" onclick="payPartial('F&B', '2.970.000 ₫')"><i
-                                            class="fa-solid fa-wallet"></i> Thanh toán riêng</button>
-                                </div>
-                            </div>
-                            <table class="charge-table">
-                                <thead>
-                                    <tr>
-                                        <th>DESCRIPTION</th>
-                                        <th>DATE</th>
-                                        <th style="text-align: right;">AMOUNT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Breakfast (×2)</td>
-                                        <td>2026-06-14</td>
-                                        <td class="amount">650.000 ₫</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Dinner – Riverside Restaurant</td>
-                                        <td>2026-06-14</td>
-                                        <td class="amount">1.200.000 ₫</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Spa Treatment</td>
-                                        <td>2026-06-15</td>
-                                        <td class="amount">800.000 ₫</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Minibar Charges</td>
-                                        <td>2026-06-15</td>
-                                        <td class="amount">320.000 ₫</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- TOUR CHARGES -->
-                        <div class="charge-card">
-                            <div class="charge-card-header">
-                                <div class="charge-title">TOUR CHARGES</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div class="charge-total">1.500.000 ₫</div>
-                                    <button class="btn-pay-partial" onclick="payPartial('Tour', '1.500.000 ₫')"><i
-                                            class="fa-solid fa-wallet"></i> Thanh toán riêng</button>
-                                </div>
-                            </div>
-                            <table class="charge-table">
-                                <thead>
-                                    <tr>
-                                        <th>DESCRIPTION</th>
-                                        <th>DATE</th>
-                                        <th style="text-align: right;">AMOUNT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Kayak Tour – Sunrise Mekong</td>
-                                        <td>2026-06-15</td>
-                                        <td class="amount">1.500.000 ₫</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- LATE CHECK-OUT FEE -->
-                        <div class="charge-card">
-                            <div class="charge-card-header"
-                                style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
-                                <div class="charge-title" style="text-transform: none;">+ Late Check-out Fee (after
-                                    12:00)</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div class="charge-total" style="color: #c19b6c;">500.000 ₫</div>
-                                    <button class="btn-pay-partial" onclick="payPartial('Late Fee', '500.000 ₫')"><i
-                                            class="fa-solid fa-wallet"></i> Thanh toán riêng</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- OTHER CHARGES -->
-                        <div class="charge-card">
-                            <div class="charge-card-header" style="border-bottom: none; margin-bottom: 0;">
-                                <div class="charge-title">OTHER CHARGES (Damages, Services...)</div>
-                                <div style="display: flex; align-items: center;">
-                                    <div class="charge-total" id="otherChargeTotal">0 ₫</div>
-                                    <button class="btn-pay-partial" onclick="toggleAddChargeForm()"><i
-                                            class="fa-solid fa-plus"></i> Add Charge</button>
-                                </div>
-                            </div>
-
-                            <!-- Add Charge Form -->
-                            <div id="addChargeForm"
-                                style="display: none; padding-top: 16px; border-top: 1px solid #e8e4db; margin-top: 16px;">
-                                <div style="display: flex; gap: 12px; margin-bottom: 0;">
-                                    <input type="text" placeholder="Description (e.g. Broken glass)"
-                                        style="flex: 2; padding: 10px; border: 1px solid #e8e4db; border-radius: 6px; outline: none;">
-                                    <input type="number" placeholder="Amount (VND)"
-                                        style="flex: 1; padding: 10px; border: 1px solid #e8e4db; border-radius: 6px; outline: none;">
-                                    <button class="btn-apply"
-                                        style="background: #2c3e50; border-color: #2c3e50; color: white;"
-                                        onclick="toggleAddChargeForm()">Save</button>
-                                </div>
-                            </div>
-
-                            <table class="charge-table" id="otherChargeTable" style="display: none; margin-top: 16px;">
-                                <thead>
-                                    <tr>
-                                        <th>DESCRIPTION</th>
-                                        <th>DATE</th>
-                                        <th style="text-align: right;">AMOUNT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-
+                        <!-- Content dynamically rendered by JS -->
                     </div>
 
                     <!-- BILL SUMMARY -->
                     <div class="folio-right">
-                        <div class="bill-summary-card" id="billSummaryCard">
-                            <h3 id="billTitle">Bill Summary</h3>
-
-                            <div id="billDetails">
-                                <div class="summary-row" id="row-room">
-                                    <span>Room</span>
-                                    <span>23.400.000 ₫</span>
-                                </div>
-                                <div class="summary-row" id="row-fb">
-                                    <span>F&B</span>
-                                    <span>2.970.000 ₫</span>
-                                </div>
-                                <div class="summary-row" id="row-tour">
-                                    <span>Tour</span>
-                                    <span>1.500.000 ₫</span>
-                                </div>
-                                <div class="summary-row" id="row-latefee" style="color: #c19b6c;">
-                                    <span>Late Fee</span>
-                                    <span>500.000 ₫</span>
-                                </div>
-
-                                <div id="promoSection">
-                                    <div style="font-size: 0.9rem; color: #7f8c8d; margin: 24px 0 8px 0;">Apply
-                                        Promotion</div>
-                                    <div class="promo-input">
-                                        <input type="text" placeholder="Voucher code">
-                                        <button class="btn-apply">Apply</button>
-                                    </div>
-                                </div>
-
-                                <div class="summary-row total-row" id="row-deposit">
-                                    <span>Pre-paid Deposit</span>
-                                    <span>-8.511.000 ₫</span>
+                        <!-- HÓA ĐƠN GỐC -->
+                        <div class="bill-summary-card" id="originalBillCard">
+                            <h3 id="billTitle">Hóa đơn gốc</h3>
+                            <div id="originalBillDetails"></div>
+                            
+                            <div id="promoSection">
+                                <div style="font-size: 0.9rem; color: #7f8c8d; margin: 24px 0 8px 0;">Apply Promotion</div>
+                                <div class="promo-input">
+                                    <input type="text" placeholder="Voucher code">
+                                    <button class="btn-apply">Apply</button>
                                 </div>
                             </div>
 
+                            <div class="summary-row total-row" id="row-deposit" style="display: none;">
+                                <span>Pre-paid Deposit</span>
+                                <span id="prePaidAmount">-0 ₫</span>
+                            </div>
+                            
                             <div class="summary-row outstanding-row">
                                 <span class="label">Outstanding</span>
-                                <span class="amount" id="outstandingAmount">19.859.000 ₫</span>
+                                <span class="amount" id="originalOutstandingAmount">0 ₫</span>
                             </div>
 
-                            <button class="btn-checkout" id="btnProceed">Proceed to Payment</button>
+                            <button class="btn-checkout" id="btnProceedOriginal">Thanh toán HĐ Gốc</button>
+                        </div>
 
-                            <div style="text-align: center; margin-top: 16px; display: none;" id="backToTotalWrap">
-                                <a href="#" id="btnBackToTotal"
-                                    style="color: #7f8c8d; text-decoration: none; font-size: 0.9rem; font-weight: 500;"><i
-                                        class="fa-solid fa-arrow-left"></i> Back to Total Bill</a>
+                        <!-- HÓA ĐƠN TÁCH -->
+                        <div class="bill-summary-card" id="splitBillCard" style="margin-top: 24px; display: none; background: #faf9f7;">
+                            <h3>Hóa đơn tách</h3>
+                            <div id="splitBillDetails"></div>
+                            
+                            <div class="summary-row outstanding-row" style="margin-top: 16px; border-top: 1px solid #e8e4db; padding-top: 16px;">
+                                <span class="label" style="font-size: 1rem;">Tổng cộng</span>
+                                <span class="amount" id="splitOutstandingAmount" style="font-size: 1.8rem;">0 ₫</span>
                             </div>
+
+                            <button class="btn-checkout" id="btnProceedSplit" style="background: #2c3e50; margin-top: 16px;">Thanh toán HĐ Tách</button>
                         </div>
                     </div>
                 </div>
@@ -574,8 +459,28 @@
         </main>
     </div>
 
+    <!-- Floating Action Bar -->
+    <div id="floatingActionBar" class="floating-action-bar" style="display: none;">
+        <div>Đã chọn <strong id="selectedCount">0</strong> mục để tách thanh toán</div>
+        <button class="btn-checkout" style="padding: 10px 24px; margin: 0; width: auto;" onclick="openSplitModal()">Tách thanh toán</button>
+    </div>
+
+    <!-- Modal -->
+    <div id="splitModal" class="split-modal-overlay" style="display: none;">
+        <div class="split-modal-content">
+            <h3 style="margin-bottom: 16px;">Xác nhận tách hóa đơn</h3>
+            <p style="color: #7f8c8d;">Bạn có chắc chắn muốn tạo hóa đơn mới cho <strong id="modalSelectedCount">0</strong> mục đã chọn?</p>
+            <div class="modal-actions">
+                <button class="btn-apply" onclick="closeSplitModal()">Hủy</button>
+                <button class="btn-checkout" style="margin: 0;" onclick="confirmSplit()">Xác nhận Tách</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Fetch data from API
+        let currentFolioData = null;
+        let selectedItemIds = [];
+
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
@@ -592,6 +497,7 @@
                 .then(data => {
                     if (data.success) {
                         try {
+                            currentFolioData = data;
                             renderFolio(data);
                         } catch (e) {
                             console.error("Render Error:", e);
@@ -603,7 +509,7 @@
                 })
                 .catch(err => {
                     console.error("Fetch Error:", err);
-                    alert("Lỗi tải dữ liệu: " + err.message + "\n(Vui lòng mở F12 Console để xem chi tiết)");
+                    alert("Lỗi tải dữ liệu: " + err.message + "\\n(Vui lòng mở F12 Console để xem chi tiết)");
                 });
         }
 
@@ -612,123 +518,239 @@
         }
 
         function renderFolio(data) {
-            // Group items by department
+            selectedItemIds = [];
+            updateFloatingActionBar();
+
             const items = data.items || [];
-            const groups = {};
-            let total = 0;
+            
+            // Re-group for Left Pane rendering
+            const allGroups = {};
+            // Re-group for Right Pane Original
+            const originalGroups = {};
+            let originalTotal = 0;
+            // Re-group for Right Pane Split
+            const splitGroups = {};
+            let splitTotal = 0;
 
             items.forEach(item => {
                 const dep = item.sourceDepartment || 'OTHER';
-                if (!groups[dep]) {
-                    groups[dep] = { total: 0, items: [] };
-                }
-                groups[dep].items.push(item);
-                if (!item.isSettledSeparately) {
-                    groups[dep].total += item.amount;
-                    total += item.amount;
+                
+                // For Left Pane
+                if (!allGroups[dep]) allGroups[dep] = { items: [] };
+                allGroups[dep].items.push(item);
+
+                // For Right Pane
+                if (item.isSettledSeparately) {
+                    if (!splitGroups[dep]) splitGroups[dep] = { total: 0 };
+                    splitGroups[dep].total += item.amount;
+                    splitTotal += item.amount;
+                } else {
+                    if (!originalGroups[dep]) originalGroups[dep] = { total: 0 };
+                    originalGroups[dep].total += item.amount;
+                    originalTotal += item.amount;
                 }
             });
 
-            // Render Left Cards
+            // 1. Render Left Pane (Charge Cards)
             let leftHtml = '';
-            let rightSummaryHtml = '';
-            
-            for (const [dep, group] of Object.entries(groups)) {
+            for (const [dep, group] of Object.entries(allGroups)) {
+                const availableItems = group.items.filter(i => !i.isSettledSeparately);
+                const depSafe = dep.replace(/[^a-zA-Z0-9]/g, '');
+                
                 leftHtml += `
                     <div class="charge-card">
                         <div class="charge-card-header">
-                            <div class="charge-title">${dep} CHARGES</div>
-                            <div style="display: flex; align-items: center;">
-                                <div class="charge-total">${formatCurrency(group.total)}</div>
-                                <button class="btn-pay-partial" onclick="payPartial('${dep}', '${formatCurrency(group.total)}')"><i class="fa-solid fa-wallet"></i> Thanh toán riêng</button>
+                            <div class="charge-title" style="display: flex; align-items: center; gap: 12px; text-transform: uppercase;">
+                                <input type="checkbox" class="custom-checkbox dep-checkbox" data-dep="${depSafe}" onchange="toggleDep(this, '${depSafe}')" ${availableItems.length === 0 ? 'disabled' : ''}> 
+                                ${dep} CHARGES
                             </div>
                         </div>
                         <table class="charge-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 40px; text-align:center;"></th>
                                     <th>DESCRIPTION</th>
                                     <th style="text-align: right;">AMOUNT</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${group.items.map(i => `
-                                    <tr>
-                                        <td>${i.description} ${i.isSettledSeparately ? '(Đã thanh toán riêng)' : ''}</td>
-                                        <td class="amount" style="${i.isSettledSeparately ? 'text-decoration: line-through;' : ''}">${formatCurrency(i.amount)}</td>
-                                    </tr>
-                                `).join('')}
+                                ${group.items.map(i => {
+                                    const isSplit = i.isSettledSeparately;
+                                    const disabled = isSplit ? 'disabled' : ''; 
+                                    const trClass = isSplit ? 'item-settled' : '';
+                                    const dateStr = i.createdAt && i.createdAt.length >= 10 ? i.createdAt.substring(0, 10) : '';
+                                    return `
+                                    <tr class="${trClass}">
+                                        <td style="text-align:center;">
+                                            <input type="checkbox" class="custom-checkbox item-checkbox dep-${depSafe}" value="${i.id}" onchange="toggleItem(this)" ${disabled} ${isSplit ? 'checked' : ''}>
+                                        </td>
+                                        <td>
+                                            ${i.description} 
+                                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                        </td>
+                                        <td class="amount">${formatCurrency(i.amount)}</td>
+                                    </tr>`;
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>
                 `;
+            }
+            document.querySelector('.folio-left').innerHTML = leftHtml;
 
-                rightSummaryHtml += `
+            // 2. Render Right Pane (Original Bill)
+            let rightOriginalHtml = '';
+            for (const [dep, group] of Object.entries(originalGroups)) {
+                rightOriginalHtml += `
                     <div class="summary-row">
                         <span>${dep}</span>
                         <span>${formatCurrency(group.total)}</span>
                     </div>
                 `;
             }
+            if (Object.keys(originalGroups).length === 0) {
+                rightOriginalHtml = '<div class="summary-row" style="justify-content:center; color:#95a5a6;">Không có mục nào</div>';
+            }
+            document.getElementById('originalBillDetails').innerHTML = rightOriginalHtml;
 
-            document.querySelector('.folio-left').innerHTML = leftHtml;
-            document.getElementById('billDetails').innerHTML = rightSummaryHtml;
-            document.getElementById('outstandingAmount').innerText = formatCurrency(data.currentBalance);
+            // 3. Render Right Pane (Split Bill)
+            let rightSplitHtml = '';
+            for (const [dep, group] of Object.entries(splitGroups)) {
+                rightSplitHtml += `
+                    <div class="summary-row">
+                        <span>${dep}</span>
+                        <span>${formatCurrency(group.total)}</span>
+                    </div>
+                `;
+            }
+            document.getElementById('splitBillDetails').innerHTML = rightSplitHtml;
+
+            if (splitTotal > 0) {
+                document.getElementById('splitBillCard').style.display = 'block';
+                document.getElementById('splitOutstandingAmount').innerText = formatCurrency(splitTotal);
+            } else {
+                document.getElementById('splitBillCard').style.display = 'none';
+            }
+
+            // 4. Calculate Final Balances
+            const prePaid = data.prePaidDeposit || 0;
+            if (prePaid > 0) {
+                document.getElementById('row-deposit').style.display = 'flex';
+                document.getElementById('prePaidAmount').innerText = "-" + formatCurrency(prePaid);
+            } else {
+                document.getElementById('row-deposit').style.display = 'none';
+            }
             
-            // Set guest info
+            const originalOutstanding = originalTotal - prePaid;
+            document.getElementById('originalOutstandingAmount').innerText = formatCurrency(originalOutstanding);
+
+            // 5. Update Header Info
             document.querySelector('.guest-info h2').innerText = data.guestName || ("Folio #" + data.roomBookingDetailId);
-            
             const avatarLetter = data.guestName ? data.guestName.charAt(0).toUpperCase() : "N";
             document.querySelector('.guest-avatar').innerText = avatarLetter;
             
             const roomNum = data.roomNumber || "N/A";
-            let subtitleHtml = `Room ${roomNum} • 2026-06-13 → 2026-06-16`;
+            const checkIn = data.checkInDate || "N/A";
+            const checkOut = data.checkOutDate || "N/A";
+            let subtitleHtml = `Room ${roomNum} • ${checkIn} &rarr; ${checkOut}`;
             
             if (data.subCreditLimit && data.subCreditLimit > 0) {
-                const availableCredit = data.subCreditLimit - data.currentBalance;
+                const availableCredit = data.subCreditLimit - originalOutstanding;
                 const creditColor = availableCredit < 0 ? 'red' : '#27ae60';
                 subtitleHtml += `<br><span style="font-size: 0.9em; margin-top: 4px; display: inline-block;">
                     Credit Limit: ${formatCurrency(data.subCreditLimit)} | Available: <strong style="color: ${creditColor}">${formatCurrency(availableCredit)}</strong>
                 </span>`;
             }
-            
             document.querySelector('.guest-info p').innerHTML = subtitleHtml;
         }
 
-        let defaultBillDetails = "";
-        let defaultOutstanding = "";
-
-        function payPartial(type, amountStr) {
-            if (!defaultBillDetails) {
-                defaultBillDetails = document.getElementById('billDetails').innerHTML;
-                defaultOutstanding = document.getElementById('outstandingAmount').innerText;
-            }
-
-            document.getElementById('billTitle').innerText = type + " Payment";
-
-            let html = `
-                <div class="summary-row">
-                    <span>${type} Total</span>
-                    <span>${amountStr}</span>
-                </div>
-            `;
-
-            document.getElementById('billDetails').innerHTML = html;
-            document.getElementById('outstandingAmount').innerText = amountStr;
-            document.getElementById('btnProceed').innerText = "Pay " + type;
-
-            document.getElementById('backToTotalWrap').style.display = "block";
-            document.getElementById('billSummaryCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // --- CHECKBOX LOGIC ---
+        function toggleDep(checkbox, dep) {
+            const isChecked = checkbox.checked;
+            const itemCheckboxes = document.querySelectorAll(`.item-checkbox.dep-${dep}:not([disabled])`);
+            itemCheckboxes.forEach(cb => {
+                if (cb.checked !== isChecked) {
+                    cb.checked = isChecked;
+                    toggleItem(cb, true);
+                }
+            });
+            updateFloatingActionBar();
         }
 
-        document.getElementById('btnBackToTotal').addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('billTitle').innerText = "Bill Summary";
-            document.getElementById('billDetails').innerHTML = defaultBillDetails;
-            document.getElementById('outstandingAmount').innerText = defaultOutstanding;
-            document.getElementById('btnProceed').innerText = "Proceed to Payment";
-            this.parentElement.style.display = "none";
-        });
+        function toggleItem(checkbox, skipBarUpdate = false) {
+            const id = checkbox.value;
+            if (checkbox.checked) {
+                if (!selectedItemIds.includes(id)) selectedItemIds.push(id);
+            } else {
+                selectedItemIds = selectedItemIds.filter(i => i !== id);
+                // Uncheck dep checkbox
+                const classList = Array.from(checkbox.classList);
+                const depClass = classList.find(c => c.startsWith('dep-'));
+                if (depClass) {
+                    const dep = depClass.substring(4);
+                    const depCb = document.querySelector(`.dep-checkbox[data-dep="${dep}"]`);
+                    if (depCb) depCb.checked = false;
+                }
+            }
+            if (!skipBarUpdate) updateFloatingActionBar();
+        }
+
+        function updateFloatingActionBar() {
+            const bar = document.getElementById('floatingActionBar');
+            const countLabel = document.getElementById('selectedCount');
+            countLabel.innerText = selectedItemIds.length;
+            
+            if (selectedItemIds.length > 0) {
+                bar.style.display = 'flex';
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        // --- MODAL LOGIC ---
+        function openSplitModal() {
+            document.getElementById('modalSelectedCount').innerText = selectedItemIds.length;
+            document.getElementById('splitModal').style.display = 'flex';
+        }
+
+        function closeSplitModal() {
+            document.getElementById('splitModal').style.display = 'none';
+        }
+
+        // --- SPLIT ACTION ---
+        async function confirmSplit() {
+            closeSplitModal();
+            const bar = document.getElementById('floatingActionBar');
+            bar.style.opacity = '0.5';
+            bar.style.pointerEvents = 'none';
+            
+            try {
+                const promises = selectedItemIds.map(id => {
+                    return fetch(`/api/folios/items/${id}/split`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isSettledSeparately: true })
+                    }).then(res => res.json());
+                });
+
+                await Promise.all(promises);
+                
+                alert(`Đã tách thành công ${selectedItemIds.length} mục!`);
+                
+                bar.style.opacity = '1';
+                bar.style.pointerEvents = 'auto';
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                fetchFolioData(urlParams.get('id'));
+
+            } catch (err) {
+                console.error(err);
+                alert("Có lỗi xảy ra khi tách hóa đơn: " + err.message);
+                bar.style.opacity = '1';
+                bar.style.pointerEvents = 'auto';
+            }
+        }
     </script>
 </body>
-
 </html>

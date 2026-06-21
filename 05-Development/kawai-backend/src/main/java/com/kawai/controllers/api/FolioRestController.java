@@ -112,7 +112,7 @@ public class FolioRestController {
         
         if (!hasRoomCharge && detail.getRoomCharge() != null && detail.getRoomCharge().compareTo(BigDecimal.ZERO) > 0) {
             Map<String, Object> roomMap = new java.util.HashMap<>();
-            roomMap.put("id", -1L);
+            roomMap.put("id", -detail.getId());
             roomMap.put("sourceDepartment", "Room");
             roomMap.put("amount", detail.getRoomCharge());
             String catName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Room";
@@ -144,11 +144,24 @@ public class FolioRestController {
         // Adjust balance by subtracting deposit
         currentBalance = currentBalance.subtract(prePaidDeposit);
 
+        String checkInDate = "N/A";
+        String checkOutDate = "N/A";
+        if (detail.getRoomBooking() != null) {
+            if (detail.getRoomBooking().getCheckInDate() != null) {
+                checkInDate = detail.getRoomBooking().getCheckInDate().toString();
+            }
+            if (detail.getRoomBooking().getCheckOutDate() != null) {
+                checkOutDate = detail.getRoomBooking().getCheckOutDate().toString();
+            }
+        }
+
         Map<String, Object> response = new java.util.HashMap<>();
         response.put("success", true);
         response.put("roomBookingDetailId", roomBookingDetailId);
         response.put("guestName", guestName);
         response.put("roomNumber", roomNumber);
+        response.put("checkInDate", checkInDate);
+        response.put("checkOutDate", checkOutDate);
         response.put("subCreditLimit", detail.getSubCreditLimit());
         response.put("items", itemDTOs);
         response.put("currentBalance", currentBalance);
@@ -162,15 +175,35 @@ public class FolioRestController {
      */
     @PutMapping("/items/{folioItemId}/split")
     public ResponseEntity<?> splitFolioItem(@PathVariable Long folioItemId, @RequestBody Map<String, Boolean> payload) {
-        Optional<FolioItem> optItem = folioItemRepository.findById(folioItemId);
-        if (optItem.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        FolioItem item = optItem.get();
+        FolioItem item;
         Boolean isSettledSeparately = payload.getOrDefault("isSettledSeparately", true);
-        item.setIsSettledSeparately(isSettledSeparately);
-        folioItemRepository.save(item);
+
+        if (folioItemId < 0) {
+            // Negative ID means it's an expected room charge. Create a real FolioItem on the fly.
+            Long detailId = Math.abs(folioItemId);
+            Optional<RoomBookingDetail> optDetail = roomBookingDetailRepository.findById(detailId);
+            if (optDetail.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            RoomBookingDetail detail = optDetail.get();
+            item = new FolioItem();
+            item.setRoomBookingDetail(detail);
+            item.setSourceDepartment("Room");
+            item.setAmount(detail.getRoomCharge());
+            String catName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Room";
+            item.setDescription("Room Charge (Expected) - " + catName);
+            item.setIsSettledSeparately(isSettledSeparately);
+            item.setCreatedAt(java.time.LocalDateTime.now());
+            folioItemRepository.save(item);
+        } else {
+            Optional<FolioItem> optItem = folioItemRepository.findById(folioItemId);
+            if (optItem.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            item = optItem.get();
+            item.setIsSettledSeparately(isSettledSeparately);
+            folioItemRepository.save(item);
+        }
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
