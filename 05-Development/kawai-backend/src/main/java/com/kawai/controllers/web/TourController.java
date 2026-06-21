@@ -101,9 +101,23 @@ public class TourController {
         model.addAttribute("isLoggedIn", principal != null);
         model.addAttribute("type", type);
         
-        com.kawai.models.Tour tour = tourRepository.findByTourType(type).orElse(null);
+        com.kawai.models.Tour tour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc(type).orElse(null);
+        if (tour == null) {
+            tour = tourRepository.findByTourType(type).orElse(null);
+        }
         if (tour != null) {
             model.addAttribute("dynamicPrice", tour.getBasePrice());
+        }
+
+        String[] tourTypes = {"doantu", "dongnoi", "disan", "tinhlang"};
+        for (String tType : tourTypes) {
+            com.kawai.models.Tour activeTour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc(tType).orElse(null);
+            if (activeTour == null) {
+                activeTour = tourRepository.findByTourType(tType).orElse(null);
+            }
+            if (activeTour != null) {
+                model.addAttribute("dbTour_" + tType, activeTour);
+            }
         }
 
         if (principal != null) {

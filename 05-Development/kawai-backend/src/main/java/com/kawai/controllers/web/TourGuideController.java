@@ -87,7 +87,13 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
-        tourRepository.findByTourType("doantu").ifPresent(t -> model.addAttribute("tour", t));
+        com.kawai.models.Tour tour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc("doantu").orElse(null);
+        if (tour == null) {
+            tour = tourRepository.findByTourType("doantu").orElse(null);
+        }
+        if (tour != null) {
+            model.addAttribute("tour", tour);
+        }
         return "tour/DoanTu";
     }
 
@@ -96,7 +102,13 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
-        tourRepository.findByTourType("dongnoi").ifPresent(t -> model.addAttribute("tour", t));
+        com.kawai.models.Tour tour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc("dongnoi").orElse(null);
+        if (tour == null) {
+            tour = tourRepository.findByTourType("dongnoi").orElse(null);
+        }
+        if (tour != null) {
+            model.addAttribute("tour", tour);
+        }
         return "tour/DongNoi";
     }
 
@@ -105,7 +117,13 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
-        tourRepository.findByTourType("disan").ifPresent(t -> model.addAttribute("tour", t));
+        com.kawai.models.Tour tour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc("disan").orElse(null);
+        if (tour == null) {
+            tour = tourRepository.findByTourType("disan").orElse(null);
+        }
+        if (tour != null) {
+            model.addAttribute("tour", tour);
+        }
         return "tour/DiSan";
     }
 
@@ -114,7 +132,13 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
-        tourRepository.findByTourType("tinhlang").ifPresent(t -> model.addAttribute("tour", t));
+        com.kawai.models.Tour tour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc("tinhlang").orElse(null);
+        if (tour == null) {
+            tour = tourRepository.findByTourType("tinhlang").orElse(null);
+        }
+        if (tour != null) {
+            model.addAttribute("tour", tour);
+        }
         return "tour/TinhLang";
     }
 

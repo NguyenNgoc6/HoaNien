@@ -516,6 +516,37 @@
         const customerPhone = /*[[${customerPhone}]]*/ null;
         const initialTourType = /*[[${type}]]*/ 'doantu';
         const dynamicPrice = /*[[${dynamicPrice}]]*/ null;
+
+        const dbTours = {
+            doantu: {
+                name: /*[[${dbTour_doantu != null ? dbTour_doantu.tourName : null}]]*/ null,
+                dest: /*[[${dbTour_doantu != null ? dbTour_doantu.description : null}]]*/ null,
+                duration: /*[[${dbTour_doantu != null ? dbTour_doantu.duration : null}]]*/ null,
+                price: /*[[${dbTour_doantu != null ? dbTour_doantu.basePrice : null}]]*/ null,
+                quote: /*[[${dbTour_doantu != null ? dbTour_doantu.shortQuote : null}]]*/ null
+            },
+            dongnoi: {
+                name: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.tourName : null}]]*/ null,
+                dest: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.description : null}]]*/ null,
+                duration: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.duration : null}]]*/ null,
+                price: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.basePrice : null}]]*/ null,
+                quote: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.shortQuote : null}]]*/ null
+            },
+            disan: {
+                name: /*[[${dbTour_disan != null ? dbTour_disan.tourName : null}]]*/ null,
+                dest: /*[[${dbTour_disan != null ? dbTour_disan.description : null}]]*/ null,
+                duration: /*[[${dbTour_disan != null ? dbTour_disan.duration : null}]]*/ null,
+                price: /*[[${dbTour_disan != null ? dbTour_disan.basePrice : null}]]*/ null,
+                quote: /*[[${dbTour_disan != null ? dbTour_disan.shortQuote : null}]]*/ null
+            },
+            tinhlang: {
+                name: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.tourName : null}]]*/ null,
+                dest: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.description : null}]]*/ null,
+                duration: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.duration : null}]]*/ null,
+                price: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.basePrice : null}]]*/ null,
+                quote: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.shortQuote : null}]]*/ null
+            }
+        };
         /*]]>*/
     </script>
 
@@ -585,9 +616,32 @@
             }
         };
 
-        // Ghi đè giá tiền thực tế lấy từ Database
-        if (dynamicPrice && tourData[currentTour]) {
-            tourData[currentTour].price = dynamicPrice;
+        // Override with DB values if available
+        if (typeof dbTours !== 'undefined') {
+            for (const key in dbTours) {
+                if (dbTours[key] && tourData[key]) {
+                    const dbTour = dbTours[key];
+                    if (dbTour.name) {
+                        tourData[key].titleVi = dbTour.name;
+                        tourData[key].titleEn = dbTour.name;
+                    }
+                    if (dbTour.dest) {
+                        tourData[key].destVi = dbTour.dest;
+                        tourData[key].destEn = dbTour.dest;
+                    }
+                    if (dbTour.duration) {
+                        tourData[key].durationVi = dbTour.duration;
+                        tourData[key].durationEn = dbTour.duration;
+                    }
+                    if (dbTour.price !== null && dbTour.price !== undefined) {
+                        tourData[key].price = dbTour.price;
+                    }
+                    if (dbTour.quote) {
+                        tourData[key].quoteVi = dbTour.quote;
+                        tourData[key].quoteEn = dbTour.quote;
+                    }
+                }
+            }
         }
 
         function formatVND(amount) {

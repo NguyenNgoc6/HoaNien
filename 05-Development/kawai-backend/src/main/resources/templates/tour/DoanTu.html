@@ -224,11 +224,11 @@
                     <div class="space-y-8 mt-12 bg-white/5 backdrop-blur-sm p-10 border border-white/10 max-w-xl">
                         <div class="flex justify-between border-b border-white/20 pb-4">
                             <p class="font-label-caps text-label-caps opacity-60" data-i18n="dest">Điểm đến</p>
-                            <p class="font-body-md text-body-md" th:text="${tour != null ? tour.description : 'Cố Đô Huế'}">Cố Đô Huế</p>
+                            <p class="font-body-md text-body-md" th:text="${tour != null ? tour.description : 'Huế'}">Huế</p>
                         </div>
                         <div class="flex justify-between border-b border-white/20 pb-4">
                             <p class="font-label-caps text-label-caps opacity-60" data-i18n="time">Thời gian</p>
-                            <p class="font-body-md text-body-md" th:text="${tour != null ? tour.duration : '2 Ngày 1 Đêm'}">2 Ngày 1 Đêm</p>
+                            <p class="font-body-md text-body-md" th:text="${tour != null ? tour.duration : '5 tiếng'}">5 tiếng</p>
                         </div>
                         <div class="flex justify-between border-b border-white/20 pb-4">
                             <p class="font-label-caps text-label-caps opacity-60" data-i18n="weather_lbl">Thời tiết dự kiến</p>
@@ -237,8 +237,8 @@
                         <div class="flex justify-between pt-4">
                             <p class="font-label-caps text-label-caps opacity-60" data-i18n="total">Tổng cộng</p>
                             <p class="font-headline-md text-headline-md text-gold-accent font-bold" 
-                               th:text="${tour != null ? #numbers.formatDecimal(tour.basePrice, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '15.000.000 VNĐ'}">
-                                15.000.000 VNĐ</p>
+                               th:text="${tour != null ? #numbers.formatDecimal(tour.basePrice, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '5.000.000 VNĐ'}">
+                                5.000.000 VNĐ</p>
                         </div>
                     </div>
                 </div>
@@ -334,17 +334,17 @@
                             </div>
                             <div class="relative group">
                                 <label class="font-label-caps text-[10px] text-outline uppercase block mb-1">Điểm đến</label>
-                                <input name="description" required placeholder="Cố Đô Huế"
+                                <input name="description" required placeholder="Huế"
                                     class="w-full bg-transparent border-0 border-b border-outline-variant py-2 font-body-md text-primary focus:border-primary transition-all"/>
                             </div>
                             <div class="relative group">
                                 <label class="font-label-caps text-[10px] text-outline uppercase block mb-1">Thời gian</label>
-                                <input name="duration" required placeholder="3 Ngày 2 Đêm"
+                                <input name="duration" required placeholder="5 tiếng"
                                     class="w-full bg-transparent border-0 border-b border-outline-variant py-2 font-body-md text-primary focus:border-primary transition-all"/>
                             </div>
                             <div class="relative group col-span-2">
                                 <label class="font-label-caps text-[10px] text-outline uppercase block mb-1">Giá cơ bản (VNĐ)</label>
-                                <input name="basePrice" type="number" step="0.01" required placeholder="20000000"
+                                <input name="basePrice" type="number" step="0.01" required placeholder="5000000"
                                     class="w-full bg-transparent border-0 border-b border-outline-variant py-2 font-body-md text-primary focus:border-primary transition-all"/>
                             </div>
                             <div class="relative group col-span-2">
