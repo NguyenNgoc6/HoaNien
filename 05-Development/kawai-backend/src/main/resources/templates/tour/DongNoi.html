@@ -169,34 +169,37 @@
 </head>
 
 <body class="overflow-x-hidden">
-    <header class="bg-[#fcf2e9] border-b border-primary/10 z-50 sticky top-0">
-        <div
-            class="flex justify-between items-center w-full px-margin-desktop py-unit max-w-container-max mx-auto h-20 relative">
-            <a href="/tourguide/tour" class="font-headline-md text-headline-md italic text-primary">HoaNien</a>
-            <nav class="hidden md:flex space-x-12">
-                <a class="font-label-caps text-label-caps text-primary/70 hover:text-primary transition-colors duration-300"
-                    data-i18n="nav1" href="#">Hành trình</a>
-                <a class="font-label-caps text-label-caps text-primary/70 hover:text-primary transition-colors duration-300"
-                    data-i18n="nav2" href="#">Thủ công</a>
-                <a class="font-label-caps text-label-caps text-primary/70 hover:text-primary transition-colors duration-300"
-                    data-i18n="nav3" href="#">Nhật ký</a>
+    <header class="bg-background border-b border-outline-variant flex justify-between items-center w-full px-margin-desktop py-gutter max-w-container-max mx-auto h-20 sticky top-0 z-50">
+        <div class="flex items-center gap-10">
+            <a href="/tourguide/dashboard"
+                class="font-headline-md text-headline-md italic text-primary no-underline">Hòa Niên Resort</a>
+            <nav class="hidden md:flex gap-6">
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                    href="/tourguide/dashboard">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">dashboard</span>Tổng quan
+                </a>
+                <a class="font-label-caps text-label-caps text-primary border-b border-primary pb-1 no-underline"
+                    href="/tourguide/tour">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">route</span>Lịch trình
+                </a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                    href="/tourguide/dashboard#manifest-section">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">group</span>Hành khách
+                </a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300 no-underline"
+                    href="/tourguide/dashboard#faceid-section">
+                    <span class="material-symbols-outlined text-[14px] align-middle mr-1">face</span>Quét FaceID
+                </a>
             </nav>
-            <div class="flex items-center space-x-6 text-primary/80">
-                <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-primary/60"
-                    data-i18n="weather">32°C • Quảng Nam</span>
-                <span
-                    class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">wb_sunny</span>
-                <div class="flex items-center gap-2 pl-3 border-l border-primary/20">
-                    <span
-                        class="lang-btn active text-[10px] font-semibold uppercase tracking-[0.1em] cursor-pointer hover:text-primary transition-colors"
-                        data-lang="vi" onclick="switchLang('vi')">VI</span>
-                    <span class="text-[10px] text-primary/30">|</span>
-                    <span
-                        class="lang-btn text-[10px] font-semibold uppercase tracking-[0.1em] cursor-pointer hover:text-primary transition-colors"
-                        data-lang="en" onclick="switchLang('en')">EN</span>
-                </div>
-                <span
-                    class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">person</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p class="font-label-caps text-[11px] text-on-surface-variant">Hướng dẫn viên</p>
+                <p class="font-body-md text-body-md text-primary font-medium"
+                    th:text="${username != null ? username : 'Guide'}">Guide</p>
+            </div>
+            <div class="w-10 h-10 bg-surface-container-highest overflow-hidden flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
             </div>
         </div>
     </header>

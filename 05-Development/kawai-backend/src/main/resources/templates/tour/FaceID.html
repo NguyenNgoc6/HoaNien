@@ -393,71 +393,7 @@
     </script>
 </head>
 
-<body class="flex flex-col min-h-screen pt-36">
-    <!-- Sticky Navigation Bar -->
-    <header id="header-wrapper" class="fixed top-0 left-0 w-full z-50 flex flex-col pointer-events-none text-[#3a3230]">
-        <!-- Main Nav -->
-        <nav class="guest-nav relative w-full font-sans pointer-events-auto">
-            <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between">
-                <!-- Left Links -->
-                <div class="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <a th:href="@{/living}"
-                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Nghỉ
-                        Dưỡng</a>
-                    <a th:href="@{/dining}"
-                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Ẩm Thực</a>
-                    <a th:href="@{/experiences}"
-                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Trải
-                        Nghiệm</a>
-                    <a th:href="@{/tours/search}" class="nav-text border-b border-current pb-0.5">Hành Trình</a>
-                </div>
-
-                <!-- Center Logo -->
-                <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-headline text-[32px] italic tracking-tighter nav-brand text-center cursor-pointer w-max"
-                    onclick="window.location.href='/booking'">
-                    HoaNien
-                </div>
-
-                <!-- Right Actions -->
-                <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <a th:href="@{/profile}" th:if="${isLoggedIn}"
-                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Hồ Sơ</a>
-                    <form th:action="@{/auth/logout}" method="post" th:if="${isLoggedIn}" class="inline">
-                        <button type="submit"
-                            class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer font-sans font-semibold">Đăng
-                            Xuất</button>
-                    </form>
-                    <a th:href="@{/booking}"
-                        class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] transition-all duration-200 inline-block text-center text-[13px]">
-                        Đặt Ngay
-                    </a>
-                </div>
-
-                <button class="lg:hidden pointer-events-auto">
-                    <span class="material-symbols-outlined text-3xl nav-menu-icon">menu</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Sub-navigation -->
-        <div class="guest-sub-nav w-full font-sans pointer-events-auto">
-            <div
-                class="max-w-[1440px] mx-auto px-6 py-3 flex justify-center gap-8 md:gap-12 text-xs uppercase tracking-[0.15em] font-medium overflow-x-auto">
-                <a th:href="@{/tours/search#journey-1}"
-                    class="sub-nav-text hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap">Đoàn
-                    Tụ</a>
-                <a th:href="@{/tours/search#journey-2}"
-                    class="sub-nav-text hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap">Đồng
-                    Nội</a>
-                <a th:href="@{/tours/search#journey-3}"
-                    class="sub-nav-text hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap">Di
-                    Sản</a>
-                <a th:href="@{/tours/search#journey-4}"
-                    class="sub-nav-text hover:opacity-100 active:scale-95 transition-all duration-200 whitespace-nowrap">Tĩnh
-                    Lặng</a>
-            </div>
-        </div>
-    </header>
+<body class="flex flex-col min-h-screen pt-4">
     <!-- Header -->
     <header
         class="bg-background border-b border-outline-variant flex justify-between items-center w-full px-margin-desktop py-gutter max-w-container-max mx-auto h-20">
