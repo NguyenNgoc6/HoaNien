@@ -634,6 +634,11 @@
             window.history.pushState({}, '', url);
 
             renderTour();
+
+            // Clear weather cache and fetch for new location
+            cachedWeather = null;
+            const selectedDate = document.getElementById('departureDate') ? document.getElementById('departureDate').value : null;
+            fetchWeather(selectedDate);
         }
 
         function renderTour() {
@@ -981,7 +986,13 @@
 
         // Reusable function to fetch and display live weather
         function fetchWeather(dateStr) {
-            const url = dateStr ? `/tours/api/weather?date=${dateStr}` : '/tours/api/weather';
+            const tourInfo = tourData[currentTour];
+            const location = tourInfo ? tourInfo.destEn : 'Hue';
+            
+            let url = `/tours/api/weather?location=${encodeURIComponent(location)}`;
+            if (dateStr) {
+                url += `&date=${dateStr}`;
+            }
             const weatherEl = document.getElementById('tourWeatherVal');
             const lang = document.documentElement.lang || 'vi';
 

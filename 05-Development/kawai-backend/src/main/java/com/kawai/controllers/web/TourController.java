@@ -128,9 +128,11 @@ public class TourController {
      */
     @GetMapping("/api/weather")
     @org.springframework.web.bind.annotation.ResponseBody
-    public com.kawai.dto.WeatherInfo getWeather(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public com.kawai.dto.WeatherInfo getWeather(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false, defaultValue = "Hue") String location) {
         if (date == null) date = LocalDate.now();
-        return weatherApiClient.getWeatherForDate(date);
+        return weatherApiClient.getWeatherForDateAndLocation(date, location);
     }
 
     /**

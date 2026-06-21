@@ -20,9 +20,21 @@ public class WeatherApiClientImpl implements WeatherApiClient {
 
     @Override
     public WeatherInfo getWeatherForDate(LocalDate date) {
-        LOG.info("WeatherApiClientImpl: Fetching real weather info from wttr.in for {}", date);
+        return getWeatherForDateAndLocation(date, "Hue");
+    }
+
+    @Override
+    public WeatherInfo getWeatherForDateAndLocation(LocalDate date, String location) {
+        LOG.info("WeatherApiClientImpl: Fetching real weather info from wttr.in for {} in {}", date, location);
         try {
-            String url = "https://wttr.in/Hue?format=j1";
+            String queryLocation = (location != null && !location.trim().isEmpty()) ? location.trim() : "Hue";
+            if ("Thap Muoi".equalsIgnoreCase(queryLocation)) {
+                queryLocation = "Dong Thap";
+            }
+            // Sanitize query string for URL (e.g. "Quang Nam" -> "Quang+Nam")
+            queryLocation = java.net.URLEncoder.encode(queryLocation, java.nio.charset.StandardCharsets.UTF_8.toString());
+
+            String url = "https://wttr.in/" + queryLocation + "?format=j1";
             String response = restTemplate.getForObject(url, String.class);
             if (response != null) {
                 JsonNode root = mapper.readTree(response);
@@ -34,7 +46,7 @@ public class WeatherApiClientImpl implements WeatherApiClient {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Failed to fetch real weather from wttr.in: {}", e.getMessage());
+            LOG.error("Failed to fetch real weather from wttr.in for location {}: {}", location, e.getMessage());
         }
         // Fallback
         return new WeatherInfo("Partly Cloudy", 28.5);
