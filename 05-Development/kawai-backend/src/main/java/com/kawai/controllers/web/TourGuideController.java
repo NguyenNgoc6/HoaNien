@@ -19,6 +19,82 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourRepository tourRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.EmployeeRepository employeeRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.AccountRepository accountRepository;
+
+    @org.springframework.web.bind.annotation.ModelAttribute
+    public void addEmployeeToModel(Principal principal, Model model) {
+        if (principal != null) {
+            com.kawai.models.Employee employee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
+            model.addAttribute("employee", employee);
+        }
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/profile/create")
+    public String createProfile(
+            Principal principal,
+            @org.springframework.web.bind.annotation.RequestParam("fullName") String fullName,
+            @org.springframework.web.bind.annotation.RequestParam("gender") String gender,
+            @org.springframework.web.bind.annotation.RequestParam("cccd") String cccd,
+            @org.springframework.web.bind.annotation.RequestParam("phone") String phone,
+            @org.springframework.web.bind.annotation.RequestParam("email") String email,
+            @org.springframework.web.bind.annotation.RequestParam("redirectUrl") String redirectUrl) {
+        
+        if (principal != null) {
+            com.kawai.models.Account account = accountRepository.findByUsername(principal.getName()).orElse(null);
+            if (account != null) {
+                com.kawai.models.Employee employee = new com.kawai.models.Employee();
+                employee.setAccount(account);
+                employee.setFullName(fullName);
+                employee.setGender(gender);
+                employee.setCccd(cccd);
+                employee.setPhone(phone);
+                employee.setEmail(email);
+                employee.setSalary(java.math.BigDecimal.ZERO);
+                employeeRepository.save(employee);
+            }
+        }
+        return "redirect:" + redirectUrl;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/profile/update")
+    public String updateProfile(
+            Principal principal,
+            @org.springframework.web.bind.annotation.RequestParam("fullName") String fullName,
+            @org.springframework.web.bind.annotation.RequestParam("gender") String gender,
+            @org.springframework.web.bind.annotation.RequestParam("cccd") String cccd,
+            @org.springframework.web.bind.annotation.RequestParam("phone") String phone,
+            @org.springframework.web.bind.annotation.RequestParam("email") String email,
+            @org.springframework.web.bind.annotation.RequestParam("redirectUrl") String redirectUrl) {
+        
+        if (principal != null) {
+            employeeRepository.findByAccountUsername(principal.getName()).ifPresent(employee -> {
+                employee.setFullName(fullName);
+                employee.setGender(gender);
+                employee.setCccd(cccd);
+                employee.setPhone(phone);
+                employee.setEmail(email);
+                employeeRepository.save(employee);
+            });
+        }
+        return "redirect:" + redirectUrl;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/profile/delete")
+    public String deleteProfile(
+            Principal principal,
+            @org.springframework.web.bind.annotation.RequestParam("redirectUrl") String redirectUrl) {
+        
+        if (principal != null) {
+            employeeRepository.findByAccountUsername(principal.getName()).ifPresent(employee -> {
+                employeeRepository.delete(employee);
+            });
+        }
+        return "redirect:" + redirectUrl;
+    }
     @GetMapping("/dashboard")
     public String dashboard(Principal principal, Model model) {
         model.addAttribute("isLoggedIn", principal != null);
