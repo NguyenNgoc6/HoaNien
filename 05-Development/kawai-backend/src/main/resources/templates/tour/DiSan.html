@@ -626,7 +626,7 @@
             <!-- Read / Update / Delete Form (If employee exists) -->
             <div th:if="${employee != null}">
                 <form th:action="@{/tourguide/profile/update}" method="post" class="space-y-4 mt-4">
-                    <input type="hidden" name="redirectUrl" th:value="${#httpServletRequest.requestURI}"/>
+                    <input type="hidden" name="redirectUrl" th:value="${requestUri}"/>
                     
                     <div class="space-y-1">
                         <label class="font-label-caps text-[10px] text-outline uppercase block text-left">Họ và tên</label>
@@ -664,7 +664,7 @@
                     </div>
                 </form>
                 <form th:action="@{/tourguide/profile/delete}" method="post" class="mt-2 text-left">
-                    <input type="hidden" name="redirectUrl" th:value="${#httpServletRequest.requestURI}"/>
+                    <input type="hidden" name="redirectUrl" th:value="${requestUri}"/>
                     <button type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa hồ sơ này không?')" class="w-full py-2 border border-red-600 text-red-600 hover:bg-red-50 font-label-caps text-[10px] font-bold tracking-wider transition-all">
                         XÓA HỒ SƠ HƯỚNG DẪN VIÊN
                     </button>
@@ -675,7 +675,7 @@
             <div th:if="${employee == null}">
                 <p class="text-sm text-[#3a3230]/80 mb-4 text-left">Bạn chưa thiết lập hồ sơ hướng dẫn viên. Hãy nhập thông tin bên dưới để tạo mới.</p>
                 <form th:action="@{/tourguide/profile/create}" method="post" class="space-y-4">
-                    <input type="hidden" name="redirectUrl" th:value="${#httpServletRequest.requestURI}"/>
+                    <input type="hidden" name="redirectUrl" th:value="${requestUri}"/>
                     
                     <div class="space-y-1">
                         <label class="font-label-caps text-[10px] text-outline uppercase block text-left">Họ và tên</label>

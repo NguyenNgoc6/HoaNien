@@ -26,10 +26,13 @@ public class TourGuideController {
     private com.kawai.repositories.AccountRepository accountRepository;
 
     @org.springframework.web.bind.annotation.ModelAttribute
-    public void addEmployeeToModel(Principal principal, Model model) {
+    public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
             com.kawai.models.Employee employee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
             model.addAttribute("employee", employee);
+        }
+        if (request != null) {
+            model.addAttribute("requestUri", request.getRequestURI());
         }
     }
 
