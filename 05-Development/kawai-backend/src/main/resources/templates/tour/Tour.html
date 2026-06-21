@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="light" lang="vi" style="">
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" style="">
 
 <head>
     <meta charset="utf-8">
@@ -172,10 +172,29 @@
                     <span class="lang-btn text-[10px] font-semibold uppercase tracking-[0.1em]" data-lang="en"
                         onclick="switchLang('en')">EN</span>
                 </div>
-                <a class="hover:text-primary transition-colors duration-300 flex items-center justify-center pt-1"
-                    href="#login" title="Đăng nhập">
-                    <span class="material-symbols-outlined text-[24px]">person</span>
-                </a>
+                <!-- Desktop View -->
+                <div class="relative inline-block text-left" th:if="${username != null}">
+                    <button onclick="toggleProfileDropdown(event)" class="hover:text-primary transition-colors duration-300 flex items-center justify-center pt-1 focus:outline-none" title="Tài khoản">
+                        <span class="material-symbols-outlined text-[24px]">person</span>
+                    </button>
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-[#1f1b16]/95 backdrop-blur-md border border-white/10 shadow-lg text-white font-sans z-[100] rounded">
+                        <div class="p-4 border-b border-white/10 text-left">
+                            <p class="text-[10px] uppercase tracking-wider text-white/50 font-semibold">Tài khoản</p>
+                            <p class="font-medium text-sm mt-1 text-primary" th:text="${username}">Guide</p>
+                            <p class="text-[11px] text-white/70 mt-0.5">Vai trò: Hướng dẫn viên</p>
+                        </div>
+                        <div class="p-2 text-left">
+                            <form th:action="@{/auth/logout}" method="post" class="w-full">
+                                <button type="submit" class="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-white/5 transition-colors font-semibold uppercase tracking-wider">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative inline-block text-left" th:unless="${username != null}">
+                    <button onclick="openRegisterModal()" class="hover:text-primary transition-colors duration-300 flex items-center justify-center pt-1 focus:outline-none" title="Đăng ký">
+                        <span class="material-symbols-outlined text-[24px]">person</span>
+                    </button>
+                </div>
             </div>
 
             <div class="lg:hidden flex items-center gap-3">
@@ -186,9 +205,29 @@
                     <span class="lang-btn text-[10px] font-semibold uppercase tracking-[0.1em]" data-lang="en"
                         onclick="switchLang('en')">EN</span>
                 </div>
-                <a class="hover:text-primary transition-colors flex items-center pt-1" href="#login">
-                    <span class="material-symbols-outlined text-[24px]">person</span>
-                </a>
+                <!-- Mobile View -->
+                <div class="relative inline-block text-left" th:if="${username != null}">
+                    <button onclick="toggleProfileDropdownMobile(event)" class="hover:text-primary transition-colors flex items-center pt-1 focus:outline-none" title="Tài khoản">
+                        <span class="material-symbols-outlined text-[24px]">person</span>
+                    </button>
+                    <div id="profileDropdownMobile" class="hidden absolute right-0 mt-2 w-56 bg-[#1f1b16]/95 backdrop-blur-md border border-white/10 shadow-lg text-white font-sans z-[100] rounded">
+                        <div class="p-4 border-b border-white/10 text-left">
+                            <p class="text-[10px] uppercase tracking-wider text-white/50 font-semibold">Tài khoản</p>
+                            <p class="font-medium text-sm mt-1 text-primary" th:text="${username}">Guide</p>
+                            <p class="text-[11px] text-white/70 mt-0.5">Vai trò: Hướng dẫn viên</p>
+                        </div>
+                        <div class="p-2 text-left">
+                            <form th:action="@{/auth/logout}" method="post" class="w-full">
+                                <button type="submit" class="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-white/5 transition-colors font-semibold uppercase tracking-wider">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative inline-block text-left" th:unless="${username != null}">
+                    <button onclick="openRegisterModal()" class="hover:text-primary transition-colors flex items-center pt-1 focus:outline-none" title="Đăng ký">
+                        <span class="material-symbols-outlined text-[24px]">person</span>
+                    </button>
+                </div>
                 <span class="material-symbols-outlined" data-icon="menu">menu</span>
             </div>
         </div>
@@ -453,7 +492,29 @@
                 });
             });
         });
+
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) dropdown.classList.toggle('hidden');
+            const dropdownMobile = document.getElementById('profileDropdownMobile');
+            if (dropdownMobile) dropdownMobile.classList.add('hidden');
+        }
+        function toggleProfileDropdownMobile(e) {
+            e.stopPropagation();
+            const dropdownMobile = document.getElementById('profileDropdownMobile');
+            if (dropdownMobile) dropdownMobile.classList.toggle('hidden');
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+        }
+        document.addEventListener('click', () => {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+            const dropdownMobile = document.getElementById('profileDropdownMobile');
+            if (dropdownMobile) dropdownMobile.classList.add('hidden');
+        });
     </script>
+    <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 </body>
 
 </html>

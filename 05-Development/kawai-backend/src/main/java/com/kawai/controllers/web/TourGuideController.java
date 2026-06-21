@@ -21,6 +21,7 @@ public class TourGuideController {
 
     @GetMapping("/dashboard")
     public String dashboard(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
@@ -76,6 +77,7 @@ public class TourGuideController {
 
     @GetMapping("/tour")
     public String tour(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
@@ -84,6 +86,7 @@ public class TourGuideController {
 
     @GetMapping("/doantu")
     public String doanTu(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
@@ -99,6 +102,7 @@ public class TourGuideController {
 
     @GetMapping("/dongnoi")
     public String dongNoi(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
@@ -114,6 +118,7 @@ public class TourGuideController {
 
     @GetMapping("/disan")
     public String diSan(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
@@ -129,6 +134,7 @@ public class TourGuideController {
 
     @GetMapping("/tinhlang")
     public String tinhLang(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
