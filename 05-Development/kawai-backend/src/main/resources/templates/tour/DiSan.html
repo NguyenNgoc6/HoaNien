@@ -218,7 +218,7 @@
                         <p class="font-label-caps text-label-caps" data-i18n="summary">Tóm tắt hành trình</p>
                     </div>
                     <div class="flex items-center gap-4 flex-wrap">
-                        <h1 class="font-display-lg text-display-lg leading-tight max-w-md" th:text="${tour != null ? tour.tourName : 'Di sản thủ công'}">Di sản thủ công</h1>
+                        <h1 class="font-display-lg text-display-lg leading-tight max-w-none whitespace-nowrap" th:text="${tour != null ? tour.tourName : 'Di sản thủ công'}">Di sản thủ công</h1>
                         <span th:if="${tour != null and !tour.isActive}" class="px-3 py-1 bg-red-600 text-white text-[10px] uppercase font-bold tracking-wider">Tạm ngưng</span>
                     </div>
                     <div class="space-y-8 mt-12 bg-white/5 backdrop-blur-sm p-10 border border-white/10 max-w-xl">
