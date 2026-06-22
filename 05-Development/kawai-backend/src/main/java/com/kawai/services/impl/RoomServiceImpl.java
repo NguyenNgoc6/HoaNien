@@ -130,6 +130,10 @@ public class RoomServiceImpl implements RoomService {
                 calculatedAvailable = Math.min(calculatedAvailable, physicallyAvailableFuture);
             }
 
+            if (request.getMinRooms() != null && calculatedAvailable < request.getMinRooms()) {
+                continue;
+            }
+
             if (calculatedAvailable > 0) {
                 // Generate 'calculatedAvailable' DTOs with dummy room numbers so the frontend
                 // can group them properly

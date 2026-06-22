@@ -50,7 +50,7 @@ public class ReceptionistController {
 
         long pendingCheckIns = 0, checkoutsToday = 0;
         try {
-            pendingCheckIns = bookingRepository.countConfirmed();
+            pendingCheckIns = roomBookingRepository.countCheckInsOnDate(LocalDate.now());
             checkoutsToday = roomBookingRepository.findCheckOutsBetween(LocalDate.now(), LocalDate.now()).size();
         } catch (Exception e) {
         }
@@ -219,8 +219,6 @@ public class ReceptionistController {
         // --- IN-HOUSE GUESTS (ĐÃ CHECK-IN) ---
         pageSize = 10;
         List<Booking> allInHouseBookings = bookingRepository.findCheckedIn();
-        Collections.reverse(allInHouseBookings);
-
         int totalInHouseItems = allInHouseBookings.size();
         int totalInHousePages = (int) Math.ceil((double) totalInHouseItems / pageSize);
         if (totalInHousePages == 0)
