@@ -95,10 +95,13 @@ public class ReceptionistController {
 
     @GetMapping("/walk-in")
     public String walkIn(Model model) {
-        Map<String, List<String>> inventory = new HashMap<>();
+        Map<String, List<Map<String, Object>>> inventory = new HashMap<>();
         for (Room r : roomRepository.findVacant()) {
             String cat = r.getCategory() != null ? r.getCategory().getCategoryName() : "Other";
-            inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
+            Map<String, Object> roomInfo = new HashMap<>();
+            roomInfo.put("id", r.getId());
+            roomInfo.put("number", r.getRoomNumber());
+            inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(roomInfo);
         }
         model.addAttribute("roomInventory", inventory);
         return "receptionist/walk-in";
