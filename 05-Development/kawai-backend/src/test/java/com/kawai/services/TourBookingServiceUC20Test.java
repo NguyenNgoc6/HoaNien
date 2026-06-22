@@ -62,6 +62,9 @@ class TourBookingServiceUC20Test {
     @Mock
     private EmployeeRepository employeeRepository;
 
+    @Mock
+    private RoomBookingDetailRepository roomBookingDetailRepository;
+
     @InjectMocks
     private TourBookingServiceImpl tourBookingService;
 
@@ -247,8 +250,12 @@ class TourBookingServiceUC20Test {
             validRequest.setPostToRoom(true);
             validRequest.setRoomBookingDetailId(50L);
 
+            RoomBookingDetail sampleDetail = new RoomBookingDetail();
+            sampleDetail.setId(50L);
+
             when(tourScheduleRepository.findById(100L)).thenReturn(Optional.of(sampleSchedule));
             when(customerRepository.findById(10L)).thenReturn(Optional.of(sampleCustomer));
+            when(roomBookingDetailRepository.findById(50L)).thenReturn(Optional.of(sampleDetail));
             when(tourBookingRepository.countByScheduleAndBookingStatus(sampleSchedule, "Confirmed"))
                     .thenReturn(0);
 
