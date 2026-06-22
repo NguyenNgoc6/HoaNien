@@ -250,10 +250,6 @@ function renderRoomResults(roomsData) {
                 pricePerNight: room.pricePerNight,
                 capacity: room.capacity,
                 description: room.description,
-                beds: room.beds,
-                size: room.size,
-                view: room.view,
-                amenities: room.amenities,
                 baseAdults: room.baseAdults,
                 baseChildren: room.baseChildren,
                 maxAdults: room.maxAdults,
@@ -275,9 +271,9 @@ function renderRoomResults(roomsData) {
     let html = '';
     categoryList.forEach(room => {
         const priceVal = room.pricePerNight;
-        const formattedPrice = formatCurrencyVND(priceVal);
+        const formattedPrice = formatCurrency(priceVal);
         const totalVal = priceVal * diffDays;
-        const formattedTotal = formatCurrencyVND(totalVal);
+        const formattedTotal = formatCurrency(totalVal);
 
         const badge = getRoomBadge(priceVal);
         const badgeHtml = badge ? `
@@ -307,13 +303,6 @@ function renderRoomResults(roomsData) {
                     <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1.5 rounded-full text-[11px] font-bold tracking-widest backdrop-blur-md shadow-lg z-10 uppercase border border-white/20 whitespace-nowrap pointer-events-none">
                         Còn ${availableCount} trống
                     </div>
-
-                    <button type="button" class="carousel-btn prev" aria-label="Previous photo">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
-                    </button>
-                    <button type="button" class="carousel-btn next" aria-label="Next photo">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-                    </button>
 
                     <div class="media-foot">
                         <span class="media-ic" aria-hidden="true">
@@ -626,7 +615,7 @@ function updateCartUI() {
                     <div class="flex justify-between items-start mb-2">
                         <div class="pr-6">
                             <h4 class="font-semibold text-sm text-[#2f2a24] leading-tight">${catName}</h4>
-                            <p class="text-xs text-[#8b8478] mt-1">${data.quantity} Phòng x ${formatCurrencyVND(data.pricePerNight)} VNĐ/đêm</p>
+                            <p class="text-xs text-[#8b8478] mt-1">${data.quantity} Phòng x ${formatCurrency(data.pricePerNight)} VNĐ/đêm</p>
                             <p class="text-[10px] text-[#a59f93] mt-0.5">Khách: ${data.adultsPerRoom} NL, ${data.childrenPerRoom} TE / phòng</p>
                         </div>
                         <button type="button" class="text-gray-400 hover:text-red-500 absolute top-4 right-4" onclick="removeCartItem('${catName}')">
@@ -635,7 +624,7 @@ function updateCartUI() {
                     </div>
                     <div class="flex justify-between items-center mt-2">
                         <span class="text-[10px] text-gray-400 italic">Ước tính</span>
-                        <span class="text-xs font-medium text-[#2f2a24]">${formatCurrencyVND(data.estimatedTotal)} VNĐ</span>
+                        <span class="text-xs font-medium text-[#2f2a24]">${formatCurrency(data.estimatedTotal)} VNĐ</span>
                     </div>
                 </div>`
                 ;
@@ -654,7 +643,7 @@ function updateCartUI() {
         // Dừng timer khi giỏ trống
         stopCartHoldTimer();
     } else {
-        cartTotalPrice.innerHTML = formatCurrencyVND(totalCartPrice) + " VNĐ <span class='text-[10px] text-gray-400 font-normal normal-case'>(ước tính)</span>";
+        cartTotalPrice.innerHTML = formatCurrency(totalCartPrice) + " VNĐ <span class='text-[10px] text-gray-400 font-normal normal-case'>(ước tính)</span>";
         btnCheckout.disabled = false;
         cartWrapper.classList.remove('hidden');
     }
@@ -789,10 +778,8 @@ function confirmCartBooking() {
     btnCheckout.innerText = "ĐANG XỬ LÝ...";
 
     let roomSelections = [];
-    let totalRoomsCount = 0;
     for (const catName in selectedRoomsCart) {
         const item = selectedRoomsCart[catName];
-        totalRoomsCount += item.roomNumbers.length;
         item.roomNumbers.forEach(roomNo => {
             roomSelections.push({
                 categoryName: catName,
@@ -994,10 +981,7 @@ document.addEventListener("DOMContentLoaded", function () {
         applyDates();
         executeSearch({ preventDefault: () => { }, stopPropagation: () => { } });
     }, 100);
-});
-
-// ── Intersection Observer reveal animations ───────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+    // ── Intersection Observer reveal animations ───────────────────────────────
     const observerOptions = {
         root: null,
         rootMargin: '0px',
