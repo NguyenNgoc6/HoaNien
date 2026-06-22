@@ -42,8 +42,8 @@ def parse_guest_list(json_str):
     except Exception as e:
         print(f"Lỗi parse JSON: {e}", file=sys.stderr)
         return [
-            {"customer_id": 1, "name": "Lê Hoàng Nam", "image_path": "me.jpg", "tour_date": today_str},
-            {"customer_id": 2, "name": "Nguyễn Văn An", "image_path": "ngoclon.jpg", "tour_date": today_str},
+            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "me.jpg", "tour_date": today_str},
+            {"customer_id": 2, "name": "Ngọc Thị", "image_path": "lgok.jpg", "tour_date": today_str},
         ]
 
 
@@ -52,7 +52,7 @@ def load_known_faces(guest_list):
     known_encodings = []
     known_names = []
 
-    # Hardcoded check-in image for "Lê Hoàng Nam"
+    # Hardcoded check-in image for "Nguyễn Xuân Lưu"
     hardcoded_paths = [
         os.path.join("..", "kawai-backend", "src", "main", "resources", "static", "AnhTour", "me.jpg"),
         os.path.join("..", "kawai-backend", "me.jpg"),
@@ -65,8 +65,8 @@ def load_known_faces(guest_list):
                 encodings = face_recognition.face_encodings(image)
                 if encodings:
                     known_encodings.append(encodings[0])
-                    known_names.append("Lê Hoàng Nam")
-                    print(f"✓ [HARDCODED] Đã nạp ảnh nhận diện: Lê Hoàng Nam ({h_path})")
+                    known_names.append("Nguyễn Xuân Lưu")
+                    print(f"✓ [HARDCODED] Đã nạp ảnh nhận diện: Nguyễn Xuân Lưu ({h_path})")
                     break
             except Exception as e:
                 print(f"Lỗi khi nạp ảnh cứng {h_path}: {e}", file=sys.stderr)
@@ -77,7 +77,7 @@ def load_known_faces(guest_list):
             name = record["name"]
 
             # Bỏ qua nếu đã được nạp qua ảnh cứng để tránh trùng lặp
-            if name == "Lê Hoàng Nam" and any(n == "Lê Hoàng Nam" for n in known_names):
+            if name == "Nguyễn Xuân Lưu" and any(n == "Nguyễn Xuân Lưu" for n in known_names):
                 continue
 
             # Nếu path tương đối và không tồn tại, thử tìm trong thư mục kawai-backend hoặc static resources
@@ -269,10 +269,10 @@ def main():
 
     # 1. Parse danh sách khách
     if not json_args:
-        # Tạo dữ liệu test mặc định trỏ tới me.jpg và ngoclon.jpg tại thư mục làm việc hiện tại
+        # Tạo dữ liệu test mặc định trỏ tới me.jpg và lgok.jpg tại thư mục làm việc hiện tại
         json_args = json.dumps([
-            {"customer_id": 1, "name": "Lê Hoàng Nam", "image_path": "me.jpg", "tour_date": today_str},
-            {"customer_id": 2, "name": "Nguyễn Văn An", "image_path": "ngoclon.jpg", "tour_date": today_str},
+            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "me.jpg", "tour_date": today_str},
+            {"customer_id": 2, "name": "Ngọc Thị", "image_path": "lgok.jpg", "tour_date": today_str},
         ])
 
     guest_list = parse_guest_list(json_args)
