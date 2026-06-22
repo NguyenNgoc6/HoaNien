@@ -7,6 +7,7 @@ import com.kawai.services.interfaces.TourBookingService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -43,6 +44,9 @@ public class TourBookingServiceImpl implements TourBookingService {
         private final TourStaffAssignmentRepository tourStaffAssignmentRepository;
         private final EmployeeRepository employeeRepository;
         private final RoomBookingDetailRepository roomBookingDetailRepository;
+
+        @Autowired(required = false)
+        private TourEmailService tourEmailService;
 
         public TourBookingServiceImpl(TourScheduleRepository tourScheduleRepository,
                         TourBookingRepository tourBookingRepository,
@@ -155,6 +159,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                         LOG.debug("Booking {}: postToRoom=false, bỏ qua ghi Folio", savedBooking.getId());
                 }
 
+                // 7. Gửi email xác nhận đặt tour (bất đồng bộ, không block)
+                if (tourEmailService != null) {
+                        tourEmailService.sendBookingConfirmation(savedBooking, customer);
+                }
+
                 return savedBooking.getId();
         }
 
@@ -203,6 +212,12 @@ public class TourBookingServiceImpl implements TourBookingService {
 
                 LOG.info("Cancelled booking {} (resort={}), refund={}, status={}",
                                 bookingId, cancelledByResort, refundAmount, newStatus);
+
+                // Gửi email thông báo hủy tour (bất đồng bộ)
+                if (tourEmailService != null && booking.getCustomer() != null) {
+                        tourEmailService.sendCancellationNotice(
+                                booking, booking.getCustomer(), refundAmount, cancelledByResort);
+                }
 
                 return refundAmount;
         }
