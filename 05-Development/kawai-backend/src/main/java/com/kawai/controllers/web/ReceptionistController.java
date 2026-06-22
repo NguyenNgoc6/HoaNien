@@ -120,7 +120,15 @@ public class ReceptionistController {
                 if (keyword != null && !keyword.trim().isEmpty()) {
                     String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "";
                     String phone = b.getCustomer() != null ? b.getCustomer().getPhone() : "";
-                    String cccd = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+                    String cccdEnc = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+                    String cccd = "";
+                    if (!cccdEnc.isEmpty()) {
+                        try {
+                            cccd = com.kawai.utils.EncryptionUtils.decrypt(cccdEnc);
+                        } catch (Exception e) {
+                            cccd = cccdEnc;
+                        }
+                    }
 
                     String kw = keyword.trim().toLowerCase();
                     boolean match = guestName.toLowerCase().contains(kw) ||
@@ -168,7 +176,15 @@ public class ReceptionistController {
 
             String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách";
             String phone = b.getCustomer() != null ? b.getCustomer().getPhone() : "";
-            String cccd = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+            String cccdEnc = b.getCustomer() != null ? b.getCustomer().getCccdPassportEncrypted() : "";
+            String cccd = "";
+            if (!cccdEnc.isEmpty()) {
+                try {
+                    cccd = com.kawai.utils.EncryptionUtils.decrypt(cccdEnc);
+                } catch (Exception e) {
+                    cccd = cccdEnc;
+                }
+            }
 
             Map<String, Object> map = new HashMap<>();
             map.put("id", b.getId());
@@ -192,12 +208,18 @@ public class ReceptionistController {
                         .collect(Collectors.joining(", "));
             }
             map.put("roomSummary", roomSummary);
+
+            // (Removed unused detailsList creation)
+            List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
+            map.put("dependents", deps);
+
             pagedArrivals.add(map);
         }
 
         // --- IN-HOUSE GUESTS (ĐÃ CHECK-IN) ---
         pageSize = 10;
         List<Booking> allInHouseBookings = bookingRepository.findCheckedIn();
+        Collections.reverse(allInHouseBookings);
 
         int totalInHouseItems = allInHouseBookings.size();
         int totalInHousePages = (int) Math.ceil((double) totalInHouseItems / pageSize);
