@@ -117,11 +117,25 @@ public class TourBookingServiceImpl implements TourBookingService {
 
                 // 6. Post to Room: ghi nợ vào Folio phòng
                 if (request.isPostToRoom()) {
+                        // BR-TR-08: Khi chọn Post to Room, bắt buộc phải cung cấp roomBookingDetailId
+                        // hợp lệ (phòng đã check-in). Nếu không → TOUR-004.
                         if (request.getRoomBookingDetailId() == null) {
-                                throw new IllegalStateException("TOUR-004: Phòng chưa được check-in hoặc không hợp lệ để ghi nợ");
+                                LOG.warn("TOUR-004: Booking {} yêu cầu Post to Room nhưng không cung cấp roomBookingDetailId",
+                                                savedBooking.getId());
+                                throw new IllegalStateException(
+                                                "TOUR-004: Vui lòng chọn phòng để ghi nợ. Phòng phải đã được check-in.");
                         }
-                        RoomBookingDetail detail = roomBookingDetailRepository.findById(request.getRoomBookingDetailId())
-                                        .orElseThrow(() -> new IllegalStateException("TOUR-005: Chi tiết đặt phòng không tồn tại"));
+
+                        // BR-TR-09: roomBookingDetailId phải tồn tại trong hệ thống → TOUR-005
+                        RoomBookingDetail detail = roomBookingDetailRepository
+                                        .findById(request.getRoomBookingDetailId())
+                                        .orElseThrow(() -> {
+                                                LOG.warn("TOUR-005: RoomBookingDetail {} không tồn tại trong hệ thống",
+                                                                request.getRoomBookingDetailId());
+                                                return new IllegalStateException(
+                                                                "TOUR-005: Chi tiết đặt phòng không tồn tại hoặc đã bị xóa. ID: "
+                                                                                + request.getRoomBookingDetailId());
+                                        });
 
                         FolioItem folioItem = new FolioItem();
                         folioItem.setBooking(savedBooking);
@@ -134,8 +148,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                         folioItem.setIsSettledSeparately(false);
 
                         folioItemRepository.save(folioItem);
-                        LOG.info("Post to Room: FolioItem created for tour booking {} - {} VND, linked to RoomBookingDetail {}",
+                        LOG.info("Post to Room: FolioItem tạo thành công cho tour booking {} — {} VND, RoomBookingDetail {}",
                                         savedBooking.getId(), totalPrice, detail.getId());
+                } else {
+                        // Không Post to Room — bỏ qua bước ghi Folio hoàn toàn
+                        LOG.debug("Booking {}: postToRoom=false, bỏ qua ghi Folio", savedBooking.getId());
                 }
 
                 return savedBooking.getId();
