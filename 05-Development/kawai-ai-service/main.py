@@ -24,7 +24,7 @@ import os
 # ============================================================
 # CONFIGURATION
 # ============================================================
-FACE_MATCH_TOLERANCE = 0.40  # Ngưỡng tolerance (thấp hơn = chặt hơn, mặc định face_recognition là 0.6)
+FACE_MATCH_TOLERANCE = 0.45  # Ngưỡng tolerance (thấp hơn = chặt hơn, mặc định face_recognition là 0.6)
 MIN_FACE_MATCH_SCORE = 85    # Tỷ lệ % tối thiểu theo BR-TR-02
 
 today_str = datetime.now().strftime("%Y-%m-%d")
