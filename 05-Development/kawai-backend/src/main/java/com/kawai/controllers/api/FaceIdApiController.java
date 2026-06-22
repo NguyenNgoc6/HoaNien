@@ -190,18 +190,20 @@ public class FaceIdApiController {
             }
 
             if (name != null) {
-                Map<String, Object> guest = new HashMap<>();
-                guest.put("customer_id", attendee.getId());
-                guest.put("name", name);
-                // Ánh xạ file ảnh tương ứng trong thư mục D:\VStudio
+                String imgPath = null;
                 if (name.equalsIgnoreCase("Lê Hoàng Nam")) {
-                    guest.put("image_path", "me.jpg");
+                    imgPath = "me.jpg";
                 } else if (name.equalsIgnoreCase("Nguyễn Văn An")) {
-                    guest.put("image_path", "ngoclon.jpg");
-                } else {
-                    guest.put("image_path", "me.jpg"); // Fallback
+                    imgPath = "ngoclon.jpg";
                 }
-                guestList.add(guest);
+
+                if (imgPath != null) {
+                    Map<String, Object> guest = new HashMap<>();
+                    guest.put("customer_id", attendee.getId());
+                    guest.put("name", name);
+                    guest.put("image_path", imgPath);
+                    guestList.add(guest);
+                }
             }
         }
         return guestList;
@@ -280,7 +282,9 @@ public class FaceIdApiController {
                 }
                 if (name != null) {
                     String imageUrl = mapNameToImageUrl(name);
-                    refs.add(Map.of("name", name, "imageUrl", imageUrl));
+                    if (imageUrl != null) {
+                        refs.add(Map.of("name", name, "imageUrl", imageUrl));
+                    }
                 }
             }
 
@@ -302,7 +306,6 @@ public class FaceIdApiController {
         } else if (name.equalsIgnoreCase("Nguyễn Văn An")) {
             return "/AnhTour/ngoclon.jpg";
         }
-        // Fallback: dung anh me.jpg cho tat ca
-        return "/AnhTour/me.jpg";
+        return null;
     }
 }

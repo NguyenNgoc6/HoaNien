@@ -53,17 +53,23 @@ def load_known_faces(guest_list):
     known_names = []
 
     # Hardcoded check-in image for "Lê Hoàng Nam"
-    hardcoded_path = r"D:\SWP391\su26-swp391-se2023-g2\03_sourcecode\kawai-backend\me.jpg"
-    if os.path.exists(hardcoded_path):
-        try:
-            image = face_recognition.load_image_file(hardcoded_path)
-            encodings = face_recognition.face_encodings(image)
-            if encodings:
-                known_encodings.append(encodings[0])
-                known_names.append("Lê Hoàng Nam")
-                print(f"✓ [HARDCODED] Đã nạp ảnh nhận diện: Lê Hoàng Nam ({hardcoded_path})")
-        except Exception as e:
-            print(f"Lỗi khi nạp ảnh cứng: {e}", file=sys.stderr)
+    hardcoded_paths = [
+        os.path.join("..", "kawai-backend", "src", "main", "resources", "static", "AnhTour", "me.jpg"),
+        os.path.join("..", "kawai-backend", "me.jpg"),
+        "me.jpg"
+    ]
+    for h_path in hardcoded_paths:
+        if os.path.exists(h_path):
+            try:
+                image = face_recognition.load_image_file(h_path)
+                encodings = face_recognition.face_encodings(image)
+                if encodings:
+                    known_encodings.append(encodings[0])
+                    known_names.append("Lê Hoàng Nam")
+                    print(f"✓ [HARDCODED] Đã nạp ảnh nhận diện: Lê Hoàng Nam ({h_path})")
+                    break
+            except Exception as e:
+                print(f"Lỗi khi nạp ảnh cứng {h_path}: {e}", file=sys.stderr)
 
     for record in guest_list:
         if record.get("tour_date") == today_str:
@@ -74,11 +80,15 @@ def load_known_faces(guest_list):
             if name == "Lê Hoàng Nam" and any(n == "Lê Hoàng Nam" for n in known_names):
                 continue
 
-            # Nếu path tương đối và không tồn tại, thử tìm trong thư mục kawai-backend
+            # Nếu path tương đối và không tồn tại, thử tìm trong thư mục kawai-backend hoặc static resources
             if not os.path.isabs(image_path) and not os.path.exists(image_path):
-                alt_path = os.path.join("..", "kawai-backend", image_path)
+                alt_path = os.path.join("..", "kawai-backend", "src", "main", "resources", "static", "AnhTour", image_path)
                 if os.path.exists(alt_path):
                     image_path = alt_path
+                else:
+                    alt_path = os.path.join("..", "kawai-backend", image_path)
+                    if os.path.exists(alt_path):
+                        image_path = alt_path
 
             if not os.path.exists(image_path):
                 print(f"Cảnh báo: Không tìm thấy ảnh {image_path} cho {name}", file=sys.stderr)
