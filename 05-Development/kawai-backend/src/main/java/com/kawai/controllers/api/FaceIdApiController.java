@@ -79,7 +79,7 @@ public class FaceIdApiController {
 
             // Fallback nếu DB trống (môi trường test)
             if (guestList.isEmpty()) {
-                guestList.add(Map.of("customer_id", 1L, "name", "Nguyễn Xuân Lưu", "image_path", "me.jpg"));
+                guestList.add(Map.of("customer_id", 1L, "name", "Nguyễn Xuân Lưu", "image_path", "luuham.jpg"));
                 guestList.add(Map.of("customer_id", 2L, "name", "Ngọc Thị", "image_path", "lgok.jpg"));
             }
 
@@ -192,7 +192,7 @@ public class FaceIdApiController {
             if (name != null) {
                 String imgPath = null;
                 if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
-                    imgPath = "me.jpg";
+                    imgPath = "luuham.jpg";
                 } else if (name.equalsIgnoreCase("Ngọc Thị")) {
                     imgPath = "lgok.jpg";
                 }
@@ -288,9 +288,9 @@ public class FaceIdApiController {
                 }
             }
 
-            // Fallback nếu DB trống - dùng ảnh me.jpg và lgok.jpg cho demo
+            // Fallback nếu DB trống - dùng ảnh luuham.jpg và lgok.jpg cho demo
             if (refs.isEmpty()) {
-                refs.add(Map.of("name", "Nguyễn Xuân Lưu", "imageUrl", "/AnhTour/me.jpg"));
+                refs.add(Map.of("name", "Nguyễn Xuân Lưu", "imageUrl", "/AnhTour/luuham.jpg"));
                 refs.add(Map.of("name", "Ngọc Thị", "imageUrl", "/AnhTour/lgok.jpg"));
             }
 
@@ -302,7 +302,7 @@ public class FaceIdApiController {
 
     private String mapNameToImageUrl(String name) {
         if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
-            return "/AnhTour/me.jpg";
+            return "/AnhTour/luuham.jpg";
         } else if (name.equalsIgnoreCase("Ngọc Thị")) {
             return "/AnhTour/lgok.jpg";
         }

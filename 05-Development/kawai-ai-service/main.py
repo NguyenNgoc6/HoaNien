@@ -42,7 +42,7 @@ def parse_guest_list(json_str):
     except Exception as e:
         print(f"Lỗi parse JSON: {e}", file=sys.stderr)
         return [
-            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "me.jpg", "tour_date": today_str},
+            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "luuham.jpg", "tour_date": today_str},
             {"customer_id": 2, "name": "Ngọc Thị", "image_path": "lgok.jpg", "tour_date": today_str},
         ]
 
@@ -54,9 +54,9 @@ def load_known_faces(guest_list):
 
     # Hardcoded check-in image for "Nguyễn Xuân Lưu"
     hardcoded_paths = [
-        os.path.join("..", "kawai-backend", "src", "main", "resources", "static", "AnhTour", "me.jpg"),
-        os.path.join("..", "kawai-backend", "me.jpg"),
-        "me.jpg"
+        os.path.join("..", "kawai-backend", "src", "main", "resources", "static", "AnhTour", "luuham.jpg"),
+        os.path.join("..", "kawai-backend", "luuham.jpg"),
+        "luuham.jpg"
     ]
     for h_path in hardcoded_paths:
         if os.path.exists(h_path):
@@ -269,9 +269,9 @@ def main():
 
     # 1. Parse danh sách khách
     if not json_args:
-        # Tạo dữ liệu test mặc định trỏ tới me.jpg và lgok.jpg tại thư mục làm việc hiện tại
+        # Tạo dữ liệu test mặc định trỏ tới luuham.jpg và lgok.jpg tại thư mục làm việc hiện tại
         json_args = json.dumps([
-            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "me.jpg", "tour_date": today_str},
+            {"customer_id": 1, "name": "Nguyễn Xuân Lưu", "image_path": "luuham.jpg", "tour_date": today_str},
             {"customer_id": 2, "name": "Ngọc Thị", "image_path": "lgok.jpg", "tour_date": today_str},
         ])
 
