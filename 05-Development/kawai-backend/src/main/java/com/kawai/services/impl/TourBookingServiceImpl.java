@@ -42,6 +42,7 @@ public class TourBookingServiceImpl implements TourBookingService {
         private final FolioItemRepository folioItemRepository;
         private final TourStaffAssignmentRepository tourStaffAssignmentRepository;
         private final EmployeeRepository employeeRepository;
+        private final RoomBookingDetailRepository roomBookingDetailRepository;
 
         public TourBookingServiceImpl(TourScheduleRepository tourScheduleRepository,
                         TourBookingRepository tourBookingRepository,
@@ -49,7 +50,8 @@ public class TourBookingServiceImpl implements TourBookingService {
                         CustomerRepository customerRepository,
                         FolioItemRepository folioItemRepository,
                         TourStaffAssignmentRepository tourStaffAssignmentRepository,
-                        EmployeeRepository employeeRepository) {
+                        EmployeeRepository employeeRepository,
+                        RoomBookingDetailRepository roomBookingDetailRepository) {
                 this.tourScheduleRepository = tourScheduleRepository;
                 this.tourBookingRepository = tourBookingRepository;
                 this.tourAttendeeRepository = tourAttendeeRepository;
@@ -57,6 +59,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                 this.folioItemRepository = folioItemRepository;
                 this.tourStaffAssignmentRepository = tourStaffAssignmentRepository;
                 this.employeeRepository = employeeRepository;
+                this.roomBookingDetailRepository = roomBookingDetailRepository;
         }
 
         @Override
@@ -113,10 +116,13 @@ public class TourBookingServiceImpl implements TourBookingService {
                 tourAttendeeRepository.saveAll(attendees);
 
                 // 6. Post to Room: ghi nợ vào Folio phòng
-                if (request.isPostToRoom()) {
+                if (request.isPostToRoom() && request.getRoomBookingDetailId() != null) {
+                        RoomBookingDetail roomDetail = roomBookingDetailRepository.findById(request.getRoomBookingDetailId())
+                                .orElseThrow(() -> new IllegalStateException("TOUR-004: RoomBookingDetail not found for Folio"));
+
                         FolioItem folioItem = new FolioItem();
                         folioItem.setBooking(savedBooking);
-                        folioItem.setRoomBookingDetail(null);
+                        folioItem.setRoomBookingDetail(roomDetail);
                         folioItem.setPayerCustomer(customer);
                         folioItem.setSourceDepartment("Tour");
                         folioItem.setAmount(totalPrice);
