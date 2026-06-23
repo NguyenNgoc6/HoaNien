@@ -50,7 +50,7 @@ public class TourEmailService {
     @Value("${app.mail.resort-phone:1900 xxxx}")
     private String resortPhone;
 
-    @Value("${app.mail.resort-website:https://hoaniensorresort.vn}")
+    @Value("${app.mail.resort-website:https://hoaniensorretreat.vn}")
     private String resortWebsite;
 
     public TourEmailService(JavaMailSender mailSender, TemplateEngine templateEngine) {

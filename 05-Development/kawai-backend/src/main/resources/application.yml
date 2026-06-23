@@ -56,7 +56,7 @@ app:
   mail:
     from-name: "Hòa Niên Retreat & Resort"
     resort-phone: "1900 xxxx"
-    resort-website: "https://hoaniensorresort.vn"
+    resort-website: "https://hoaniensorretreat.vn"
 
 logging:
   level:
