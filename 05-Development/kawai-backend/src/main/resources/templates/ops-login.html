@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOANIEN · Đăng nhập Hệ thống</title>
+    <title>HoaNien · Đăng nhập Hệ thống</title>
     <link rel="stylesheet" th:href="@{/admin/css/theme.css}">
     <link rel="stylesheet" th:href="@{/admin/css/admin.css}">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <style>
@@ -28,6 +30,7 @@
         *::before,
         *::after {
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         .ops-login-wrap {
@@ -64,20 +67,20 @@
         }
 
         .ops-login-brand h1 {
-            font-family: "Playfair Display", "Times New Roman", Georgia, serif;
+            font-family: 'EB Garamond', Georgia, serif !important;
+            font-style: italic;
             font-size: 32px;
-            font-weight: 500;
-            letter-spacing: 0.03em;
+            font-weight: 600;
+            letter-spacing: -0.05em;
             color: #ffffff; /* Trắng hẳn để nổi bật */
             margin: 0 0 6px;
-            text-transform: capitalize;
+            text-transform: none !important;
         }
 
         .ops-login-brand p {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.7); /* Trắng mờ */
             margin: 0;
-            font-family: var(--font-sans);
         }
 
         .ops-form-group {
@@ -217,7 +220,7 @@
         <div class="ops-login-card">
             <div class="ops-login-brand">
                 <div class="ops-login-brand-dot">◆</div>
-                <h1>HOANIEN</h1>
+                <h1>HoaNien</h1>
                 <p>Đăng nhập</p>
             </div>
 
@@ -266,7 +269,7 @@
             </form>
         </div>
         <div class="ops-login-footer" style="margin-top: 16px;">
-            <p>© 2026 HOANIEN Retreat Resort & Hub</p>
+            <p>© 2026 HoaNien Retreat Resort & Hub</p>
         </div>
     </div>
     <script>
