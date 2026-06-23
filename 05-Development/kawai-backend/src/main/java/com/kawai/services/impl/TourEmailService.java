@@ -100,7 +100,7 @@ public class TourEmailService {
 
             sendHtmlEmail(
                 customer.getEmail(),
-                "✅ Xác nhận đặt tour — " + tourName + " | Hòa Niên Resort",
+                "Xác nhận đặt tour — " + tourName + " | Hòa Niên Resort",
                 html
             );
 
