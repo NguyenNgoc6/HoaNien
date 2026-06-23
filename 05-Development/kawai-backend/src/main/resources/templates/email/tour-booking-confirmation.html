@@ -339,10 +339,8 @@
           </div>
           <div class="info-row">
             <span class="info-label">Thanh toán</span>
-            <span class="info-value">
-              <span class="badge badge-direct" th:if="${!postToRoom}">Thanh toán trực tiếp</span>
-              <span class="badge badge-room" th:if="${postToRoom}">Ghi nợ vào phòng</span>
-            </span>
+            <span class="info-value" th:if="${!postToRoom}">Thanh toán trực tiếp</span>
+            <span class="info-value" th:if="${postToRoom}">Ghi nợ vào phòng</span>
           </div>
           <div class="info-row" th:if="${postToRoom and roomDetail != null}">
             <span class="info-label">Phòng ghi nợ</span>
