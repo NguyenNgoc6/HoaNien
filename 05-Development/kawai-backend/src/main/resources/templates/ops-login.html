@@ -36,11 +36,13 @@
         }
 
         .ops-login-card {
-            background: var(--card);
+            background: rgba(28, 25, 23, 0.75); /* Kính mờ đen tối */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
             padding: 40px 36px;
-            border: 1px solid rgba(44, 42, 30, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12); /* Đường viền sáng mờ */
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
 
         .ops-login-brand {
@@ -66,14 +68,14 @@
             font-size: 32px;
             font-weight: 500;
             letter-spacing: 0.03em;
-            color: var(--foreground);
+            color: #ffffff; /* Trắng hẳn để nổi bật */
             margin: 0 0 6px;
             text-transform: capitalize;
         }
 
         .ops-login-brand p {
             font-size: 13px;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.7); /* Trắng mờ */
             margin: 0;
             font-family: var(--font-sans);
         }
@@ -87,7 +89,7 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.75); /* Màu label nhạt/sáng */
             font-weight: 600;
             margin-bottom: 6px;
             font-family: var(--font-sans);
@@ -147,14 +149,15 @@
         }
 
         .ops-error {
-            background: rgba(180, 60, 60, 0.08);
-            color: #8B2A2A;
+            background: rgba(220, 53, 69, 0.15); /* Đỏ mờ */
+            color: #ff8787; /* Chữ đỏ sáng dễ nhìn */
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 13px;
             margin-bottom: 16px;
             display: none;
             font-family: var(--font-sans);
+            border: 1px solid rgba(220, 53, 69, 0.2);
         }
 
         .ops-error.show {
@@ -165,7 +168,7 @@
             text-align: center;
             margin-top: 24px;
             font-size: 12px;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.6); /* Trắng mờ trên nền body tối */
             font-family: var(--font-sans);
         }
 
@@ -185,9 +188,9 @@
             gap: 6px;
             padding: 4px 12px;
             border-radius: 20px;
-            background: rgba(44, 42, 30, 0.06);
+            background: rgba(255, 255, 255, 0.08); /* Nền mờ sáng nhẹ */
             font-size: 11px;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.85); /* Chữ sáng */
             margin-bottom: 24px;
             font-family: var(--font-sans);
         }
@@ -200,7 +203,7 @@
             <div class="ops-login-brand">
                 <div class="ops-login-brand-dot">◆</div>
                 <h1>HOANIEN</h1>
-                <p>Operations Hub — Đăng nhập</p>
+                <p>Đăng nhập</p>
             </div>
 
             <div class="ops-login-role-badge" style="display: flex; justify-content: center;">
