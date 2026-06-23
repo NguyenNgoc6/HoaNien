@@ -318,36 +318,36 @@
         </div>
         <div class="booking-card-body">
           <div class="info-row">
-            <span class="info-label">Tên tour</span>
+            <span class="info-label">Tên tour:</span>
             <span class="info-value highlight" th:text="${tourName}">Vịnh Hạ Long 1 Ngày</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Ngày khởi hành</span>
+            <span class="info-label">Ngày khởi hành:</span>
             <span class="info-value" th:text="${departureDate}">10/07/2026</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Giờ khởi hành</span>
+            <span class="info-label">Giờ khởi hành:</span>
             <span class="info-value" th:text="${departureTime}">08:00</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Số người tham gia</span>
+            <span class="info-label">Số người tham gia:</span>
             <span class="info-value" th:text="${participantCount} + ' người'">3 người</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Trạng thái</span>
+            <span class="info-label">Trạng thái:</span>
             <span class="info-value success">Đã xác nhận</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Thanh toán</span>
+            <span class="info-label">Thanh toán:</span>
             <span class="info-value" th:if="${!postToRoom}">Thanh toán trực tiếp</span>
             <span class="info-value" th:if="${postToRoom}">Ghi nợ vào phòng</span>
           </div>
           <div class="info-row" th:if="${postToRoom and roomDetail != null}">
-            <span class="info-label">Phòng ghi nợ</span>
+            <span class="info-label">Phòng ghi nợ:</span>
             <span class="info-value" th:text="'Phòng ' + ${roomDetail}">Phòng 201</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Ngày đặt</span>
+            <span class="info-label">Ngày đặt:</span>
             <span class="info-value" th:text="${bookingDate}">22/06/2026</span>
           </div>
         </div>
