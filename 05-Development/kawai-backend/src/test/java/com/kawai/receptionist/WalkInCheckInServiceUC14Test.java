@@ -35,7 +35,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ import static org.mockito.Mockito.*;
  * ┌─────────────┬──────────────────────────────────────────────────────────────┬──────────┐
  * │ TC ID │ Kịch bản │ Severity │
  * ├─────────────┼──────────────────────────────────────────────────────────────┼──────────┤
- * │ TC-M2-021 │ Walk-in thành công: Booking + OCCUPIED + Account tạo mới │
+ * │ TC-M2-021 │ Walk-in thành công: Booking + Occupied + Account tạo mới │
  * CRITICAL │
  * │ TC-M2-023 │ E-01: CCCD sai format → từ chối │ HIGH │
  * │ │ E-01: dateOfBirth null → từ chối │ HIGH │
@@ -125,6 +124,10 @@ class WalkInCheckInServiceUC14Test {
         private RoomSurchargeRepository roomSurchargeRepository;
         @Mock
         private com.kawai.repositories.RoomGuestRepository roomGuestRepository;
+        @Mock
+        private com.kawai.repositories.RoleRepository roleRepository;
+        @Mock
+        private com.kawai.services.interfaces.FolioService folioService;
 
         // ── Test Data Constants (SYNTHETIC) ──────────────────────────────────────
         private static final String CCCD_NEW_GUEST = "001234567890"; // TC-M2-021
@@ -184,7 +187,6 @@ class WalkInCheckInServiceUC14Test {
                 req.setEmail("nguyen.test@kawai.synthetic");
                 req.setCheckInDate(LocalDate.now());
                 req.setCheckOutDate(LocalDate.now().plusDays(2));
-                req.setNumberOfGuests(numberOfGuests);
                 req.setRoomId(roomId);
                 return req;
         }
@@ -217,11 +219,12 @@ class WalkInCheckInServiceUC14Test {
                 });
                 lenient().when(dependentRepository.save(any(Dependent.class))).thenAnswer(inv -> {
                         Dependent dep = inv.getArgument(0);
-                        if (dep.getId() == null) dep.setId(3001L);
+                        if (dep.getId() == null)
+                                dep.setId(3001L);
                         return dep;
                 });
                 lenient().when(roomGuestRepository.save(any(com.kawai.models.RoomGuest.class)))
-                        .thenAnswer(inv -> inv.getArgument(0));
+                                .thenAnswer(inv -> inv.getArgument(0));
         }
 
         // ══════════════════════════════════════════════════════════════════════════
@@ -234,7 +237,7 @@ class WalkInCheckInServiceUC14Test {
          * Given Phòng R301 Vacant_Clean capacity=2, chưa có Customer với CCCD
          * 001234567890
          * When createWalkInBookingAndCheckIn() được gọi với dữ liệu hợp lệ
-         * Then Response: bookingId not-null, roomNumber="R301", status="CHECKED_IN"
+         * Then Response: bookingId not-null, roomNumber="R301", status="Checked_In"
          * Room R301 → OCCUPIED
          * RoomBooking → CHECKED_IN, bookingSource="WALK_IN"
          * RoomBookingDetail → CHECKED_IN
@@ -262,20 +265,20 @@ class WalkInCheckInServiceUC14Test {
                 assertNotNull(response, "Response không được null");
                 assertNotNull(response.getBookingId(), "bookingId phải được sinh ra");
                 assertEquals("R301", response.getRoomNumber(), "roomNumber phải là R301");
-                assertEquals("CHECKED_IN", response.getBookingStatus(), "status phải là CHECKED_IN");
+                assertEquals("Checked_In", response.getBookingStatus(), "status phải là CHECKED_IN");
                 assertTrue(response.isNewCustomer(), "isNewCustomer phải true cho khách mới");
 
                 // Assert — [State Transition] Room → OCCUPIED
                 ArgumentCaptor<Room> roomCaptor = ArgumentCaptor.forClass(Room.class);
                 verify(roomRepository).save(roomCaptor.capture());
-                assertEquals("OCCUPIED", roomCaptor.getValue().getRoomStatus(),
+                assertEquals("Occupied", roomCaptor.getValue().getRoomStatus(),
                                 "[State Transition] Room R301 phải chuyển sang OCCUPIED");
 
                 // Assert — [State Transition] RoomBooking → CHECKED_IN
                 ArgumentCaptor<RoomBooking> bookingCaptor = ArgumentCaptor.forClass(RoomBooking.class);
                 verify(roomBookingRepository, atLeastOnce()).save(bookingCaptor.capture());
                 boolean hasCheckedIn = bookingCaptor.getAllValues().stream()
-                                .anyMatch(b -> "CHECKED_IN".equals(b.getBookingStatus()));
+                                .anyMatch(b -> "Checked_In".equals(b.getBookingStatus()));
                 assertTrue(hasCheckedIn,
                                 "[State Transition] RoomBooking phải có trạng thái CHECKED_IN");
                 boolean isWalkIn = bookingCaptor.getAllValues().stream()
@@ -285,7 +288,7 @@ class WalkInCheckInServiceUC14Test {
                 // Assert — [State Transition] RoomBookingDetail → CHECKED_IN
                 ArgumentCaptor<RoomBookingDetail> detailCaptor = ArgumentCaptor.forClass(RoomBookingDetail.class);
                 verify(roomBookingDetailRepository).save(detailCaptor.capture());
-                assertEquals("CHECKED_IN", detailCaptor.getValue().getDetailStatus(),
+                assertEquals("Checked_In", detailCaptor.getValue().getDetailStatus(),
                                 "[State Transition] RoomBookingDetail phải có detailStatus=CHECKED_IN");
 
                 // Assert — Customer mới được tạo
@@ -445,7 +448,6 @@ class WalkInCheckInServiceUC14Test {
                                 || ex.getMessage().toLowerCase().contains("failed"),
                                 "Message phải chứa 'transaction rolled back'. Thực tế: " + ex.getMessage());
 
-
         }
 
         // ══════════════════════════════════════════════════════════════════════════
@@ -482,7 +484,7 @@ class WalkInCheckInServiceUC14Test {
                 WalkInCheckInResponse response = walkInCheckInService.createWalkInBookingAndCheckIn(request);
 
                 assertNotNull(response);
-                assertEquals("CHECKED_IN", response.getBookingStatus());
+                assertEquals("Checked_In", response.getBookingStatus());
                 assertFalse(response.isNewCustomer(), "isNewCustomer phải false — khách đã có profile");
                 assertEquals(CUSTOMER_ID_99, response.getCustomerId(), "customerId phải là 99");
 
@@ -498,7 +500,7 @@ class WalkInCheckInServiceUC14Test {
                 // Phòng R308 → OCCUPIED
                 ArgumentCaptor<Room> roomCap = ArgumentCaptor.forClass(Room.class);
                 verify(roomRepository).save(roomCap.capture());
-                assertEquals("OCCUPIED", roomCap.getValue().getRoomStatus());
+                assertEquals("Occupied", roomCap.getValue().getRoomStatus());
         }
 
         // ══════════════════════════════════════════════════════════════════════════
@@ -540,7 +542,7 @@ class WalkInCheckInServiceUC14Test {
                 WalkInCheckInResponse response = walkInCheckInService.createWalkInBookingAndCheckIn(request);
 
                 assertNotNull(response);
-                assertEquals("CHECKED_IN", response.getBookingStatus());
+                assertEquals("Checked_In", response.getBookingStatus());
                 assertEquals(1, response.getAccompaniedGuestCount(),
                                 "accompaniedGuestCount phải = 1");
 
@@ -596,13 +598,15 @@ class WalkInCheckInServiceUC14Test {
         }
 
         // ══════════════════════════════════════════════════════════════════════════
-        // TC-M2-033 | MEDIUM | Soft Capacity: numberOfGuests vượt base capacity → Phụ thu
+        // TC-M2-033 | MEDIUM | Soft Capacity: numberOfGuests vượt base capacity → Phụ
+        // thu
         // ══════════════════════════════════════════════════════════════════════════
 
         /**
          * TC-M2-033 — Soft Capacity (Surcharge)
          *
-         * Given Phòng R314 Vacant_Clean, baseAdults=2, maxAdults=4, extraAdultSurcharge=500000
+         * Given Phòng R314 Vacant_Clean, baseAdults=2, maxAdults=4,
+         * extraAdultSurcharge=500000
          * When Walk-in với 3 người lớn (1 primary + 2 companions > 18 tuổi)
          * Then HTTP 201 Created
          * RoomBookingDetail.extraSurcharge = 500000
@@ -636,7 +640,7 @@ class WalkInCheckInServiceUC14Test {
                 WalkInCheckInResponse response = walkInCheckInService.createWalkInBookingAndCheckIn(request);
 
                 assertNotNull(response);
-                assertEquals("CHECKED_IN", response.getBookingStatus());
+                assertEquals("Checked_In", response.getBookingStatus());
 
                 ArgumentCaptor<RoomBookingDetail> detailCap = ArgumentCaptor.forClass(RoomBookingDetail.class);
                 verify(roomBookingDetailRepository, atLeastOnce()).save(detailCap.capture());
@@ -673,7 +677,7 @@ class WalkInCheckInServiceUC14Test {
 
                 WalkInCheckInRequest request = buildRequest(CCCD_NEW_GUEST, ROOM_314, 5);
                 List<DependentRegistrationDTO> companions = new ArrayList<>();
-                for (int i=0; i<4; i++) {
+                for (int i = 0; i < 4; i++) {
                         DependentRegistrationDTO d = new DependentRegistrationDTO();
                         d.setDateOfBirth(LocalDate.now().minusYears(20)); // Adult
                         companions.add(d);
@@ -736,11 +740,8 @@ class WalkInCheckInServiceUC14Test {
                 ArgumentCaptor<RoomBooking> bookingCap = ArgumentCaptor.forClass(RoomBooking.class);
                 verify(roomBookingRepository, atLeastOnce()).save(bookingCap.capture());
                 assertTrue(bookingCap.getAllValues().stream()
-                                .anyMatch(b -> "CHECKED_IN".equals(b.getBookingStatus())),
+                                .anyMatch(b -> "Checked_In".equals(b.getBookingStatus())),
                                 "[BR-10] Booking CHECKED_IN phải được lưu");
         }
-
-
-
 
 }

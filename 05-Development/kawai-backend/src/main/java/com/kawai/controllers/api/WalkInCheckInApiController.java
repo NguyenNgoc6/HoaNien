@@ -12,16 +12,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/receptionist/walkin")
 public class WalkInCheckInApiController {
 
-    private final WalkInCheckInService walkInCheckInService;
+    public static final String PAYMENT_METHOD_VNPAY = "Chuyển khoản";
 
-    public WalkInCheckInApiController(WalkInCheckInService walkInCheckInService) {
+    private final WalkInCheckInService walkInCheckInService;
+    private final com.kawai.services.interfaces.VnPayService vnPayService;
+
+    public WalkInCheckInApiController(WalkInCheckInService walkInCheckInService,
+            com.kawai.services.interfaces.VnPayService vnPayService) {
         this.walkInCheckInService = walkInCheckInService;
+        this.vnPayService = vnPayService;
     }
 
-    /**
-     * API 1: Preview tính toán số lượng khách và số tiền phụ thu
-     * Được gọi khi Lễ tân đang nhập ngày sinh của khách hàng
-     */
     @PostMapping("/calculate-surcharge")
     public ResponseEntity<WalkInSurchargeResponse> calculateSurchargePreview(
             @RequestBody WalkInCheckInRequest request) {
@@ -29,13 +30,24 @@ public class WalkInCheckInApiController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * API 2: Thực hiện luồng Check-in thực tế
-     */
+    @PostMapping("/cancel-pending/{bookingId}")
+    public ResponseEntity<?> cancelPendingWalkIn(@PathVariable Long bookingId) {
+        walkInCheckInService.cancelPendingWalkIn(bookingId);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/checkin")
     public ResponseEntity<WalkInCheckInResponse> walkInCheckIn(
-            @RequestBody WalkInCheckInRequest request) {
+            @RequestBody WalkInCheckInRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
         WalkInCheckInResponse response = walkInCheckInService.createWalkInBookingAndCheckIn(request);
+
+        if (PAYMENT_METHOD_VNPAY.equals(request.getPaymentMethod()) && request.getDepositAmount() != null
+                && request.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            String paymentUrl = vnPayService.createPaymentUrlForWalkIn(response.getBookingId(), httpRequest.getRemoteAddr());
+            response.setPaymentUrl(paymentUrl);
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

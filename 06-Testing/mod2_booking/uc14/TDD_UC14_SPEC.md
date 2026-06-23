@@ -154,7 +154,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🔴 CRITICAL
 **Feature Under Test:** UC-14 Normal Flow (toàn bộ 16 bước)
 **SRS Coverage:** Normal Flow, BR-01, BR-02, BR-03, BR-04, BR-05, BR-06
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -213,7 +213,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟠 HIGH
 **Feature Under Test:** UC-14 Step 4, E-01
 **SRS Coverage:** BR-01 (Identification required and valid)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **CWE:** CWE-20 — Improper Input Validation
 **Test Data Classification:** SYNTHETIC
@@ -247,7 +247,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟠 HIGH
 **Feature Under Test:** UC-14 AF-01 (No Available Room)
 **SRS Coverage:** BR-02 (Check-in only if room available)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -275,7 +275,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🔴 CRITICAL
 **Feature Under Test:** UC-14 E-03, ADR-UC14-003
 **SRS Coverage:** E-03 (Reservation Creation Failure — Transaction rolled back)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -318,7 +318,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟡 MEDIUM
 **Feature Under Test:** UC-14 AF-02 (Existing Guest Record Found)
 **SRS Coverage:** AF-02, BR-06 (PII security — không duplicate)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -352,7 +352,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟡 MEDIUM
 **Feature Under Test:** UC-14 AF-03 (Additional Guests Registered)
 **SRS Coverage:** BR-07 (Temporary residence compliance — all guests)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -393,7 +393,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟠 HIGH
 **Feature Under Test:** UC-14 Step 7-8, E-02 (Room Becomes Unavailable)
 **SRS Coverage:** BR-02 (room must be available for check-in)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -421,7 +421,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟠 HIGH
 **Feature Under Test:** UC-14 Normal Flow Step 11 (System creates reservation), Step 12-13
 **SRS Coverage:** BR-08 (System auto-generates account), BR-09 (Default password policy), BR-10 (Account linked to Reservation)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -466,7 +466,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟡 MEDIUM
 **Feature Under Test:** UC-14 Normal Flow Step 5 (Enter stay details — Number of guests)
 **SRS Coverage:** Phụ thu quá người
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -491,7 +491,7 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 **Severity:** 🟡 MEDIUM
 **Feature Under Test:** UC-14 Normal Flow Step 5
 **SRS Coverage:** BR-02 (room availability includes capacity validation)
-**TDD Phase:** 🔴 RED
+**TDD Phase:** 🟢 GREEN
 **Test File:** `WalkInCheckInServiceUC14Test.java`
 **Test Data Classification:** SYNTHETIC
 
@@ -557,23 +557,23 @@ NGOÀI PHẠM VI UC-14 (test riêng):
 
 | SRS Item    | Covered By                        | Status |
 | ----------- | --------------------------------- | ------ |
-| Normal Flow | TC-M2-021                         | [ ]    |
-| AF-01       | TC-M2-024                         | [ ]    |
-| AF-02       | TC-M2-028                         | [ ]    |
-| AF-03       | TC-M2-029                         | [ ]    |
-| E-01        | TC-M2-023                         | [ ]    |
-| E-02        | TC-M2-030                         | [ ]    |
-| E-03        | TC-M2-025                         | [ ]    |
-| BR-01       | TC-M2-023                         | [ ]    |
-| BR-02       | TC-M2-024, TC-M2-030, TC-M2-033   | [ ]    |
-| BR-03       | TC-M2-021                         | [ ]    |
-| BR-04       | TC-M2-021                         | [ ]    |
-| BR-05       | TC-M2-021                         | [ ]    |
-| BR-06       | TC-M2-028 (no duplicate)          | [ ]    |
-| BR-07       | TC-M2-029                         | [ ]    |
-| BR-08       | TC-M2-031                         | [ ]    |
-| BR-09       | TC-M2-031                         | [ ]    |
-| BR-10       | TC-M2-031                         | [ ]    |
+| Normal Flow | TC-M2-021                         | [x]    |
+| AF-01       | TC-M2-024                         | [x]    |
+| AF-02       | TC-M2-028                         | [x]    |
+| AF-03       | TC-M2-029                         | [x]    |
+| E-01        | TC-M2-023                         | [x]    |
+| E-02        | TC-M2-030                         | [x]    |
+| E-03        | TC-M2-025                         | [x]    |
+| BR-01       | TC-M2-023                         | [x]    |
+| BR-02       | TC-M2-024, TC-M2-030, TC-M2-033   | [x]    |
+| BR-03       | TC-M2-021                         | [x]    |
+| BR-04       | TC-M2-021                         | [x]    |
+| BR-05       | TC-M2-021                         | [x]    |
+| BR-06       | TC-M2-028 (no duplicate)          | [x]    |
+| BR-07       | TC-M2-029                         | [x]    |
+| BR-08       | TC-M2-031                         | [x]    |
+| BR-09       | TC-M2-031                         | [x]    |
+| BR-10       | TC-M2-031                         | [x]    |
 
 ---
 

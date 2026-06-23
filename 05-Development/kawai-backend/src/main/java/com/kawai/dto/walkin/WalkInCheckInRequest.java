@@ -22,7 +22,9 @@ public class WalkInCheckInRequest {
     private Long roomId;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
-    private int numberOfGuests;
+
+    private java.math.BigDecimal depositAmount;
+    private String paymentMethod;
 
     // ── Khách đi kèm (optional) ──────────────────────────────────────────────
     private List<DependentRegistrationDTO> accompaniedGuests;
@@ -100,13 +102,6 @@ public class WalkInCheckInRequest {
         this.checkOutDate = v;
     }
 
-    public int getNumberOfGuests() {
-        return numberOfGuests;
-    }
-
-    public void setNumberOfGuests(int v) {
-        this.numberOfGuests = v;
-    }
 
     public List<DependentRegistrationDTO> getAccompaniedGuests() {
         return accompaniedGuests;
@@ -114,5 +109,21 @@ public class WalkInCheckInRequest {
 
     public void setAccompaniedGuests(List<DependentRegistrationDTO> v) {
         this.accompaniedGuests = v;
+    }
+
+    public java.math.BigDecimal getDepositAmount() {
+        return depositAmount;
+    }
+
+    public void setDepositAmount(java.math.BigDecimal depositAmount) {
+        this.depositAmount = depositAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }

@@ -27,6 +27,7 @@ public interface WalkInCheckInService {
      *                                                transaction rollback
      */
     WalkInCheckInResponse createWalkInBookingAndCheckIn(WalkInCheckInRequest request);
+    void cancelPendingWalkIn(Long bookingId);
 
     java.util.Optional<com.kawai.models.Customer> searchCustomer(String keyword);
 

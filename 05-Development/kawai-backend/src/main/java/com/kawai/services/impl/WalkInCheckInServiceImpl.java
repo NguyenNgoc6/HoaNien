@@ -58,15 +58,10 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
     private final AccountRepository accountRepository;
     private final DependentRepository dependentRepository;
     private final RoomSurchargeRepository roomSurchargeRepository;
-    private final RoomGuestRepository roomGuestRepository;
-    private final RoleRepository roleRepository;
-
-    // ── Constants ────────────────────────────────────────────────────────────
-    /** Ngưỡng tuổi phân loại người lớn (>= ADULT_AGE_THRESHOLD là người lớn) */
+    private final com.kawai.repositories.RoomGuestRepository roomGuestRepository;
+    private final com.kawai.repositories.RoleRepository roleRepository;
+    private final com.kawai.services.interfaces.FolioService folioService;
     private static final int ADULT_AGE_THRESHOLD = 18;
-    /** Default password cho tài khoản khách mới (BR-09) */
-    private static final String DEFAULT_PASSWORD_PREFIX = "Kawai@";
-    /** CCCD format: đúng 12 chữ số */
     private static final String CCCD_PATTERN = "\\d{12}";
 
     public WalkInCheckInServiceImpl(
@@ -76,9 +71,10 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
             CustomerRepository customerRepository,
             AccountRepository accountRepository,
             DependentRepository dependentRepository,
-            RoomSurchargeRepository roomSurchargeRepository,
-            RoomGuestRepository roomGuestRepository,
-            RoleRepository roleRepository) {
+            com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository,
+            com.kawai.repositories.RoomGuestRepository roomGuestRepository,
+            com.kawai.repositories.RoleRepository roleRepository,
+            com.kawai.services.interfaces.FolioService folioService) {
         this.roomRepository = roomRepository;
         this.roomBookingRepository = roomBookingRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
@@ -88,6 +84,7 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
         this.roomSurchargeRepository = roomSurchargeRepository;
         this.roomGuestRepository = roomGuestRepository;
         this.roleRepository = roleRepository;
+        this.folioService = folioService;
     }
 
     /**
@@ -129,12 +126,10 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
             booking = roomBookingRepository.save(booking);
 
             // ── Step 8: Tạo RoomBookingDetail với extra surcharge ─────────────
-            RoomBookingDetail detail = buildRoomBookingDetail(booking, room, category,
+            RoomBookingDetail detail = buildRoomBookingDetail(request, booking, room, category,
                     guestCount, extraSurcharge);
             roomBookingDetailRepository.save(detail);
-
-            // ── Step 9: Cập nhật trạng thái phòng → OCCUPIED ────────────────
-            room.setRoomStatus("OCCUPIED");
+            room.setRoomStatus("Occupied");
             roomRepository.save(room);
 
             // ── Step 10: Residence Reporting (Dependent records) ────────────
@@ -162,6 +157,21 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
                 roomGuestRepository.save(rg);
             }
 
+            // ── Step 11: Payment & Folio Initialization ──────────────────────
+            BigDecimal deposit = request.getDepositAmount() != null ? request.getDepositAmount() : BigDecimal.ZERO;
+            if (deposit.compareTo(BigDecimal.ZERO) > 0) {
+                booking.setDepositAmount(deposit);
+                roomBookingRepository.save(booking);
+
+                String paymentMethod = request.getPaymentMethod() != null ? request.getPaymentMethod() : "Tiền mặt";
+                // Chỉ ghi nhận FolioItem cọc nếu trả Tiền mặt. Nếu VNPay (Chuyển khoản), sẽ ghi
+                // nhận khi callback thành công.
+                if (!"Chuyển khoản".equalsIgnoreCase(paymentMethod)) {
+                    folioService.addFolioItem(detail.getId(), "FRONT_DESK", deposit.negate(),
+                            "Tiền cọc Walk-in (" + paymentMethod + ")");
+                }
+            }
+
             // ── Build & Return Response ──────────────────────────────────────
             WalkInCheckInResponse response = new WalkInCheckInResponse();
             response.setBookingId(booking.getId());
@@ -185,6 +195,31 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
             throw new BusinessException("MOD2-UC14-005",
                     "Walk-in check-in failed. Transaction rolled back: " + ex.getMessage());
         }
+    }
+
+    @Override
+    @Transactional
+    public void cancelPendingWalkIn(Long bookingId) {
+        RoomBooking booking = roomBookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BusinessException("MOD2-UC14-012", "Booking not found"));
+
+        if (!"WALK_IN".equals(booking.getBookingSource()) || !"Pending_Payment".equals(booking.getBookingStatus())) {
+            throw new BusinessException("MOD2-UC14-013",
+                    "Only Walk-in bookings with Pending_Payment can be cancelled via this API");
+        }
+
+        booking.setBookingStatus("Cancelled");
+        List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
+        for (com.kawai.models.RoomBookingDetail detail : details) {
+            detail.setDetailStatus("Cancelled");
+            if (detail.getRoom() != null) {
+                com.kawai.models.Room room = detail.getRoom();
+                room.setRoomStatus("Vacant_Clean");
+                roomRepository.save(room);
+            }
+        }
+        roomBookingDetailRepository.saveAll(details);
+        roomBookingRepository.save(booking);
     }
 
     /**
@@ -213,22 +248,33 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
             throw ex;
         }
 
-        String msg = "Phụ thu dự tính: " + extraSurcharge;
+        String msg = "Phụ thu dự tính: " + extraSurcharge + "/đêm";
         if (extraSurcharge.compareTo(BigDecimal.ZERO) == 0) {
             msg = "Miễn phí phụ thu (số khách nằm trong sức chứa tiêu chuẩn)";
         }
 
-        return new WalkInSurchargeResponse(extraSurcharge, guestCount.adults, guestCount.children, msg);
+        // Calculate nights
+        java.time.LocalDate checkIn = request.getCheckInDate() != null ? request.getCheckInDate()
+                : java.time.LocalDate.now();
+        java.time.LocalDate checkOut = request.getCheckOutDate() != null ? request.getCheckOutDate()
+                : java.time.LocalDate.now().plusDays(1);
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(checkIn, checkOut);
+        if (nights <= 0)
+            nights = 1;
+
+        BigDecimal basePricePerNight = category.getBasePrice() != null ? category.getBasePrice() : BigDecimal.ZERO;
+        BigDecimal totalBaseRoomPrice = basePricePerNight.multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalSurcharge = extraSurcharge.multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalCharge = totalBaseRoomPrice.add(totalSurcharge);
+
+        // For Walk-in, deposit is 30% of total charge
+        BigDecimal suggestedDeposit = totalCharge.multiply(new BigDecimal("0.3")).setScale(0,
+                java.math.RoundingMode.HALF_UP);
+
+        return new WalkInSurchargeResponse(totalSurcharge, guestCount.adults, guestCount.children, msg,
+                totalBaseRoomPrice, totalCharge, suggestedDeposit);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // Private Helper Methods
-    // ═════════════════════════════════════════════════════════════════════════
-
-    /**
-     * Validate thông tin định danh khách (Step 1).
-     * BR-UC14-01: CCCD phải đúng format 12 chữ số nếu được cung cấp.
-     */
     private void validateIdentification(WalkInCheckInRequest req) {
         // Validate dateOfBirth
         if (req.getDateOfBirth() == null) {
@@ -365,12 +411,14 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
     private Customer createNewCustomer(WalkInCheckInRequest req, String encryptedCccd) {
         if (req.getEmail() != null && !req.getEmail().isBlank()) {
             if (customerRepository.existsByEmail(req.getEmail())) {
-                throw new BusinessException("MOD2-UC14-010", "Email '" + req.getEmail() + "' đã được đăng ký cho một tài khoản khác. Vui lòng sử dụng chức năng tìm kiếm (Check Existing) hoặc dùng Email khác.");
+                throw new BusinessException("MOD2-UC14-010", "Email '" + req.getEmail()
+                        + "' đã được đăng ký cho một tài khoản khác. Vui lòng sử dụng chức năng tìm kiếm (Check Existing) hoặc dùng Email khác.");
             }
         }
         if (req.getPhone() != null && !req.getPhone().isBlank()) {
             if (customerRepository.findByPhone(req.getPhone()).isPresent()) {
-                throw new BusinessException("MOD2-UC14-011", "Số điện thoại '" + req.getPhone() + "' đã được đăng ký cho một tài khoản khác. Vui lòng sử dụng chức năng tìm kiếm (Check Existing) hoặc dùng số khác.");
+                throw new BusinessException("MOD2-UC14-011", "Số điện thoại '" + req.getPhone()
+                        + "' đã được đăng ký cho một tài khoản khác. Vui lòng sử dụng chức năng tìm kiếm (Check Existing) hoặc dùng số khác.");
             }
         }
 
@@ -420,7 +468,12 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
         RoomBooking booking = new RoomBooking();
         booking.setCustomer(customer);
         booking.setBookingDate(LocalDate.now());
-        booking.setBookingStatus("CHECKED_IN");
+        String paymentMethod = req.getPaymentMethod() != null ? req.getPaymentMethod() : "";
+        if (paymentMethod.equalsIgnoreCase("VNPay") || paymentMethod.equalsIgnoreCase("Chuyển khoản")) {
+            booking.setBookingStatus("Pending_Payment");
+        } else {
+            booking.setBookingStatus("Checked_In");
+        }
         booking.setBookingSource("WALK_IN");
         booking.setCheckInDate(req.getCheckInDate() != null ? req.getCheckInDate() : LocalDate.now());
         booking.setCheckOutDate(req.getCheckOutDate() != null ? req.getCheckOutDate() : LocalDate.now().plusDays(1));
@@ -436,13 +489,18 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
     /**
      * Tạo RoomBookingDetail với trạng thái CHECKED_IN và extra surcharge đã tính.
      */
-    private RoomBookingDetail buildRoomBookingDetail(RoomBooking booking, Room room,
+    private RoomBookingDetail buildRoomBookingDetail(WalkInCheckInRequest req, RoomBooking booking, Room room,
             RoomCategory category, GuestCount guestCount, BigDecimal extraSurcharge) {
         RoomBookingDetail detail = new RoomBookingDetail();
         detail.setRoomBooking(booking);
         detail.setRoom(room);
         detail.setCategory(category);
-        detail.setDetailStatus("CHECKED_IN");
+        String paymentMethod = req.getPaymentMethod() != null ? req.getPaymentMethod() : "";
+        if (paymentMethod.equalsIgnoreCase("VNPay") || paymentMethod.equalsIgnoreCase("Chuyển khoản")) {
+            detail.setDetailStatus("Pending_Payment");
+        } else {
+            detail.setDetailStatus("Checked_In");
+        }
         detail.setRoomCharge(category.getBasePrice() != null ? category.getBasePrice() : BigDecimal.ZERO);
         detail.setNumberOfAdults(guestCount.adults);
         detail.setNumberOfChildren(guestCount.children);
