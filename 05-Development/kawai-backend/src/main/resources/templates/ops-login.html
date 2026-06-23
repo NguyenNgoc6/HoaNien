@@ -7,7 +7,8 @@
     <title>HOANIEN · Đăng nhập Hệ thống</title>
     <link rel="stylesheet" th:href="@{/admin/css/theme.css}">
     <link rel="stylesheet" th:href="@{/admin/css/admin.css}">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
     <style>
         /* ═══ Login Page Overrides ══════════════════════════════════════ */
         body {
@@ -16,7 +17,7 @@
             align-items: center;
             justify-content: center;
             /* THAY THẾ LINK ẢNH NỀN CỦA ANH Ở DÒNG DƯỚI NÀY (Có thể dùng link online hoặc dẫn đến thư mục chứa ảnh) */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1600');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('/BrAdmin.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -224,7 +225,8 @@
                 <div class="ops-form-group">
                     <label for="password">Mật khẩu</label>
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                        <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required style="padding-right: 40px; flex: 1;">
+                        <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required
+                            style="padding-right: 40px; flex: 1;">
                         <button type="button" onclick="togglePasswordVisibility('password', this)"
                             style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: #9A9485; display: flex; align-items: center; justify-content: center; outline: none; padding: 0;">
                             <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
