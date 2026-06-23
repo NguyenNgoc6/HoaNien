@@ -54,7 +54,7 @@ server:
 # ─── App custom config ────────────────────────────────────────────────
 app:
   mail:
-    from-name: "Hòa Niên Resort"
+    from-name: "Hòa Niên Retreat & Resort"
     resort-phone: "1900 xxxx"
     resort-website: "https://hoaniensorresort.vn"
 

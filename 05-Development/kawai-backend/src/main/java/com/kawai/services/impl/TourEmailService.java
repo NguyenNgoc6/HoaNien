@@ -23,11 +23,12 @@ import java.util.Locale;
 /**
  * Service gửi email tự động (bất đồng bộ) cho các sự kiện Tour:
  * <ul>
- *   <li>Đặt tour thành công → email xác nhận</li>
- *   <li>Hủy tour → email thông báo + số tiền hoàn</li>
+ * <li>Đặt tour thành công → email xác nhận</li>
+ * <li>Hủy tour → email thông báo + số tiền hoàn</li>
  * </ul>
  *
- * <p>Email được gửi qua SMTP Gmail, render template HTML bằng Thymeleaf.
+ * <p>
+ * Email được gửi qua SMTP Gmail, render template HTML bằng Thymeleaf.
  * Toàn bộ method đều {@code @Async} để không block luồng chính.
  */
 @Service
@@ -43,7 +44,7 @@ public class TourEmailService {
     @Value("${spring.mail.username:kawai.resort.noreply@gmail.com}")
     private String fromEmail;
 
-    @Value("${app.mail.from-name:Hòa Niên Resort}")
+    @Value("${app.mail.from-name:Hòa Niên Retreat & Resort}")
     private String fromName;
 
     @Value("${app.mail.resort-phone:1900 xxxx}")
@@ -64,14 +65,15 @@ public class TourEmailService {
     @Async
     public void sendBookingConfirmation(TourBooking booking, Customer customer) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
-            LOG.warn("Bỏ qua gửi email xác nhận: customer {} không có email", 
-                     customer != null ? customer.getId() : "null");
+            LOG.warn("Bỏ qua gửi email xác nhận: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
             return;
         }
 
         try {
             String tourName = booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                    ? booking.getSchedule().getTour().getTourName() : "Tour";
+                    ? booking.getSchedule().getTour().getTourName()
+                    : "Tour";
 
             String departureDate = booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null
                     ? booking.getSchedule().getDepartureDate().format(DATE_FMT)
@@ -91,7 +93,8 @@ public class TourEmailService {
             ctx.setVariable("participantCount", booking.getParticipantCount());
             ctx.setVariable("totalPrice", formatVnd(booking.getTotalPrice()));
             ctx.setVariable("bookingDate", LocalDate.now().format(DATE_FMT));
-            ctx.setVariable("postToRoom", booking.getIsWalkInTour() != null && Boolean.FALSE.equals(booking.getIsWalkInTour()));
+            ctx.setVariable("postToRoom",
+                    booking.getIsWalkInTour() != null && Boolean.FALSE.equals(booking.getIsWalkInTour()));
             ctx.setVariable("roomDetail", null); // Có thể mở rộng sau
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
@@ -99,17 +102,16 @@ public class TourEmailService {
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);
 
             sendHtmlEmail(
-                customer.getEmail(),
-                "Xác nhận đặt tour — " + tourName + " | Hòa Niên Resort",
-                html
-            );
+                    customer.getEmail(),
+                    "Xác nhận đặt tour - " + tourName + " | Hòa Niên Retreat & Resort",
+                    html);
 
             LOG.info("Gửi email xác nhận đặt tour thành công → {} (booking #{})",
-                     customer.getEmail(), booking.getId());
+                    customer.getEmail(), booking.getId());
 
         } catch (Exception e) {
             LOG.error("Lỗi khi gửi email xác nhận đặt tour cho booking #{}: {}",
-                      booking.getId(), e.getMessage(), e);
+                    booking.getId(), e.getMessage(), e);
             // Không throw — email lỗi không được cancel booking
         }
     }
@@ -120,16 +122,17 @@ public class TourEmailService {
      */
     @Async
     public void sendCancellationNotice(TourBooking booking, Customer customer,
-                                       BigDecimal refundAmount, boolean cancelledByResort) {
+            BigDecimal refundAmount, boolean cancelledByResort) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
             LOG.warn("Bỏ qua gửi email hủy tour: customer {} không có email",
-                     customer != null ? customer.getId() : "null");
+                    customer != null ? customer.getId() : "null");
             return;
         }
 
         try {
             String tourName = booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                    ? booking.getSchedule().getTour().getTourName() : "Tour";
+                    ? booking.getSchedule().getTour().getTourName()
+                    : "Tour";
 
             String departureDate = booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null
                     ? booking.getSchedule().getDepartureDate().format(DATE_FMT)
@@ -155,17 +158,17 @@ public class TourEmailService {
             String html = templateEngine.process("email/tour-booking-cancelled", ctx);
 
             String subject = cancelledByResort
-                    ? "❌ Thông báo hủy tour — " + tourName + " | Hòa Niên Resort"
-                    : "❌ Xác nhận hủy tour — " + tourName + " | Hòa Niên Resort";
+                    ? "❌ Thông báo hủy tour — " + tourName + " | Hòa Niên Retreat & Resort"
+                    : "❌ Xác nhận hủy tour — " + tourName + " | Hòa Niên Retreat & Resort";
 
             sendHtmlEmail(customer.getEmail(), subject, html);
 
             LOG.info("Gửi email hủy tour thành công → {} (booking #{}, hoàn {})",
-                     customer.getEmail(), booking.getId(), formatVnd(refundAmount));
+                    customer.getEmail(), booking.getId(), formatVnd(refundAmount));
 
         } catch (Exception e) {
             LOG.error("Lỗi khi gửi email hủy tour cho booking #{}: {}",
-                      booking.getId(), e.getMessage(), e);
+                    booking.getId(), e.getMessage(), e);
         }
     }
 
@@ -183,7 +186,8 @@ public class TourEmailService {
     }
 
     private String formatVnd(BigDecimal amount) {
-        if (amount == null) return "0 ₫";
+        if (amount == null)
+            return "0 ₫";
         return VND_FMT.format(amount) + " ₫";
     }
 }
