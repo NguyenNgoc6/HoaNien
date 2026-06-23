@@ -6,59 +6,59 @@
   <title>Thông báo hủy tour</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Cabrito Didone', Georgia, 'Times New Roman', serif; background: #F4DFDB; color: #2C272C; }
-    .wrapper { max-width: 620px; margin: 32px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(44,39,44,0.15); }
+    body { font-family: 'Cabrito Didone', Georgia, 'Times New Roman', serif; background: #F0D2DE; color: #71557A; }
+    .wrapper { max-width: 620px; margin: 32px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(113,85,122,0.15); }
 
-    .header { background: #2C272C; padding: 40px 32px; text-align: center; }
-    .header .logo-text { font-family: 'Halminton Grand', Georgia, 'Times New Roman', serif; font-size: 26px; font-weight: 700; color: #F4DFDB; letter-spacing: 2px; }
-    .header .logo-sub { font-size: 12px; color: rgba(244,223,219,0.7); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+    .header { background: #71557A; padding: 40px 32px; text-align: center; }
+    .header .logo-text { font-family: 'Andasia', Georgia, 'Times New Roman', serif; font-size: 26px; font-weight: 700; color: #F0D2DE; letter-spacing: 2px; }
+    .header .logo-sub { font-size: 12px; color: rgba(240,210,222,0.7); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
 
-    .hero { background: linear-gradient(135deg, #2C272C 0%, #4D3F43 100%); padding: 36px 32px; text-align: center; }
+    .hero { background: linear-gradient(135deg, #71557A 0%, #82668C 100%); padding: 36px 32px; text-align: center; }
     .hero .icon { font-size: 52px; margin-bottom: 12px; }
-    .hero h1 { font-size: 22px; font-weight: 700; color: #F4DFDB; margin-bottom: 6px; }
-    .hero p { font-size: 14px; color: rgba(244,223,219,0.85); }
+    .hero h1 { font-size: 22px; font-weight: 700; color: #F0D2DE; margin-bottom: 6px; }
+    .hero p { font-size: 14px; color: rgba(240,210,222,0.85); }
 
     .body { padding: 32px; }
-    .greeting { font-size: 16px; color: #2C272C; margin-bottom: 20px; }
-    .greeting strong { color: #2C272C; }
+    .greeting { font-size: 16px; color: #71557A; margin-bottom: 20px; }
+    .greeting strong { color: #71557A; }
 
-    .booking-card { background: #faf5f4; border: 1.5px solid #F4DFDB; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
-    .booking-card-header { background: #2C272C; padding: 14px 20px; }
-    .booking-card-header span { color: #F4DFDB; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-    .booking-card-header .booking-id { float: right; color: #F4DFDB; font-weight: 700; font-size: 14px; }
+    .booking-card { background: #fdf8fa; border: 1.5px solid #F0D2DE; border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+    .booking-card-header { background: #71557A; padding: 14px 20px; }
+    .booking-card-header span { color: #F0D2DE; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+    .booking-card-header .booking-id { float: right; color: #F0D2DE; font-weight: 700; font-size: 14px; }
     .booking-card-body { padding: 20px; }
 
-    .info-row { display: flex; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #F4DFDB; font-size: 14px; color: #2C272C; }
+    .info-row { display: flex; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #F0D2DE; font-size: 14px; color: #71557A; }
     .info-row:last-child { border-bottom: none; }
-    .info-label { font-weight: 600; color: #2C272C; white-space: nowrap; margin-right: 4px; }
+    .info-label { font-weight: 600; color: #71557A; white-space: nowrap; margin-right: 4px; }
     .info-label::after { content: ':'; }
-    .info-value { font-weight: 400; color: #4D3F43; }
-    .info-value.highlight { font-weight: 600; color: #2C272C; }
+    .info-value { font-weight: 400; color: #82668C; }
+    .info-value.highlight { font-weight: 600; color: #71557A; }
     .info-value.cancelled { color: #c53030; font-weight: 600; }
     .info-value.refund { color: #38a169; font-weight: 600; }
 
     .refund-box { border-radius: 10px; padding: 20px 24px; margin: 24px 0; text-align: center; }
     .refund-box.full { background: linear-gradient(135deg, #276749, #38a169); }
-    .refund-box.partial { background: linear-gradient(135deg, #2C272C, #4D3F43); }
-    .refund-box .refund-label { color: rgba(244,223,219,0.85); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-    .refund-box .refund-amount { color: #F4DFDB; font-size: 28px; font-weight: 700; margin-top: 6px; }
-    .refund-box .refund-note { color: rgba(244,223,219,0.75); font-size: 12px; margin-top: 6px; }
+    .refund-box.partial { background: linear-gradient(135deg, #71557A, #82668C); }
+    .refund-box .refund-label { color: rgba(240, 210, 222, 0.85); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .refund-box .refund-amount { color: #F0D2DE; font-size: 28px; font-weight: 700; margin-top: 6px; }
+    .refund-box .refund-note { color: rgba(240, 210, 222, 0.75); font-size: 12px; margin-top: 6px; }
 
-    .reason-box { background: #faf0ee; border-left: 4px solid #2C272C; border-radius: 6px; padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #4D3F43; }
-    .reason-box strong { display: block; margin-bottom: 4px; color: #2C272C; }
+    .reason-box { background: #fcf2f5; border-left: 4px solid #71557A; border-radius: 6px; padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #82668C; }
+    .reason-box strong { display: block; margin-bottom: 4px; color: #71557A; }
 
-    .footer { background: #2C272C; padding: 28px 32px; text-align: center; }
-    .footer p { color: #c7bec0; font-size: 12px; line-height: 1.8; }
-    .footer a { color: #F4DFDB; text-decoration: none; }
-    .footer .divider { height: 1px; background: #4D3F43; margin: 16px 0; }
-    .footer .resort-name { font-family: 'Halminton Grand', Georgia, 'Times New Roman', serif; color: #F4DFDB; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+    .footer { background: #71557A; padding: 28px 32px; text-align: center; }
+    .footer p { color: #dfd5e2; font-size: 12px; line-height: 1.8; }
+    .footer a { color: #F0D2DE; text-decoration: none; }
+    .footer .divider { height: 1px; background: #82668C; margin: 16px 0; }
+    .footer .resort-name { font-family: 'Andasia', Georgia, 'Times New Roman', serif; color: #F0D2DE; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
   </style>
 </head>
 <body>
 <div class="wrapper">
 
   <div class="header">
-    <div class="logo-text">🏝 HÒA NIÊN RESORT</div>
+    <div class="logo-text">🏝 hoanien RESORT</div>
     <div class="logo-sub">Tour &amp; Hospitality</div>
   </div>
 
@@ -136,16 +136,16 @@
       Phí hủy 50% còn lại (= <span th:text="${forfeitAmount}">2.250.000 ₫</span>) sẽ được giữ lại.
     </div>
 
-    <p style="font-size:14px; color:#4D3F43; line-height:1.8;">
+    <p style="font-size:14px; color:#82668C; line-height:1.8;">
       Nếu bạn muốn đặt lại tour hoặc cần thêm thông tin, vui lòng liên hệ với chúng tôi.<br/><br/>
       Trân trọng,<br/>
       <strong>Đội ngũ Tour &amp; Hospitality</strong><br/>
-      <em>Hòa Niên Resort</em>
+      <em>hoanien Resort</em>
     </p>
   </div>
 
   <div class="footer">
-    <div class="resort-name">🏝 Hòa Niên Resort</div>
+    <div class="resort-name">🏝 hoanien Resort</div>
     <p>
       📞 <span th:text="${resortPhone}">1900 xxxx</span> &nbsp;|&nbsp;
       🌐 <a th:href="${resortWebsite}" th:text="${resortWebsite}">hoaniensorresort.vn</a>
@@ -153,7 +153,7 @@
     <div class="divider"></div>
     <p>
       Email này được gửi tự động — vui lòng không reply trực tiếp.<br/>
-      © 2026 Hòa Niên Resort. Bảo lưu mọi quyền.
+      © 2026 hoanien Resort. Bảo lưu mọi quyền.
     </p>
   </div>
 
