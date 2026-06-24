@@ -83,6 +83,18 @@ function renderAssignedRooms() {
     // Xóa các hidden input cũ
     document.querySelectorAll('input[name="assignedRoomNumbers"]').forEach(el => el.remove());
 
+    // Cập nhật label hiển thị phòng của Master Customer
+    const masterLabel = document.getElementById('masterCustomerRoomLabel');
+    if (masterLabel) {
+        if (assignedRooms.length > 0) {
+            masterLabel.innerText = `(Phòng: ${assignedRooms[0].room})`;
+            masterLabel.style.color = '#059669'; // text-emerald-600
+        } else {
+            masterLabel.innerText = `(Chưa phân phòng)`;
+            masterLabel.style.color = '#d97706'; // text-amber-600
+        }
+    }
+
     assignedRooms.forEach(a => {
         const badge = document.createElement('span');
         badge.className = 'status-badge';
@@ -229,6 +241,10 @@ function addDependent() {
 
     const depId = document.getElementById('depId').getAttribute('data-dependent-id');
     const parsedDepId = (depId && depId !== 'null' && depId !== '') ? depId : null;
+    const editingRow = document.querySelector('.editing-row');
+    if (editingRow) {
+        editingRow.remove();
+    }
 
     addDependentRow(name, id, dob, parsedDepId, roomId);
 
@@ -281,6 +297,13 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
 }
 
 function editDependentRow(btn, name, cccd, dob, depId, roomId) {
+    // Phục hồi dòng đang edit dang dở (nếu khách click sửa liên tục mà quên bấm Add)
+    const editingRows = document.querySelectorAll('.editing-row');
+    editingRows.forEach(row => {
+        row.style.display = '';
+        row.classList.remove('editing-row');
+    });
+
     document.getElementById('depName').value = name === '(Chưa cập nhật)' ? '' : name;
     document.getElementById('depId').value = cccd;
     document.getElementById('depDob').value = dob;
@@ -303,7 +326,10 @@ function editDependentRow(btn, name, cccd, dob, depId, roomId) {
         toggleDependentsList();
     }
 
-    btn.closest('tr').remove();
+    // Thay vì xóa luôn, ta chỉ ẩn nó đi và đánh dấu
+    const tr = btn.closest('tr');
+    tr.classList.add('editing-row');
+    tr.style.display = 'none';
 }
 
 function toggleDependentsList() {

@@ -28,15 +28,21 @@ public class ReceptionistCheckinWebController {
     private final DependentService dependentService;
     private final com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepo;
     private final com.kawai.repositories.RoomRepository roomRepo;
+    private final com.kawai.repositories.CustomerRepository customerRepo;
+    private final com.kawai.repositories.BookingRepository bookingRepo;
 
     public ReceptionistCheckinWebController(CheckinService checkinService,
             DependentService dependentService,
             com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepo,
-            com.kawai.repositories.RoomRepository roomRepo) {
+            com.kawai.repositories.RoomRepository roomRepo,
+            com.kawai.repositories.CustomerRepository customerRepo,
+            com.kawai.repositories.BookingRepository bookingRepo) {
         this.checkinService = checkinService;
         this.dependentService = dependentService;
         this.roomBookingDetailRepo = roomBookingDetailRepo;
         this.roomRepo = roomRepo;
+        this.customerRepo = customerRepo;
+        this.bookingRepo = bookingRepo;
     }
 
     @PostMapping("/complete")
@@ -48,6 +54,37 @@ public class ReceptionistCheckinWebController {
                 form.getDependents() != null ? form.getDependents().size() : 0);
 
         try {
+            // Lấy Booking và cập nhật Customer info nếu có thay đổi
+            com.kawai.models.Booking booking = bookingRepo.findById(form.getBookingId())
+                    .orElseThrow(() -> new BusinessException("CHECKIN-001", "Không tìm thấy Đơn hàng!"));
+
+            com.kawai.models.Customer customer = booking.getCustomer();
+            if (customer != null) {
+                if (form.getGuestName() != null && !form.getGuestName().trim().isEmpty()) {
+                    customer.setFullName(form.getGuestName().trim());
+                }
+                if (form.getPhone() != null && !form.getPhone().trim().isEmpty()) {
+                    if (!com.kawai.utils.ValidationUtils.isValidPhone(form.getPhone())) {
+                        throw new BusinessException("CHECKIN-VAL-01",
+                                "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có đúng 10 số)!");
+                    }
+                    customer.setPhone(form.getPhone().trim());
+                }
+                if (form.getCccd() != null && !form.getCccd().trim().isEmpty()) {
+                    if (!com.kawai.utils.ValidationUtils.isValidDocument(form.getCccd())) {
+                        throw new BusinessException("CHECKIN-VAL-02",
+                                "CCCD/Hộ chiếu không hợp lệ (CCCD phải gồm 12 số, hộ chiếu 6-15 ký tự chữ/số)!");
+                    }
+                    try {
+                        String encrypted = com.kawai.utils.EncryptionUtils.encrypt(form.getCccd().trim());
+                        customer.setCccdPassportEncrypted(encrypted);
+                    } catch (Exception e) {
+                        customer.setCccdPassportEncrypted(form.getCccd().trim());
+                    }
+                }
+                customerRepo.save(customer);
+            }
+
             // Lấy danh sách Detail của Booking này
             java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepo
                     .findByRoomBookingId(form.getBookingId());
@@ -97,7 +134,8 @@ public class ReceptionistCheckinWebController {
 
                 if (matchedDetail == null) {
                     throw new com.kawai.exceptions.BusinessException("CHECKIN-004",
-                            "Phòng " + roomNumber + " thuộc hạng " + room.getCategory().getCategoryName() + " không khớp với bất kỳ hạng phòng nào đang chờ check-in của đơn này!");
+                            "Phòng " + roomNumber + " thuộc hạng " + room.getCategory().getCategoryName()
+                                    + " không khớp với bất kỳ hạng phòng nào đang chờ check-in của đơn này!");
                 }
 
                 // Xóa detail đã được gán khỏi danh sách chờ để không bị gán trùng
@@ -111,9 +149,11 @@ public class ReceptionistCheckinWebController {
             // Bước 2: THÊM NGƯỜI ĐI KÈM
             if (form.getDependents() != null) {
                 for (com.kawai.dto.DependentRegistrationDTO dependentDTO : form.getDependents()) {
-                    if (dependentDTO != null && dependentDTO.getFullName() != null && !dependentDTO.getFullName().trim().isEmpty()) {
+                    if (dependentDTO != null && dependentDTO.getFullName() != null
+                            && !dependentDTO.getFullName().trim().isEmpty()) {
                         // Nếu lễ tân gán dependent vào 1 phòng vật lý cụ thể, ta set detailId tương ứng
-                        if (dependentDTO.getAssignedPhysicalRoomNumber() != null && !dependentDTO.getAssignedPhysicalRoomNumber().isEmpty()) {
+                        if (dependentDTO.getAssignedPhysicalRoomNumber() != null
+                                && !dependentDTO.getAssignedPhysicalRoomNumber().isEmpty()) {
                             Long detailId = roomNumberToDetailIdMap.get(dependentDTO.getAssignedPhysicalRoomNumber());
                             if (detailId != null) {
                                 dependentDTO.setRoomBookingDetailId(detailId);
@@ -129,16 +169,44 @@ public class ReceptionistCheckinWebController {
             return "redirect:/receptionist/check-in"; // Redirect về trang danh sách check-in
 
         } catch (BusinessException e) {
-            org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus()
+                    .setRollbackOnly();
             log.error("Lỗi nghiệp vụ khi Check-in: {}", e.getMessage());
             // Thất bại: Gửi thông báo lỗi và redirect lại trang form cũ
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/receptionist/check-in";
         } catch (Exception e) {
-            org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus()
+                    .setRollbackOnly();
             log.error("Lỗi hệ thống khi Check-in: ", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi hệ thống! Vui lòng thử lại. Chi tiết: " + e.toString());
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Lỗi hệ thống! Vui lòng thử lại. Chi tiết: " + e.toString());
             return "redirect:/receptionist/check-in";
         }
-    }
-}
+    }}
+
+    
+    
+        
+    
+
+    
+    
+                                                                                                                            // 
+                                                                                                                            // 
+                                                                                                                            // 
+                                                                                                                            // 
+                                                                                                                            // 
+
+    
+    
+    
+        
+                
+        
+        
+        
+        
+    
+    
+    
