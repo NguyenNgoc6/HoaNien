@@ -101,6 +101,9 @@ public class RoomApiController {
         } catch (Exception e) {
         }
         List<Room> occupiedRooms = roomRepository.findOccupiedRoomsByCustomerCccd(encryptedCccd);
+        if (occupiedRooms.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         Room room = occupiedRooms.get(0);
         RoomInfoDto dto = RoomInfoDto.builder()
                 .roomNumber(room.getRoomNumber())
