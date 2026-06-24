@@ -30,19 +30,22 @@ public class ReceptionistCheckinWebController {
     private final com.kawai.repositories.RoomRepository roomRepo;
     private final com.kawai.repositories.CustomerRepository customerRepo;
     private final com.kawai.repositories.BookingRepository bookingRepo;
+    private final com.kawai.repositories.RoomGuestRepository roomGuestRepo;
 
     public ReceptionistCheckinWebController(CheckinService checkinService,
             DependentService dependentService,
             com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepo,
             com.kawai.repositories.RoomRepository roomRepo,
             com.kawai.repositories.CustomerRepository customerRepo,
-            com.kawai.repositories.BookingRepository bookingRepo) {
+            com.kawai.repositories.BookingRepository bookingRepo,
+            com.kawai.repositories.RoomGuestRepository roomGuestRepo) {
         this.checkinService = checkinService;
         this.dependentService = dependentService;
         this.roomBookingDetailRepo = roomBookingDetailRepo;
         this.roomRepo = roomRepo;
         this.customerRepo = customerRepo;
         this.bookingRepo = bookingRepo;
+        this.roomGuestRepo = roomGuestRepo;
     }
 
     @PostMapping("/complete")
@@ -145,8 +148,48 @@ public class ReceptionistCheckinWebController {
                 checkinService.checkIn(matchedDetail.getId(), room.getId());
                 roomNumberToDetailIdMap.put(roomNumber, matchedDetail.getId());
             }
+            if (form.getAssignedRoomNumbers() != null && !form.getAssignedRoomNumbers().isEmpty()) {
+                String firstRoom = form.getAssignedRoomNumbers().get(0);
+                Long firstDetailId = roomNumberToDetailIdMap.get(firstRoom);
 
-            // Bước 2: THÊM NGƯỜI ĐI KÈM
+                if (firstDetailId != null && customer != null) {
+                    com.kawai.models.RoomBookingDetail firstDetail = roomBookingDetailRepo.findById(firstDetailId)
+                            .orElse(null);
+                    if (firstDetail != null) {
+                        // Tìm MasterGuest đã được tạo sẵn từ lúc đặt phòng
+                        com.kawai.models.RoomGuest existingMasterGuest = null;
+                        for (com.kawai.models.RoomBookingDetail detail : details) {
+                            java.util.List<com.kawai.models.RoomGuest> detailGuests = roomGuestRepo
+                                    .findByRoomBookingDetailId(detail.getId());
+                            for (com.kawai.models.RoomGuest rg : detailGuests) {
+                                if (rg.getCustomer() != null && rg.getCustomer().getId().equals(customer.getId())) {
+                                    existingMasterGuest = rg;
+                                    break;
+                                }
+                            }
+                            if (existingMasterGuest != null)
+                                break;
+                        }
+
+                        if (existingMasterGuest != null) {
+                            // Dời sang phòng đầu tiên được chọn
+                            existingMasterGuest.setRoomBookingDetail(firstDetail);
+                            existingMasterGuest.setIsPrimaryContact(true);
+                            roomGuestRepo.saveAndFlush(existingMasterGuest);
+                        } else {
+                            // Tạo mới nếu chưa có (ví dụ Booking tạo từ nguồn khác không có stub)
+                            com.kawai.models.RoomGuest masterGuest = new com.kawai.models.RoomGuest();
+                            masterGuest.setRoomBookingDetail(firstDetail);
+                            masterGuest.setCustomer(customer);
+                            masterGuest.setGuestType("ADULT");
+                            masterGuest.setIsPrimaryContact(true);
+                            roomGuestRepo.saveAndFlush(masterGuest);
+                        }
+                    }
+                }
+            }
+
+            // Bước 3: THÊM NGƯỜI ĐI KÈM
             if (form.getDependents() != null) {
                 for (com.kawai.dto.DependentRegistrationDTO dependentDTO : form.getDependents()) {
                     if (dependentDTO != null && dependentDTO.getFullName() != null
@@ -160,6 +203,23 @@ public class ReceptionistCheckinWebController {
                             }
                         }
                         dependentService.registerDependent(form.getBookingId(), dependentDTO);
+                    }
+                }
+            }
+            // Backend Validation: Check if every room has exactly 1 primary contact
+            if (form.getAssignedRoomNumbers() != null && !form.getAssignedRoomNumbers().isEmpty()) {
+                for (String roomNumber : form.getAssignedRoomNumbers()) {
+                    Long detailId = roomNumberToDetailIdMap.get(roomNumber);
+                    if (detailId != null) {
+                        java.util.List<com.kawai.models.RoomGuest> guests = roomGuestRepo
+                                .findByRoomBookingDetailId(detailId);
+                        long primaryCount = guests.stream()
+                                .filter(g -> Boolean.TRUE.equals(g.getIsPrimaryContact()))
+                                .count();
+                        if (primaryCount != 1) {
+                            throw new com.kawai.exceptions.BusinessException("CHECKIN-006",
+                                    "Phòng " + roomNumber + " phải có đúng 1 người đứng đầu!");
+                        }
                     }
                 }
             }
@@ -183,30 +243,11 @@ public class ReceptionistCheckinWebController {
                     "Lỗi hệ thống! Vui lòng thử lại. Chi tiết: " + e.toString());
             return "redirect:/receptionist/check-in";
         }
-    }}
+    }
+}
 
-    
-    
-        
-    
-
-    
-    
-                                                                                                                            // 
-                                                                                                                            // 
-                                                                                                                            // 
-                                                                                                                            // 
-                                                                                                                            // 
-
-    
-    
-    
-        
-                
-        
-        
-        
-        
-    
-    
-    
+//
+//
+//
+//
+//

@@ -100,12 +100,10 @@
                 </div>
 
                 <div class="header-search">
-                    <form action="/receptionist/check-in" method="get"
-                        style="display: flex; align-items: center; width: 100%;">
+                    <form action="/receptionist/check-in" method="get">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" name="keyword" th:value="${param.keyword}"
-                            placeholder="Search guest, room no., phone"
-                            style="border: none; background: transparent; outline: none; width: 100%;">
+                            placeholder="Search guest, room no., phone" style="border-radius: 20px;" />
                     </form>
                 </div>
 
@@ -323,6 +321,9 @@
                                     </th>
                                     <th style="padding: 8px; text-align: left; font-weight: 500; font-size: 13px;">
                                         CCCD</th>
+                                    <th style="padding: 8px; text-align: left; font-weight: 500; font-size: 13px;">
+                                        Phòng & Vai trò
+                                    </th>
                                     <th style="padding: 8px; text-align: left; font-weight: 500; font-size: 13px;">Date
                                         of
                                         Birth
@@ -346,7 +347,7 @@
                         <h5 style="margin-top: 0; margin-bottom: 12px; font-weight: 500; font-size: 14px;">Add Group
                             Member</h5>
                         <div
-                            style="display: grid; grid-template-columns: 2fr 2fr 2fr 2fr auto; gap: 12px; align-items: end;">
+                            style="display: grid; grid-template-columns: 2fr 2fr 2fr 2fr auto auto; gap: 12px; align-items: end;">
                             <div>
                                 <label style="display: block; font-size: 13px; margin-bottom: 4px;">Full Name</label>
                                 <input type="text" id="depName"
@@ -372,6 +373,11 @@
                                     Birth</label>
                                 <input type="date" id="depDob"
                                     style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: white;">
+                            </div>
+                            <div style="display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; color: #334155;">
+                                    <input type="checkbox" id="depIsPrimary" style="width: 16px; height: 16px;"> Đứng đầu phòng
+                                </label>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-outline btn-sm" onclick="addDependent()"
