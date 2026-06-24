@@ -61,17 +61,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ops-login", "/admin-backdoor").permitAll()
-                        // .access(new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
-                        //         "hasIpAddress('192.168.1.0/24')"))
+                        // .access(new
+                        // org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
+                        // "hasIpAddress('192.168.1.0/24')"))
 
-                        .requestMatchers("/", "/booking", "/auth/register", "/auth/login", "/auth/check-session",
-                                "/auth/google-login", "/auth/forgot-password", "/auth/reset-password",
-                                "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
+                        .requestMatchers("/", "/booking", "/auth/login", "/auth/check-session",
+                                "/auth/google-login", "/api/v1/auth/**",
+                                "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/uploads/**", "/api/v1/upload",
+                                "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**", "/api/pos/**",
+                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**",
+                                "/api/v1/tables/**", "/api/pos/**",
                                 "/api/bookings", "/api/bookings/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error",
-                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn", 
+                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn",
                                 "/api/v1/payments/food-order/**", "/book-table")
                         .permitAll()
 
@@ -92,10 +95,10 @@ public class SecurityConfig {
                         .permitAll())
 
                 .oauth2Login(oauth2 -> oauth2
-                         .loginPage("/booking")
-                         .userInfoEndpoint(userInfo -> userInfo
-                                 .userService(customOAuth2UserService))
-                         .successHandler(oAuth2SuccessHandler))
+                        .loginPage("/booking")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler))
 
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
@@ -110,14 +113,18 @@ public class SecurityConfig {
     public org.springframework.security.web.authentication.AuthenticationFailureHandler authenticationFailureHandler() {
         return (request, response, exception) -> {
             String referer = request.getHeader("Referer");
+            String errorType = "invalid";
+            if (exception instanceof org.springframework.security.authentication.DisabledException || exception instanceof org.springframework.security.authentication.LockedException) {
+                errorType = "locked";
+            }
             if (referer != null && !referer.trim().isEmpty() && !referer.contains("/ops-login")) {
                 if (referer.contains("?")) {
-                    response.sendRedirect(referer + "&login_error=true");
+                    response.sendRedirect(referer + "&login_error=true&error_type=" + errorType);
                 } else {
-                    response.sendRedirect(referer + "?login_error=true");
+                    response.sendRedirect(referer + "?login_error=true&error_type=" + errorType);
                 }
             } else {
-                response.sendRedirect("/ops-login?error=true");
+                response.sendRedirect("/ops-login?error=true&error_type=" + errorType);
             }
         };
     }
@@ -127,7 +134,13 @@ public class SecurityConfig {
         return (request, response, authentication) -> {
             String referer = request.getHeader("Referer");
             if (referer != null && !referer.trim().isEmpty()) {
-                response.sendRedirect(referer);
+                if (referer.contains("/admin") || referer.contains("/manager") || referer.contains("/receptionist") || referer.contains("/fbStaff") || referer.contains("/tourguide") || referer.contains("/ops-login")) {
+                    response.sendRedirect("/ops-login");
+                } else if (referer.contains("/payment") || referer.contains("/profile")) {
+                    response.sendRedirect("/booking");
+                } else {
+                    response.sendRedirect(referer);
+                }
             } else {
                 response.sendRedirect("/");
             }
@@ -159,7 +172,17 @@ public class SecurityConfig {
                     if (!isFromOpsPortal) {
                         new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
                                 .logout(request, response, authentication);
-                        response.sendRedirect("/booking?login_error=true");
+
+                        String referer = request.getHeader("Referer");
+                        if (referer != null && !referer.trim().isEmpty() && !referer.contains("/ops-login")) {
+                            if (referer.contains("?")) {
+                                response.sendRedirect(referer + "&login_error=true");
+                            } else {
+                                response.sendRedirect(referer + "?login_error=true");
+                            }
+                        } else {
+                            response.sendRedirect("/booking?login_error=true");
+                        }
                         return;
                     }
 

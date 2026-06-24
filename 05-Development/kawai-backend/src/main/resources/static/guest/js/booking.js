@@ -21,6 +21,25 @@ let bookingState = {
     currentCalendarYear: today.getFullYear()
 };
 
+function saveCartToStorage() {
+    sessionStorage.setItem('kawai_cart', JSON.stringify(selectedRoomsCart));
+    sessionStorage.setItem('kawai_bookingState', JSON.stringify(bookingState));
+}
+
+function restoreCartFromStorage() {
+    const savedCart = sessionStorage.getItem('kawai_cart');
+    const savedState = sessionStorage.getItem('kawai_bookingState');
+    if (savedCart) {
+        selectedRoomsCart = JSON.parse(savedCart);
+    }
+    if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        bookingState = parsedState;
+        if (bookingState.checkIn) bookingState.checkIn = new Date(bookingState.checkIn);
+        if (bookingState.checkOut) bookingState.checkOut = new Date(bookingState.checkOut);
+    }
+}
+
 const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const monthNamesFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -315,9 +334,9 @@ function renderRoomResults(roomsData) {
                     ${badgeHtml}
                     <img class="room-img" src="${roomImage}" alt="${room.categoryName}"/>
 
-                    <!-- CÒN X TRỐNG - Giữa ảnh -->
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1.5 rounded-full text-[11px] font-bold tracking-widest backdrop-blur-md shadow-lg z-10 uppercase border border-white/20 whitespace-nowrap pointer-events-none">
-                        Còn ${availableCount} trống
+                    <!-- CÒN X TRỐNG - Góc trên bên trái -->
+                    <div class="absolute top-3 left-3 bg-black/60 text-white px-3 py-1.5 rounded-md text-[11px] font-bold tracking-wider backdrop-blur-sm z-10 pointer-events-none">
+                        CÒN ${availableCount} PHÒNG
                     </div>
 
                     <div class="media-foot">
@@ -620,6 +639,7 @@ function updateCartUI() {
 function removeCartItem(catName) {
     delete selectedRoomsCart[catName];
     updateCartUI();
+    saveCartToStorage();
 }
 
 // ── Cart Hold Timer ─────────────────────────────────────────────────────────
@@ -653,6 +673,8 @@ function clearCartAndGoHome(isTimeout = false) {
     stopCartHoldTimer();
     selectedRoomsCart = {};
     cartHoldConfirmedBookingId = null;
+    sessionStorage.removeItem('kawai_cart');
+    sessionStorage.removeItem('kawai_bookingState');
 
     if (isTimeout) {
         showToast('⏰ Đã hết 10 phút! Phòng đã được giải phóng. Vui lòng chọn lại.', 'error');
@@ -729,6 +751,7 @@ function handleSelectRoomClick(button) {
     };
     startCartHoldTimer();
     updateCartUI();
+    saveCartToStorage();
     const cartWrapper = document.getElementById('bookingCartWrapper');
     if (cartWrapper) {
         cartWrapper.classList.remove('hidden');
@@ -741,6 +764,7 @@ function handleSelectRoomClick(button) {
 function confirmCartBooking() {
     if (typeof isUserLoggedIn !== 'undefined' && !isUserLoggedIn) {
         showToast('Vui lòng đăng nhập để tiếp tục đặt phòng.', 'error');
+        saveCartToStorage();
         if (typeof openLoginModal === 'function') openLoginModal();
         return;
     }
@@ -804,15 +828,19 @@ function confirmCartBooking() {
             const bookingStatus = data.bookingStatus || data.status;
             if (bookingStatus === 'CONFIRMED' || bookingStatus === 'PENDING' || bookingStatus === 'HOLD') {
                 // Lưu bookingId để dùng nếu user huỷ giỏ
-                if (data.bookingId) cartHoldConfirmedBookingId = data.bookingId;
+                if (data && data.bookingId) {
+                    cartHoldConfirmedBookingId = data.bookingId;
+                    // Không xóa giỏ hàng ngay lập tức để giữ đơn nếu khách quay lại
+                    // sessionStorage.removeItem('kawai_cart');
+                    // sessionStorage.removeItem('kawai_bookingState');
 
-                showToast('Đặt phòng thành công! Đang chuyển đến trang thanh toán...', 'success');
+                    showToast('Đặt phòng thành công! Đang chuyển đến trang thanh toán...', 'success');
 
-                // ✅ Redirect sang trang thanh toán với bookingId
-                setTimeout(() => {
-                    window.location.href = `/payment?bookingId=${data.bookingId}`;
-                }, 1200);
-
+                    // ✅ Redirect sang trang thanh toán với bookingId
+                    setTimeout(() => {
+                        window.location.href = `/payment?bookingId=${data.bookingId}`;
+                    }, 1200);
+                }
             } else {
                 showToast('Lỗi đặt phòng: ' + (data.message || 'Phòng đã được đặt hoặc không khả dụng!'), 'error');
             }
@@ -910,6 +938,9 @@ function toggleShowMoreRooms() {
 
 // -- DOM Initializations --
 document.addEventListener("DOMContentLoaded", function () {
+    restoreCartFromStorage();
+    updateCartUI();
+
     const hasError = document.querySelector('.bg-red-100');
     const hasSuccess = document.querySelector('.bg-green-100');
     const urlParams = new URLSearchParams(window.location.search);

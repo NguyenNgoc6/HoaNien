@@ -104,6 +104,9 @@ public class UserServiceImpl implements UserService {
         }
         customer.setPhone(dto.getPhone());
         customer.setEmail(dto.getEmail());
+        if (dto.getCccd() != null) {
+            customer.setCccdPassportEncrypted(dto.getCccd());
+        }
         return customerRepository.save(customer);
     }
 
@@ -139,10 +142,19 @@ public class UserServiceImpl implements UserService {
             if (payload.containsKey("role")) {
                 Role role = roleRepository.findByRoleName(payload.get("role"))
                         .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                
+                // Prevent changing role of Admin
+                if ("Admin".equalsIgnoreCase(account.getRole().getRoleName()) && !"Admin".equalsIgnoreCase(role.getRoleName())) {
+                    throw new IllegalArgumentException("Không thể thay đổi vai trò của tài khoản Admin");
+                }
                 account.setRole(role);
             }
             if (payload.containsKey("status")) {
-                account.setIsActive(Boolean.parseBoolean(payload.get("status")));
+                boolean newStatus = Boolean.parseBoolean(payload.get("status"));
+                if (!newStatus && "Admin".equalsIgnoreCase(account.getRole().getRoleName())) {
+                    throw new IllegalArgumentException("Không thể vô hiệu hóa tài khoản Admin");
+                }
+                account.setIsActive(newStatus);
             }
             // Optional: Handle password update if provided
             if (payload.containsKey("password") && !payload.get("password").trim().isEmpty()) {
@@ -170,6 +182,7 @@ public class UserServiceImpl implements UserService {
             customer.setPhone(phone);
         }
         if (payload.containsKey("gender")) customer.setGender(payload.get("gender"));
+        if (payload.containsKey("cccd")) customer.setCccdPassportEncrypted(payload.get("cccd"));
 
         Account account = customer.getAccount();
         if (account != null) {

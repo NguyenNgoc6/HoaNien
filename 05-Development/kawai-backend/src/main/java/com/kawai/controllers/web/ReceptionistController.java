@@ -295,7 +295,6 @@ public class ReceptionistController {
         model.addAttribute("totalInHouseCount", totalInHouseItems);
         model.addAttribute("currentInHousePage", inHousePage);
         model.addAttribute("totalInHousePages", totalInHousePages);
-
         return "receptionist/in-house";
     }
 
