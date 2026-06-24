@@ -15,7 +15,7 @@ import com.kawai.repositories.RoomBookingRepository;
 import com.kawai.repositories.RoomBookingDetailRepository;
 import com.kawai.repositories.RoomRepository;
 import com.kawai.repositories.CustomerRepository;
-import com.kawai.repositories.PaymentTransactionRepository;
+
 import com.kawai.services.interfaces.BookingService;
 import com.kawai.models.PaymentTransaction;
 import com.kawai.models.PaymentStatus;
@@ -76,9 +76,6 @@ public class BookingServiceImpl implements BookingService {
 
     private static final BigDecimal BASE_ROOM_PRICE = new BigDecimal("2000000"); // 2tr/đêm
     private static final String STATUS_HOLD = "HOLD";
-    private static final String STATUS_CONFIRMED = "CONFIRMED";
-
-    /** HOLD tự động hết hạn sau 10 phút nếu chưa thanh toán (Scheduler dọn) */
     private static final int HOLD_TTL_MINUTES = 10;
 
     private final RoomBookingRepository roomBookingRepository;
@@ -88,8 +85,10 @@ public class BookingServiceImpl implements BookingService {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final PaymentGatewayService paymentGatewayService;
     private final NotificationService notificationService;
-    private final PaymentTransactionRepository paymentTransactionRepository;
     private final com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+    private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
+    private final com.kawai.repositories.DependentRepository dependentRepository;
+    private final com.kawai.repositories.RoomGuestRepository roomGuestRepository;
 
     public BookingServiceImpl(RoomBookingRepository roomBookingRepository,
             PromotionRepository promotionRepository,
@@ -98,8 +97,10 @@ public class BookingServiceImpl implements BookingService {
             RoomBookingDetailRepository roomBookingDetailRepository,
             PaymentGatewayService paymentGatewayService,
             NotificationService notificationService,
-            PaymentTransactionRepository paymentTransactionRepository,
-            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository) {
+            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository,
+            com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository,
+            com.kawai.repositories.DependentRepository dependentRepository,
+            com.kawai.repositories.RoomGuestRepository roomGuestRepository) {
         this.roomBookingRepository = roomBookingRepository;
         this.promotionRepository = promotionRepository;
         this.roomRepository = roomRepository;
@@ -107,8 +108,10 @@ public class BookingServiceImpl implements BookingService {
         this.roomBookingDetailRepository = roomBookingDetailRepository;
         this.paymentGatewayService = paymentGatewayService;
         this.notificationService = notificationService;
-        this.paymentTransactionRepository = paymentTransactionRepository;
         this.roomCategoryRepository = roomCategoryRepository;
+        this.roomSurchargeRepository = roomSurchargeRepository;
+        this.dependentRepository = dependentRepository;
+        this.roomGuestRepository = roomGuestRepository;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -163,6 +166,7 @@ public class BookingServiceImpl implements BookingService {
         java.util.List<BigDecimal> extraSurcharges = new java.util.ArrayList<>();
         java.util.List<Integer> adultsList = new java.util.ArrayList<>();
         java.util.List<Integer> childrenList = new java.util.ArrayList<>();
+        java.util.List<java.util.List<Integer>> childrenAgesList = new java.util.ArrayList<>();
 
         // ══════════════════════════════════════════════════════════════════
         // SOFT LOCK: Tạo RoomBooking(status="HOLD") trước khi tính tiền
@@ -215,7 +219,7 @@ public class BookingServiceImpl implements BookingService {
                         "Hạng phòng " + catName + " chỉ còn trống " + available + " phòng.");
             }
 
-            // Lấy giá hạng phòng từ database (hoặc fallback về giá mặc định)
+            // Lấy giá hạng phòng từ database
             BigDecimal pricePerNight = category.getBasePrice() != null ? category.getBasePrice() : BASE_ROOM_PRICE;
             BigDecimal baseTotal = pricePerNight.multiply(BigDecimal.valueOf(nights));
 
@@ -229,17 +233,30 @@ public class BookingServiceImpl implements BookingService {
                 int baseChildren = category.getBaseChildren() != null ? category.getBaseChildren() : 0;
 
                 int extraAdults = Math.max(0, reqAdults - baseAdults);
-                int extraChildren = Math.max(0, reqChildren - baseChildren);
+
+                // Child surcharge calculation using exact ages
+                BigDecimal childSurchargeTotal = BigDecimal.ZERO;
+                java.util.List<Integer> ages = selection.getChildrenAges() != null
+                        ? new java.util.ArrayList<>(selection.getChildrenAges())
+                        : new java.util.ArrayList<>();
+                java.util.Collections.sort(ages); // Sort ascending (youngest first)
+                int chargeableChildrenCount = Math.max(0, reqChildren - baseChildren);
+                int skipCount = Math.max(0, reqChildren - chargeableChildrenCount); // Free allowance for youngest
+
+                for (int idx = skipCount; idx < ages.size(); idx++) {
+                    int childAge = ages.get(idx);
+                    BigDecimal surcharge = roomSurchargeRepository.findSurchargeForAge(category, childAge)
+                            .map(com.kawai.models.RoomSurcharge::getPriceModifier)
+                            .orElse(BigDecimal.ZERO);
+                    childSurchargeTotal = childSurchargeTotal.add(surcharge);
+                }
 
                 BigDecimal adultSurchargeRate = category.getExtraAdultSurcharge() != null
                         ? category.getExtraAdultSurcharge()
                         : BigDecimal.ZERO;
-                BigDecimal childSurchargeRate = category.getExtraChildSurcharge() != null
-                        ? category.getExtraChildSurcharge()
-                        : BigDecimal.ZERO;
 
                 BigDecimal dailySurcharge = adultSurchargeRate.multiply(BigDecimal.valueOf(extraAdults))
-                        .add(childSurchargeRate.multiply(BigDecimal.valueOf(extraChildren)));
+                        .add(childSurchargeTotal);
 
                 extraSurcharge = dailySurcharge.multiply(BigDecimal.valueOf(nights));
 
@@ -251,19 +268,17 @@ public class BookingServiceImpl implements BookingService {
                 extraSurcharges.add(extraSurcharge);
                 adultsList.add(reqAdults);
                 childrenList.add(reqChildren);
+                childrenAgesList.add(ages);
             }
         }
 
         BigDecimal discountedPrice = totalBaseTotal;
-
-        // Xử lý promotion code (UC10.2)
         String promoCode = request.getPromotionCode();
         if (promoCode != null && !promoCode.isBlank()) {
             discountedPrice = applyPromotion(promoCode, totalBaseTotal);
         }
 
-        // Tính toán tiền đặt cọc ở backend (30% cọc mặc định), không tin tưởng giá trị
-        // từ frontend
+        // Tính toán tiền đặt cọc ở backend (30% cọc mặc định)
         BigDecimal depositVal = discountedPrice.multiply(new BigDecimal("0.3")).setScale(0, RoundingMode.HALF_UP);
 
         // ══════════════════════════════════════════════════════════════════
@@ -295,6 +310,44 @@ public class BookingServiceImpl implements BookingService {
             detail.setDetailStatus("Pending");
             detail.setCustomer(customer);
             roomBookingDetailRepository.save(detail);
+
+            // Create RoomGuest for Adults (Stub)
+            for (int a = 0; a < reqAdults; a++) {
+                com.kawai.models.RoomGuest guest = new com.kawai.models.RoomGuest();
+                guest.setRoomBookingDetail(detail);
+                guest.setGuestType("ADULT");
+                if (a == 0 && i == 0) {
+                    guest.setCustomer(customer);
+                    guest.setIsPrimaryContact(true);
+                } else {
+                    com.kawai.models.Dependent stubDep = new com.kawai.models.Dependent();
+                    stubDep.setCustomer(customer);
+                    stubDep.setBirthDate(java.time.LocalDate.now().minusYears(18).withDayOfYear(1));
+                    dependentRepository.save(stubDep);
+
+                    guest.setCustomer(null);
+                    guest.setDependent(stubDep);
+                    guest.setIsPrimaryContact(false);
+                }
+                roomGuestRepository.save(guest);
+            }
+
+            // Create Dependent and RoomGuest for Children
+            java.util.List<Integer> agesForRoom = childrenAgesList.get(i);
+            for (Integer age : agesForRoom) {
+                com.kawai.models.Dependent dep = new com.kawai.models.Dependent();
+                dep.setCustomer(customer);
+                // Calculate approximate birthDate from age (e.g., Jan 1st of birth year)
+                dep.setBirthDate(java.time.LocalDate.now().minusYears(age).withDayOfYear(1));
+                dependentRepository.save(dep);
+
+                com.kawai.models.RoomGuest guest = new com.kawai.models.RoomGuest();
+                guest.setRoomBookingDetail(detail);
+                guest.setGuestType("CHILD");
+                guest.setDependent(dep);
+                guest.setIsPrimaryContact(false);
+                roomGuestRepository.save(guest);
+            }
         }
 
         BookingResponseDTO response = new BookingResponseDTO();
@@ -313,25 +366,16 @@ public class BookingServiceImpl implements BookingService {
      * Scheduler chạy mỗi 60 giây, tìm các HOLD đã quá 10 phút (holdExpiresAt ≤
      * now).
      * Chuyển chúng sang CANCELLED để giải phóng phòng cho user khác.
-     *
-     * Case thực tế:
-     * - User tạo booking nhưng đóng trình duyệt giữa chừng
-     * - Server crash sau khi INSERT HOLD nhưng trước khi commit
-     * - Lỗi network khi gọi payment gateway
-     *
-     * Trong luồng bình thường:
-     * HOLD → CONFIRMED xảy ra trong milliseconds → Scheduler sẽ không tìm thấy gì
      */
     @Scheduled(fixedDelay = 60_000) // Chạy mỗi 60 giây
     @Transactional
     public void cleanupStaleHolds() {
         LocalDateTime now = LocalDateTime.now();
-        // findStaleHolds(now) → WHERE bookingStatus='HOLD' AND holdExpiresAt <= now
         List<RoomBooking> staleHolds = roomBookingRepository.findStaleHolds(now);
         if (!staleHolds.isEmpty()) {
             staleHolds.forEach(h -> {
                 h.setBookingStatus("CANCELLED");
-                h.setHoldExpiresAt(null); // clear sau khi xử lý
+                h.setHoldExpiresAt(null);
                 if (h.getCustomer() != null) {
                     try {
                         notificationService.sendNotification(
@@ -356,8 +400,6 @@ public class BookingServiceImpl implements BookingService {
 
     /**
      * Áp dụng mã khuyến mãi (UC10.2).
-     * FIX TC-M2-009a/b/c: Exception message chứa error code [ERR_PROMO_XXX]
-     * (BR-ERR-01)
      */
     private BigDecimal applyPromotion(String promoCode, BigDecimal baseTotal) {
         Promotion promo = promotionRepository.findByPromoCode(promoCode)
@@ -374,10 +416,21 @@ public class BookingServiceImpl implements BookingService {
                     "Promotion code '" + promoCode + "' has expired [ERR_PROMO_EXPIRED]");
         }
 
-        BigDecimal discountRate = promo.getDiscountValue();
-        BigDecimal discountAmount = baseTotal.multiply(discountRate)
-                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-        return baseTotal.subtract(discountAmount);
+        BigDecimal discountValue = promo.getDiscountValue();
+        BigDecimal finalPrice;
+
+        if (discountValue.compareTo(new BigDecimal("100")) <= 0) {
+            BigDecimal discountAmount = baseTotal.multiply(discountValue)
+                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            finalPrice = baseTotal.subtract(discountAmount);
+        } else {
+            finalPrice = baseTotal.subtract(discountValue);
+        }
+        if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
+            finalPrice = BigDecimal.ZERO;
+        }
+
+        return finalPrice;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -582,10 +635,17 @@ public class BookingServiceImpl implements BookingService {
 
         // Cập nhật thông tin khách hàng từ form
         customer.setFullName(fullName);
+        if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
+            throw new BusinessException("INVALID_PHONE",
+                    "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0)");
+        }
         customer.setPhone(phone);
         customer.setEmail(email);
         if (cccd != null && !cccd.equals("********") && !cccd.trim().isEmpty()) {
-            customer.setCccdPassportEncrypted(cccd);
+            if (!com.kawai.utils.ValidationUtils.isValidDocument(cccd)) {
+                throw new BusinessException("INVALID_CCCD", "CCCD/Passport không hợp lệ (Phải là CCCD 12 số, hoặc Passport 8-12 ký tự có chứa chữ cái)");
+            }
+            customer.setCccdPassportEncrypted(com.kawai.utils.EncryptionUtils.encrypt(cccd.trim()));
         }
         customerRepository.save(customer);
 

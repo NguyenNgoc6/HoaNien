@@ -14,6 +14,9 @@ import com.kawai.models.Customer;
 
 @Repository
 public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> {
+       @Query("SELECT COUNT(rb) FROM RoomBooking rb WHERE rb.checkInDate = :date AND rb.bookingStatus = 'Confirmed'")
+       long countCheckInsOnDate(@Param("date") LocalDate date);
+
        List<RoomBooking> findByCustomerOrderByBookingDateDesc(Customer customer);
 
        List<RoomBooking> findByCustomerOrderByIdDesc(Customer customer);
@@ -56,6 +59,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut,
                      @Param("excludeBookingId") Long excludeBookingId);
+
        @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'HOLD' AND rb.holdExpiresAt <= :now")
        List<RoomBooking> findStaleHolds(@Param("now") java.time.LocalDateTime now);
 
@@ -63,9 +67,9 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
        java.sql.Date findPeakOccupancyDate();
 
        @Query("SELECT COUNT(DISTINCT rbd.room.id) FROM RoomBookingDetail rbd " +
-              "WHERE rbd.roomBooking.checkInDate <= :date " +
-              "AND rbd.roomBooking.checkOutDate > :date " +
-              "AND rbd.roomBooking.bookingStatus IN ('Confirmed', 'Checked_In')")
+                     "WHERE rbd.roomBooking.checkInDate <= :date " +
+                     "AND rbd.roomBooking.checkOutDate > :date " +
+                     "AND rbd.roomBooking.bookingStatus IN ('Confirmed', 'Checked_In')")
        Integer countOccupiedRoomsOnDate(@Param("date") LocalDate date);
 
        @Query("SELECT SUM(b.totalPrice) FROM RoomBooking b WHERE b.bookingDate = :date AND b.bookingStatus IN ('Confirmed', 'Checked_In', 'Checked_Out')")
