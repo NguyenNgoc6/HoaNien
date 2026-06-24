@@ -65,10 +65,10 @@ public class SecurityConfig {
                         //         "hasIpAddress('192.168.1.0/24')"))
 
                         .requestMatchers("/", "/booking", "/auth/register", "/auth/login", "/auth/check-session",
-                                "/auth/google-login", "/auth/forgot-password", "/auth/reset-password",
+                                "/auth/google-login", "/auth/forgot-password", "/auth/reset-password", "/auth/manual-logout",
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**", "/api/pos/**",
+                                "/fbStaff/**", "/f&bStaff/**", "/kitchenStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**", "/api/pos/**",
                                 "/api/bookings", "/api/bookings/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error",
                                 "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn", 
@@ -126,8 +126,9 @@ public class SecurityConfig {
     public org.springframework.security.web.authentication.logout.LogoutSuccessHandler logoutSuccessHandler() {
         return (request, response, authentication) -> {
             String referer = request.getHeader("Referer");
-            if (referer != null && !referer.trim().isEmpty()) {
-                response.sendRedirect(referer);
+            if (referer != null && (referer.contains("/fbStaff") || referer.contains("/fbStaff") || referer.contains("/kitchenStaff")
+                    || referer.contains("/admin") || referer.contains("/manager"))) {
+                response.sendRedirect("/ops-login");
             } else {
                 response.sendRedirect("/");
             }
@@ -182,7 +183,12 @@ public class SecurityConfig {
                             redirect = "/receptionist/dashboard";
                             break;
                         } else if (role.equals("ROLE_FB_STAFF")) {
-                            redirect = "/fbStaff/dashboard";
+                            Account acc = accountRepository.findByUsername(authentication.getName()).orElse(null);
+                            if (acc != null && "F&B KITCHEN".equalsIgnoreCase(acc.getRole().getRoleName())) {
+                                redirect = "/kitchenStaff/dashboard";
+                            } else {
+                                redirect = "/fbStaff/dashboard";
+                            }
                             break;
                         } else if (role.equals("ROLE_TOURGUIDE")) {
                             redirect = "/tourguide/dashboard";

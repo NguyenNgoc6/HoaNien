@@ -43,11 +43,7 @@ public class PosController {
         return "f&bStaff/room-service-detail";
     }
 
-    @GetMapping("/emenu")
-    public String emenu(Model model) {
-        model.addAttribute("menuItems", posWebFacadeService.getMappedMenuItems());
-        return "f&bStaff/e-menu";
-    }
+
 
     @GetMapping("/shift-report")
     public String shiftReport() {
@@ -63,4 +59,6 @@ public class PosController {
         }
         return "f&bStaff/order-detail";
     }
+
+
 }

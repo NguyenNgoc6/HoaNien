@@ -19,14 +19,14 @@ public class ReservationCleanupTask {
         this.tableReservationRepository = tableReservationRepository;
     }
 
-    @Scheduled(fixedRate = 900000) // 15 minutes
+    @Scheduled(fixedRate = 60000) // 1 minute
     public void cleanupNoShowReservations() {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
         
         List<TableReservation> pendingReservations = tableReservationRepository.findByReserveDate(today).stream()
             .filter(res -> "Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus()))
-            .filter(res -> res.getReserveTime() != null && res.getReserveTime().plusMinutes(30).isBefore(now))
+            .filter(res -> res.getReserveTime() != null && res.getReserveTime().plusMinutes(15).isBefore(now))
             .collect(Collectors.toList());
             
         for (TableReservation res : pendingReservations) {
