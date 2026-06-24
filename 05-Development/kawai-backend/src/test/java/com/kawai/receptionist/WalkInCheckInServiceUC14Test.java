@@ -34,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -128,6 +129,8 @@ class WalkInCheckInServiceUC14Test {
         private com.kawai.repositories.RoleRepository roleRepository;
         @Mock
         private com.kawai.services.interfaces.FolioService folioService;
+        @Mock
+        private PasswordEncoder passwordEncoder;
 
         // ── Test Data Constants (SYNTHETIC) ──────────────────────────────────────
         private static final String CCCD_NEW_GUEST = "001234567890"; // TC-M2-021
@@ -225,6 +228,7 @@ class WalkInCheckInServiceUC14Test {
                 });
                 lenient().when(roomGuestRepository.save(any(com.kawai.models.RoomGuest.class)))
                                 .thenAnswer(inv -> inv.getArgument(0));
+                lenient().when(passwordEncoder.encode(anyString())).thenReturn("mocked_hash_123456");
         }
 
         // ══════════════════════════════════════════════════════════════════════════
