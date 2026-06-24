@@ -417,6 +417,7 @@ function submitCheckIn() {
         cccd: cccd,
         email: email,
         dateOfBirth: dob,
+        accompaniedGuests: walkInDependents,
         depositAmount: parseFloat(document.getElementById('depositAmount').value) || 0,
         paymentMethod: document.getElementById('paymentMethod').value || 'Tiền mặt'
     };

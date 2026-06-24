@@ -102,9 +102,18 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
             // ── Step 1: Validate thông tin định danh ─────────────────────────
             validateIdentification(request);
 
-            if (request.getRoomSelections() == null || request.getRoomSelections().isEmpty()) {
-                throw new BusinessException("MOD2-UC14-015", "Không có phòng nào được chọn.");
-            }
+            // ── Step 2 & 3: Lock và validate phòng ──────────────────────────
+            Room room = findAndValidateRoom(request.getRoomId());
+            RoomCategory category = room.getCategory();
+
+            // ── Step 4: Guests Classification & Surcharge Preview ───────
+            List<DependentRegistrationDTO> companions = request.getAccompaniedGuests() != null
+                    ? request.getAccompaniedGuests()
+                    : Collections.emptyList();
+
+            List<Integer> childAges = new java.util.ArrayList<>();
+            GuestCount guestCount = classifyGuests(request.getDateOfBirth(), companions, childAges);
+            BigDecimal extraSurcharge = validateAndCalculateSurcharge(guestCount, category, childAges);
 
             // ── Step 5: Find-or-Create Customer ─────────────────────────────
             boolean[] isNewCustomerHolder = { false };
@@ -527,9 +536,11 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
         booking.setBookingSource("WALK_IN");
         booking.setCheckInDate(req.getCheckInDate() != null ? req.getCheckInDate() : LocalDate.now());
         booking.setCheckOutDate(req.getCheckOutDate() != null ? req.getCheckOutDate() : LocalDate.now().plusDays(1));
-        booking.setTotalPrice(BigDecimal.ZERO);
+        booking.setTotalPrice(category.getBasePrice() != null ? category.getBasePrice() : BigDecimal.ZERO);
         booking.setDepositAmount(BigDecimal.ZERO);
         booking.setCancellationDeadline(LocalDate.now());
+        // Personal PIN Hash — default là UUID ngắn (trong production sẽ là input từ
+        // khách)
         booking.setPersonalPinHash(UUID.randomUUID().toString().substring(0, 8));
         return booking;
     }
