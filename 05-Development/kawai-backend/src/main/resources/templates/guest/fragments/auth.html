@@ -1,7 +1,7 @@
 <div th:fragment="authModal">
     <!-- ============ AUTH MODAL (Login/Register) ============ -->
     <div id="authModal"
-        class="fixed inset-0 z-[100] bg-black/60 items-center justify-center backdrop-blur-sm transition-opacity font-body"
+        class="fixed inset-0 z-[100] bg-black/60 items-center justify-center backdrop-blur-sm transition-opacity font-sans"
         style="display: none;">
         <div
             class="bg-hoanien-bg w-full max-w-md p-8 relative border border-hoanien-text/10 shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -28,7 +28,7 @@
 
             <!-- Login Form -->
             <div id="loginSection">
-                <h2 class="font-headline italic tracking-tighter text-3xl mb-6 text-center text-hoanien-text">Đăng Nhập</h2>
+                <h2 class="font-serif text-3xl mb-6 text-center text-hoanien-text">Đăng Nhập</h2>
                 <p class="text-sm opacity-70 text-center mb-8">Vui lòng đăng nhập để tiếp tục đặt phòng.</p>
 
                 <form th:action="@{/auth/login}" method="post" class="space-y-4">
@@ -92,7 +92,7 @@
 
             <!-- Register Form -->
             <div id="registerSection" style="display: none;">
-                <h2 class="font-headline italic tracking-tighter text-3xl mb-6 text-center text-hoanien-text">Đăng Ký</h2>
+                <h2 class="font-serif text-3xl mb-6 text-center text-hoanien-text">Đăng Ký</h2>
                 <p class="text-sm opacity-70 text-center mb-8">Tạo tài khoản để trải nghiệm dịch vụ.</p>
 
                 <form th:action="@{/auth/register}" method="post" class="space-y-4">
