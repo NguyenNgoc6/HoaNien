@@ -64,6 +64,15 @@ public class TourEmailService {
      */
     @Async
     public void sendBookingConfirmation(TourBooking booking, Customer customer) {
+        sendBookingConfirmation(booking, customer, false, null);
+    }
+
+    /**
+     * Gửi email xác nhận đặt tour thành công với thông tin ghi nợ vào phòng.
+     * Gửi bất đồng bộ (@Async) — không block response HTTP.
+     */
+    @Async
+    public void sendBookingConfirmation(TourBooking booking, Customer customer, boolean postToRoom, String roomDetail) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
             LOG.warn("Bỏ qua gửi email xác nhận: customer {} không có email",
                     customer != null ? customer.getId() : "null");
@@ -93,9 +102,8 @@ public class TourEmailService {
             ctx.setVariable("participantCount", booking.getParticipantCount());
             ctx.setVariable("totalPrice", formatVnd(booking.getTotalPrice()));
             ctx.setVariable("bookingDate", LocalDate.now().format(DATE_FMT));
-            ctx.setVariable("postToRoom",
-                    booking.getIsWalkInTour() != null && Boolean.FALSE.equals(booking.getIsWalkInTour()));
-            ctx.setVariable("roomDetail", null); // Có thể mở rộng sau
+            ctx.setVariable("postToRoom", postToRoom);
+            ctx.setVariable("roomDetail", roomDetail);
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
 
