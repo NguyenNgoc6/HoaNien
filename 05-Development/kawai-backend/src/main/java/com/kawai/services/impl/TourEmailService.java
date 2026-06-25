@@ -218,6 +218,16 @@ public class TourEmailService {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlBody, true); // true = HTML
+
+        try {
+            org.springframework.core.io.ClassPathResource res = new org.springframework.core.io.ClassPathResource("static/images/email-bg.png");
+            if (res.exists()) {
+                helper.addInline("emailBg", res);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to add inline image to email: {}", e.getMessage(), e);
+        }
+
         mailSender.send(message);
     }
 
