@@ -63,7 +63,9 @@ public class TourGuideController {
                 employeeRepository.save(employee);
             }
         }
-        return "redirect:" + redirectUrl;
+        String cleanUrl = redirectUrl.replaceAll("[&?]toast=[^&]*", "");
+        String separator = cleanUrl.contains("?") ? "&" : "?";
+        return "redirect:" + cleanUrl + separator + "toast=create_success";
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/profile/update")
@@ -86,7 +88,9 @@ public class TourGuideController {
                 employeeRepository.save(employee);
             });
         }
-        return "redirect:" + redirectUrl;
+        String cleanUrl = redirectUrl.replaceAll("[&?]toast=[^&]*", "");
+        String separator = cleanUrl.contains("?") ? "&" : "?";
+        return "redirect:" + cleanUrl + separator + "toast=update_success";
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/profile/delete")
@@ -99,7 +103,9 @@ public class TourGuideController {
                 employeeRepository.delete(employee);
             });
         }
-        return "redirect:" + redirectUrl;
+        String cleanUrl = redirectUrl.replaceAll("[&?]toast=[^&]*", "");
+        String separator = cleanUrl.contains("?") ? "&" : "?";
+        return "redirect:" + cleanUrl + separator + "toast=delete_success";
     }
     @GetMapping("/dashboard")
     public String dashboard(Principal principal, Model model) {
