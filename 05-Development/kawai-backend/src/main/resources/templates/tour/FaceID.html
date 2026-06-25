@@ -567,24 +567,32 @@
                                     </div>
                                     <div>
                                         <p class="font-medium text-[14px]"
-                                            th:text="${attendee.customer != null ? attendee.customer.fullName : (attendee.dependent != null ? attendee.dependent.dependentName : 'Ẩn danh')}">
+                                            th:text="${attendee.customer != null ? (attendee.customer.fullName == 'Lê Quang' ? 'Ngọc Thị' : attendee.customer.fullName) : (attendee.dependent != null ? attendee.dependent.dependentName : 'Ẩn danh')}">
                                             Tên khách</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="py-4 text-center">
-                                <span th:if="${attendee.status == 'Checked_In'}"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-checked">
-                                    <span class="material-symbols-outlined text-[12px]">check</span> Đã điểm danh
-                                </span>
-                                <span th:if="${attendee.status == 'Not_Show'}"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-waiting">
-                                    <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span> Chờ
-                                    FaceID
-                                </span>
-                                <span th:if="${attendee.status != 'Checked_In' && attendee.status != 'Not_Show'}"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-absent"
-                                    th:text="${attendee.status}"></span>
+                                <div class="flex items-center justify-center gap-2">
+                                    <span th:if="${attendee.status == 'Checked_In'}"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-checked">
+                                        <span class="material-symbols-outlined text-[12px]">check</span> Đã điểm danh
+                                    </span>
+                                    <span th:if="${attendee.status == 'Not_Show'}"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-waiting">
+                                        <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span> Chờ
+                                        FaceID
+                                    </span>
+                                    <button th:if="${attendee.status == 'Not_Show'}"
+                                        th:onclick="'checkinManual(' + ${attendee.id} + ')'"
+                                        class="p-1 border border-[#BFAC8F] text-[#BFAC8F] hover:bg-[#3a3230] hover:text-[#fff8f4] transition-all duration-300 flex items-center justify-center"
+                                        title="Điểm danh thủ công">
+                                        <span class="material-symbols-outlined text-[14px]">check</span>
+                                    </button>
+                                    <span th:if="${attendee.status != 'Checked_In' && attendee.status != 'Not_Show'}"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-label-caps status-absent"
+                                        th:text="${attendee.status}"></span>
+                                </div>
                             </td>
                             <td class="py-4 text-right font-label-caps text-[10px] text-on-surface-variant opacity-50"
                                 th:text="'KR-' + ${1000 + attendee.id}">KR-1001</td>
@@ -665,6 +673,10 @@
                 <button id="btn-reset" onclick="resetCamera()" disabled
                     class="w-full border border-outline-variant py-2.5 font-label-caps text-[11px] text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
                     <span class="material-symbols-outlined text-[14px]">refresh</span> ĐẶT LẠI
+                </button>
+                <button id="btn-reset-attendance" onclick="manualResetAttendance()"
+                    class="w-full border border-red-800/60 py-2.5 font-label-caps text-[11px] text-red-800 hover:bg-red-800 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[14px]">lock_reset</span> RESET ĐIỂM DANH
                 </button>
             </div>
         </section>
@@ -939,11 +951,7 @@
 
             if (matchResult) {
                 // === SUCCESS ===
-                // Remap: ảnh Ngọc Thị (lgok.jpg) được dùng làm face cho khách Lê Quang
                 let displayName = matchResult.name;
-                if (matchResult.name === 'Ngọc Thị') {
-                    displayName = 'Lê Quang';
-                }
                 faceFrame.className = 'face-frame matched';
                 statusLabel.textContent = 'ĐÃ XÁC THỰC';
                 statusIcon.textContent = 'check_circle';
@@ -963,7 +971,7 @@
                     console.warn('Failed to update server:', e);
                 }
 
-                setTimeout(() => { window.location.reload(); }, 2500);
+                setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true&t=' + new Date().getTime(); }, 2500);
             } else {
                 // === FAILED ===
                 faceFrame.className = 'face-frame failed';
@@ -1021,10 +1029,49 @@
                 console.log('Auto reset attendance:', data);
                 if (data.success && data.resetCount > 0) {
                     showToast('success', 'Đã sẵn sàng demo', data.message);
-                    setTimeout(() => { window.location.reload(); }, 1500);
+                    setTimeout(() => {
+                        window.location.href = '/tourguide/dashboard?t=' + new Date().getTime();
+                    }, 1500);
                 }
             } catch (e) {
                 console.warn('Auto reset attendance error:', e);
+            }
+        }
+
+        async function checkinManual(attendeeId) {
+            try {
+                const resp = await fetch('/api/faceid/checkin-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ attendeeId: attendeeId })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    showToast('success', 'Điểm danh thủ công', data.name + ' đã được điểm danh.');
+                    setTimeout(() => {
+                        window.location.href = '/tourguide/dashboard?scanned=true&t=' + new Date().getTime();
+                    }, 1000);
+                } else {
+                    showToast('error', 'Lỗi điểm danh', data.message || 'Không thể điểm danh hành khách.');
+                }
+            } catch (e) {
+                console.error('Checkin manual error:', e);
+                showToast('error', 'Lỗi kết nối', 'Không thể gửi yêu cầu điểm danh.');
+            }
+        }
+
+        async function manualResetAttendance() {
+            try {
+                const resp = await fetch('/api/faceid/reset');
+                const data = await resp.json();
+                console.log('Manual reset attendance:', data);
+                showToast('success', 'Reset điểm danh', data.message || 'Đã đặt lại trạng thái chờ FaceID.');
+                setTimeout(() => {
+                    window.location.href = '/tourguide/dashboard?t=' + new Date().getTime();
+                }, 1000);
+            } catch (e) {
+                console.error('Manual reset error:', e);
+                showToast('error', 'Lỗi reset', 'Không thể kết nối tới server.');
             }
         }
 
@@ -1052,12 +1099,19 @@
 
         // ==================== INIT ====================
         document.addEventListener('DOMContentLoaded', function () {
-            // Tự động reset trạng thái điểm danh khi load trang để demo lại
-            resetAttendance();
+            const urlParams = new URLSearchParams(window.location.search);
+            const scanned = urlParams.get('scanned');
+            if (scanned === 'true') {
+                // Xóa query parameter khỏi thanh địa chỉ để khi bấm F5 reload sẽ tự động reset
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            } else {
+                // Tự động reset trạng thái điểm danh khi load trang để demo lại
+                resetAttendance();
+            }
 
             loadModels();
 
-            const urlParams = new URLSearchParams(window.location.search);
             const toast = urlParams.get('toast');
             if (toast) {
                 let msg = '';

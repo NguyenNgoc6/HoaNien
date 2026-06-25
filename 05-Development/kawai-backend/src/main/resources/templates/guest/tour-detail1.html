@@ -682,7 +682,13 @@
                 });
         });
 
-        document.addEventListener('DOMContentLoaded', () => { renderTour(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTour();
+            if (document.getElementById('departureDate')) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                document.getElementById('departureDate').value = todayStr;
+            }
+        });
     </script>
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>

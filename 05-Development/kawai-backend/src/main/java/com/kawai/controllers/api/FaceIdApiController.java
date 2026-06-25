@@ -47,6 +47,7 @@ public class FaceIdApiController {
      * Request body: { "image": "data:image/jpeg;base64,..." }
      */
     @PostMapping("/scan")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> scanFace(@RequestBody Map<String, String> body) {
         String base64Image = body.get("image");
         if (base64Image == null || base64Image.isEmpty()) {
@@ -80,7 +81,7 @@ public class FaceIdApiController {
             // Fallback nếu DB trống (môi trường test)
             if (guestList.isEmpty()) {
                 guestList.add(Map.of("customer_id", 1L, "name", "Nguyễn Xuân Lưu", "image_path", "luuham.jpg"));
-                guestList.add(Map.of("customer_id", 2L, "name", "Lê Quang", "image_path", "lgok.jpg"));
+                guestList.add(Map.of("customer_id", 2L, "name", "Ngọc Thị", "image_path", "lgok.jpg"));
             }
 
             String jsonArgs = objectMapper.writeValueAsString(guestList);
@@ -124,11 +125,7 @@ public class FaceIdApiController {
 
             // 5. Xử lý kết quả
             if (matchedName != null) {
-                // Remap: ảnh Ngọc Thị (lgok.jpg) được dùng làm face cho khách Lê Quang
                 String displayName = matchedName;
-                if ("Ngọc Thị".equalsIgnoreCase(matchedName)) {
-                    displayName = "Lê Quang";
-                }
                 boolean dbUpdated = false;
                 String matchedId = null;
 
@@ -140,12 +137,12 @@ public class FaceIdApiController {
                         name = attendee.getDependent().getDependentName();
                     }
 
-                    if (name != null && name.equalsIgnoreCase(displayName)) {
+                    if (name != null && (name.equalsIgnoreCase(displayName) || (displayName.equalsIgnoreCase("Ngọc Thị") && name.equalsIgnoreCase("Lê Quang")))) {
                         // Chỉ点 danh nếu chưa check-in
                         if (!"Checked_In".equals(attendee.getStatus())) {
                             attendee.setStatus("Checked_In");
                             attendee.setFaceMatchedAt(LocalDateTime.now());
-                            tourAttendeeRepository.save(attendee);
+                            tourAttendeeRepository.saveAndFlush(attendee);
                         }
                         dbUpdated = true;
                         matchedId = String.valueOf(attendee.getId());
@@ -198,7 +195,7 @@ public class FaceIdApiController {
                 String imgPath = null;
                 if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
                     imgPath = "luuham.jpg";
-                } else if (name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Lê Quang")) {
+                } else if (name.equalsIgnoreCase("Ngọc Thị")) {
                     imgPath = "lgok.jpg";
                 }
 
@@ -221,6 +218,7 @@ public class FaceIdApiController {
      * Request: { "name": "Lê Hoàng Nam" }
      */
     @PostMapping("/verify")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> verifyFromBrowser(@RequestBody Map<String, String> body) {
         String matchedName = body.get("name");
         if (matchedName == null || matchedName.isBlank()) {
@@ -229,11 +227,7 @@ public class FaceIdApiController {
                     "message", "Thiếu tên khách hàng"));
         }
 
-        // Remap: ảnh Ngọc Thị (lgok.jpg) được dùng làm face cho khách Lê Quang
         String displayName = matchedName;
-        if ("Ngọc Thị".equalsIgnoreCase(matchedName)) {
-            displayName = "Lê Quang";
-        }
 
         try {
             List<TourAttendee> attendees = tourAttendeeRepository
@@ -247,11 +241,11 @@ public class FaceIdApiController {
                     name = attendee.getDependent().getDependentName();
                 }
 
-                if (name != null && name.equalsIgnoreCase(displayName)) {
+                if (name != null && (name.equalsIgnoreCase(displayName) || (displayName.equalsIgnoreCase("Ngọc Thị") && name.equalsIgnoreCase("Lê Quang")))) {
                     if (!"Checked_In".equals(attendee.getStatus())) {
                         attendee.setStatus("Checked_In");
                         attendee.setFaceMatchedAt(LocalDateTime.now());
-                        tourAttendeeRepository.save(attendee);
+                        tourAttendeeRepository.saveAndFlush(attendee);
                     }
                     return ResponseEntity.ok(Map.of(
                             "success", true,
@@ -279,6 +273,7 @@ public class FaceIdApiController {
      * Dùng cho demo replay.
      */
     @GetMapping("/reset")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> resetAttendance() {
         try {
             List<TourAttendee> attendees = tourAttendeeRepository
@@ -288,7 +283,7 @@ public class FaceIdApiController {
                 if (!"Not_Show".equals(attendee.getStatus())) {
                     attendee.setStatus("Not_Show");
                     attendee.setFaceMatchedAt(null);
-                    tourAttendeeRepository.save(attendee);
+                    tourAttendeeRepository.saveAndFlush(attendee);
                     resetCount++;
                 }
             }
@@ -296,6 +291,54 @@ public class FaceIdApiController {
                     "success", true,
                     "resetCount", resetCount,
                     "message", "Đã reset " + resetCount + " hành khách về trạng thái chờ FaceID"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Lỗi máy chủ: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/faceid/checkin-manual
+     * Điểm danh thủ công bằng cách click trên giao diện (cho các trường hợp không dùng FaceID hoặc demo nhanh).
+     */
+    @PostMapping("/checkin-manual")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> checkinManual(@RequestBody Map<String, Object> body) {
+        Object idObj = body.get("attendeeId");
+        if (idObj == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Thiếu ID hành khách"));
+        }
+
+        try {
+            Long attendeeId = Long.valueOf(idObj.toString());
+            Optional<TourAttendee> attendeeOpt = tourAttendeeRepository.findById(attendeeId);
+            if (attendeeOpt.isPresent()) {
+                TourAttendee attendee = attendeeOpt.get();
+                if (!"Checked_In".equals(attendee.getStatus())) {
+                    attendee.setStatus("Checked_In");
+                    attendee.setFaceMatchedAt(LocalDateTime.now());
+                    tourAttendeeRepository.saveAndFlush(attendee);
+                }
+                String name = "Ẩn danh";
+                if (attendee.getCustomer() != null) {
+                    name = attendee.getCustomer().getFullName();
+                } else if (attendee.getDependent() != null) {
+                    name = attendee.getDependent().getDependentName();
+                }
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "name", name,
+                        "attendeeId", String.valueOf(attendee.getId()),
+                        "time", LocalDateTime.now().toString()));
+            } else {
+                return ResponseEntity.status(404).body(Map.of(
+                        "success", false,
+                        "message", "Không tìm thấy hành khách với ID: " + attendeeId));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
@@ -333,7 +376,7 @@ public class FaceIdApiController {
             // Fallback nếu DB trống - dùng ảnh luuham.jpg và lgok.jpg cho demo
             if (refs.isEmpty()) {
                 refs.add(Map.of("name", "Nguyễn Xuân Lưu", "imageUrl", "/AnhTour/luuham.jpg"));
-                refs.add(Map.of("name", "Lê Quang", "imageUrl", "/AnhTour/lgok.jpg"));
+                refs.add(Map.of("name", "Ngọc Thị", "imageUrl", "/AnhTour/lgok.jpg"));
             }
 
             return ResponseEntity.ok(refs);
@@ -345,7 +388,7 @@ public class FaceIdApiController {
     private String mapNameToImageUrl(String name) {
         if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
             return "/AnhTour/luuham.jpg";
-        } else if (name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Lê Quang")) {
+        } else if (name.equalsIgnoreCase("Ngọc Thị")) {
             return "/AnhTour/lgok.jpg";
         }
         return null;

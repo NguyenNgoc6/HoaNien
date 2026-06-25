@@ -1128,6 +1128,13 @@
             // Auto-fetch live weather on page load (current weather)
             fetchWeather(null);
 
+            if (document.getElementById('departureDate')) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                document.getElementById('departureDate').value = todayStr;
+                // Fetch weather for today
+                fetchWeather(todayStr);
+            }
+
             if (customerName && document.getElementById('fullName')) {
                 document.getElementById('fullName').value = customerName;
             }
