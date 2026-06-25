@@ -21,7 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -205,7 +208,12 @@ public class SecurityConfig {
                             redirect = "/receptionist/dashboard";
                             break;
                         } else if (role.equals("ROLE_FB_STAFF")) {
-                            redirect = "/fbStaff/dashboard";
+                            Account acc = accountRepository.findByUsername(authentication.getName()).orElse(null);
+                            if (acc != null && "F&B KITCHEN".equalsIgnoreCase(acc.getRole().getRoleName())) {
+                                redirect = "/kitchenStaff/dashboard";
+                            } else {
+                                redirect = "/fbStaff/dashboard";
+                            }
                             break;
                         } else if (role.equals("ROLE_TOURGUIDE")) {
                             redirect = "/tourguide/dashboard";

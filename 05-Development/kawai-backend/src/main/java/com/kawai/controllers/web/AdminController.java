@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestParam;
 import lombok.AllArgsConstructor;
 
@@ -15,15 +16,20 @@ import com.kawai.services.interfaces.AdminViewService;
 
 @Controller
 @RequestMapping("/admin")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class AdminController {
 
   private final AdminViewService adminViewService;
+  private final com.kawai.repositories.AuthorizedDeviceRepository authorizedDeviceRepository;
+
+  @org.springframework.beans.factory.annotation.Value("${sendgrid.from-email:noreply@kawai-resort.com}")
+  private String defaultFromEmail;
 
   // =========================================================================
   // Dashboard
   // =========================================================================
 
+  @PreAuthorize("hasAnyAuthority('OP_DASHBOARD', 'ROLE_ADMIN')")
   @GetMapping("/dashboard")
   public String dashboard(Model model) {
     Map<String, Object> metrics = adminViewService.getDashboardMetrics();
@@ -65,6 +71,7 @@ public class AdminController {
   // Master Data
   // =========================================================================
 
+  @PreAuthorize("hasAnyAuthority('OP_MASTER_DATA', 'OP_ROOM', 'OP_FNB', 'OP_TOUR', 'OP_CRM', 'OP_PROMOTIONS', 'ROLE_ADMIN')")
   @GetMapping("/master-data")
   public String masterData(@RequestParam(value = "tab", defaultValue = "Room Categories") String tab, Model model) {
     List<String> roomsGroup = Arrays.asList("Room Categories", "Rooms", "Pricing Management", "Bookings");
@@ -110,6 +117,7 @@ public class AdminController {
     return "admin/master-data";
   }
 
+  @PreAuthorize("hasAnyAuthority('OP_AUDIT_LOG', 'ROLE_ADMIN')")
   @GetMapping("/audit-log")
   public String auditLog(Model model) {
     model.addAttribute("logs", adminViewService.getAuditLogs());
@@ -118,6 +126,7 @@ public class AdminController {
     return "admin/audit-log";
   }
 
+  @PreAuthorize("hasAnyAuthority('OP_REVIEWS', 'ROLE_ADMIN')")
   @GetMapping("/reviews")
   public String reviews(Model model) {
     List<AdminViewService.ReviewMock> reviews = adminViewService.getReviews();
@@ -126,8 +135,23 @@ public class AdminController {
     return "admin/reviews";
   }
 
+  @PreAuthorize("hasAnyAuthority('OP_WORKFLOW', 'ROLE_ADMIN')")
   @GetMapping("/workflows")
   public String workflows(Model model) {
+    model.addAttribute("defaultFromEmail", defaultFromEmail);
     return "admin/workflows";
+  }
+
+  @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+  @GetMapping("/cronjobs")
+  public String cronjobs(Model model) {
+    return "admin/cronjobs";
+  }
+
+  @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+  @GetMapping("/devices")
+  public String devices(Model model) {
+    model.addAttribute("devices", authorizedDeviceRepository.findAll());
+    return "admin/devices";
   }
 }

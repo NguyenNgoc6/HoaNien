@@ -19,14 +19,21 @@ public class ReservationCleanupTask {
         this.tableReservationRepository = tableReservationRepository;
     }
 
-    @Scheduled(fixedRate = 900000) // 15 minutes
+    private java.time.LocalDateTime lastRun;
+
+    public String getLastRunTime() {
+        return lastRun != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(lastRun) : "Chưa chạy lần nào";
+    }
+
+    // Scheduled dynamically in DynamicJobConfig
     public void cleanupNoShowReservations() {
+        this.lastRun = java.time.LocalDateTime.now();
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
         
         List<TableReservation> pendingReservations = tableReservationRepository.findByReserveDate(today).stream()
             .filter(res -> "Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus()))
-            .filter(res -> res.getReserveTime() != null && res.getReserveTime().plusMinutes(30).isBefore(now))
+            .filter(res -> res.getReserveTime() != null && res.getReserveTime().plusMinutes(15).isBefore(now))
             .collect(Collectors.toList());
             
         for (TableReservation res : pendingReservations) {

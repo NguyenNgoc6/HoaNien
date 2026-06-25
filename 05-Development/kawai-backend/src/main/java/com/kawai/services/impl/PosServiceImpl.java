@@ -111,7 +111,7 @@ public class PosServiceImpl implements PosService {
                     
                     List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
                     for (TableReservation res : reservations) {
-                        if ("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus())) {
+                        if ("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus()) || "Completed".equalsIgnoreCase(res.getStatus())) {
                             java.time.LocalDateTime resStartDT = java.time.LocalDateTime.of(today, res.getReserveTime());
                             java.time.LocalDateTime resEndDT;
                             if (res.getEndTime() != null) {
@@ -120,8 +120,11 @@ public class PosServiceImpl implements PosService {
                                     resEndDT = resEndDT.plusDays(1);
                                 }
                             } else {
-                                resEndDT = resStartDT.plusHours(2);
+                                resEndDT = resStartDT.plusHours(1);
                             }
+                            
+                            // Add 15 minutes buffer time
+                            resEndDT = resEndDT.plusMinutes(15);
                             
                             if (currentDT.isAfter(resStartDT.minusHours(2)) && currentDT.isBefore(resEndDT)) {
                                 throw new BusinessException("POS-008", "Bàn đã có khách đặt trước trong thời gian tới!");
@@ -157,16 +160,18 @@ public class PosServiceImpl implements PosService {
         }
 
         if (Boolean.TRUE.equals(request.getIsPaid())) {
-            order.setOrderStatus("PAID");
+            order.setOrderStatus("Pending");
             order.setIsPaidInPos(true);
         } else {
-            order.setOrderStatus("Pending");
             order.setPaymentType(request.getPaymentType() != null ? request.getPaymentType() : "Pay_Later");
-            if ("ONLINE".equalsIgnoreCase(request.getPaymentType())) {
-                order.setIsPaidInPos(true);
-            } else if ("VNPAY".equalsIgnoreCase(request.getPaymentType())) {
+            if ("VNPAY".equalsIgnoreCase(request.getPaymentType())) {
+                order.setOrderStatus("AWAITING_PAYMENT");
                 order.setIsPaidInPos(false);
+            } else if ("ONLINE".equalsIgnoreCase(request.getPaymentType())) {
+                order.setOrderStatus("Pending");
+                order.setIsPaidInPos(true);
             } else {
+                order.setOrderStatus("Pending");
                 order.setIsPaidInPos(false);
             }
         }
@@ -234,8 +239,23 @@ public class PosServiceImpl implements PosService {
     public FoodOrder payOrder(Long id) {
         FoodOrder order = foodOrderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
-        order.setOrderStatus("PAID");
+        if ("AWAITING_PAYMENT".equalsIgnoreCase(order.getOrderStatus())) {
+             order.setOrderStatus("Pending");
+        }
         order.setIsPaidInPos(true);
+
+        // Update reservation to Completed and set endTime to now
+        RestaurantTable table = order.getTable();
+        if (table != null) {
+            List<TableReservation> activeReservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), java.time.LocalDate.now());
+            for (TableReservation res : activeReservations) {
+                if ("Seated".equalsIgnoreCase(res.getStatus())) {
+                    res.setStatus("Completed");
+                    res.setEndTime(java.time.LocalTime.now());
+                    tableReservationRepository.save(res);
+                }
+            }
+        }
 
         // Do NOT automatically change table status to "Cleaning" after payment.
         // It stays "Occupied" until staff explicitly changes it.
@@ -330,6 +350,37 @@ public class PosServiceImpl implements PosService {
         
         // Reset order status to pending so kitchen sees new items
         order.setOrderStatus("Pending");
+        foodOrderRepository.save(order);
+    }
+
+    @Override
+    public void updateOrderStatus(Long orderId, String status) {
+        FoodOrder order = foodOrderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
+        
+        order.setOrderStatus(status);
+
+        // Update KOT status for all details based on order status
+        if ("Preparing".equalsIgnoreCase(status)) {
+            for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+                if ("Pending".equalsIgnoreCase(detail.getKotStatus())) {
+                    detail.setKotStatus("Preparing");
+                }
+            }
+        } else if ("Ready".equalsIgnoreCase(status)) {
+            for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+                if ("Preparing".equalsIgnoreCase(detail.getKotStatus()) || "Pending".equalsIgnoreCase(detail.getKotStatus())) {
+                    detail.setKotStatus("Ready");
+                }
+            }
+        } else if ("Served".equalsIgnoreCase(status)) {
+            for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+                if ("Ready".equalsIgnoreCase(detail.getKotStatus())) {
+                    detail.setKotStatus("Served");
+                }
+            }
+        }
+
         foodOrderRepository.save(order);
     }
 }

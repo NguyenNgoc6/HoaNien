@@ -772,34 +772,29 @@ class CheckinServiceUC12Test {
     }
 
     // ================================================================
-    // TC-M2-025: Xử lý No-Show tự động (BR-FO-09)
-    // Ref: TDD UC13 | Gap: Xử lý khách không đến check-in qua 00:00 ngày hôm sau
+    // TC-M2-025: Xử lý Hủy No-Show thủ công (BR-FO-09)
+    // Ref: TDD UC13 | Gap: Xử lý khách không đến check-in
     // ================================================================
     @Nested
-    @DisplayName("TC-M2-025 [NEW]: processNoShows — Đánh dấu No-Show cho đơn quá hạn")
+    @DisplayName("TC-M2-025 [NEW]: markAsNoShow — Đánh dấu No-Show thủ công")
     class TC_M2_025 {
 
         @Test
-        @DisplayName("TC-M2-025a: processNoShows — Có đơn Confirmed quá hạn → Đổi thành No-Show")
-        void processNoShows_HasExpiredBookings_ShouldMarkAsNoShow() {
+        @DisplayName("TC-M2-025a: markAsNoShow — Đơn hợp lệ (Confirmed) → Đổi thành No-Show")
+        void markAsNoShow_ValidBooking_ShouldMarkAsNoShow() {
             // ARRANGE
-            LocalDate today = LocalDate.now();
-            
             RoomBooking expiredBooking = new RoomBooking();
             expiredBooking.setId(999L);
             expiredBooking.setBookingStatus("Confirmed");
-            expiredBooking.setCheckInDate(today.minusDays(1)); // Quá hạn 1 ngày
             
-            java.util.List<RoomBooking> expiredList = java.util.List.of(expiredBooking);
-            
-            when(roomBookingRepository.findExpiredConfirmedBookings(today))
-                    .thenReturn(expiredList);
+            when(roomBookingRepository.findById(999L))
+                    .thenReturn(java.util.Optional.of(expiredBooking));
                     
             when(roomBookingRepository.save(any(RoomBooking.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // ACT
-            checkinService.processNoShows(today);
+            checkinService.markAsNoShow(999L);
 
             // ASSERT
             assertEquals("No-Show", expiredBooking.getBookingStatus(), "Trạng thái phải được đổi thành No-Show");
@@ -807,18 +802,36 @@ class CheckinServiceUC12Test {
         }
         
         @Test
-        @DisplayName("TC-M2-025b: processNoShows — Không có đơn quá hạn → Không làm gì cả")
-        void processNoShows_NoExpiredBookings_ShouldDoNothing() {
+        @DisplayName("TC-M2-025b: markAsNoShow — Không tìm thấy đơn → Ném lỗi")
+        void markAsNoShow_NotFound_ShouldThrowException() {
             // ARRANGE
-            LocalDate today = LocalDate.now();
+            when(roomBookingRepository.findById(999L))
+                    .thenReturn(java.util.Optional.empty());
+
+            // ACT & ASSERT
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+                checkinService.markAsNoShow(999L);
+            });
+            assertTrue(ex.getMessage().contains("Không tìm thấy đơn phòng ID"));
+            verify(roomBookingRepository, never()).save(any(RoomBooking.class));
+        }
+
+        @Test
+        @DisplayName("TC-M2-025c: markAsNoShow — Đơn không phải Confirmed → Ném lỗi")
+        void markAsNoShow_NotConfirmed_ShouldThrowException() {
+            // ARRANGE
+            RoomBooking checkedInBooking = new RoomBooking();
+            checkedInBooking.setId(999L);
+            checkedInBooking.setBookingStatus("Checked-in");
             
-            when(roomBookingRepository.findExpiredConfirmedBookings(today))
-                    .thenReturn(java.util.Collections.emptyList());
+            when(roomBookingRepository.findById(999L))
+                    .thenReturn(java.util.Optional.of(checkedInBooking));
 
-            // ACT
-            checkinService.processNoShows(today);
-
-            // ASSERT
+            // ACT & ASSERT
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+                checkinService.markAsNoShow(999L);
+            });
+            assertTrue(ex.getMessage().contains("Chỉ có thể hủy No-Show với đơn đã Confirmed"));
             verify(roomBookingRepository, never()).save(any(RoomBooking.class));
         }
     }
