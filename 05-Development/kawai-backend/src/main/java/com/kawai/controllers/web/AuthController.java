@@ -1,98 +1,13 @@
 package com.kawai.controllers.web;
 
 import com.kawai.models.Account;
-import com.kawai.models.Customer;
-import com.kawai.models.Role;
-import com.kawai.repositories.AccountRepository;
-import com.kawai.repositories.CustomerRepository;
-import com.kawai.repositories.RoleRepository;
-import com.kawai.services.interfaces.AuthService;
-
 import jakarta.servlet.http.HttpSession;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
-
-    @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthService authService;
-
-    @PostMapping("/register")
-    public String register(@RequestParam String username,
-            @RequestParam String password,
-            @RequestParam String email,
-            @RequestParam(required = false) String fullName,
-            @RequestParam(required = false, defaultValue = "Other") String gender,
-            @RequestParam(required = false) String phone,
-            @RequestHeader(value = "Referer", required = false) String referer,
-            RedirectAttributes redirectAttributes) {
-
-        String redirectPath = "/booking";
-        if (referer != null && !referer.trim().isEmpty()) {
-            try {
-                java.net.URI uri = new java.net.URI(referer);
-                redirectPath = uri.getPath();
-            } catch (Exception e) {
-                redirectPath = "/booking";
-            }
-        }
-
-        if (accountRepository.existsByUsername(username)) {
-            redirectAttributes.addFlashAttribute("authError", "Tên đăng nhập đã tồn tại!");
-            return "redirect:" + redirectPath;
-        }
-
-        if (customerRepository.existsByEmail(email)) {
-            redirectAttributes.addFlashAttribute("authError", "Email này đã được sử dụng!");
-            return "redirect:" + redirectPath;
-        }
-
-        // Assign default role (CUSTOMER NORMAL or CUSTOMER)
-        Role customerRole = roleRepository.findByRoleName("CUSTOMER NORMAL")
-                .or(() -> roleRepository.findByRoleName("CUSTOMER"))
-                .orElseGet(() -> {
-                    Role newRole = new Role();
-                    newRole.setRoleName("CUSTOMER");
-                    return roleRepository.save(newRole);
-                });
-
-        // Create Account
-        Account account = new Account();
-        account.setUsername(username);
-        account.setPasswordHash(passwordEncoder.encode(password));
-        account.setRole(customerRole);
-        account = accountRepository.save(account);
-
-        // Create Customer
-        Customer customer = new Customer();
-        customer.setAccount(account);
-        customer.setFullName(fullName != null && !fullName.trim().isEmpty() ? fullName : username);
-        customer.setEmail(email);
-        customer.setGender(gender);
-        customer.setPhone(phone != null && !phone.trim().isEmpty() ? phone : "0000000000");
-        customerRepository.save(customer);
-
-        redirectAttributes.addFlashAttribute("authSuccess", "Đăng ký thành công! Vui lòng đăng nhập.");
-        return "redirect:" + redirectPath;
-    }
 
     /**
      * Endpoint trung gian: lưu trang hiện tại vào session trước khi redirect sang
@@ -129,65 +44,6 @@ public class AuthController {
         response.addCookie(redirectCookie);
 
         return "redirect:/oauth2/authorization/google";
-    }
-
-    // ── QUÊN MẬT KHẨU ──
-    @GetMapping("/forgot-password")
-    public String forgotPasswordPage() {
-        return "auth/forgot-password";
-    }
-
-    @PostMapping("/forgot-password")
-    public String forgotPassword(@RequestParam String email,
-            RedirectAttributes redirectAttributes) {
-        try {
-            String token = authService.requestPasswordReset(email);
-            // Lưu token vào session để hiển thị link reset (demo)
-            // Trong thực tế sẽ gửi email chứa link
-            redirectAttributes.addFlashAttribute("resetToken", token);
-            redirectAttributes.addFlashAttribute("authSuccess",
-                    "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.");
-        } catch (Exception e) {
-            // Không lộ thông tin email tồn tại hay không
-            redirectAttributes.addFlashAttribute("authSuccess",
-                    "Nếu email tồn tại trong hệ thống, link đặt lại mật khẩu đã được gửi.");
-        }
-        return "redirect:/auth/forgot-password";
-    }
-
-    @GetMapping("/reset-password")
-    public String resetPasswordPage(@RequestParam(required = false) String token,
-            RedirectAttributes redirectAttributes) {
-        if (token == null || token.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("authError", "Token không hợp lệ.");
-            return "redirect:/ops-login";
-        }
-        return "auth/reset-password";
-    }
-
-    @PostMapping("/reset-password")
-    public String resetPassword(@RequestParam String token,
-            @RequestParam String newPassword,
-            @RequestParam String confirmPassword,
-            RedirectAttributes redirectAttributes) {
-        if (!newPassword.equals(confirmPassword)) {
-            redirectAttributes.addFlashAttribute("authError", "Mật khẩu xác nhận không khớp.");
-            return "redirect:/auth/reset-password?token=" + token;
-        }
-        try {
-            boolean result = authService.resetPassword(token, newPassword);
-            if (result) {
-                redirectAttributes.addFlashAttribute("authSuccess",
-                        "Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
-                return "redirect:/ops-login";
-            } else {
-                redirectAttributes.addFlashAttribute("authError", "Đặt lại mật khẩu thất bại.");
-                return "redirect:/auth/reset-password?token=" + token;
-            }
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("authError", e.getMessage());
-            return "redirect:/auth/reset-password?token=" + token;
-        }
     }
 
     // ── ENDPOINT KIỂM TRA SESSION ĐÃ ĐƯỢC CHUẨN HÓA ──

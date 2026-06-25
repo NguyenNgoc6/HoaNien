@@ -63,7 +63,7 @@ public class VnPayServiceImpl implements VnPayService {
     private com.kawai.services.interfaces.FolioService folioService;
 
     @Autowired
-    private EmailService emailService;
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private InvoicePdfService invoicePdfService;
@@ -213,7 +213,7 @@ public class VnPayServiceImpl implements VnPayService {
 
     @Override
     @Transactional
-    public String createPaymentUrlForFoodOrder(Long orderId, String ipAddress) {
+    public String createPaymentUrlForFoodOrder(Long orderId, String ipAddress, String source) {
         FoodOrder foodOrder = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException("ORDER_NOT_FOUND", "Không tìm thấy thông tin đơn món"));
 
@@ -228,6 +228,9 @@ public class VnPayServiceImpl implements VnPayService {
 
         // 2. Sinh transactionRef mới
         String transactionRef = "FOOD_" + orderId + "_" + System.currentTimeMillis();
+        if ("profile".equalsIgnoreCase(source)) {
+            transactionRef += "_PROFILE";
+        }
         txn.setTransactionRef(transactionRef);
         paymentTransactionRepository.save(txn);
 
@@ -392,7 +395,9 @@ public class VnPayServiceImpl implements VnPayService {
             if ("FOOD_ORDER".equals(txn.getTransactionType())) {
                 FoodOrder foodOrder = txn.getFoodOrder();
                 if (foodOrder != null) {
-                    foodOrder.setOrderStatus("PAID");
+                    if ("AWAITING_PAYMENT".equalsIgnoreCase(foodOrder.getOrderStatus())) {
+                        foodOrder.setOrderStatus("Pending");
+                    }
                     foodOrder.setIsPaidInPos(true);
                     foodOrderRepository.save(foodOrder);
                 }
@@ -418,7 +423,7 @@ public class VnPayServiceImpl implements VnPayService {
                     booking.setBookingStatus("Confirmed");
                 }
             }
-            
+
             // Xử lý checkout phòng nếu giao dịch xuất phát từ Folio
             if (txnRef != null && txnRef.startsWith("FOLIO_")) {
                 try {
@@ -452,7 +457,10 @@ public class VnPayServiceImpl implements VnPayService {
                 try {
                     String pdfPath = invoicePdfService.generateInvoicePdf(invoice);
                     if (booking != null && booking.getCustomer() != null && booking.getCustomer().getEmail() != null) {
-                        emailService.sendInvoiceEmail(booking.getCustomer().getEmail(), invoice, pdfPath);
+                        Map<String, Object> ctx = new java.util.HashMap<>();
+                        ctx.put("invoice", invoice);
+                        ctx.put("pdfPath", pdfPath);
+                        eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this, booking.getCustomer().getEmail(), "Hóa đơn điện tử - HOANIEN", "invoice", ctx));
                     }
                 } catch (Exception e) {
                     System.err.println("Lỗi khi sinh PDF hoặc gửi Email cho hóa đơn VNPay: " + e.getMessage());
