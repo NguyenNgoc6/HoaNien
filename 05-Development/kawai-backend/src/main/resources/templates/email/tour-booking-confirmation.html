@@ -21,7 +21,6 @@
     }
 
     .email-outer {
-      background-image: url('https://raw.githubusercontent.com/manhnc2/su26-swp391-se2023-g2/refs/heads/mod5-new/05-Development/kawai-backend/src/main/resources/static/images/email-bg.png');
       background-size: cover;
       background-position: center;
       padding: 40px 16px;
@@ -341,9 +340,9 @@
   </style>
 </head>
 
-<body
-  th:style="'font-family: Inter, Helvetica Neue, Arial, sans-serif; background-color: #2a1f14; background-image: url(' + ${bgUrl} + '); background-size: cover; background-position: center; color: #2a1f14;'">
-  <div class="email-outer">
+<body th:style="'font-family: Inter, Helvetica Neue, Arial, sans-serif; background-color: #2a1f14; color: #2a1f14;'">
+  <div class="email-outer"
+    th:style="'background-image: url(' + ${bgUrl} + '); background-size: cover; background-position: center; padding: 40px 16px; min-height: 100vh;'">
     <div class="wrapper">
 
       <!-- Header -->
