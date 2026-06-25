@@ -61,8 +61,10 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut,
                      @Param("excludeBookingId") Long excludeBookingId);
+
        @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'HOLD' AND rb.holdExpiresAt <= :now")
        List<RoomBooking> findStaleHolds(@Param("now") java.time.LocalDateTime now);
+
        @Query(value = "SELECT DATE(rb.check_in_date) FROM Room_Bookings rb GROUP BY DATE(rb.check_in_date) ORDER BY COUNT(rb.room_booking_id) DESC LIMIT 1", nativeQuery = true)
        java.sql.Date findPeakOccupancyDate();
 
@@ -104,4 +106,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
+
+       @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'Confirmed' AND rb.checkInDate < :currentDate")
+       List<RoomBooking> findExpiredConfirmedBookings(@Param("currentDate") java.time.LocalDate currentDate);
 }

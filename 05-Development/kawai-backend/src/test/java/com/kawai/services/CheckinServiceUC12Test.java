@@ -771,4 +771,56 @@ class CheckinServiceUC12Test {
         }
     }
 
+    // ================================================================
+    // TC-M2-025: Xử lý No-Show tự động (BR-FO-09)
+    // Ref: TDD UC13 | Gap: Xử lý khách không đến check-in qua 00:00 ngày hôm sau
+    // ================================================================
+    @Nested
+    @DisplayName("TC-M2-025 [NEW]: processNoShows — Đánh dấu No-Show cho đơn quá hạn")
+    class TC_M2_025 {
+
+        @Test
+        @DisplayName("TC-M2-025a: processNoShows — Có đơn Confirmed quá hạn → Đổi thành No-Show")
+        void processNoShows_HasExpiredBookings_ShouldMarkAsNoShow() {
+            // ARRANGE
+            LocalDate today = LocalDate.now();
+            
+            RoomBooking expiredBooking = new RoomBooking();
+            expiredBooking.setId(999L);
+            expiredBooking.setBookingStatus("Confirmed");
+            expiredBooking.setCheckInDate(today.minusDays(1)); // Quá hạn 1 ngày
+            
+            java.util.List<RoomBooking> expiredList = java.util.List.of(expiredBooking);
+            
+            when(roomBookingRepository.findExpiredConfirmedBookings(today))
+                    .thenReturn(expiredList);
+                    
+            when(roomBookingRepository.save(any(RoomBooking.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // ACT
+            checkinService.processNoShows(today);
+
+            // ASSERT
+            assertEquals("No-Show", expiredBooking.getBookingStatus(), "Trạng thái phải được đổi thành No-Show");
+            verify(roomBookingRepository, times(1)).save(expiredBooking);
+        }
+        
+        @Test
+        @DisplayName("TC-M2-025b: processNoShows — Không có đơn quá hạn → Không làm gì cả")
+        void processNoShows_NoExpiredBookings_ShouldDoNothing() {
+            // ARRANGE
+            LocalDate today = LocalDate.now();
+            
+            when(roomBookingRepository.findExpiredConfirmedBookings(today))
+                    .thenReturn(java.util.Collections.emptyList());
+
+            // ACT
+            checkinService.processNoShows(today);
+
+            // ASSERT
+            verify(roomBookingRepository, never()).save(any(RoomBooking.class));
+        }
+    }
+
 }

@@ -300,8 +300,6 @@ public class BookingServiceImpl implements BookingService {
 
         // Tính toán tiền đặt cọc ở backend (30% cọc mặc định)
         BigDecimal depositVal = discountedPrice.multiply(new BigDecimal("0.3")).setScale(0, RoundingMode.HALF_UP);
-
-        // ══════════════════════════════════════════════════════════════════
         // Cập nhật giá thực và chuyển trạng thái sang CONFIRMED
         // ══════════════════════════════════════════════════════════════════
         savedHold.setTotalPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
