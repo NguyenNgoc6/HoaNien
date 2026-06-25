@@ -262,8 +262,8 @@
                             data-i18n="nav_logout">Đăng Xuất</button>
                     </form>
 
-                    <a th:href="${isLoggedIn ? '/booking' : '#ajaxLoginFormEmbedded'}"
-                        onclick="if (document.getElementById('embeddedLoginContainer')) { scrollToLogin(event); }"
+                    <a th:href="${isLoggedIn ? '/booking' : '#'}"
+                        onclick="if (!isLoggedIn) { openLoginModal(); return false; }"
                         class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] transition-all duration-200 inline-block text-center text-[13px]"
                         data-i18n="nav_book_now">
                         Đăng nhập
@@ -357,8 +357,8 @@
         <!-- Right Side: Booking Form / Login Form -->
         <section
             class="w-full md:w-1/2 p-margin-mobile md:p-margin-desktop bg-background flex flex-col justify-center fade-in">
-            <!-- Booking Form if logged in -->
-            <div th:if="${isLoggedIn}" class="max-w-2xl mx-auto w-full py-12">
+            <!-- Booking Form -->
+            <div class="max-w-2xl mx-auto w-full py-12">
                 <div class="mb-12 flex flex-col items-center justify-center space-y-3 text-center">
                     <h2 class="font-headline-lg text-4xl md:text-5xl text-hoanien-text font-bold text-center"
                         data-i18n="payment_title">
@@ -491,80 +491,7 @@
                 </form>
             </div>
 
-            <!-- Login Form if not logged in -->
-            <div th:unless="${isLoggedIn}" class="max-w-2xl mx-auto w-full py-12" id="embeddedLoginContainer">
-                <div class="mb-12 flex flex-col items-center justify-center space-y-3 text-center">
-                    <h2 class="font-headline-lg text-4xl md:text-5xl text-hoanien-text font-bold text-center"
-                        data-i18n="login_title_embedded">
-                        Đăng Nhập Thành Viên</h2>
-                    <div class="flex items-center space-x-2 text-gold-accent animate-pulse justify-center">
-                        <span class="w-2 h-2 rounded-full bg-gold-accent"></span>
-                        <p class="font-label-caps text-[11px] font-bold" data-i18n="login_subtitle_embedded">Đăng nhập để tiếp tục đặt tour</p>
-                    </div>
-                </div>
-                
-                <form id="ajaxLoginFormEmbedded" method="post" class="space-y-10">
-                    <input type="hidden" name="redirect_to" class="redirect-input">
-                    
-                    <div class="relative group">
-                        <label
-                            class="font-label-caps text-[10px] text-hoanien-text/80 uppercase block mb-2 transition-colors group-focus-within:text-hoanien-text font-bold"
-                            data-i18n="username_label">Tên đăng nhập / Email</label>
-                        <input type="text" name="username" required
-                            class="w-full bg-transparent border-0 border-b border-hoanien-text/30 py-2 font-body-md text-hoanien-text font-semibold placeholder:text-[#3a3230]/40 focus:border-hoanien-text transition-all"
-                            placeholder="Nhập tên đăng nhập hoặc email" data-i18n="username_ph_embedded">
-                    </div>
-                    
-                    <div class="relative group">
-                        <div class="flex justify-between items-center mb-2">
-                            <label
-                                class="font-label-caps text-[10px] text-hoanien-text/80 uppercase block transition-colors group-focus-within:text-hoanien-text font-bold"
-                                data-i18n="password_label">Mật khẩu</label>
-                            <a href="#" onclick="event.preventDefault(); openForgotPassFromEmbedded();"
-                                class="text-[11px] text-hoanien-text/80 hover:text-hoanien-text italic transition-colors">Quên mật khẩu?</a>
-                        </div>
-                        <div class="relative">
-                            <input type="password" name="password" id="loginPasswordEmbedded" required
-                                class="w-full bg-transparent border-0 border-b border-hoanien-text/30 py-2 font-body-md text-hoanien-text font-semibold placeholder:text-[#3a3230]/40 focus:border-hoanien-text transition-all pr-10"
-                                placeholder="Nhập mật khẩu" data-i18n="password_ph_embedded">
-                            <button type="button" onclick="togglePasswordVisibility('loginPasswordEmbedded', this)"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-hoanien-text/50 hover:text-hoanien-text focus:outline-none flex items-center justify-center">
-                                <span class="material-symbols-outlined text-[20px]">visibility</span>
-                            </button>
-                        </div>
-                    </div>
 
-                    <div class="pt-6 flex flex-col items-center">
-                        <button
-                            class="w-full py-5 bg-[#3a3230] text-[#fff8f4] font-label-caps text-label-caps hover:bg-[#1f1b16] transition-all duration-500 tracking-[0.2em] relative overflow-hidden group font-bold"
-                            type="submit">
-                            <span class="relative z-10" data-i18n="login_submit_btn">ĐĂNG NHẬP</span>
-                            <div
-                                class="absolute inset-0 bg-gold-accent translate-y-full group-hover:translate-y-0 transition-transform duration-500 opacity-20">
-                            </div>
-                        </button>
-                        
-                        <div class="mt-8 flex items-center justify-between w-full">
-                            <hr class="w-full border-hoanien-text/10">
-                            <span class="text-[10px] px-4 opacity-40 uppercase tracking-widest font-bold text-hoanien-text" data-i18n="or_embedded">Hoặc</span>
-                            <hr class="w-full border-hoanien-text/10">
-                        </div>
-
-                        <a href="/auth/google-login?from=/booking" id="googleLoginLinkEmbedded"
-                            class="w-full border border-hoanien-text/15 bg-white/50 text-hoanien-text py-4 rounded-xl mt-8 flex items-center justify-center gap-3 hover:bg-white/80 hover:shadow-md transition-all text-[13px] font-semibold shadow-sm backdrop-blur-sm">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-4 h-4 bg-white/80 rounded-full">
-                            Tiếp tục với Google
-                        </a>
-                        
-                        <p class="text-center text-[13px] text-hoanien-text/70 mt-8 font-medium">
-                            Chưa có thẻ thành viên? <a href="#" onclick="event.preventDefault(); openRegisterFromEmbedded();" class="text-hoanien-text font-bold hover:underline">Mở thẻ ngay</a>
-                        </p>
-                        <p class="text-center text-[12px] text-hoanien-text/60 mt-4 border-t border-hoanien-text/10 pt-4 w-full">
-                            Bạn là nhân viên / quản trị? <a href="/ops-login" class="text-hoanien-text font-bold hover:underline">Đăng nhập hệ thống</a>
-                        </p>
-                    </div>
-                </form>
-            </div>
         </section>
     </main>
 
@@ -594,6 +521,7 @@
         const customerEmail = /*[[${customerEmail}]]*/ null;
         const customerPhone = /*[[${customerPhone}]]*/ null;
         const initialTourType = /*[[${type}]]*/ 'doantu';
+        const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
         /*]]>*/
     </script>
 
@@ -984,106 +912,13 @@
             });
         }
 
-        // Embedded Login Form JS Helpers
-        function openRegisterFromEmbedded() {
-            if (typeof openRegisterModal === 'function') {
-                openRegisterModal();
-            }
-        }
 
-        function openForgotPassFromEmbedded() {
-            const m = document.getElementById('authModal');
-            if (m) {
-                m.style.display = 'flex';
-                if (typeof toggleAuthView === 'function') {
-                    toggleAuthView('forgotPassword');
-                }
-            }
-        }
-
-        function scrollToLogin(event) {
-            event.preventDefault();
-            const container = document.getElementById('embeddedLoginContainer');
-            if (container) {
-                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const usernameInput = container.querySelector('input[name="username"]');
-                if (usernameInput) {
-                    setTimeout(() => usernameInput.focus(), 800);
-                }
-            }
-        }
 
         // Initialize view
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
 
-            // Bind Embedded Login Form AJAX Submit
-            const loginFormEmbedded = document.getElementById('ajaxLoginFormEmbedded');
-            if (loginFormEmbedded) {
-                // Ensure redirect_to is populated
-                const cleanParams = new URLSearchParams(window.location.search);
-                cleanParams.delete('login');
-                cleanParams.delete('login_error');
-                const cleanQs = cleanParams.toString();
-                const cleanUrl = window.location.pathname + (cleanQs ? '?' + cleanQs : '');
-                
-                const redirectInput = loginFormEmbedded.querySelector('.redirect-input');
-                if (redirectInput) {
-                    redirectInput.value = cleanUrl;
-                }
-                
-                // Update Google link
-                const googleLink = document.getElementById('googleLoginLinkEmbedded');
-                if (googleLink) {
-                    googleLink.href = '/auth/google-login?from=' + encodeURIComponent(cleanUrl);
-                }
 
-                loginFormEmbedded.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(loginFormEmbedded);
-                    const btn = loginFormEmbedded.querySelector('button[type="submit"]');
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<span class="material-symbols-outlined animate-spin align-middle mr-2">autorenew</span> Đang xử lý...';
-                    btn.disabled = true;
-
-                    fetch('/auth/login', {
-                        method: 'POST',
-                        body: new URLSearchParams(formData),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        if (response.redirected) {
-                            if (response.url.includes('error=true') || response.url.includes('login_error')) {
-                                if (response.url.includes('error_type=locked')) {
-                                    alert(document.documentElement.lang === 'en' ? 'Account Locked: Your account is locked due to multiple failed login attempts. Please try again after 15 minutes.' : 'Tài khoản của bạn đã bị khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 15 phút.');
-                                } else {
-                                    alert(document.documentElement.lang === 'en' ? 'Incorrect username or password.' : 'Tên đăng nhập hoặc mật khẩu không chính xác.');
-                                }
-                            } else {
-                                window.location.href = response.url;
-                            }
-                        } else {
-                            if (response.ok) {
-                                if (typeof showToast === 'function') {
-                                    showToast('Thành công', 'Đăng nhập thành công!', 'success');
-                                }
-                                setTimeout(() => window.location.reload(), 1000);
-                            } else {
-                                alert(document.documentElement.lang === 'en' ? 'Login failed.' : 'Đăng nhập thất bại.');
-                            }
-                        }
-                    })
-                    .catch(err => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        alert(document.documentElement.lang === 'en' ? 'Connection error. Please try again.' : 'Có lỗi kết nối xảy ra. Vui lòng thử lại.');
-                    });
-                });
-            }
         });
     </script>
 </body>
