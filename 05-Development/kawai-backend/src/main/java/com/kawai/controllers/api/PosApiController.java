@@ -54,10 +54,12 @@ public class PosApiController {
     }
 
     @PostMapping("/orders/{id}/add-items")
-    public ResponseEntity<?> addItemsToOrder(@PathVariable Long id, @RequestBody java.util.List<com.kawai.dto.CartItemDto> items) {
+    public ResponseEntity<?> addItemsToOrder(@PathVariable Long id,
+            @RequestBody java.util.List<com.kawai.dto.CartItemDto> items) {
         try {
             posService.addItemsToOrder(id, items);
-            return ResponseEntity.ok().body(Map.of("status", "success", "message", "Đã thêm món vào đơn hàng thành công"));
+            return ResponseEntity.ok()
+                    .body(Map.of("status", "success", "message", "Đã thêm món vào đơn hàng thành công"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(400).body(Map.of(
