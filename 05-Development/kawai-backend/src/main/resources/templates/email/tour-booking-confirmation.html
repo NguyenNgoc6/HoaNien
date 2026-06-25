@@ -14,8 +14,7 @@
 
     body {
       font-family: 'Cabrito Didone', Georgia, 'Times New Roman', serif;
-      background: #F0D2DE url('cid:emailBg') no-repeat center center fixed;
-      background-size: cover;
+      background: #F0D2DE;
       color: #71557A;
     }
 
@@ -289,7 +288,7 @@
   </style>
 </head>
 
-<body>
+<body th:style="'font-family: \'Cabrito Didone\', Georgia, \'Times New Roman\', serif; background: #F0D2DE url(\'' + ${bgUrl} + '\') no-repeat center center fixed; background-size: cover; color: #71557A;'">
   <div class="wrapper">
 
     <!-- Header -->

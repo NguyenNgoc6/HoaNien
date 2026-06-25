@@ -106,6 +106,7 @@ public class TourEmailService {
             ctx.setVariable("roomDetail", roomDetail);
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
+            ctx.setVariable("bgUrl", resortWebsite + "/images/email-bg.png");
 
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);
 
@@ -162,6 +163,7 @@ public class TourEmailService {
             ctx.setVariable("cancelledByResort", cancelledByResort);
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
+            ctx.setVariable("bgUrl", resortWebsite + "/images/email-bg.png");
 
             String html = templateEngine.process("email/tour-booking-cancelled", ctx);
 
