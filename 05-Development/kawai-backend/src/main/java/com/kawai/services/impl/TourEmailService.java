@@ -106,7 +106,7 @@ public class TourEmailService {
             ctx.setVariable("roomDetail", roomDetail);
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
-            ctx.setVariable("bgUrl", resortWebsite + "/images/email-bg.png");
+            ctx.setVariable("bgUrl", "https://i.ibb.co/99JSj0SF/BREmail.png");
 
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);
 
@@ -163,7 +163,7 @@ public class TourEmailService {
             ctx.setVariable("cancelledByResort", cancelledByResort);
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
-            ctx.setVariable("bgUrl", resortWebsite + "/images/email-bg.png");
+            ctx.setVariable("bgUrl", "https://i.ibb.co/99JSj0SF/BREmail.png");
 
             String html = templateEngine.process("email/tour-booking-cancelled", ctx);
 
@@ -181,6 +181,7 @@ public class TourEmailService {
                     booking.getId(), e.getMessage(), e);
         }
     }
+
     /**
      * Gửi email yêu cầu đặt lại mật khẩu.
      * Gửi bất đồng bộ (@Async).
@@ -222,7 +223,8 @@ public class TourEmailService {
         helper.setText(htmlBody, true); // true = HTML
 
         try {
-            org.springframework.core.io.ClassPathResource res = new org.springframework.core.io.ClassPathResource("static/images/email-bg.png");
+            org.springframework.core.io.ClassPathResource res = new org.springframework.core.io.ClassPathResource(
+                    "static/images/email-bg.png");
             if (res.exists()) {
                 helper.addInline("emailBg", res);
             }
