@@ -253,10 +253,10 @@
                     </div>
 
                     <!-- Profile / Logout if logged in -->
-                    <a th:href="@{/profile}" th:if="${isLoggedIn}"
+                    <a th:href="@{/profile}" th:if="${session.user != null}"
                         class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200"
                         data-i18n="nav_profile">Hồ Sơ</a>
-                    <form th:action="@{/auth/logout}" method="post" th:if="${isLoggedIn}" class="inline">
+                    <form th:action="@{/auth/logout}" method="post" th:if="${session.user != null}" class="inline">
                         <button type="submit"
                             class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer font-sans font-semibold"
                             data-i18n="nav_logout">Đăng Xuất</button>

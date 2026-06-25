@@ -10,17 +10,23 @@ import com.kawai.models.RoomBooking;
 import com.kawai.models.RoomBookingDetail;
 import com.kawai.models.Room;
 import com.kawai.models.Customer;
+import com.kawai.models.Workflow;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kawai.repositories.PromotionRepository;
 import com.kawai.repositories.RoomBookingRepository;
 import com.kawai.repositories.RoomBookingDetailRepository;
 import com.kawai.repositories.RoomRepository;
 import com.kawai.repositories.CustomerRepository;
-
+import com.kawai.repositories.WorkflowRepository;
+import com.kawai.repositories.PaymentTransactionRepository;
 import com.kawai.services.interfaces.BookingService;
 import com.kawai.models.PaymentTransaction;
 import com.kawai.models.PaymentStatus;
+import com.kawai.services.interfaces.WorkflowEngineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +39,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -76,7 +84,18 @@ public class BookingServiceImpl implements BookingService {
 
     private static final BigDecimal BASE_ROOM_PRICE = new BigDecimal("2000000"); // 2tr/đêm
     private static final String STATUS_HOLD = "HOLD";
+
+    /** HOLD tự động hết hạn sau 10 phút nếu chưa thanh toán (Scheduler dọn) */
     private static final int HOLD_TTL_MINUTES = 10;
+
+    @Autowired
+    private WorkflowEngineService workflowEngineService;
+
+    @Autowired
+    private com.kawai.repositories.BookingRepository bookingRepository;
+
+    @Autowired
+    private WorkflowRepository workflowRepository;
 
     private final RoomBookingRepository roomBookingRepository;
     private final PromotionRepository promotionRepository;
@@ -185,6 +204,20 @@ public class BookingServiceImpl implements BookingService {
         holdBooking.setCancellationDeadline(checkIn.minusDays(2));
         holdBooking.setPersonalPinHash("HOLD_PENDING");
         holdBooking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(HOLD_TTL_MINUTES));
+
+        BigDecimal creditLimit = new BigDecimal("5000000.00"); // Mặc định 5 triệu
+        if (customer.getMembershipTier() != null) {
+            String tier = customer.getMembershipTier().toUpperCase();
+            if (tier.contains("SILVER")) {
+                creditLimit = new BigDecimal("10000000.00"); // 10 triệu
+            } else if (tier.contains("GOLD")) {
+                creditLimit = new BigDecimal("20000000.00"); // 20 triệu
+            } else if (tier.contains("DIAMOND")) {
+                creditLimit = new BigDecimal("50000000.00"); // 50 triệu
+            }
+        }
+        holdBooking.setCreditLimit(creditLimit);
+
         RoomBooking savedHold = roomBookingRepository.save(holdBooking);
         roomBookingRepository.flush();
 
@@ -275,7 +308,7 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal discountedPrice = totalBaseTotal;
         String promoCode = request.getPromotionCode();
         if (promoCode != null && !promoCode.isBlank()) {
-            discountedPrice = applyPromotion(promoCode, totalBaseTotal);
+            discountedPrice = applyPromotion(promoCode, totalBaseTotal, request.getCustomerId());
         }
 
         // Tính toán tiền đặt cọc ở backend (30% cọc mặc định)
@@ -288,6 +321,28 @@ public class BookingServiceImpl implements BookingService {
         savedHold.setDepositAmount(depositVal);
         savedHold.setBookingStatus(STATUS_HOLD);
         RoomBooking savedBooking = roomBookingRepository.save(savedHold);
+
+        // Gọi Workflow Engine để kiểm tra nếu áp dụng mã giảm giá vượt ngưỡng
+        if (promoCode != null && !promoCode.isBlank()) {
+            try {
+                Promotion promo = promotionRepository.findByPromoCode(promoCode).orElse(null);
+                if (promo != null) {
+                    BigDecimal pct = "Percentage".equalsIgnoreCase(promo.getDiscountType())
+                            ? promo.getDiscountValue()
+                            : (totalBaseTotal.compareTo(BigDecimal.ZERO) > 0
+                                    ? promo.getDiscountValue().multiply(new BigDecimal("100")).divide(totalBaseTotal, 2,
+                                            RoundingMode.HALF_UP)
+                                    : BigDecimal.ZERO);
+
+                    workflowEngineService.triggerEvent("PROMOTION_EXCEEDED", java.util.Map.of(
+                            "promo_id", promo.getId(),
+                            "input_discount_pct", pct.doubleValue(),
+                            "booking_id", savedBooking.getId()));
+                }
+            } catch (Exception e) {
+                log.error("Failed to trigger PROMOTION_EXCEEDED workflow in createBooking", e);
+            }
+        }
 
         log.info("[SOFT_LOCK] HOLD updated with details: bookingId={}", savedBooking.getId());
 
@@ -400,7 +455,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Áp dụng mã khuyến mãi (UC10.2).
      */
-    private BigDecimal applyPromotion(String promoCode, BigDecimal baseTotal) {
+    private BigDecimal applyPromotion(String promoCode, BigDecimal baseTotal, Long customerId) {
         Promotion promo = promotionRepository.findByPromoCode(promoCode)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Promotion code '" + promoCode + "' does not exist [ERR_PROMO_NOT_FOUND]"));
@@ -416,15 +471,52 @@ public class BookingServiceImpl implements BookingService {
         }
 
         BigDecimal discountValue = promo.getDiscountValue();
-        BigDecimal finalPrice;
+        BigDecimal discountAmount;
 
         if (discountValue.compareTo(new BigDecimal("100")) <= 0) {
-            BigDecimal discountAmount = baseTotal.multiply(discountValue)
+            discountAmount = baseTotal.multiply(discountValue)
                     .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-            finalPrice = baseTotal.subtract(discountAmount);
         } else {
-            finalPrice = baseTotal.subtract(discountValue);
+            discountAmount = discountValue;
         }
+
+        // Anti-Fraud check from Workflow Engine
+        List<Workflow> activeWorkflows = workflowRepository.findByTriggerEventAndIsActive("PROMOTION_EXCEEDED", true);
+        ObjectMapper mapper = new ObjectMapper();
+        for (Workflow w : activeWorkflows) {
+            try {
+                if (w.getConditionsJson() != null && !w.getConditionsJson().trim().isEmpty()) {
+                    Map<String, Object> conds = mapper.readValue(w.getConditionsJson(),
+                            new TypeReference<Map<String, Object>>() {
+                            });
+
+                    // 1. max_discount_value_vnd
+                    if (conds.containsKey("max_discount_value_vnd")) {
+                        BigDecimal maxVal = new BigDecimal(conds.get("max_discount_value_vnd").toString());
+                        if (discountAmount.compareTo(maxVal) > 0) {
+                            throw new IllegalArgumentException("Mã giảm giá vượt quá hạn mức tối đa cho phép (" + maxVal
+                                    + " VND) [ERR_PROMO_LIMIT_EXCEEDED]");
+                        }
+                    }
+
+                    // 2. max_uses_per_customer
+                    if (conds.containsKey("max_uses_per_customer") && customerId != null) {
+                        int maxUses = Integer.parseInt(conds.get("max_uses_per_customer").toString());
+                        long uses = bookingRepository.countByCustomerIdAndPromoCode(customerId, promoCode);
+                        if (uses >= maxUses) {
+                            throw new IllegalArgumentException("Khách hàng đã vượt quá số lần sử dụng mã giảm giá này ("
+                                    + maxUses + " lần) [ERR_PROMO_USAGE_EXCEEDED]");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                if (e instanceof IllegalArgumentException)
+                    throw (IllegalArgumentException) e;
+                log.error("Failed executing anti-fraud conditions evaluation", e);
+            }
+        }
+
+        BigDecimal finalPrice = baseTotal.subtract(discountAmount);
         if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
             finalPrice = BigDecimal.ZERO;
         }
@@ -600,7 +692,7 @@ public class BookingServiceImpl implements BookingService {
         }
         BigDecimal totalBaseTotal = baseRoomPrice.add(servicesFee);
 
-        BigDecimal discountedPrice = applyPromotion(couponCode, totalBaseTotal);
+        BigDecimal discountedPrice = applyPromotion(couponCode, totalBaseTotal, customerId);
         BigDecimal discountAmount = totalBaseTotal.subtract(discountedPrice);
 
         booking.setTotalPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
@@ -612,6 +704,26 @@ public class BookingServiceImpl implements BookingService {
                                                                                                                      // final
                                                                                                                      // price
         roomBookingRepository.save(booking);
+
+        // Gọi Workflow Engine để kiểm tra nếu áp dụng mã giảm giá vượt ngưỡng
+        try {
+            Promotion promo = promotionRepository.findByPromoCode(couponCode).orElse(null);
+            if (promo != null) {
+                BigDecimal pct = "Percentage".equalsIgnoreCase(promo.getDiscountType())
+                        ? promo.getDiscountValue()
+                        : (totalBaseTotal.compareTo(BigDecimal.ZERO) > 0
+                                ? promo.getDiscountValue().multiply(new BigDecimal("100")).divide(totalBaseTotal, 2,
+                                        RoundingMode.HALF_UP)
+                                : BigDecimal.ZERO);
+
+                workflowEngineService.triggerEvent("PROMOTION_EXCEEDED", java.util.Map.of(
+                        "promo_id", promo.getId(),
+                        "input_discount_pct", pct.doubleValue(),
+                        "booking_id", booking.getId()));
+            }
+        } catch (Exception e) {
+            log.error("Failed to trigger PROMOTION_EXCEEDED workflow in applyCoupon", e);
+        }
 
         return discountAmount.setScale(0, RoundingMode.HALF_UP);
     }
@@ -632,19 +744,32 @@ public class BookingServiceImpl implements BookingService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng!"));
 
-        // Cập nhật thông tin khách hàng từ form
-        customer.setFullName(fullName);
-        if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
-            throw new BusinessException("INVALID_PHONE",
-                    "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0)");
+        // Cập nhật thông tin khách hàng từ form NẾU họ chưa có thông tin trong profile
+        if (customer.getFullName() == null || customer.getFullName().trim().isEmpty()) {
+            customer.setFullName(fullName);
         }
-        customer.setPhone(phone);
-        customer.setEmail(email);
+        
+        if (customer.getPhone() == null || customer.getPhone().trim().isEmpty()) {
+            if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
+                throw new BusinessException("INVALID_PHONE",
+                        "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0)");
+            }
+            customer.setPhone(phone);
+        }
+        
+        if (customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            customer.setEmail(email);
+        }
+        
         if (cccd != null && !cccd.equals("********") && !cccd.trim().isEmpty()) {
             if (!com.kawai.utils.ValidationUtils.isValidDocument(cccd)) {
-                throw new BusinessException("INVALID_CCCD", "CCCD/Passport không hợp lệ (Phải là CCCD 12 số, hoặc Passport 8-12 ký tự có chứa chữ cái)");
+                throw new BusinessException("INVALID_CCCD",
+                        "CCCD/Passport không hợp lệ (Phải là CCCD 12 số, hoặc Passport 8-12 ký tự có chứa chữ cái)");
             }
-            customer.setCccdPassportEncrypted(com.kawai.utils.EncryptionUtils.encrypt(cccd.trim()));
+            // Chỉ cập nhật nếu profile chưa có cccd
+            if (customer.getCccdPassportEncrypted() == null || customer.getCccdPassportEncrypted().isEmpty()) {
+                customer.setCccdPassportEncrypted(com.kawai.utils.EncryptionUtils.encrypt(cccd.trim()));
+            }
         }
         customerRepository.save(customer);
 

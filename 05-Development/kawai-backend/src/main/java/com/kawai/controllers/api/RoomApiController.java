@@ -89,27 +89,34 @@ public class RoomApiController {
         List<RoomSearchResponseDTO> availableRooms = roomService.searchAvailableRooms(request);
         return ResponseEntity.ok(availableRooms);
     }
+
     @GetMapping("/by-cccd")
     public ResponseEntity<RoomInfoDto> getRoomInfoByCccd(@RequestParam("cccd") String cccd) {
         if (cccd == null || cccd.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
         
-        List<Room> occupiedRooms = roomRepository.findOccupiedRoomsByCustomerCccd(cccd.trim());
+        String encryptedCccd = cccd.trim();
+        try {
+            encryptedCccd = com.kawai.utils.EncryptionUtils.encrypt(cccd.trim());
+        } catch (Exception e) {
+            // Keep original if encryption fails
+        }
+        
+        List<Room> occupiedRooms = roomRepository.findOccupiedRoomsByCustomerCccd(encryptedCccd);
         if (occupiedRooms.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
         Room room = occupiedRooms.get(0);
-        
         RoomInfoDto dto = RoomInfoDto.builder()
                 .roomNumber(room.getRoomNumber())
                 .status(room.getRoomStatus())
                 .occupied(true)
                 .build();
-                
+
         if (room.getCurrentBookingDetailId() != null) {
-            Optional<RoomBookingDetail> detailOpt = roomBookingDetailRepository.findById(room.getCurrentBookingDetailId());
+            Optional<RoomBookingDetail> detailOpt = roomBookingDetailRepository
+                    .findById(room.getCurrentBookingDetailId());
             if (detailOpt.isPresent()) {
                 RoomBookingDetail detail = detailOpt.get();
                 if (detail.getCustomer() != null) {
@@ -121,7 +128,7 @@ public class RoomApiController {
                 }
             }
         }
-        
+
         return ResponseEntity.ok(dto);
     }
 }
