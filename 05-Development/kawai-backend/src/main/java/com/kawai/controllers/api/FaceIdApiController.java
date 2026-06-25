@@ -80,7 +80,7 @@ public class FaceIdApiController {
             // Fallback nếu DB trống (môi trường test)
             if (guestList.isEmpty()) {
                 guestList.add(Map.of("customer_id", 1L, "name", "Nguyễn Xuân Lưu", "image_path", "luuham.jpg"));
-                guestList.add(Map.of("customer_id", 2L, "name", "Ngọc Thị", "image_path", "lgok.jpg"));
+                guestList.add(Map.of("customer_id", 2L, "name", "Lê Quang", "image_path", "lgok.jpg"));
             }
 
             String jsonArgs = objectMapper.writeValueAsString(guestList);
@@ -124,6 +124,11 @@ public class FaceIdApiController {
 
             // 5. Xử lý kết quả
             if (matchedName != null) {
+                // Remap: ảnh Ngọc Thị (lgok.jpg) được dùng làm face cho khách Lê Quang
+                String displayName = matchedName;
+                if ("Ngọc Thị".equalsIgnoreCase(matchedName)) {
+                    displayName = "Lê Quang";
+                }
                 boolean dbUpdated = false;
                 String matchedId = null;
 
@@ -135,7 +140,7 @@ public class FaceIdApiController {
                         name = attendee.getDependent().getDependentName();
                     }
 
-                    if (name != null && name.equalsIgnoreCase(matchedName)) {
+                    if (name != null && name.equalsIgnoreCase(displayName)) {
                         // Chỉ点 danh nếu chưa check-in
                         if (!"Checked_In".equals(attendee.getStatus())) {
                             attendee.setStatus("Checked_In");
@@ -150,7 +155,7 @@ public class FaceIdApiController {
 
                 return ResponseEntity.ok(Map.of(
                         "success", true,
-                        "name", matchedName,
+                        "name", displayName,
                         "attendeeId", matchedId != null ? matchedId : "",
                         "dbUpdated", dbUpdated,
                         "time", LocalDateTime.now().toString()));
@@ -193,7 +198,7 @@ public class FaceIdApiController {
                 String imgPath = null;
                 if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
                     imgPath = "luuham.jpg";
-                } else if (name.equalsIgnoreCase("Ngọc Thị")) {
+                } else if (name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Lê Quang")) {
                     imgPath = "lgok.jpg";
                 }
 
@@ -224,6 +229,12 @@ public class FaceIdApiController {
                     "message", "Thiếu tên khách hàng"));
         }
 
+        // Remap: ảnh Ngọc Thị (lgok.jpg) được dùng làm face cho khách Lê Quang
+        String displayName = matchedName;
+        if ("Ngọc Thị".equalsIgnoreCase(matchedName)) {
+            displayName = "Lê Quang";
+        }
+
         try {
             List<TourAttendee> attendees = tourAttendeeRepository
                     .findByTourBooking_Schedule_DepartureDate(LocalDate.now());
@@ -236,7 +247,7 @@ public class FaceIdApiController {
                     name = attendee.getDependent().getDependentName();
                 }
 
-                if (name != null && name.equalsIgnoreCase(matchedName)) {
+                if (name != null && name.equalsIgnoreCase(displayName)) {
                     if (!"Checked_In".equals(attendee.getStatus())) {
                         attendee.setStatus("Checked_In");
                         attendee.setFaceMatchedAt(LocalDateTime.now());
@@ -244,7 +255,7 @@ public class FaceIdApiController {
                     }
                     return ResponseEntity.ok(Map.of(
                             "success", true,
-                            "name", matchedName,
+                            "name", displayName,
                             "attendeeId", String.valueOf(attendee.getId()),
                             "time", LocalDateTime.now().toString()));
                 }
@@ -252,8 +263,39 @@ public class FaceIdApiController {
 
             return ResponseEntity.ok(Map.of(
                     "success", false,
-                    "message", "Không tìm thấy khách '" + matchedName + "' trong danh sách tour hôm nay"));
+                    "message", "Không tìm thấy khách '" + displayName + "' trong danh sách tour hôm nay"));
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Lỗi máy chủ: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * GET /api/faceid/reset
+     * Reset trạng thái điểm danh của tất cả hành khách tour hôm nay về Not_Show.
+     * Dùng cho demo replay.
+     */
+    @GetMapping("/reset")
+    public ResponseEntity<?> resetAttendance() {
+        try {
+            List<TourAttendee> attendees = tourAttendeeRepository
+                    .findByTourBooking_Schedule_DepartureDate(LocalDate.now());
+            int resetCount = 0;
+            for (TourAttendee attendee : attendees) {
+                if (!"Not_Show".equals(attendee.getStatus())) {
+                    attendee.setStatus("Not_Show");
+                    attendee.setFaceMatchedAt(null);
+                    tourAttendeeRepository.save(attendee);
+                    resetCount++;
+                }
+            }
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "resetCount", resetCount,
+                    "message", "Đã reset " + resetCount + " hành khách về trạng thái chờ FaceID"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
@@ -291,7 +333,7 @@ public class FaceIdApiController {
             // Fallback nếu DB trống - dùng ảnh luuham.jpg và lgok.jpg cho demo
             if (refs.isEmpty()) {
                 refs.add(Map.of("name", "Nguyễn Xuân Lưu", "imageUrl", "/AnhTour/luuham.jpg"));
-                refs.add(Map.of("name", "Ngọc Thị", "imageUrl", "/AnhTour/lgok.jpg"));
+                refs.add(Map.of("name", "Lê Quang", "imageUrl", "/AnhTour/lgok.jpg"));
             }
 
             return ResponseEntity.ok(refs);
@@ -303,7 +345,7 @@ public class FaceIdApiController {
     private String mapNameToImageUrl(String name) {
         if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
             return "/AnhTour/luuham.jpg";
-        } else if (name.equalsIgnoreCase("Ngọc Thị")) {
+        } else if (name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Lê Quang")) {
             return "/AnhTour/lgok.jpg";
         }
         return null;
