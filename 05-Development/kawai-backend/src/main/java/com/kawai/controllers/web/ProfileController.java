@@ -163,6 +163,9 @@ public class ProfileController {
             List<RoomBooking> roomBookings = roomBookingRepository.findByCustomerOrderByIdDesc(customer)
                     .stream()
                     .filter(b -> {
+                        if (b.getBookingStatus() != null && b.getBookingStatus().toUpperCase().startsWith("PENDING")) {
+                            return false;
+                        }
                         if ("HOLD".equalsIgnoreCase(b.getBookingStatus())) {
                             return false;
                         }
@@ -185,7 +188,9 @@ public class ProfileController {
             model.addAttribute("bookingFirstDetails", bookingFirstDetails);
 
             // Fetch and initialize tourBookings
-            List<TourBooking> tourBookings = tourBookingRepository.findByCustomer(customer);
+            List<TourBooking> tourBookings = tourBookingRepository.findByCustomer(customer).stream()
+                    .filter(tb -> tb.getBookingStatus() == null || !tb.getBookingStatus().toUpperCase().startsWith("PENDING"))
+                    .collect(java.util.stream.Collectors.toList());
             for (TourBooking tb : tourBookings) {
                 if (tb.getSchedule() != null) {
                     tb.getSchedule().getDepartureDate();
@@ -197,7 +202,9 @@ public class ProfileController {
             model.addAttribute("tourBookings", tourBookings);
 
             // Fetch and initialize foodOrders
-            List<FoodOrder> foodOrders = foodOrderRepository.findByCustomer(customer);
+            List<FoodOrder> foodOrders = foodOrderRepository.findByCustomer(customer).stream()
+                    .filter(fo -> fo.getOrderStatus() == null || !fo.getOrderStatus().toUpperCase().startsWith("PENDING"))
+                    .collect(java.util.stream.Collectors.toList());
             for (FoodOrder fo : foodOrders) {
                 if (fo.getDetails() != null) {
                     fo.getDetails().size();
@@ -211,7 +218,9 @@ public class ProfileController {
             model.addAttribute("foodOrders", foodOrders);
 
             List<com.kawai.models.TableReservation> tableReservations = tableReservationRepository
-                    .findByCustomerOrderByIdDesc(customer);
+                    .findByCustomerOrderByIdDesc(customer).stream()
+                    .filter(tr -> tr.getStatus() == null || !tr.getStatus().toUpperCase().startsWith("PENDING"))
+                    .collect(java.util.stream.Collectors.toList());
             model.addAttribute("tableReservations", tableReservations);
         } else {
             model.addAttribute("bookings", Collections.emptyList());

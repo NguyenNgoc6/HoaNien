@@ -1,10 +1,6 @@
 // Global Booking
 let selectedRoomsCart = {};
 
-// Cart Hold Timer — Frontend chỉ setTimeout để redirect user sau 10 phút.
-// Việc giải phóng phòng thực sự do BACKEND Scheduler (cleanupStaleHolds) xử lý.
-const CART_HOLD_MINUTES = 10;
-let cartHoldTimer = null;                 // setTimeout ID
 let cartHoldConfirmedBookingId = null;    // bookingId đã CONFIRMED để dùng khi hủy
 
 const today = new Date();
@@ -318,9 +314,9 @@ function renderRoomResults(roomsData) {
             for (let c = 0; c < initialChildren; c++) {
                 childrenAgesHtml += `
                     <div class="flex flex-col flex-1 min-w-[60px]">
-                        <span class="text-[9px] text-gray-400 mb-1 uppercase tracking-widest text-center">Tuổi TE ${c+1}</span>
+                        <span class="text-[9px] text-gray-400 mb-1 uppercase tracking-widest text-center">Tuổi TE ${c + 1}</span>
                         <select class="child-age-select w-full border border-gray-200 rounded-md p-1.5 text-xs bg-gray-50 text-[#3a322b] font-medium text-center focus:outline-none focus:border-[#3a322b]">
-                            ${Array.from({length: 18}, (_, i) => '<option value="' + i + '">' + i + ' tuổi</option>').join('')}
+                            ${Array.from({ length: 18 }, (_, i) => '<option value="' + i + '">' + i + ' tuổi</option>').join('')}
                         </select>
                     </div>
                 `;
@@ -424,18 +420,18 @@ function renderChildAges(inputElem) {
     const container = inputElem.closest('.booking-action-block').querySelector('.children-ages-container');
     let count = parseInt(inputElem.value, 10);
     if (isNaN(count) || count < 0) count = 0;
-    
+
     // Retain previous selections if possible
     const existingSelects = Array.from(container.querySelectorAll('.child-age-select')).map(s => s.value);
-    
+
     let html = '';
     for (let c = 0; c < count; c++) {
         let prevVal = existingSelects[c] !== undefined ? existingSelects[c] : 0;
         html += `
             <div class="flex flex-col flex-1 min-w-[60px]">
-                <span class="text-[9px] text-gray-400 mb-1 uppercase tracking-widest text-center">Tuổi TE ${c+1}</span>
+                <span class="text-[9px] text-gray-400 mb-1 uppercase tracking-widest text-center">Tuổi TE ${c + 1}</span>
                 <select class="child-age-select w-full border border-gray-200 rounded-md p-1.5 text-xs bg-gray-50 text-[#3a322b] font-medium text-center focus:outline-none focus:border-[#3a322b]">
-                    ${Array.from({length: 18}, (_, i) => '<option value="' + i + '" ' + (i == prevVal ? 'selected' : '') + '>' + i + ' tuổi</option>').join('')}
+                    ${Array.from({ length: 18 }, (_, i) => '<option value="' + i + '" ' + (i == prevVal ? 'selected' : '') + '>' + i + ' tuổi</option>').join('')}
                 </select>
             </div>
         `;
@@ -625,10 +621,9 @@ function updateCartUI() {
                 Chưa chọn phòng nào
             </div>
         `;
-        cartTotalPrice.innerText = "0 VNĐ";
+        cartTotalPrice.innerText = '0 VNĐ';
         btnCheckout.disabled = true;
-        // Dừng timer khi giỏ trống
-        stopCartHoldTimer();
+        cartWrapper.classList.add('hidden');
     } else {
         cartTotalPrice.innerHTML = formatCurrency(totalCartPrice) + " VNĐ <span class='text-[10px] text-gray-400 font-normal normal-case'>(ước tính)</span>";
         btnCheckout.disabled = false;
@@ -642,46 +637,16 @@ function removeCartItem(catName) {
     saveCartToStorage();
 }
 
-// ── Cart Hold Timer ─────────────────────────────────────────────────────────
-// Frontend chỉ dùng setTimeout một lần để redirect user sau 10 phút.
-// Việc giải phóng phòng (HOLD → CANCELLED) do BACKEND Scheduler xử lý.
-
-/**
- * Bắt đầu đếm 10 phút. Nếu timer đang chạy rồi → không reset.
- */
-function startCartHoldTimer() {
-    if (cartHoldTimer !== null) return;
-    cartHoldTimer = setTimeout(() => {
-        cartHoldTimer = null;
-        clearCartAndGoHome(true);
-    }, CART_HOLD_MINUTES * 60 * 1000);
-}
-
-/** Dừng timer (khi giỏ trống hoặc user hủy chủ động) */
-function stopCartHoldTimer() {
-    if (cartHoldTimer) {
-        clearTimeout(cartHoldTimer);
-        cartHoldTimer = null;
-    }
-}
-
 /**
  * Xóa giỏ hàng và redirect về trang booking (home).
- * @param {boolean} isTimeout - true nếu hết timer, false nếu user chủ động hủy
  */
-function clearCartAndGoHome(isTimeout = false) {
-    stopCartHoldTimer();
+function clearCartAndGoHome() {
     selectedRoomsCart = {};
     cartHoldConfirmedBookingId = null;
     sessionStorage.removeItem('kawai_cart');
     sessionStorage.removeItem('kawai_bookingState');
 
-    if (isTimeout) {
-        showToast('⏰ Đã hết 10 phút! Phòng đã được giải phóng. Vui lòng chọn lại.', 'error');
-        setTimeout(() => { window.location.href = '/booking'; }, 2500);
-    } else {
-        window.location.href = '/booking';
-    }
+    window.location.href = '/booking';
 }
 
 /**
@@ -698,7 +663,7 @@ async function cancelCartHold() {
         } catch (e) { /* ignore */ }
     }
 
-    clearCartAndGoHome(false);
+    clearCartAndGoHome();
 }
 
 function handleSelectRoomClick(button) {
@@ -716,7 +681,7 @@ function handleSelectRoomClick(button) {
     const quantity = parseInt(selectEl.value, 10);
     const adultsPerRoom = adultsInput ? parseInt(adultsInput.value, 10) : baseAdults;
     const childrenPerRoom = childrenInput ? parseInt(childrenInput.value, 10) : baseChildren;
-    
+
     // Thu thập danh sách tuổi của trẻ em
     const ageSelects = bookingActionBlock.querySelectorAll('.child-age-select');
     const childrenAges = Array.from(ageSelects).map(s => parseInt(s.value, 10));
@@ -749,7 +714,6 @@ function handleSelectRoomClick(button) {
         estimatedTotal: estimatedBaseTotal,
         diffDays
     };
-    startCartHoldTimer();
     updateCartUI();
     saveCartToStorage();
     const cartWrapper = document.getElementById('bookingCartWrapper');
@@ -825,18 +789,18 @@ function confirmCartBooking() {
             btnCheckout.innerText = originalText;
             btnCheckout.disabled = false;
 
-            const bookingStatus = data.bookingStatus || data.status;
+            const bookingStatus = data.bookingStatus ? data.bookingStatus.toUpperCase() : (data.status ? data.status.toUpperCase() : '');
             if (bookingStatus === 'CONFIRMED' || bookingStatus === 'PENDING' || bookingStatus === 'HOLD') {
                 // Lưu bookingId để dùng nếu user huỷ giỏ
                 if (data && data.bookingId) {
                     cartHoldConfirmedBookingId = data.bookingId;
-                    // Không xóa giỏ hàng ngay lập tức để giữ đơn nếu khách quay lại
-                    // sessionStorage.removeItem('kawai_cart');
-                    // sessionStorage.removeItem('kawai_bookingState');
+                    sessionStorage.removeItem('kawai_cart');
+                    sessionStorage.removeItem('kawai_bookingState');
+                    selectedRoomsCart = {};
 
                     showToast('Đặt phòng thành công! Đang chuyển đến trang thanh toán...', 'success');
 
-                    // ✅ Redirect sang trang thanh toán với bookingId
+                    // Redirect sang trang thanh toán với bookingId
                     setTimeout(() => {
                         window.location.href = `/payment?bookingId=${data.bookingId}`;
                     }, 1200);
@@ -853,7 +817,30 @@ function confirmCartBooking() {
         });
 }
 // ---------------- AUTH MODAL LOGIC ----------------
-// Note: Auth modal logic (openLoginModal, closeAuthModal, toggleAuthView) has been migrated to the auth.html fragment.
+function openLoginModal() {
+    document.getElementById('authModal').style.display = 'flex';
+    toggleAuthView('login');
+}
+function closeAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+}
+function toggleAuthView(view) {
+    if (view === 'login') {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('registerSection').style.display = 'none';
+    } else {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('registerSection').style.display = 'block';
+    }
+}
+const authModalEl = document.getElementById('authModal');
+if (authModalEl) {
+    authModalEl.addEventListener('click', function (e) {
+        if (e.target.id === 'authModal') {
+            closeAuthModal();
+        }
+    });
+}
 
 let showAllRooms = false;
 function initRoomsPagination() {
