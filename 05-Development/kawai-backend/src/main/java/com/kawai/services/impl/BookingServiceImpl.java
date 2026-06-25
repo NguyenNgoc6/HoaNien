@@ -68,8 +68,6 @@ import java.util.HashMap;
  * Race condition prevention:
  * - H2/MySQL đều dùng Row-level lock khi INSERT trong cùng transaction
  * - @Transactional đảm bảo atomic: HOLD + CONFIRM hoặc không có gì
- * - Scheduler dọn HOLD cũ (> 10 phút) đề phòng crash/timeout
- *
  * Business Rules:
  * BR-FO-01 : Chống overbooking
  * BR-DATE-01: checkOutDate > checkInDate
@@ -83,10 +81,6 @@ public class BookingServiceImpl implements BookingService {
     private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     private static final BigDecimal BASE_ROOM_PRICE = new BigDecimal("2000000"); // 2tr/đêm
-    private static final String STATUS_HOLD = "HOLD";
-
-    /** HOLD tự động hết hạn sau 10 phút nếu chưa thanh toán (Scheduler dọn) */
-    private static final int HOLD_TTL_MINUTES = 10;
 
     @Autowired
     private WorkflowEngineService workflowEngineService;
@@ -196,14 +190,13 @@ public class BookingServiceImpl implements BookingService {
         holdBooking.setCustomer(customer);
         holdBooking.setBookingDate(LocalDate.now());
         holdBooking.setTotalPrice(BigDecimal.ZERO);
-        holdBooking.setBookingStatus(STATUS_HOLD);
+        holdBooking.setBookingStatus("Pending");
         holdBooking.setBookingSource("Direct_Web");
         holdBooking.setCheckInDate(checkIn);
         holdBooking.setCheckOutDate(checkOut);
         holdBooking.setDepositAmount(BigDecimal.ZERO);
         holdBooking.setCancellationDeadline(checkIn.minusDays(2));
         holdBooking.setPersonalPinHash("HOLD_PENDING");
-        holdBooking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(HOLD_TTL_MINUTES));
 
         BigDecimal creditLimit = new BigDecimal("5000000.00"); // Mặc định 5 triệu
         if (customer.getMembershipTier() != null) {
@@ -235,9 +228,7 @@ public class BookingServiceImpl implements BookingService {
             String catName = entry.getKey();
             java.util.List<com.kawai.dto.RoomSelectionDTO> selections = entry.getValue();
             int requestedQty = selections.size();
-
-            // Áp dụng Pessimistic Lock (Khóa dòng chống overbooking) trên Hạng Phòng
-            com.kawai.models.RoomCategory category = roomCategoryRepository.findByCategoryNameWithLock(catName)
+            com.kawai.models.RoomCategory category = roomCategoryRepository.findByCategoryName(catName)
                     .orElseThrow(() -> new BusinessException("CATEGORY_NOT_FOUND", "Category not found: " + catName));
 
             // Tính toán số phòng không bị trùng
@@ -245,14 +236,10 @@ public class BookingServiceImpl implements BookingService {
             long overlapping = roomBookingRepository.countOverlappingBookingsByCategory(catName, checkIn, checkOut,
                     savedHold.getId());
             long available = totalRooms - overlapping;
-
             if (available < requestedQty) {
-                // Throw exception → @Transactional ROLLBACK → HOLD bị xóa tự động
                 throw new RoomNotAvailableException(
                         "Hạng phòng " + catName + " chỉ còn trống " + available + " phòng.");
             }
-
-            // Lấy giá hạng phòng từ database
             BigDecimal pricePerNight = category.getBasePrice() != null ? category.getBasePrice() : BASE_ROOM_PRICE;
             BigDecimal baseTotal = pricePerNight.multiply(BigDecimal.valueOf(nights));
 
@@ -319,7 +306,7 @@ public class BookingServiceImpl implements BookingService {
         // ══════════════════════════════════════════════════════════════════
         savedHold.setTotalPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
         savedHold.setDepositAmount(depositVal);
-        savedHold.setBookingStatus(STATUS_HOLD);
+        savedHold.setBookingStatus("Pending");
         RoomBooking savedBooking = roomBookingRepository.save(savedHold);
 
         // Gọi Workflow Engine để kiểm tra nếu áp dụng mã giảm giá vượt ngưỡng
@@ -406,7 +393,7 @@ public class BookingServiceImpl implements BookingService {
 
         BookingResponseDTO response = new BookingResponseDTO();
         response.setBookingId(savedBooking.getId());
-        response.setBookingStatus(STATUS_HOLD);
+        response.setBookingStatus("Pending");
         response.setDepositAmount(depositVal);
         response.setDiscountedPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
         response.setCheckInDate(checkIn);
@@ -417,11 +404,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * Scheduler chạy mỗi 60 giây, tìm các HOLD đã quá 10 phút (holdExpiresAt ≤
-     * now).
-     * Chuyển chúng sang CANCELLED để giải phóng phòng cho user khác.
+     * Scheduler chạy mỗi 60 giây, tìm các HOLD đã hết hạn (holdExpiresAt ≤ now)
+     * Chuyển chúng sang CANCELLED để giải phóng phòng.
      */
-    @Scheduled(fixedDelay = 60_000) // Chạy mỗi 60 giây
+    @Scheduled(fixedDelay = 60_000)
     @Transactional
     public void cleanupStaleHolds() {
         LocalDateTime now = LocalDateTime.now();
@@ -436,15 +422,15 @@ public class BookingServiceImpl implements BookingService {
                                 h.getCustomer().getId(),
                                 "Hủy đơn phòng tự động",
                                 "Đơn đặt phòng #" + h.getId()
-                                        + " của quý khách đã bị hủy tự động do quá hạn 10 phút chờ thanh toán.");
+                                        + " của quý khách đã bị hủy tự động do quá hạn chờ thanh toán.");
                     } catch (Exception e) {
                         log.error("Failed to send cancellation notification for booking {}", h.getId(), e);
                     }
                 }
             });
             roomBookingRepository.saveAll(staleHolds);
-            log.warn("[SOFT_LOCK] Auto-cancelled {} expired HOLD booking(s) after {} min TTL at {}",
-                    staleHolds.size(), HOLD_TTL_MINUTES, now);
+            log.warn("[SOFT_LOCK] Auto-cancelled {} expired HOLD booking(s) at {}",
+                    staleHolds.size(), now);
         }
     }
 
@@ -744,11 +730,43 @@ public class BookingServiceImpl implements BookingService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng!"));
 
+        // ══════════════════════════════════════════════════════════════════
+        // SOFT LOCK: Kiểm tra phòng và khóa lại nếu đang là Pending
+        // ══════════════════════════════════════════════════════════════════
+        if ("Pending".equalsIgnoreCase(booking.getBookingStatus())) {
+            java.util.List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
+            java.util.Map<String, Long> categoryCountMap = details.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(d -> d.getCategory().getCategoryName(),
+                            java.util.stream.Collectors.counting()));
+
+            for (java.util.Map.Entry<String, Long> entry : categoryCountMap.entrySet()) {
+                String catName = entry.getKey();
+                long requestedQty = entry.getValue();
+                roomCategoryRepository.findByCategoryNameWithLock(catName)
+                        .orElseThrow(
+                                () -> new BusinessException("CATEGORY_NOT_FOUND", "Category not found: " + catName));
+
+                long totalRooms = roomRepository.countActiveRoomsByCategoryName(catName);
+                long overlapping = roomBookingRepository.countOverlappingBookingsByCategoryWithoutExclude(catName,
+                        booking.getCheckInDate(), booking.getCheckOutDate());
+                long available = totalRooms - overlapping;
+                if (available < requestedQty) {
+                    throw new BusinessException("ROOM_UNAVAILABLE",
+                            "Rất tiếc, hạng phòng " + catName + " đã hết phòng trống. Vui lòng chọn lại!");
+                }
+            }
+            booking.setBookingStatus("HOLD");
+            booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(1)); // VNPay 1 phút
+        } else if ("HOLD".equalsIgnoreCase(booking.getBookingStatus())) {
+            // Refresh holdExpiresAt để cho phép thử lại VNPay
+            booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(1));
+        }
+
         // Cập nhật thông tin khách hàng từ form NẾU họ chưa có thông tin trong profile
         if (customer.getFullName() == null || customer.getFullName().trim().isEmpty()) {
             customer.setFullName(fullName);
         }
-        
+
         if (customer.getPhone() == null || customer.getPhone().trim().isEmpty()) {
             if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
                 throw new BusinessException("INVALID_PHONE",
@@ -756,11 +774,11 @@ public class BookingServiceImpl implements BookingService {
             }
             customer.setPhone(phone);
         }
-        
+
         if (customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
             customer.setEmail(email);
         }
-        
+
         if (cccd != null && !cccd.equals("********") && !cccd.trim().isEmpty()) {
             if (!com.kawai.utils.ValidationUtils.isValidDocument(cccd)) {
                 throw new BusinessException("INVALID_CCCD",

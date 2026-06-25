@@ -100,6 +100,7 @@ public class ReceptionistController {
     @GetMapping("/check-in")
     public String checkIn(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate dateFilter,
             Model model) {
         List<Booking> allConfirmed = bookingRepository.findConfirmed();
         List<Booking> filteredArrivals = new ArrayList<>();
@@ -109,9 +110,20 @@ public class ReceptionistController {
             for (Booking b : allConfirmed) {
                 if (!(b instanceof RoomBooking))
                     continue;
+                RoomBooking rb = (RoomBooking) b;
+                
+                // Filter by keyword
                 if (!matchesKeyword(b, keyword)) {
                     continue;
                 }
+                
+                // Filter by dateFilter if provided
+                if (dateFilter != null) {
+                    if (rb.getCheckInDate() == null || !rb.getCheckInDate().equals(dateFilter)) {
+                        continue;
+                    }
+                }
+                
                 filteredArrivals.add(b);
             }
         }
@@ -171,6 +183,15 @@ public class ReceptionistController {
                             ? b.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                             : "");
 
+            if (b instanceof RoomBooking) {
+                RoomBooking rb = (RoomBooking) b;
+                map.put("checkInDate", rb.getCheckInDate() != null
+                        ? rb.getCheckInDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        : "N/A");
+            } else {
+                map.put("checkInDate", "N/A");
+            }
+
             String roomSummary = "N/A";
             Map<String, Long> categoryCount = details.stream()
                     .filter(d -> d.getCategory() != null)
@@ -197,6 +218,8 @@ public class ReceptionistController {
         model.addAttribute("pendingArrivalsCount", totalItems);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("dateFilter", dateFilter);
 
         Map<String, List<String>> inventory = new HashMap<>();
         for (Room r : roomRepository.findVacant()) {

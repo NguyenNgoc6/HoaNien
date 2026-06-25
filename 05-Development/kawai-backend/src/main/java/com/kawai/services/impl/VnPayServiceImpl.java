@@ -106,6 +106,9 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
+        String expireDate = LocalDateTime.now().plusMinutes(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        vnp_Params.put("vnp_ExpireDate", expireDate);
+
         // 4. Lọc null/empty, sắp xếp và build hashData & query
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         java.util.Collections.sort(fieldNames);
@@ -180,6 +183,9 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
+        String expireDate = LocalDateTime.now().plusMinutes(5).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        vnp_Params.put("vnp_ExpireDate", expireDate);
+
         // Build query string
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
@@ -250,6 +256,9 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
+        String expireDate = LocalDateTime.now().plusMinutes(5).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        vnp_Params.put("vnp_ExpireDate", expireDate);
+
         // 4. Lọc null/empty, sắp xếp và build hashData & query
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         java.util.Collections.sort(fieldNames);
@@ -303,6 +312,9 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
+
+        String expireDate = LocalDateTime.now().plusMinutes(5).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        vnp_Params.put("vnp_ExpireDate", expireDate);
 
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         java.util.Collections.sort(fieldNames);

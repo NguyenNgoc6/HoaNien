@@ -157,14 +157,15 @@
                             <thead>
                                 <tr>
                                     <th>Guest</th>
+                                    <th>Phone</th>
+                                    <th>Check-in Date</th>
                                     <th>Booking Date</th>
-                                    <th>Room</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:if="${#lists.isEmpty(arrivals)}">
-                                    <td colspan="4" style="text-align: center;">No arrivals today</td>
+                                    <td colspan="5" style="text-align: center;">No arrivals today</td>
                                 </tr>
                                 <tr th:each="arr : ${arrivals}">
                                     <td style="cursor: pointer; color: #2563eb; font-weight: 500;"
@@ -173,8 +174,9 @@
                                         th:data-room="${arr.roomSummary}"
                                         th:attr="onclick=|openCheckinModal('${arr.id}', '${arr.guestName}', '${arr.phone}', '${arr.cccd}', '${arr.roomSummary}', 'deps-arr-${arr.id}')|"
                                         th:text="${arr.guestName}"></td>
+                                    <td th:text="${arr.phone}"></td>
+                                    <td th:text="${arr.checkInDate}"></td>
                                     <td th:text="${arr.bookingDate}" style="color: #4b5563;"></td>
-                                    <td><span th:text="${arr.roomSummary}"></span></td>
                                     <td>
                                         <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
                                             th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"

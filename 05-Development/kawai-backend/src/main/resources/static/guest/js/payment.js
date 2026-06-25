@@ -123,51 +123,13 @@ function renderOrderSummary(data) {
         }
     }
 
-    // Handle timer
-    const timerContainer = document.getElementById('payment-timer-container');
-    const timerEl = document.getElementById('payment-timer');
-
-    if (data.bookingStatus === 'CANCELLED' || (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds <= 0)) {
-        if (timerContainer) timerContainer.classList.add('hidden');
+    if (data.bookingStatus === 'CANCELLED') {
         if (btnPay) btnPay.disabled = true;
         showToast('Đơn đặt phòng đã bị hủy do quá hạn thanh toán.', 'error');
         isPaymentSubmitted = true;
         setTimeout(() => window.location.href = '/booking', 2500);
         return;
     }
-
-    if (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds > 0) {
-        if (timerContainer) timerContainer.classList.remove('hidden');
-        startPaymentTimer(data.remainingHoldSeconds, timerEl);
-    }
-}
-
-function startPaymentTimer(seconds, timerEl) {
-    if (paymentTimerInterval) clearInterval(paymentTimerInterval);
-
-    const targetEndTime = Date.now() + seconds * 1000;
-
-    const updateTimer = () => {
-        const remainingMs = targetEndTime - Date.now();
-        const remainingSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-
-        if (remainingSeconds <= 0) {
-            clearInterval(paymentTimerInterval);
-            timerEl.textContent = '00:00';
-            const btnPayNow = document.getElementById('btnPayNow');
-            if (btnPayNow) btnPayNow.disabled = true;
-            showToast('Đã hết thời gian thanh toán! Đơn phòng đã bị hủy.', 'error');
-            isPaymentSubmitted = true; // Prevent unload warning
-            setTimeout(() => window.location.href = '/booking', 2500);
-            return;
-        }
-        const m = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
-        const s = (remainingSeconds % 60).toString().padStart(2, '0');
-        timerEl.textContent = `${m}:${s}`;
-    };
-
-    updateTimer(); // Initialize immediately so it doesn't show --:-- for 1 second
-    paymentTimerInterval = setInterval(updateTimer, 1000);
 }
 
 function setText(id, val) {
@@ -343,20 +305,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Cảnh báo khi người dùng rời khỏi trang và hủy đơn
-    window.addEventListener('beforeunload', (e) => {
-        if (!isPaymentSubmitted && bookingData && bookingData.bookingStatus === 'HOLD' && bookingData.remainingHoldSeconds > 0) {
-            // Hiển thị thông báo xác nhận rời trang mặc định của trình duyệt
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
-
-    // Thực hiện gọi API hủy đơn khi thực sự rời trang
-    window.addEventListener('pagehide', (e) => {
-        if (!isPaymentSubmitted && bookingData && bookingData.bookingStatus === 'HOLD' && bookingData.remainingHoldSeconds > 0) {
-            // Sử dụng sendBeacon để đảm bảo request được gửi đi ngay cả khi trang đóng
-            navigator.sendBeacon(`/api/bookings/${bookingId}/cancel`);
-        }
-    });
 });
