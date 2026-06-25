@@ -39,14 +39,12 @@ function nightsBetween(checkIn, checkOut) {
     ));
 }
 
-// ── State ────────────────────────────────────────────────────────────────────
-
-let bookingData = null;   // data từ API
-let appliedCoupon = null;   // { code, discountAmount }
+let bookingData = null;
+let appliedCoupon = null;
 let paymentTimerInterval = null;
-let isPaymentSubmitted = false; // Add flag to detect intended navigation
+let isPaymentSubmitted = false;
+let canAbandonCheckout = false;
 
-// ── Load Booking Detail ───────────────────────────────────────────────────────
 
 async function loadBookingDetail(bookingId) {
     try {
@@ -60,6 +58,27 @@ async function loadBookingDetail(bookingId) {
             throw new Error('HTTP ' + res.status);
         }
         bookingData = await res.json();
+        
+        const currentStatus = (bookingData.bookingStatus || '').toUpperCase();
+        if (currentStatus === 'PENDING' || currentStatus === 'PENDING_PAYMENT') {
+            canAbandonCheckout = true;
+        } else {
+            canAbandonCheckout = false;
+            isPaymentSubmitted = true; // prevent unload events
+            
+            // Hide the container to prevent interaction
+            const container = document.querySelector('.checkout-container');
+            if (container) container.style.display = 'none';
+            
+            // Redirect based on status
+            if (currentStatus === 'CONFIRMED') {
+                window.location.replace('/profile');
+            } else {
+                window.location.replace('/booking');
+            }
+            return;
+        }
+
         renderOrderSummary(bookingData);
     } catch (e) {
         console.error('loadBookingDetail error:', e);
@@ -123,13 +142,6 @@ function renderOrderSummary(data) {
         }
     }
 
-    if (data.bookingStatus === 'CANCELLED') {
-        if (btnPay) btnPay.disabled = true;
-        showToast('Đơn đặt phòng đã bị hủy do quá hạn thanh toán.', 'error');
-        isPaymentSubmitted = true;
-        setTimeout(() => window.location.href = '/booking', 2500);
-        return;
-    }
 }
 
 function setText(id, val) {
@@ -302,6 +314,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && !isPaymentSubmitted) {
             loadBookingDetail(bookingId);
+        }
+    });
+
+    // Hiển thị thông báo xác nhận khi cố gắng thoát trang
+    window.addEventListener('beforeunload', (e) => {
+        if (canAbandonCheckout && !isPaymentSubmitted && bookingId) {
+            e.preventDefault();
+            e.returnValue = 'Đơn đặt phòng của bạn sẽ bị hủy nếu bạn rời khỏi trang này. Bạn có chắc chắn muốn thoát?';
+        }
+    });
+
+    // Hủy đơn đặt phòng ngay lập tức khi khách hàng rời khỏi trang (thoát, back, reload)
+    window.addEventListener('pagehide', () => {
+        if (canAbandonCheckout && !isPaymentSubmitted && bookingId) {
+            navigator.sendBeacon(`/api/bookings/${bookingId}/cancel`);
         }
     });
 

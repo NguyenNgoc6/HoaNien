@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.kawai.models.Customer;
@@ -42,28 +43,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
 
-       /**
-        * Đếm booking trùng ngày cho 1 phòng cụ thể, bỏ qua booking của chính mình
-        * (excludeBookingId).
-        * Dùng trong createBooking() để kiểm tra phòng đã bị booking/HOLD bởi người
-        * khác chưa.
-        * Status HOLD và CONFIRMED đều được đếm (chỉ bỏ CANCELLED).
-        */
-       @Query("SELECT COUNT(rbd) FROM RoomBookingDetail rbd " +
-                     "WHERE rbd.room.roomNumber = :roomNumber " +
-                     "AND rbd.roomBooking.checkInDate < :checkOut " +
-                     "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending' " +
-                     "AND rbd.roomBooking.id != :excludeBookingId")
-       long countOverlappingBookingsByRoom(
-                     @Param("roomNumber") String roomNumber,
-                     @Param("checkIn") LocalDate checkIn,
-                     @Param("checkOut") LocalDate checkOut,
-                     @Param("excludeBookingId") Long excludeBookingId);
-
-       @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'HOLD' AND rb.holdExpiresAt <= :now")
-       List<RoomBooking> findStaleHolds(@Param("now") java.time.LocalDateTime now);
+       List<RoomBooking> findByBookingStatusAndHoldExpiresAtBefore(String status, LocalDateTime time);
 
        @Query(value = "SELECT DATE(rb.check_in_date) FROM Room_Bookings rb GROUP BY DATE(rb.check_in_date) ORDER BY COUNT(rb.room_booking_id) DESC LIMIT 1", nativeQuery = true)
        java.sql.Date findPeakOccupancyDate();
@@ -88,25 +68,21 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending' " +
-                     "AND rbd.roomBooking.id != :excludeBookingId")
-       long countOverlappingBookingsByCategory(
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT IN ('pending')")
+       long countOverlappingBookingsByCategoryWithoutExclude(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
-                     @Param("checkOut") LocalDate checkOut,
-                     @Param("excludeBookingId") Long excludeBookingId);
+                     @Param("checkOut") LocalDate checkOut);
 
        @Query("SELECT COUNT(rbd) FROM RoomBookingDetail rbd " +
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending'")
-       long countOverlappingBookingsByCategoryWithoutExclude(
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT IN ('pending') " +
+                     "AND rbd.roomBooking.bookingStatus != 'Checked_In'")
+       long countOverlappingNotCheckedIn(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
-
-       @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'Confirmed' AND rb.checkInDate < :currentDate")
-       List<RoomBooking> findExpiredConfirmedBookings(@Param("currentDate") java.time.LocalDate currentDate);
 }

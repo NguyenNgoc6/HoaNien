@@ -431,7 +431,8 @@ public class VnPayServiceImpl implements VnPayService {
                         }
                         roomBookingDetailRepository.saveAll(details);
                     }
-                } else if ("Pending".equals(booking.getBookingStatus()) || "HOLD".equals(booking.getBookingStatus())) {
+                } else if ("Pending".equals(booking.getBookingStatus())
+                        || "Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Confirmed");
                 }
             }
@@ -472,7 +473,8 @@ public class VnPayServiceImpl implements VnPayService {
                         Map<String, Object> ctx = new java.util.HashMap<>();
                         ctx.put("invoice", invoice);
                         ctx.put("pdfPath", pdfPath);
-                        eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this, booking.getCustomer().getEmail(), "Hóa đơn điện tử - HOANIEN", "invoice", ctx));
+                        eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this,
+                                booking.getCustomer().getEmail(), "Hóa đơn điện tử - HOANIEN", "invoice", ctx));
                     }
                 } catch (Exception e) {
                     System.err.println("Lỗi khi sinh PDF hoặc gửi Email cho hóa đơn VNPay: " + e.getMessage());
@@ -480,8 +482,7 @@ public class VnPayServiceImpl implements VnPayService {
             }
         } else {
             txn.setStatus(PaymentStatus.FAILED);
-            if (booking != null && "WALK_IN".equals(booking.getBookingSource())
-                    && "Pending_Payment".equals(booking.getBookingStatus())) {
+            if (booking != null && "Pending_Payment".equals(booking.getBookingStatus())) {
                 booking.setBookingStatus("Cancelled");
                 if (booking instanceof com.kawai.models.RoomBooking) {
                     java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository
@@ -495,6 +496,7 @@ public class VnPayServiceImpl implements VnPayService {
                         }
                     }
                     roomBookingDetailRepository.saveAll(details);
+                    roomBookingRepository.saveAndFlush((com.kawai.models.RoomBooking) booking);
                 }
             }
         }

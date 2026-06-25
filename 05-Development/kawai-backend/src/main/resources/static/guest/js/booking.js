@@ -1,7 +1,6 @@
 // Global Booking
 let selectedRoomsCart = {};
 
-let cartHoldConfirmedBookingId = null;    // bookingId đã CONFIRMED để dùng khi hủy
 
 const today = new Date();
 const defaultCheckOut = new Date(today);
@@ -830,7 +829,7 @@ function confirmCartBooking() {
             btnCheckout.disabled = false;
 
             const bookingStatus = data.bookingStatus ? data.bookingStatus.toUpperCase() : (data.status ? data.status.toUpperCase() : '');
-            if (bookingStatus === 'CONFIRMED' || bookingStatus === 'PENDING' || bookingStatus === 'HOLD') {
+            if (bookingStatus === 'CONFIRMED' || bookingStatus === 'PENDING' || bookingStatus === 'PENDING_PAYMENT') {
                 // Lưu bookingId để dùng nếu user huỷ giỏ
                 if (data && data.bookingId) {
                     cartHoldConfirmedBookingId = data.bookingId;
