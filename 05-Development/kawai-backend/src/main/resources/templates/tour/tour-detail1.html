@@ -262,10 +262,14 @@
                             data-i18n="nav_logout">Đăng Xuất</button>
                     </form>
 
-                    <a th:href="${isLoggedIn ? '/booking' : '#'}"
-                        onclick="if (!isLoggedIn) { openLoginModal(); return false; }"
+                    <a th:href="@{/booking}" th:if="${isLoggedIn}"
                         class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] transition-all duration-200 inline-block text-center text-[13px]"
                         data-i18n="nav_book_now">
+                        Đặt Ngay
+                    </a>
+                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${isLoggedIn}"
+                        class="nav-btn-book px-8 py-3.5 hover:opacity-90 active:scale-[0.98] transition-all duration-200 inline-block text-center text-[13px]"
+                        data-i18n="nav_login">
                         Đăng nhập
                     </a>
                 </div>
@@ -354,10 +358,9 @@
             </div>
         </section>
 
-        <!-- Right Side: Booking Form / Login Form -->
+        <!-- Right Side: Booking Form -->
         <section
             class="w-full md:w-1/2 p-margin-mobile md:p-margin-desktop bg-background flex flex-col justify-center fade-in">
-            <!-- Booking Form -->
             <div class="max-w-2xl mx-auto w-full py-12">
                 <div class="mb-12 flex flex-col items-center justify-center space-y-3 text-center">
                     <h2 class="font-headline-lg text-4xl md:text-5xl text-hoanien-text font-bold text-center"
@@ -490,8 +493,6 @@
                     </div>
                 </form>
             </div>
-
-
         </section>
     </main>
 
@@ -521,7 +522,6 @@
         const customerEmail = /*[[${customerEmail}]]*/ null;
         const customerPhone = /*[[${customerPhone}]]*/ null;
         const initialTourType = /*[[${type}]]*/ 'doantu';
-        const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
         /*]]>*/
     </script>
 
@@ -596,20 +596,13 @@
         }
 
         function updateTotalPrice() {
-            const participantCountEl = document.getElementById('participantCount');
-            const qty = participantCountEl ? (parseInt(participantCountEl.value) || 1) : 1;
+            const qty = parseInt(document.getElementById('participantCount').value) || 1;
             const tourInfo = tourData[currentTour];
             const totalPrice = tourInfo.price * qty;
             const depositPrice = Math.round(totalPrice * 0.3);
 
-            const displayTotalPriceEl = document.getElementById('displayTotalPrice');
-            if (displayTotalPriceEl) {
-                displayTotalPriceEl.textContent = formatVND(totalPrice);
-            }
-            const displayDepositPriceEl = document.getElementById('displayDepositPrice');
-            if (displayDepositPriceEl) {
-                displayDepositPriceEl.textContent = formatVND(depositPrice);
-            }
+            document.getElementById('displayTotalPrice').textContent = formatVND(totalPrice);
+            document.getElementById('displayDepositPrice').textContent = formatVND(depositPrice);
 
             const lang = document.documentElement.lang || 'vi';
             const formattedQty = qty < 10 ? '0' + qty : qty;
@@ -681,7 +674,8 @@
                 nav_tours: "Hành Trình",
                 nav_profile: "Hồ Sơ",
                 nav_logout: "Đăng Xuất",
-                nav_book_now: "Đăng nhập",
+                nav_book_now: "Đặt Ngay",
+                nav_login: "Đăng nhập",
                 nav_doantu: "Đoàn Tụ",
                 nav_dongnoi: "Đồng Nội",
                 nav_disan: "Di Sản",
@@ -725,7 +719,8 @@
                 nav_tours: "Tours",
                 nav_profile: "Profile",
                 nav_logout: "Logout",
-                nav_book_now: "logout",
+                nav_book_now: "Book Now",
+                nav_login: "Login",
                 nav_doantu: "Reunion",
                 nav_dongnoi: "Countryside",
                 nav_disan: "Heritage",
@@ -783,10 +778,8 @@
 
             renderTour();
         }
-        const paymentFormEl = document.getElementById('paymentForm');
-        if (paymentFormEl) {
-            paymentFormEl.addEventListener('submit', function (e) {
-                e.preventDefault();
+        document.getElementById('paymentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
             const consentChk = document.getElementById('tourConsent');
             if (!consentChk || !consentChk.checked) {
@@ -852,8 +845,7 @@
                     btn.style.opacity = '1';
                     alert((lang === 'vi' ? 'Lỗi: ' : 'Error: ') + error.message);
                 });
-            });
-        }
+        });
 
         const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"]');
         inputs.forEach(input => {
@@ -886,39 +878,32 @@
         }
 
         // Fetch weather dynamically when date is selected
-        const depDateInput = document.getElementById('departureDate');
-        if (depDateInput) {
-            depDateInput.addEventListener('change', function () {
-                const selectedDate = this.value;
-                if (!selectedDate) return;
+        document.getElementById('departureDate').addEventListener('change', function () {
+            const selectedDate = this.value;
+            if (!selectedDate) return;
 
-                fetch(`/tours/api/weather?date=${selectedDate}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error("Weather request failed");
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data && data.temperature !== undefined) {
-                            const temp = data.temperature;
-                            const lang = document.documentElement.lang || 'vi';
-                            const desc = lang === 'vi' ? translateWeatherDesc(data.description) : data.description;
-                            const icon = data.description.includes("Rain") ? "🌧️" : (data.description.includes("Cloud") ? "⛅" : "☀️");
-                            document.getElementById('tourWeatherVal').textContent = `${icon} ${temp}°C • ${desc}`;
-                        }
-                    })
-                    .catch(error => {
-                        console.warn("Weather API fetch error, falling back to static weather:", error);
-                    });
-            });
-        }
-
-
+            fetch(`/tours/api/weather?date=${selectedDate}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Weather request failed");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.temperature !== undefined) {
+                        const temp = data.temperature;
+                        const lang = document.documentElement.lang || 'vi';
+                        const desc = lang === 'vi' ? translateWeatherDesc(data.description) : data.description;
+                        const icon = data.description.includes("Rain") ? "🌧️" : (data.description.includes("Cloud") ? "⛅" : "☀️");
+                        document.getElementById('tourWeatherVal').textContent = `${icon} ${temp}°C • ${desc}`;
+                    }
+                })
+                .catch(error => {
+                    console.warn("Weather API fetch error, falling back to static weather:", error);
+                });
+        });
 
         // Initialize view
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
-
-
         });
     </script>
 </body>

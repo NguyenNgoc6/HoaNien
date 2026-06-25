@@ -186,17 +186,16 @@
                         <span class="lang-btn text-[10px] font-semibold uppercase tracking-[0.1em]" data-lang="en"
                             onclick="switchLang('en')">EN</span>
                     </div>
-                    <a href="/profile" th:if="${isLoggedIn}" class="nav-text-dim" data-i18n="nav_profile">Hồ Sơ</a>
-                    <form th:action="@{/auth/logout}" method="post" th:if="${isLoggedIn}" class="inline">
+                    <a href="/profile" th:if="${session.user != null}" class="nav-text-dim" data-i18n="nav_profile">Hồ Sơ</a>
+                    <form th:action="@{/auth/logout}" method="post" th:if="${session.user != null}" class="inline">
                         <button type="submit"
                             class="nav-text-dim uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer font-sans font-semibold"
                             data-i18n="nav_logout">Đăng Xuất</button>
                     </form>
-                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${isLoggedIn}" class="nav-text-dim">Log In</a>
-                    <a th:href="${isLoggedIn ? '/booking' : '#'}"
-                        onclick="if (!isLoggedIn) { openLoginModal(); return false; }"
-                        class="nav-btn-book px-8 py-3.5 text-center text-[13px]"
-                        data-i18n="nav_book_now">Đăng nhập</a>
+                    <a href="/booking" th:if="${session.user != null}" class="nav-btn-book px-8 py-3.5 text-center text-[13px]"
+                        data-i18n="nav_book_now">Đặt Ngay</a>
+                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}" class="nav-btn-book px-8 py-3.5 text-center text-[13px]"
+                        data-i18n="nav_login">Đăng nhập</a>
                 </div>
             </div>
         </nav>
@@ -268,9 +267,8 @@
             </div>
         </section>
 
-        <!-- Right Side: Booking Form / Login Form -->
+        <!-- Right Side: Booking Form -->
         <section class="w-full md:w-1/2 p-6 md:p-20 bg-background flex flex-col justify-center fade-in">
-            <!-- Booking Form -->
             <div class="max-w-2xl mx-auto w-full py-12">
                 <div class="mb-12 flex flex-col items-center justify-center space-y-3 text-center">
                     <h2 class="font-headline-lg text-4xl md:text-5xl text-hoanien-text font-bold text-center"
@@ -394,8 +392,6 @@
                     </div>
                 </form>
             </div>
-
-
         </section>
     </main>
 
@@ -415,7 +411,6 @@
         const customerEmail = /*[[${customerEmail}]]*/ null;
         const customerPhone = /*[[${customerPhone}]]*/ null;
         const initialTourType = /*[[${type}]]*/ 'doantu';
-        const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
         /*]]>*/
     </script>
 
@@ -491,20 +486,13 @@
         }
 
         function updateTotalPrice() {
-            const participantCountEl = document.getElementById('participantCount');
-            const qty = participantCountEl ? (parseInt(participantCountEl.value) || 1) : 1;
+            const qty = parseInt(document.getElementById('participantCount').value) || 1;
             const tourInfo = tourData[currentTour];
             const totalPrice = tourInfo.price * qty;
             const depositPrice = Math.round(totalPrice * 0.3);
 
-            const displayTotalPriceEl = document.getElementById('displayTotalPrice');
-            if (displayTotalPriceEl) {
-                displayTotalPriceEl.textContent = formatVND(totalPrice);
-            }
-            const displayDepositPriceEl = document.getElementById('displayDepositPrice');
-            if (displayDepositPriceEl) {
-                displayDepositPriceEl.textContent = formatVND(depositPrice);
-            }
+            document.getElementById('displayTotalPrice').textContent = formatVND(totalPrice);
+            document.getElementById('displayDepositPrice').textContent = formatVND(depositPrice);
 
             const lang = document.documentElement.lang || 'vi';
             const formattedQty = qty < 10 ? '0' + qty : qty;
@@ -570,7 +558,8 @@
                 nav_tours: "Hành Trình",
                 nav_profile: "Hồ Sơ",
                 nav_logout: "Đăng Xuất",
-                nav_book_now: "Đăng nhập",
+                nav_book_now: "Đặt Ngay",
+                nav_login: "Đăng nhập",
                 nav_doantu: "Đoàn Tụ",
                 nav_dongnoi: "Đồng Nội",
                 nav_disan: "Di Sản",
@@ -608,7 +597,8 @@
                 nav_tours: "Tours",
                 nav_profile: "Profile",
                 nav_logout: "Logout",
-                nav_book_now: "logout",
+                nav_book_now: "Book Now",
+                nav_login: "Login",
                 nav_doantu: "Reunion",
                 nav_dongnoi: "Countryside",
                 nav_disan: "Heritage",
@@ -654,54 +644,45 @@
             renderTour();
         }
 
-        const paymentFormEl = document.getElementById('paymentForm');
-        if (paymentFormEl) {
-            paymentFormEl.addEventListener('submit', function (e) {
-                e.preventDefault();
-                const btn = this.querySelector('button[type="submit"]');
-                btn.innerHTML = document.documentElement.lang === 'vi' ? 'Quý khách xin vui lòng chờ...' : 'Please wait...';
-                btn.disabled = true;
+        document.getElementById('paymentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = document.documentElement.lang === 'vi' ? 'Quý khách xin vui lòng chờ...' : 'Please wait...';
+            btn.disabled = true;
 
-                const payload = {
-                    tourId: tourData[currentTour].id,
-                    departureDate: document.getElementById('departureDate').value,
-                    fullName: document.getElementById('fullName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
-                    participantCount: parseInt(document.getElementById('participantCount').value) || 1,
-                    paymentMethod: document.querySelector('input[name="payment"]:checked').value,
-                    roomNumber: document.getElementById('roomNumber') ? document.getElementById('roomNumber').value : null
-                };
+            const payload = {
+                tourId: tourData[currentTour].id,
+                departureDate: document.getElementById('departureDate').value,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                participantCount: parseInt(document.getElementById('participantCount').value) || 1,
+                paymentMethod: document.querySelector('input[name="payment"]:checked').value,
+                roomNumber: document.getElementById('roomNumber') ? document.getElementById('roomNumber').value : null
+            };
 
-                fetch('/api/tour-bookings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+            fetch('/api/tour-bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => {
+                    if (!res.ok) return res.json().then(err => { throw new Error(err.message); });
+                    return res.json();
                 })
-                    .then(res => {
-                        if (!res.ok) return res.json().then(err => { throw new Error(err.message); });
-                        return res.json();
-                    })
-                    .then(data => {
-                        btn.innerHTML = 'ĐẶT CHỖ THÀNH CÔNG';
-                        alert(document.documentElement.lang === 'vi' ? 'Đặt tour thành công!' : 'Booking success!');
-                        window.location.href = '/profile';
-                    })
-                    .catch(error => {
-                        btn.innerHTML = 'XÁC NHẬN ĐẶT CHỖ';
-                        btn.disabled = false;
-                        alert('Error: ' + error.message);
-                    });
-            });
-        }
-
-
-
-        document.addEventListener('DOMContentLoaded', () => { 
-            renderTour(); 
-
-
+                .then(data => {
+                    btn.innerHTML = 'ĐẶT CHỖ THÀNH CÔNG';
+                    alert(document.documentElement.lang === 'vi' ? 'Đặt tour thành công!' : 'Booking success!');
+                    window.location.href = '/profile';
+                })
+                .catch(error => {
+                    btn.innerHTML = 'XÁC NHẬN ĐẶT CHỖ';
+                    btn.disabled = false;
+                    alert('Error: ' + error.message);
+                });
         });
+
+        document.addEventListener('DOMContentLoaded', () => { renderTour(); });
     </script>
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
