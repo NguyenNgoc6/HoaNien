@@ -261,16 +261,7 @@ function renderRoomResults(roomsData) {
     roomsData.forEach(room => {
         if (!groupedRooms[room.categoryName]) {
             groupedRooms[room.categoryName] = {
-                categoryName: room.categoryName,
-                pricePerNight: room.pricePerNight,
-                capacity: room.capacity,
-                description: room.description,
-                baseAdults: room.baseAdults,
-                baseChildren: room.baseChildren,
-                maxAdults: room.maxAdults,
-                maxChildren: room.maxChildren,
-                extraAdultSurcharge: room.extraAdultSurcharge,
-                extraChildSurcharge: room.extraChildSurcharge,
+                ...room,
                 roomNumbers: []
             };
         }
@@ -323,10 +314,11 @@ function renderRoomResults(roomsData) {
             }
         }
 
+        const roomJson = encodeURIComponent(JSON.stringify(room));
         html += `
             <article class="room-card flex flex-col h-full">
                 <!-- Image / carousel -->
-                <div class="room-media relative cursor-pointer hover:opacity-90 transition-opacity" onclick="openRoomInfoModal('${room.categoryName}', '${roomImage}', '${room.capacity}', '${(room.description || '').replace(/'/g, "\\'").replace(/\n/g, '\\n')}', ${room.baseAdults || 0}, ${room.baseChildren || 0}, ${room.maxAdults || 0}, ${room.maxChildren || 0}, ${room.extraAdultSurcharge || 0}, ${room.extraChildSurcharge || 0})">
+                <div class="room-media relative cursor-pointer hover:opacity-90 transition-opacity" onclick="openRoomInfoModal('${roomJson}')">
                     ${badgeHtml}
                     <img class="room-img" src="${roomImage}" alt="${room.categoryName}"/>
 
@@ -504,51 +496,99 @@ function executeSearch(e) {
 }
 
 // ---------------- ROOM DETAIL MODAL LOGIC ----------------
-function openRoomInfoModal(name, image, capacity, description, baseAdults, baseChildren, maxAdults, maxChildren, extraAdultSurcharge, extraChildSurcharge) {
-    document.getElementById('detailRoomName').innerText = name;
+function openRoomInfoModal(roomJsonStr) {
+    const room = JSON.parse(decodeURIComponent(roomJsonStr));
+    const image = getRoomImage(room.categoryName);
+
+    document.getElementById('detailRoomName').innerText = room.categoryName;
     document.getElementById('detailRoomImg').src = image;
 
-    document.getElementById('detailRoomGuests').innerText = capacity + ' Người / phòng';
-    document.getElementById('detailRoomTotal').innerText = '';
+    document.getElementById('detailRoomGuests').innerText = room.capacity + ' Người';
+    document.getElementById('detailRoomTotal').innerText = 'Trống ' + room.availableCount + ' phòng';
 
-    document.getElementById('detailRoomDesc').innerText = description || 'Không có mô tả chi tiết cho phòng này.';
+    document.getElementById('detailRoomDesc').innerText = room.description || 'Không có mô tả chi tiết cho phòng này.';
 
-    document.getElementById('detailRoomBaseAdults').innerText = baseAdults;
-    document.getElementById('detailRoomBaseChildren').innerText = baseChildren;
-    document.getElementById('detailRoomMaxAdults').innerText = maxAdults;
-    document.getElementById('detailRoomMaxChildren').innerText = maxChildren;
-    document.getElementById('detailRoomSurchargeAdult').innerText = formatCurrency(extraAdultSurcharge) + ' VNĐ';
-    document.getElementById('detailRoomSurchargeChild').innerText = formatCurrency(extraChildSurcharge) + ' VNĐ';
+    document.getElementById('detailRoomBaseAdults').innerText = room.baseAdults || 0;
+    document.getElementById('detailRoomBaseChildren').innerText = room.baseChildren || 0;
+    document.getElementById('detailRoomMaxAdults').innerText = room.maxAdults || 0;
+    document.getElementById('detailRoomMaxChildren').innerText = room.maxChildren || 0;
+    document.getElementById('detailRoomSurchargeAdult').innerText = formatCurrency(room.extraAdultSurcharge || 0) + ' VNĐ';
+    document.getElementById('detailRoomSurchargeChild').innerText = formatCurrency(room.extraChildSurcharge || 0) + ' VNĐ';
 
-    const badgeEl = document.getElementById('detailRoomBadge');
-    if (badgeEl) badgeEl.style.display = 'none';
+    // Populate new fields
+    const bedTypeEl = document.getElementById('detailRoomBedType');
+    if (bedTypeEl) bedTypeEl.innerText = room.bedType || 'Tiêu chuẩn';
 
-    const bedsEl = document.getElementById('detailRoomBeds');
-    if (bedsEl && bedsEl.parentElement && bedsEl.parentElement.parentElement) {
-        bedsEl.parentElement.parentElement.style.display = 'none';
-    }
+    const roomSizeEl = document.getElementById('detailRoomSize');
+    if (roomSizeEl) roomSizeEl.innerText = room.roomSize ? room.roomSize + ' m²' : 'Tiêu chuẩn';
 
-    const amenitiesHeader = document.querySelector('#detailRoomAmenities') ? document.querySelector('#detailRoomAmenities').previousElementSibling : null;
-    const amenitiesList = document.getElementById('detailRoomAmenities');
-    if (amenitiesList) {
-        amenitiesList.style.display = 'none';
-        if (amenitiesHeader) amenitiesHeader.style.display = 'none';
+    const viewTypeEl = document.getElementById('detailRoomView');
+    if (viewTypeEl) viewTypeEl.innerText = room.viewType || 'Không rõ';
+
+    const amenitiesListEl = document.getElementById('detailRoomAmenitiesList');
+    if (amenitiesListEl) {
+        amenitiesListEl.innerHTML = '';
+        
+        const addAmenity = (text, iconSvg) => {
+            amenitiesListEl.innerHTML += `
+                <li class="flex items-center gap-1.5 bg-[#d4af37]/10 text-[#a38015] px-3 py-1.5 rounded-full font-medium border border-[#d4af37]/20">
+                    <span class="w-3.5 h-3.5 flex items-center justify-center">${iconSvg}</span>
+                    <span>${text}</span>
+                </li>
+            `;
+        };
+
+        const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        const starIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+
+        if (room.hasBathtub) addAmenity('Bồn tắm', checkIcon);
+        if (room.hasBalcony) addAmenity('Ban công', checkIcon);
+        if (room.hasFreeBreakfast) addAmenity('Bao gồm bữa sáng', starIcon);
+        
+        if (room.complimentaryServices) {
+            const services = room.complimentaryServices.split(',');
+            services.forEach(s => {
+                if (s.trim()) addAmenity(s.trim(), starIcon);
+            });
+        }
     }
 
     const container = document.getElementById('detailBookButtonContainer');
     if (container) {
         container.innerHTML = `
-            <button onclick="closeRoomDetailsModal()" type="button" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors">
+            <button onclick="closeRoomDetailsModal()" type="button" class="bg-[#2c2a24] text-white px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-black transition-all hover:shadow-lg hover:-translate-y-0.5 shadow-md">
                 Đóng
             </button>
         `;
     }
 
-    document.getElementById('roomDetailsModal').style.display = 'flex';
+    const modal = document.getElementById('roomDetailsModal');
+    const modalContent = document.getElementById('roomDetailsModalContent');
+    
+    // Show modal container
+    modal.style.display = 'flex';
+    // Force reflow
+    void modal.offsetWidth;
+    
+    // Animate in
+    modal.classList.remove('opacity-0');
+    modalContent.classList.remove('scale-95', 'opacity-0');
+    modalContent.classList.add('scale-100', 'opacity-100');
 }
 
 function closeRoomDetailsModal() {
-    document.getElementById('roomDetailsModal').style.display = 'none';
+    const modal = document.getElementById('roomDetailsModal');
+    const modalContent = document.getElementById('roomDetailsModalContent');
+    
+    // Animate out
+    modal.classList.add('opacity-0');
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    
+    // Wait for animation to finish before hiding
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
 }
 
 

@@ -246,10 +246,19 @@ public class RoomServiceImpl implements RoomService {
             dto.setExtraChildSurcharge(cat.getExtraChildSurcharge());
 
             dto.setDescription(cat.getDescription());
+
+            // Legacy fields maintained to avoid breaking existing code
             dto.setBeds(null);
             dto.setSize(null);
             dto.setView(null);
-            dto.setAmenities(new java.util.ArrayList<>());
+            // New fields
+            dto.setBedType(cat.getBedType());
+            dto.setRoomSize(cat.getRoomSize());
+            dto.setViewType(cat.getViewType());
+            dto.setHasBathtub(cat.getHasBathtub());
+            dto.setHasBalcony(cat.getHasBalcony());
+            dto.setComplimentaryServices(cat.getComplimentaryServices());
+            dto.setHasFreeBreakfast(cat.getHasFreeBreakfast());
         }
         return dto;
     }
