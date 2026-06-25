@@ -186,20 +186,19 @@
       color: rgba(229, 196, 148, 0.55);
       white-space: nowrap;
       min-width: 160px;
-      font-size: 12px;
+      font-size: 13px;
       letter-spacing: 0.3px;
     }
 
     .info-value {
       font-weight: 400;
       color: rgba(245, 230, 200, 0.85);
+      font-size: 13px;
     }
 
     .info-value.highlight {
-      font-family: 'EB Garamond', Georgia, serif;
-      font-style: italic;
-      font-size: 15px;
-      font-weight: 400;
+      font-weight: 500;
+      font-size: 13px;
       color: #e5c494;
     }
 
@@ -322,21 +321,35 @@
     }
 
     @media (max-width: 480px) {
-      .body, .header, .hero, .footer { padding: 28px 24px; }
-      .info-label { min-width: 130px; }
-      .info-row { flex-direction: column; gap: 3px; }
+
+      .body,
+      .header,
+      .hero,
+      .footer {
+        padding: 28px 24px;
+      }
+
+      .info-label {
+        min-width: 130px;
+      }
+
+      .info-row {
+        flex-direction: column;
+        gap: 3px;
+      }
     }
   </style>
 </head>
 
-<body th:style="'font-family: Inter, Helvetica Neue, Arial, sans-serif; background-color: #2a1f14; background-image: url(' + ${bgUrl} + '); background-size: cover; background-position: center; color: #2a1f14;'">
+<body
+  th:style="'font-family: Inter, Helvetica Neue, Arial, sans-serif; background-color: #2a1f14; background-image: url(' + ${bgUrl} + '); background-size: cover; background-position: center; color: #2a1f14;'">
   <div class="email-outer">
     <div class="wrapper">
 
       <!-- Header -->
       <div class="header">
         <div class="brand">Hòa Niên</div>
-        <div class="logo-text">Retreat &amp; Resort</div>
+        <div class="logo-text">Retreat Resort & Hub</div>
       </div>
 
       <!-- Hero -->
@@ -366,36 +379,36 @@
           </div>
           <div class="booking-card-body">
             <div class="info-row">
-              <span class="info-label">Tên tour</span>
+              <span class="info-label">Tên tour:</span>
               <span class="info-value highlight" th:text="${tourName}">Hành trình Đoàn Tụ</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Ngày khởi hành</span>
+              <span class="info-label">Ngày khởi hành:</span>
               <span class="info-value" th:text="${departureDate}">10/07/2026</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Giờ khởi hành</span>
+              <span class="info-label">Giờ khởi hành:</span>
               <span class="info-value" th:text="${departureTime}">08:00</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Số người tham gia</span>
+              <span class="info-label">Số người tham gia:</span>
               <span class="info-value" th:text="${participantCount} + ' người'">3 người</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Trạng thái</span>
+              <span class="info-label">Trạng thái:</span>
               <span class="info-value success">Đã xác nhận ✓</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Phương thức thanh toán</span>
+              <span class="info-label">Phương thức thanh toán:</span>
               <span class="info-value" th:if="${!postToRoom}">Thanh toán trực tiếp</span>
               <span class="info-value" th:if="${postToRoom}">Ghi nợ vào phòng</span>
             </div>
             <div class="info-row" th:if="${postToRoom and roomDetail != null}">
-              <span class="info-label">Phòng ghi nợ</span>
+              <span class="info-label">Phòng ghi nợ:</span>
               <span class="info-value" th:text="'Phòng ' + ${roomDetail}">Phòng 201</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Ngày đặt</span>
+              <span class="info-label">Ngày đặt:</span>
               <span class="info-value" th:text="${bookingDate}">22/06/2026</span>
             </div>
           </div>
@@ -414,18 +427,22 @@
         <!-- Note -->
         <div class="note-box">
           <span class="note-title">Lưu ý để hành trình thêm trọn vẹn</span>
-          • <strong>Thời gian:</strong> Vui lòng có mặt tại điểm đón trước giờ khởi hành ít nhất <strong>15 phút</strong>.<br />
-          • <strong>Giấy tờ:</strong> Mang theo <strong>CCCD hoặc Hộ chiếu</strong> để thực hiện các thủ tục cần thiết.<br />
-          • <strong>Hủy dịch vụ:</strong> Hủy trong vòng <strong>24 giờ trước giờ khởi hành</strong> được hoàn <strong>50%</strong> chi phí.<br />
-          • <strong>Hỗ trợ:</strong> Liên hệ lễ tân hoặc gọi <strong th:text="${resortPhone}">1900 xxxx</strong> để được hỗ trợ.
+          • <strong>Thời gian:</strong> Vui lòng có mặt tại điểm đón trước giờ khởi hành ít nhất <strong>15
+            phút</strong>.<br />
+          • <strong>Giấy tờ:</strong> Mang theo <strong>CCCD hoặc Hộ chiếu</strong> để thực hiện các thủ tục cần
+          thiết.<br />
+          • <strong>Hủy dịch vụ:</strong> Hủy trong vòng <strong>24 giờ trước giờ khởi hành</strong> được hoàn
+          <strong>50%</strong> chi phí.<br />
+          • <strong>Hỗ trợ:</strong> Liên hệ lễ tân hoặc gọi <strong th:text="${resortPhone}">1900 xxxx</strong> để được
+          hỗ trợ.
         </div>
 
         <p class="closing-text">
           Chúng tôi rất vinh hạnh được đồng hành cùng Quý khách trong hành trình sắp tới.
           Nếu có bất kỳ điều gì cần hỗ trợ để hành trình thêm ý nghĩa, xin Quý khách đừng ngần ngại chia sẻ.<br /><br />
           Trân trọng,<br />
-          <strong>Đội ngũ Tour &amp; Hospitality</strong><br />
-          <em>Hòa Niên Retreat &amp; Resort</em>
+          <strong>Đội ngũ Tour & Hospitality</strong><br />
+          <em>Hòa Niên Retreat Resort & Hub</em>
         </p>
 
       </div>
@@ -440,7 +457,7 @@
         <div class="footer-divider"></div>
         <p>
           Email này được gửi tự động — vui lòng không phản hồi.<br />
-          © 2026 Hòa Niên Retreat &amp; Resort. Bảo lưu mọi quyền.
+          © 2026 Hòa Niên Retreat Resort & Hub. Bảo lưu mọi quyền.
         </p>
       </div>
 
