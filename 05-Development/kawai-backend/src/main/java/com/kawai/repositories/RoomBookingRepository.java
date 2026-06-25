@@ -36,7 +36,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.room.roomNumber = :roomNumber " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND rbd.roomBooking.bookingStatus != 'CANCELLED'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending'")
        long countOverlappingBookings(@Param("roomNumber") String roomNumber,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
@@ -52,7 +53,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.room.roomNumber = :roomNumber " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND rbd.roomBooking.bookingStatus != 'CANCELLED' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending' " +
                      "AND rbd.roomBooking.id != :excludeBookingId")
        long countOverlappingBookingsByRoom(
                      @Param("roomNumber") String roomNumber,
@@ -85,7 +87,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND rbd.roomBooking.bookingStatus != 'CANCELLED' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending' " +
                      "AND rbd.roomBooking.id != :excludeBookingId")
        long countOverlappingBookingsByCategory(
                      @Param("categoryName") String categoryName,
@@ -97,9 +100,13 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND rbd.roomBooking.bookingStatus != 'CANCELLED'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending'")
        long countOverlappingBookingsByCategoryWithoutExclude(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
+
+       @Query("SELECT rb FROM RoomBooking rb WHERE rb.bookingStatus = 'Confirmed' AND rb.checkInDate < :currentDate")
+       List<RoomBooking> findExpiredConfirmedBookings(@Param("currentDate") java.time.LocalDate currentDate);
 }
