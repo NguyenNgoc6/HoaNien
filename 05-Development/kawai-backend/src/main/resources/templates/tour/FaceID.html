@@ -381,13 +381,25 @@
                                                  <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'KH')}"
                                                      class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm cursor-pointer hover:scale-105 transition-all"
                                                      th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
-                                                     th:onclick="|showCustomerContactModal('${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}', '#EVN-00${attendee.id}', '${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}', '${attendee.customer?.email ?: '--'}', 'Phòng ${100 + (attendee.id != null ? attendee.id % 20 : 0)}', '${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}')|">
+                                                     th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                     th:data-id="'#EVN-00' + ${attendee.id}"
+                                                     th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                     th:data-email="${attendee.customer?.email ?: '--'}"
+                                                     th:data-membership="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}"
+                                                     th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                     onclick="showCustomerContactModal(this)">
                                                      NM
                                                  </div>
                                                 <div>
                                                     <p class="font-body-md font-semibold text-on-surface cursor-pointer hover:underline animate-none"
                                                        th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
-                                                       th:onclick="|showCustomerContactModal('${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}', '#EVN-00${attendee.id}', '${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}', '${attendee.customer?.email ?: '--'}', 'Phòng ${100 + (attendee.id != null ? attendee.id % 20 : 0)}', '${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}')|">
+                                                       th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                       th:data-id="'#EVN-00' + ${attendee.id}"
+                                                       th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                       th:data-email="${attendee.customer?.email ?: '--'}"
+                                                       th:data-membership="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}"
+                                                       th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                       onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
                                                     <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}">Hà Nội</p>
@@ -979,7 +991,14 @@
             document.getElementById('guideSettingsModal').classList.add('hidden');
         }
 
-        function showCustomerContactModal(name, id, phone, email, room, detail) {
+        function showCustomerContactModal(element) {
+            const name = element.getAttribute('data-name');
+            const id = element.getAttribute('data-id');
+            const phone = element.getAttribute('data-phone');
+            const email = element.getAttribute('data-email');
+            const detail = element.getAttribute('data-membership');
+            const room = element.getAttribute('data-room');
+
             document.getElementById('modal-customer-name').textContent = name;
             document.getElementById('modal-customer-id').textContent = id;
             document.getElementById('modal-customer-phone').textContent = phone;
