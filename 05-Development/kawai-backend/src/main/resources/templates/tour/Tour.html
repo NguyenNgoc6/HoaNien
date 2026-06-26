@@ -200,45 +200,28 @@
                 </a>
             </nav>
         </div>
-        <!-- 3. Profile & Icons with Dropdown -->
-        <div class="flex items-center gap-6">
-            <div class="flex items-center gap-2">
-                <button
-                    class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/5 transition-colors">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <button
-                    class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/5 transition-colors">
-                    <span class="material-symbols-outlined">calendar_today</span>
-                </button>
-            </div>
+        <!-- 3. Profile & Icons -->
+        <div class="flex items-center gap-4">
+            <button
+                class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/5 transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
             <div class="h-8 w-px bg-primary/10"></div>
-            <div class="relative dropdown">
-                <button class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none">
-                    <div class="text-right">
-                        <p class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
-                        <p class="text-[10px] text-on-surface-variant/60">Senior Guide</p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 ring-4 ring-primary/5 bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
-                        GD
-                    </div>
-                </button>
-                <div class="dropdown-content">
-                    <div
-                        class="rounded-lg py-2 shadow-xl overflow-hidden min-w-[200px] bg-[#fdfbf7] border border-primary/10">
-                        <a class="flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors text-on-primary-container no-underline"
-                            href="#" onclick="openGuideSettingsModal(event)">
-                            <span class="material-symbols-outlined text-[20px]">person</span>
-                            <span class="font-label-md font-semibold">Thông tin cá nhân</span>
-                        </a>
-                        <div class="h-px bg-primary/10 mx-2 my-1"></div>
-                        <form th:action="@{/auth/logout}" method="post" class="w-full">
-                            <button type="submit" class="w-full text-left px-4 py-3 text-red-700 hover:bg-red-50 transition-colors font-bold uppercase tracking-wider">Logout</button>
-                        </form>
-                    </div>
+            <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
+                <div class="text-right">
+                    <p class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
+                    <p class="text-[10px] text-on-surface-variant/60">Senior Guide</p>
                 </div>
-            </div>
+                <div
+                    class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 ring-4 ring-primary/5 bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+                    GD
+                </div>
+            </button>
+            <form th:action="@{/auth/logout}" method="post" class="inline">
+                <button type="submit" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors" title="Đăng xuất">
+                    <span class="material-symbols-outlined">logout</span>
+                </button>
+            </form>
         </div>
     </header>
     <div class="flex pt-24 min-h-screen">
