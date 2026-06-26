@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
     private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
     private final com.kawai.repositories.DependentRepository dependentRepository;
     private final com.kawai.repositories.RoomGuestRepository roomGuestRepository;
-    
+
     @Autowired
     private com.kawai.repositories.FolioItemRepository folioItemRepository;
 
@@ -343,12 +343,12 @@ public class BookingServiceImpl implements BookingService {
             detail.setNumberOfChildren(reqChildren);
             detail.setDetailStatus("Pending");
             detail.setCustomer(customer);
-            
+
             // Distribute the booking's total credit limit equally among all rooms
             BigDecimal subLimit = savedBooking.getCreditLimit()
                     .divide(new BigDecimal(categoriesToBook.size()), 2, java.math.RoundingMode.HALF_UP);
             detail.setSubCreditLimit(subLimit);
-            
+
             roomBookingDetailRepository.save(detail);
 
             // Create RoomGuest for Adults (Stub)
@@ -783,7 +783,7 @@ public class BookingServiceImpl implements BookingService {
             // Set status based on payment method
             if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
                 booking.setBookingStatus("Pending_Payment");
-                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(1));
+                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
                 log.info("[SOFT_LOCK] Pending/CANCELLED→Pending_Payment: bookingId={}, holdExpiresAt={}",
                         bookingId, booking.getHoldExpiresAt());
             } else {
@@ -794,7 +794,7 @@ public class BookingServiceImpl implements BookingService {
         } else if ("Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
             // User thử lại VNPay (ví dụ back lại trang payment) → refresh timer
             if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
-                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(1));
+                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
                 log.info("[SOFT_LOCK] Pending_Payment refreshed: bookingId={}, holdExpiresAt={}",
                         bookingId, booking.getHoldExpiresAt());
             } else {
@@ -837,17 +837,16 @@ public class BookingServiceImpl implements BookingService {
         roomBookingRepository.save(booking);
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public java.util.List<java.util.Map<String, Object>> getBookingFolios(Long bookingId, Long customerId) {
         RoomBooking booking = roomBookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BusinessException("NOT_FOUND", "Không tìm thấy đơn đặt phòng!"));
-        
+
         boolean isMasterBooker = booking.getCustomer() != null && booking.getCustomer().getId().equals(customerId);
-        
+
         List<com.kawai.models.RoomBookingDetail> visibleDetails = new java.util.ArrayList<>();
-        
+
         if (isMasterBooker) {
             visibleDetails = roomBookingDetailRepository.findByRoomBookingId(bookingId);
         } else {
@@ -855,17 +854,18 @@ public class BookingServiceImpl implements BookingService {
             List<com.kawai.models.RoomGuest> guests = roomGuestRepository.findByCustomerId(customerId);
             for (com.kawai.models.RoomGuest g : guests) {
                 if (Boolean.TRUE.equals(g.getIsPrimaryContact()) &&
-                    g.getRoomBookingDetail() != null &&
-                    g.getRoomBookingDetail().getRoomBooking() != null &&
-                    g.getRoomBookingDetail().getRoomBooking().getId().equals(bookingId)) {
+                        g.getRoomBookingDetail() != null &&
+                        g.getRoomBookingDetail().getRoomBooking() != null &&
+                        g.getRoomBookingDetail().getRoomBooking().getId().equals(bookingId)) {
                     visibleDetails.add(g.getRoomBookingDetail());
                 }
             }
             if (visibleDetails.isEmpty()) {
-                throw new BusinessException("FORBIDDEN", "Bạn không có quyền xem thông tin chi phí của đơn đặt phòng này!");
+                throw new BusinessException("FORBIDDEN",
+                        "Bạn không có quyền xem thông tin chi phí của đơn đặt phòng này!");
             }
         }
-        
+
         java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
         for (com.kawai.models.RoomBookingDetail detail : visibleDetails) {
             List<com.kawai.models.FolioItem> folios = folioItemRepository.findByRoomBookingDetailId(detail.getId());
