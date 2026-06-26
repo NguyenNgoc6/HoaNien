@@ -1,4 +1,4 @@
-package com.kawai.services.impl;
+﻿package com.kawai.services.impl;
 
 import com.kawai.dto.BookingRequestDTO;
 import com.kawai.dto.BookingResponseDTO;
@@ -199,16 +199,9 @@ public class BookingServiceImpl implements BookingService {
         holdBooking.setCancellationDeadline(checkIn.minusDays(2));
         holdBooking.setPersonalPinHash("HOLD_PENDING");
 
-        BigDecimal creditLimit = new BigDecimal("5000000.00"); // Mặc định 5 triệu
-        if (customer.getMembershipTier() != null) {
-            String tier = customer.getMembershipTier().toUpperCase();
-            if (tier.contains("SILVER")) {
-                creditLimit = new BigDecimal("10000000.00"); // 10 triệu
-            } else if (tier.contains("GOLD")) {
-                creditLimit = new BigDecimal("20000000.00"); // 20 triệu
-            } else if (tier.contains("DIAMOND")) {
-                creditLimit = new BigDecimal("50000000.00"); // 50 triệu
-            }
+        BigDecimal creditLimit = new BigDecimal("5000000.00");
+        if (customer.getMembershipTier() != null && customer.getMembershipTier().getCreditLimit() != null) {
+            creditLimit = customer.getMembershipTier().getCreditLimit();
         }
         holdBooking.setCreditLimit(creditLimit);
 
@@ -408,7 +401,8 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void cleanupStaleHolds() {
         LocalDateTime now = LocalDateTime.now();
-        List<RoomBooking> staleHolds = roomBookingRepository.findByBookingStatusAndHoldExpiresAtBefore("Pending_Payment", now);
+        List<RoomBooking> staleHolds = roomBookingRepository
+                .findByBookingStatusAndHoldExpiresAtBefore("Pending_Payment", now);
         if (!staleHolds.isEmpty()) {
             staleHolds.forEach(h -> {
                 h.setBookingStatus("CANCELLED");
@@ -497,19 +491,24 @@ public class BookingServiceImpl implements BookingService {
                         BigDecimal pct = "Percentage".equalsIgnoreCase(promo.getDiscountType())
                                 ? promo.getDiscountValue()
                                 : (baseTotal.compareTo(BigDecimal.ZERO) > 0
-                                        ? promo.getDiscountValue().multiply(new BigDecimal("100")).divide(baseTotal, 2, RoundingMode.HALF_UP)
+                                        ? promo.getDiscountValue().multiply(new BigDecimal("100")).divide(baseTotal, 2,
+                                                RoundingMode.HALF_UP)
                                         : BigDecimal.ZERO);
-                        
+
                         if (pct.compareTo(thresholdVal) > 0) {
-                            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                                    .getContext().getAuthentication();
                             boolean isStaff = auth != null && auth.getAuthorities().stream().anyMatch(a -> {
                                 String r = a.getAuthority();
-                                return r.equals("ROLE_ADMIN") || r.equals("ROLE_MANAGER") || r.equals("ROLE_RECEPTIONIST") || r.equals("ROLE_STAFF");
+                                return r.equals("ROLE_ADMIN") || r.equals("ROLE_MANAGER")
+                                        || r.equals("ROLE_RECEPTIONIST") || r.equals("ROLE_STAFF");
                             });
 
                             if (!isStaff) {
-                                throw new IllegalArgumentException("Mã giảm giá vượt quá mức cho phép đối với khách tự đặt ("
-                                        + thresholdVal + "%). Vui lòng liên hệ Lễ tân để được hỗ trợ đền bù. [ERR_PROMO_THRESHOLD_EXCEEDED]");
+                                throw new IllegalArgumentException(
+                                        "Mã giảm giá vượt quá mức cho phép đối với khách tự đặt ("
+                                                + thresholdVal
+                                                + "%). Vui lòng liên hệ Lễ tân để được hỗ trợ đền bù. [ERR_PROMO_THRESHOLD_EXCEEDED]");
                             }
                             // Nếu là Staff -> Cho qua để hệ thống bắt vào luồng Workflow Treo chờ duyệt.
                         }
@@ -744,23 +743,15 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new BusinessException("FORBIDDEN",
                         "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
-        if ("CANCELLED".equals(booking.getBookingStatus())) {
-            throw new BusinessException("BKG-EXPIRED",
-                    "Đơn đặt phòng này đã bị hủy do quá thời gian thanh toán. Vui lòng đặt lại phòng mới!");
-        }
-
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng!"));
 
         // ══════════════════════════════════════════════════════════════════
-        // SOFT LOCK: User ấn "THANH TOÁN ĐẶT CỌC" → chuyển Pending → HOLD
-        // holdExpiresAt = now + 1 phút (khớp timeout VNPay)
-        // Sau 1 phút không thanh toán → scheduler huỷ → phòng được giải phóng
+        // SOFT LOCK: User ấn "THANH TOÁN ĐẶT CỌC" → chuyển Pending/CANCELLED →
+        // Pending_Payment
         // ══════════════════════════════════════════════════════════════════
-        if ("Pending".equalsIgnoreCase(booking.getBookingStatus())) {
-            // Validate lại phòng trước khi chốt HOLD
-            // Dùng excludeBookingId: booking hiện tại là Pending nên không bị đếm,
-            // nhưng dùng exclude rõ ràng để an toàn trong mọi trường hợp
+        if ("Pending".equalsIgnoreCase(booking.getBookingStatus())
+                || "CANCELLED".equalsIgnoreCase(booking.getBookingStatus())) {
             java.util.List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
             java.util.Map<String, Long> categoryCountMap = details.stream()
                     .collect(java.util.stream.Collectors.groupingBy(d -> d.getCategory().getCategoryName(),
@@ -784,12 +775,12 @@ public class BookingServiceImpl implements BookingService {
             if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
                 booking.setBookingStatus("Pending_Payment");
                 booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(1));
-                log.info("[SOFT_LOCK] Pending→Pending_Payment: bookingId={}, holdExpiresAt={}",
+                log.info("[SOFT_LOCK] Pending/CANCELLED→Pending_Payment: bookingId={}, holdExpiresAt={}",
                         bookingId, booking.getHoldExpiresAt());
             } else {
                 booking.setBookingStatus("Confirmed");
                 booking.setHoldExpiresAt(null);
-                log.info("Pending→Confirmed: bookingId={}", bookingId);
+                log.info("Pending/CANCELLED→Confirmed: bookingId={}", bookingId);
             }
         } else if ("Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
             // User thử lại VNPay (ví dụ back lại trang payment) → refresh timer
@@ -846,15 +837,17 @@ public class BookingServiceImpl implements BookingService {
                     .filter(r -> !"Occupied".equalsIgnoreCase(r.getRoomStatus())
                             && !"Maintenance".equalsIgnoreCase(r.getRoomStatus()))
                     .count();
-            
-            long overlappingNotCheckedIn = roomBookingRepository.countOverlappingNotCheckedIn(catName, checkIn, checkOut);
-                    
+
+            long overlappingNotCheckedIn = roomBookingRepository.countOverlappingNotCheckedIn(catName, checkIn,
+                    checkOut);
+
             return physicallyAvailableToday - overlappingNotCheckedIn;
         } else {
             long physicallyAvailableFuture = roomsInCat.stream()
                     .filter(r -> !"Maintenance".equalsIgnoreCase(r.getRoomStatus()))
                     .count();
-            long overlappingBookings = roomBookingRepository.countOverlappingBookingsByCategoryWithoutExclude(catName, checkIn, checkOut);
+            long overlappingBookings = roomBookingRepository.countOverlappingBookingsByCategoryWithoutExclude(catName,
+                    checkIn, checkOut);
             return Math.min(roomsInCat.size() - overlappingBookings, physicallyAvailableFuture);
         }
     }

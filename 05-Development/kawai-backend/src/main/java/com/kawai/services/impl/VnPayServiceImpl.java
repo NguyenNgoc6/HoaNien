@@ -102,7 +102,15 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan dat coc phong " + bookingId);
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        
+        String returnUrl = vnPayConfig.getReturnUrl();
+        if (returnUrl.contains("?")) {
+            returnUrl += "&bId=" + bookingId;
+        } else {
+            returnUrl += "?bId=" + bookingId;
+        }
+        vnp_Params.put("vnp_ReturnUrl", returnUrl);
+        
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
