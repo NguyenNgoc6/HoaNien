@@ -388,7 +388,7 @@
                                                        th:text="${attendee.customer != null ? attendee.customer.fullName : (attendee.dependent != null ? attendee.dependent.dependentName : 'Khách vãng lai')}">
                                                         Nguyễn Minh Anh
                                                     </p>
-                                                    <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer?.address != null ? attendee.customer.address : 'Huế'}">Hà Nội</p>
+                                                    <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer?.address ?: 'Huế'}">Hà Nội</p>
                                                 </div>
                                             </div>
                                         </td>
