@@ -3,6 +3,7 @@ package com.kawai.services.impl;
 import com.kawai.models.*;
 import com.kawai.repositories.*;
 import com.kawai.services.interfaces.AuthService;
+import com.kawai.services.interfaces.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+import java.util.Map;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -31,42 +35,98 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private WorkflowRepository workflowRepository;
+
+    @Autowired
+    private com.kawai.services.interfaces.WorkflowEngineService workflowEngineService;
+
+    @org.springframework.beans.factory.annotation.Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+
+
     private final Random random = new Random();
 
     @Override
     @Transactional
     public boolean register(String username, String password, String email, String fullName, String gender,
             String phone) {
-        if (accountRepository.existsByUsername(username) || customerRepository.existsByEmail(email)) {
-            return false;
-        }
 
         if (!isValidPassword(password)) {
-            throw new IllegalArgumentException("AUTH-001: Mật khẩu không đủ mạnh");
+            throw new IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự.");
         }
 
-        Role customerRole = roleRepository.findByRoleName("CUSTOMER NORMAL").orElseGet(() -> {
-            Role newRole = new Role();
-            newRole.setRoleName("CUSTOMER NORMAL");
-            return roleRepository.save(newRole);
-        });
+        Account accountToUse = null;
+        Customer customerToUse = null;
 
-        Account account = new Account();
-        account.setUsername(username);
-        account.setPasswordHash(passwordEncoder.encode(password));
-        account.setRole(customerRole);
-        account.setIsActive(true);
-        account = accountRepository.save(account);
+        Optional<Account> existingAccOpt = accountRepository.findByUsername(username);
+        if (existingAccOpt.isPresent()) {
+            Account acc = existingAccOpt.get();
+            if (acc.getIsActive() != null && acc.getIsActive()) {
+                throw new IllegalArgumentException("Tên đăng nhập đã tồn tại!");
+            } else {
+                accountToUse = acc;
+            }
+        }
+        if (phone != null && !phone.trim().isEmpty() && !com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
+            throw new IllegalArgumentException("Invalid phone number format (Must be 10 digits starting with 0)");
+        }
 
-        Customer customer = new Customer();
-        customer.setAccount(account);
-        customer.setFullName(fullName);
-        customer.setEmail(email);
-        customer.setGender(gender);
-        customer.setPhone(phone);
-        customerRepository.save(customer);
+        Optional<Customer> existingCustOpt = customerRepository.findByEmail(email);
+        if (existingCustOpt.isPresent()) {
+            Customer cust = existingCustOpt.get();
+            Account custAcc = cust.getAccount();
+            if (custAcc != null && custAcc.getIsActive() != null && custAcc.getIsActive()) {
+                throw new IllegalArgumentException("Email này đã được sử dụng!");
+            } else if (custAcc != null && (custAcc.getIsActive() == null || !custAcc.getIsActive())) {
+                if (accountToUse != null && !custAcc.getId().equals(accountToUse.getId())) {
+                    throw new IllegalArgumentException("Email này đang chờ xác thực cho một tên đăng nhập khác!");
+                }
+                accountToUse = custAcc;
+                customerToUse = cust;
+            }
+        }
 
-        writeAuditLog(account, "REGISTER", "Accounts", account.getId(), null, "Registered account " + username);
+        if (accountToUse == null) {
+            accountToUse = new Account();
+            accountToUse.setUsername(username);
+            Role customerRole = roleRepository.findByRoleName("CUSTOMER NORMAL")
+                    .or(() -> roleRepository.findByRoleName("CUSTOMER"))
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setRoleName("CUSTOMER");
+                        return roleRepository.save(newRole);
+                    });
+            accountToUse.setRole(customerRole);
+        } else {
+            accountToUse.setUsername(username);
+        }
+
+        accountToUse.setPasswordHash(passwordEncoder.encode(password));
+        accountToUse.setIsActive(false); // Chờ xác thực OTP
+        accountToUse = accountRepository.save(accountToUse);
+
+        if (customerToUse == null) {
+            customerToUse = customerRepository.findByAccount_Username(accountToUse.getUsername())
+                    .orElse(new Customer());
+        }
+
+        customerToUse.setAccount(accountToUse);
+        customerToUse.setFullName(fullName != null && !fullName.trim().isEmpty() ? fullName : username);
+        customerToUse.setEmail(email);
+        customerToUse.setGender(gender != null ? gender : "Other");
+        customerToUse.setPhone(phone != null && !phone.trim().isEmpty() ? phone : "0000000000");
+        customerRepository.save(customerToUse);
+
+        writeAuditLog(accountToUse, "REGISTER", "Accounts", accountToUse.getId(), null,
+                "Registered account " + username);
 
         return true;
     }
@@ -81,8 +141,33 @@ public class AuthServiceImpl implements AuthService {
 
         Account account = optAcc.get();
 
+        int maxAttempts = 5; // default
+        int lockMinutes = 15; // default
+
+        try {
+            Optional<Workflow> activeWfOpt = workflowRepository.findByTriggerEventAndIsActive("ACCOUNT_SECURITY", true)
+                    .stream().findFirst();
+            if (activeWfOpt.isPresent()) {
+                Workflow wf = activeWfOpt.get();
+                if (wf.getConditionsJson() != null && !wf.getConditionsJson().trim().isEmpty()) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Map<String, Object> conds = mapper.readValue(wf.getConditionsJson(),
+                            new TypeReference<Map<String, Object>>() {
+                            });
+                    if (conds.containsKey("failed_login_attempts")) {
+                        maxAttempts = Integer.parseInt(conds.get("failed_login_attempts").toString());
+                    }
+                    if (conds.containsKey("lockout_time_minutes")) {
+                        lockMinutes = Integer.parseInt(conds.get("lockout_time_minutes").toString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // fallback
+        }
+
         if (account.getLockoutTime() != null && account.getLockoutTime().isAfter(LocalDateTime.now())) {
-            throw new IllegalStateException("AUTH-005: Tài khoản bị khóa do nhập sai quá 5 lần");
+            throw new IllegalStateException("AUTH-005: Tài khoản bị khóa do nhập sai quá " + maxAttempts + " lần");
         }
 
         if (passwordEncoder.matches(password, account.getPasswordHash())) {
@@ -95,8 +180,9 @@ public class AuthServiceImpl implements AuthService {
             int attempts = account.getFailedLoginAttempts() != null ? account.getFailedLoginAttempts() : 0;
             attempts++;
             account.setFailedLoginAttempts(attempts);
-            if (attempts >= 5) {
-                account.setLockoutTime(LocalDateTime.now().plusMinutes(15));
+            if (attempts >= maxAttempts) {
+                account.setLockoutTime(LocalDateTime.now().plusMinutes(lockMinutes));
+                account.setIsActive(false);
             }
             accountRepository.save(account);
             writeAuditLog(account, "LOGIN_FAIL", "Accounts", account.getId(), null,
@@ -117,6 +203,25 @@ public class AuthServiceImpl implements AuthService {
         accountRepository.save(account);
 
         writeAuditLog(account, "GENERATE_OTP", "Accounts", account.getId(), null, "OTP generated: " + otp);
+
+        // Gửi email OTP xác nhận đăng ký qua Workflow Engine nếu có cấu hình, ngược lại dùng fallback
+        Customer customer = customerRepository.findByAccount_Username(username).orElse(null);
+        if (customer != null && customer.getEmail() != null) {
+            boolean hasActiveWorkflow = workflowRepository.findByTriggerEventAndIsActive("USER_REGISTRATION_OTP", true).size() > 0;
+            if (hasActiveWorkflow) {
+                Map<String, Object> payload = new java.util.HashMap<>();
+                payload.put("email", customer.getEmail());
+                payload.put("fullName", customer.getFullName());
+                payload.put("otpCode", otp);
+                workflowEngineService.triggerEvent("USER_REGISTRATION_OTP", payload);
+            } else {
+                Map<String, Object> ctx = new java.util.HashMap<>();
+                ctx.put("otpCode", otp);
+                ctx.put("fullName", customer.getFullName());
+                eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this, customer.getEmail(), "Xác nhận đăng ký", "registration-otp", ctx));
+            }
+        }
+
         return otp;
     }
 
@@ -137,6 +242,7 @@ public class AuthServiceImpl implements AuthService {
         if (account.getTwoFactorCode().equals(code)) {
             account.setTwoFactorCode(null);
             account.setTwoFactorExpiry(null);
+            account.setIsActive(true); // <--- Kích hoạt tài khoản
             accountRepository.save(account);
             writeAuditLog(account, "VERIFY_OTP_SUCCESS", "Accounts", account.getId(), null,
                     "OTP verified successfully");
@@ -150,29 +256,58 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public String requestPasswordReset(String email) {
-        Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại"));
+        Account account = null;
+        String username = "";
 
-        Account account = customer.getAccount();
-        if (account == null) {
-            throw new IllegalArgumentException("Account not associated with email");
+        Optional<Customer> optCustomer = customerRepository.findByEmail(email);
+        if (optCustomer.isPresent()) {
+            Customer customer = optCustomer.get();
+            account = customer.getAccount();
+            username = customer.getFullName() != null ? customer.getFullName() : customer.getAccount().getUsername();
+        } else {
+            Optional<Employee> optEmployee = employeeRepository.findByEmail(email);
+            if (optEmployee.isPresent()) {
+                Employee employee = optEmployee.get();
+                account = employee.getAccount();
+                username = employee.getFullName();
+            }
         }
 
-        String token = UUID.randomUUID().toString();
+        if (account == null) {
+            throw new IllegalArgumentException("Email không tồn tại");
+        }
+
+        String token = java.util.UUID.randomUUID().toString();
         account.setResetPasswordToken(token);
-        account.setResetPasswordExpiry(LocalDateTime.now().plusMinutes(15));
+        account.setResetPasswordExpiry(LocalDateTime.now().plusMinutes(10));
         accountRepository.save(account);
 
-        writeAuditLog(account, "RESET_PASSWORD_REQUEST", "Accounts", account.getId(), null, "Reset token: " + token);
+        writeAuditLog(account, "RESET_PASSWORD_REQUEST", "Accounts", account.getId(), null, "Reset Token: " + token);
+
+        // Gửi email chứa OTP đặt lại mật khẩu qua Workflow Engine hoặc fallback
+        boolean hasActiveWorkflow = workflowRepository.findByTriggerEventAndIsActive("USER_PASSWORD_RESET", true).size() > 0;
+        String resetLink = baseUrl + "/auth/reset-password?token=" + token;
+        
+        if (hasActiveWorkflow) {
+            Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("email", email);
+            payload.put("fullName", username);
+            payload.put("otpCode", resetLink);
+            workflowEngineService.triggerEvent("USER_PASSWORD_RESET", payload);
+        } else {
+            Map<String, Object> ctx = new java.util.HashMap<>();
+            ctx.put("resetLink", resetLink);
+            ctx.put("fullName", username);
+            eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this, email, "Đặt lại mật khẩu", "password-reset", ctx));
+        }
+
         return token;
     }
 
     @Override
     @Transactional
     public boolean resetPassword(String token, String newPassword) {
-        Account account = accountRepository.findAll().stream()
-                .filter(a -> token.equals(a.getResetPasswordToken()))
-                .findFirst()
+        Account account = accountRepository.findByResetPasswordToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Token reset hết hạn hoặc không hợp lệ"));
 
         if (account.getResetPasswordExpiry() == null
@@ -200,20 +335,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private boolean isValidPassword(String password) {
-        if (password == null || password.length() < 8)
-            return false;
-        boolean hasUpper = false;
-        boolean hasLower = false;
-        boolean hasDigit = false;
-        for (char c : password.toCharArray()) {
-            if (Character.isUpperCase(c))
-                hasUpper = true;
-            if (Character.isLowerCase(c))
-                hasLower = true;
-            if (Character.isDigit(c))
-                hasDigit = true;
-        }
-        return hasUpper && hasLower && hasDigit;
+        return password != null && password.length() >= 6;
     }
 
     private void writeAuditLog(Account account, String action, String tableName, Long recordId, String oldValue,

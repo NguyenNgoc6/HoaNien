@@ -70,14 +70,14 @@
                 </div>
 
                 <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <a href="/profile" th:if="${isLoggedIn}"
+                    <a href="/profile" th:if="${session.user != null}"
                         class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Profile</a>
-                    <form th:action="@{/auth/logout}" method="post" th:if="${isLoggedIn}" class="inline">
+                    <form th:action="@{/auth/logout}" method="post" th:if="${session.user != null}" class="inline">
                         <button type="submit"
                             class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                     </form>
 
-                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${isLoggedIn}" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
+                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
                     <a href="/booking"
                         class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px]">
                         Book Now
@@ -234,9 +234,41 @@
         </div>
     </div>
 
+    <!-- EndTime Confirm Modal -->
+    <div id="endTimeConfirmModal" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" style="display: none;">
+        <div class="bg-[#1e1a19] border border-amber-400/30 w-full max-w-sm p-8 rounded-2xl text-center shadow-2xl relative font-sans" onclick="event.stopPropagation()">
+            <!-- Icon -->
+            <div class="w-14 h-14 bg-amber-400/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span class="material-symbols-outlined text-3xl">schedule</span>
+            </div>
+
+            <span class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold block mb-2">Thông báo</span>
+            <h3 class="font-serif text-xl text-white mb-3 leading-snug">Chưa nhập giờ kết thúc</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-7 font-light px-2">
+                Quý khách vui lòng nhập thời gian kết thúc. Nếu không, hệ thống sẽ tự động cài đặt thời gian sử dụng là
+                <span class="text-amber-400 font-semibold">1 giờ</span> kể từ khi bắt đầu.
+            </p>
+
+            <div class="flex gap-3">
+                <!-- Từ chối — go back and fill endTime -->
+                <button
+                    onclick="cancelEndTimeAuto()"
+                    class="flex-1 border border-white/20 text-white/80 hover:border-white/50 hover:text-white py-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">
+                    Từ chối
+                </button>
+                <!-- OK — accept auto endTime -->
+                <button
+                    onclick="confirmEndTimeAuto()"
+                    class="flex-1 bg-amber-400 hover:bg-amber-300 text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-all">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script th:inline="javascript">
-        const IS_LOGGED_IN = /*[[${isLoggedIn}]]*/ false;
+        const IS_LOGGED_IN = /*[[${session.user != null}]]*/ false;
     </script>
     <script th:src="@{/guest/js/book-table.js}"></script>
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>

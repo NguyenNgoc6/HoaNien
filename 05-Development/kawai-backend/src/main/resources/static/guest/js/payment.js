@@ -5,7 +5,7 @@
  *  1. Lấy bookingId từ URL param
  *  2. Gọi GET /api/bookings/{id} để lấy chi tiết booking
  *  3. Render Order Summary (bên phải)
- *  4. Submit form → PUT /api/bookings/{id}/customer-info → redirect VNPay hoặc profile
+ *  4. Submit form → POST /api/bookings/{id}/confirm → redirect VNPay hoặc profile
  *  5. Áp mã coupon → POST /api/bookings/{id}/apply-coupon
  *  6. Nút Hủy → DELETE/cancel booking → redirect /booking
  */
@@ -17,10 +17,6 @@ function getBookingIdFromUrl() {
     const id = params.get('bookingId');
     return id ? parseInt(id, 10) : null;
 }
-
-// ── Toast ────────────────────────────────────────────────────────────────────
-
-// ---------------- TOAST NOTIFICATION DELETED (using utils.js) ----------------
 
 // ── Format helpers ───────────────────────────────────────────────────────────
 
@@ -35,8 +31,6 @@ function formatVnDate(dateStr) {
     return `${VI_DAYS[d.getDay()]}, ${d.getDate()} ${VI_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// ---------------- FORMATTING DELETED (using utils.js) ----------------
-
 function nightsBetween(checkIn, checkOut) {
     if (!checkIn || !checkOut) return 0;
     const msPerDay = 86400000;
@@ -45,14 +39,12 @@ function nightsBetween(checkIn, checkOut) {
     ));
 }
 
-// ── State ────────────────────────────────────────────────────────────────────
-
-let bookingData = null;   // data từ API
-let appliedCoupon = null;   // { code, discountAmount }
+let bookingData = null;
+let appliedCoupon = null;
 let paymentTimerInterval = null;
-let isPaymentSubmitted = false; // Add flag to detect intended navigation
+let isPaymentSubmitted = false;
+let canAbandonCheckout = false;
 
-// ── Load Booking Detail ───────────────────────────────────────────────────────
 
 async function loadBookingDetail(bookingId) {
     try {
@@ -66,6 +58,27 @@ async function loadBookingDetail(bookingId) {
             throw new Error('HTTP ' + res.status);
         }
         bookingData = await res.json();
+        
+        const currentStatus = (bookingData.bookingStatus || '').toUpperCase();
+        if (currentStatus === 'PENDING' || currentStatus === 'PENDING_PAYMENT') {
+            canAbandonCheckout = true;
+        } else {
+            canAbandonCheckout = false;
+            isPaymentSubmitted = true; // prevent unload events
+            
+            // Hide the container to prevent interaction
+            const container = document.querySelector('.checkout-container');
+            if (container) container.style.display = 'none';
+            
+            // Redirect based on status
+            if (currentStatus === 'CONFIRMED') {
+                window.location.replace('/profile');
+            } else {
+                window.location.replace('/booking');
+            }
+            return;
+        }
+
         renderOrderSummary(bookingData);
     } catch (e) {
         console.error('loadBookingDetail error:', e);
@@ -104,82 +117,31 @@ function renderOrderSummary(data) {
     const total = data.totalAmount || 0;
 
     const nightLabel = nights > 0 && basePrice > 0
-        ? `(${nights} đêm × ${formatCurrencyWithSymbol(basePrice / (nights || 1))})`
+        ? `(${nights} đêm × ${formatCurrency(basePrice / (nights || 1), true)})`
         : '';
 
     setText('op-price-label', `Giá phòng ${nightLabel}`);
-    setText('op-price-value', formatCurrencyWithSymbol(basePrice));
-    setText('op-service-value', formatCurrencyWithSymbol(servicesFee));
-    setText('op-discount-value', promotion > 0 ? `- ${formatCurrencyWithSymbol(promotion)}` : '0 ₫');
+    setText('op-price-value', formatCurrency(basePrice, true));
+    setText('op-service-value', formatCurrency(servicesFee, true));
+    setText('op-discount-value', promotion > 0 ? `- ${formatCurrency(promotion, true)}` : '0 ₫');
 
     const discountEl = document.getElementById('op-discount-value');
     if (discountEl) discountEl.className = 'value' + (promotion > 0 ? ' discount' : '');
-
-    // Show/hide discount row
     const discountRow = document.getElementById('op-discount-row');
     if (discountRow) discountRow.style.display = promotion > 0 ? 'flex' : 'none';
-
-    // Total
-    setText('op-total-value', formatCurrencyWithSymbol(total));
-
-    // Deposit (30% cọc calculated on backend)
+    setText('op-total-value', formatCurrency(total, true));
     const deposit = data.depositAmount || 0;
-    setText('op-deposit-value', formatCurrencyWithSymbol(deposit));
+    setText('op-deposit-value', formatCurrency(deposit, true));
 
     // Update submit button text with amount
     const btnPay = document.getElementById('btnPayNow');
     if (btnPay) {
         btnPay.setAttribute('data-amount', deposit);
         if (!btnPay.classList.contains('loading')) {
-            btnPay.textContent = `THANH TOÁN ĐẶT CỌC: ${formatCurrencyWithSymbol(deposit)}`;
+            btnPay.textContent = `THANH TOÁN ĐẶT CỌC: ${formatCurrency(deposit, true)}`;
         }
     }
 
-    // Handle timer
-    const timerContainer = document.getElementById('payment-timer-container');
-    const timerEl = document.getElementById('payment-timer');
-
-    if (data.bookingStatus === 'CANCELLED' || (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds <= 0)) {
-        if (timerContainer) timerContainer.classList.add('hidden');
-        if (btnPay) btnPay.disabled = true;
-        showToast('Đơn đặt phòng đã bị hủy do quá hạn thanh toán.', 'error');
-        isPaymentSubmitted = true; // Prevent unload warning
-        setTimeout(() => window.location.href = '/booking', 2500);
-        return;
-    }
-
-    if (data.bookingStatus === 'HOLD' && data.remainingHoldSeconds > 0) {
-        if (timerContainer) timerContainer.classList.remove('hidden');
-        startPaymentTimer(data.remainingHoldSeconds, timerEl);
-    }
-}
-
-function startPaymentTimer(seconds, timerEl) {
-    if (paymentTimerInterval) clearInterval(paymentTimerInterval);
-
-    const targetEndTime = Date.now() + seconds * 1000;
-
-    const updateTimer = () => {
-        const remainingMs = targetEndTime - Date.now();
-        const remainingSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-
-        if (remainingSeconds <= 0) {
-            clearInterval(paymentTimerInterval);
-            timerEl.textContent = '00:00';
-            const btnPayNow = document.getElementById('btnPayNow');
-            if (btnPayNow) btnPayNow.disabled = true;
-            showToast('Đã hết thời gian thanh toán! Đơn phòng đã bị hủy.', 'error');
-            isPaymentSubmitted = true; // Prevent unload warning
-            setTimeout(() => window.location.href = '/booking', 2500);
-            return;
-        }
-        const m = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
-        const s = (remainingSeconds % 60).toString().padStart(2, '0');
-        timerEl.textContent = `${m}:${s}`;
-    };
-
-    updateTimer(); // Initialize immediately so it doesn't show --:-- for 1 second
-    paymentTimerInterval = setInterval(updateTimer, 1000);
 }
 
 function setText(id, val) {
@@ -211,7 +173,7 @@ async function applyCoupon() {
 
         if (res.ok && data.status === 'success') {
             appliedCoupon = { code, discountAmount: data.discountAmount };
-            showCouponMsg(`Áp dụng thành công! Giảm ${formatCurrencyWithSymbol(data.discountAmount)}`, true);
+            showCouponMsg(`Áp dụng thành công! Giảm ${formatCurrency(data.discountAmount, true)}`, true);
             // Reload booking detail to get updated totals
             await loadBookingDetail(bookingId);
         } else {
@@ -247,7 +209,6 @@ function validateForm() {
     const fields = [
         { id: 'fieldFullName', label: 'Họ và tên' },
         { id: 'fieldPhone', label: 'Số điện thoại' },
-        { id: 'fieldCccd', label: 'CCCD / Căn cước công dân' },
         { id: 'fieldEmail', label: 'Email' },
     ];
     for (const f of fields) {
@@ -280,14 +241,14 @@ async function submitPayment() {
     btn.classList.add('loading');
     btn.textContent = 'ĐANG XỬ LÝ...';
 
+    const methodEl = document.querySelector('input[name="paymentMethod"]:checked');
     const payload = {
         fullName: document.getElementById('fieldFullName')?.value?.trim(),
         phone: document.getElementById('fieldPhone')?.value?.trim(),
-        cccd: document.getElementById('fieldCccd')?.value?.trim(),
         email: document.getElementById('fieldEmail')?.value?.trim(),
         address: document.getElementById('fieldAddress')?.value?.trim() || null,
         notes: document.getElementById('fieldNotes')?.value?.trim() || null,
-        paymentMethod: 'VNPAY',
+        paymentMethod: methodEl ? methodEl.value : 'VNPAY',
         couponCode: appliedCoupon?.code || null,
     };
 
@@ -313,7 +274,7 @@ async function submitPayment() {
             btn.disabled = false;
             btn.classList.remove('loading');
             const depAmount = btn.getAttribute('data-amount');
-            btn.textContent = depAmount ? `THANH TOÁN ĐẶT CỌC: ${formatCurrencyWithSymbol(depAmount)}` : 'THANH TOÁN NGAY';
+            btn.textContent = depAmount ? `THANH TOÁN ĐẶT CỌC: ${formatCurrency(depAmount, true)}` : 'THANH TOÁN NGAY';
             // Re-check terms
             const cb = document.getElementById('termsCheck');
             if (cb?.checked) btn.classList.add('active');
@@ -324,7 +285,7 @@ async function submitPayment() {
         btn.disabled = false;
         btn.classList.remove('loading');
         const depAmount = btn.getAttribute('data-amount');
-        btn.textContent = depAmount ? `THANH TOÁN ĐẶT CỌC: ${formatCurrencyWithSymbol(depAmount)}` : 'THANH TOÁN NGAY';
+        btn.textContent = depAmount ? `THANH TOÁN ĐẶT CỌC: ${formatCurrency(depAmount, true)}` : 'THANH TOÁN NGAY';
         const cb = document.getElementById('termsCheck');
         if (cb?.checked) btn.classList.add('active');
     }
@@ -356,20 +317,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Cảnh báo khi người dùng rời khỏi trang và hủy đơn
+    // Hiển thị thông báo xác nhận khi cố gắng thoát trang
     window.addEventListener('beforeunload', (e) => {
-        if (!isPaymentSubmitted && bookingData && bookingData.bookingStatus === 'HOLD' && bookingData.remainingHoldSeconds > 0) {
-            // Hiển thị thông báo xác nhận rời trang mặc định của trình duyệt
+        if (canAbandonCheckout && !isPaymentSubmitted && bookingId) {
             e.preventDefault();
-            e.returnValue = '';
+            e.returnValue = 'Đơn đặt phòng của bạn sẽ bị hủy nếu bạn rời khỏi trang này. Bạn có chắc chắn muốn thoát?';
         }
     });
 
-    // Thực hiện gọi API hủy đơn khi thực sự rời trang
-    window.addEventListener('pagehide', (e) => {
-        if (!isPaymentSubmitted && bookingData && bookingData.bookingStatus === 'HOLD' && bookingData.remainingHoldSeconds > 0) {
-            // Sử dụng sendBeacon để đảm bảo request được gửi đi ngay cả khi trang đóng
+    // Hủy đơn đặt phòng ngay lập tức khi khách hàng rời khỏi trang (thoát, back, reload)
+    window.addEventListener('pagehide', () => {
+        if (canAbandonCheckout && !isPaymentSubmitted && bookingId) {
             navigator.sendBeacon(`/api/bookings/${bookingId}/cancel`);
         }
     });
+
 });

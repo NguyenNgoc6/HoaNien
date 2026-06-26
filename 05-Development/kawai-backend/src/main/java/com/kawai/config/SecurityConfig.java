@@ -21,7 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -61,21 +64,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ops-login", "/admin-backdoor").permitAll()
-                        // .access(new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
-                        //         "hasIpAddress('192.168.1.0/24')"))
+                        // .access(new
+                        // org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
+                        // "hasIpAddress('192.168.1.0/24')"))
 
                         .requestMatchers("/", "/booking", "/auth/register", "/auth/login", "/auth/check-session",
-                                "/auth/google-login",
-                                "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/living", "/wellbeing", "/dining",
+                                "/auth/google-login", "/auth/forgot-password", "/auth/reset-password", "/auth/manual-logout",
+                                "/api/v1/auth/**",
+                                "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/uploads/**", "/api/v1/upload",
+                                "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
-                                "/fbStaff/**", "/f&bStaff/**", "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**", "/api/pos/**",
+                                "/fbStaff/**", "/f&bStaff/**", "/kitchenStaff/**", "/api/menu-items/**", "/api/rooms/**",
+                                "/api/v1/tables/**", "/api/pos/**",
                                 "/api/bookings", "/api/bookings/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error",
-                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn", 
+                                "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn",
                                 "/api/v1/payments/food-order/**", "/book-table")
                         .permitAll()
 
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/tourguide/**").hasRole("TOURGUIDE")
@@ -92,10 +99,10 @@ public class SecurityConfig {
                         .permitAll())
 
                 .oauth2Login(oauth2 -> oauth2
-                         .loginPage("/booking")
-                         .userInfoEndpoint(userInfo -> userInfo
-                                 .userService(customOAuth2UserService))
-                         .successHandler(oAuth2SuccessHandler))
+                        .loginPage("/booking")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler))
 
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
@@ -110,14 +117,18 @@ public class SecurityConfig {
     public org.springframework.security.web.authentication.AuthenticationFailureHandler authenticationFailureHandler() {
         return (request, response, exception) -> {
             String referer = request.getHeader("Referer");
+            String errorType = "invalid";
+            if (exception instanceof org.springframework.security.authentication.DisabledException || exception instanceof org.springframework.security.authentication.LockedException) {
+                errorType = "locked";
+            }
             if (referer != null && !referer.trim().isEmpty() && !referer.contains("/ops-login")) {
                 if (referer.contains("?")) {
-                    response.sendRedirect(referer + "&login_error=true");
+                    response.sendRedirect(referer + "&login_error=true&error_type=" + errorType);
                 } else {
-                    response.sendRedirect(referer + "?login_error=true");
+                    response.sendRedirect(referer + "?login_error=true&error_type=" + errorType);
                 }
             } else {
-                response.sendRedirect("/ops-login?error=true");
+                response.sendRedirect("/ops-login?error=true&error_type=" + errorType);
             }
         };
     }
@@ -127,7 +138,13 @@ public class SecurityConfig {
         return (request, response, authentication) -> {
             String referer = request.getHeader("Referer");
             if (referer != null && !referer.trim().isEmpty()) {
-                response.sendRedirect(referer);
+                if (referer.contains("/admin") || referer.contains("/manager") || referer.contains("/receptionist") || referer.contains("/fbStaff") || referer.contains("/kitchenStaff") || referer.contains("/tourguide") || referer.contains("/ops-login")) {
+                    response.sendRedirect("/ops-login");
+                } else if (referer.contains("/payment") || referer.contains("/profile")) {
+                    response.sendRedirect("/booking");
+                } else {
+                    response.sendRedirect(referer);
+                }
             } else {
                 response.sendRedirect("/");
             }
@@ -157,9 +174,25 @@ public class SecurityConfig {
 
                 if (isOpsUser) {
                     if (!isFromOpsPortal) {
-                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                                .logout(request, response, authentication);
-                        response.sendRedirect("/booking?login_error=true");
+                        request.getSession().invalidate();
+                        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                        response.sendRedirect("/booking?login_error=true&error_type=invalid");
+                        return;
+                    }
+                    
+                    // Device Authorization Check
+                    java.util.Optional<com.kawai.models.AuthorizedDevice> optDevice = authorizedDeviceRepository.findByDeviceCode(deviceId);
+                    if (optDevice.isEmpty()) {
+                        // Tạm thời auto-approve thiết bị mới trong quá trình dev
+                        com.kawai.models.AuthorizedDevice newDevice = new com.kawai.models.AuthorizedDevice();
+                        newDevice.setDeviceCode(deviceId);
+                        newDevice.setIsApproved(true);
+                        authorizedDeviceRepository.save(newDevice);
+                    } else if (!optDevice.get().getIsApproved()) {
+                        request.getSession().invalidate();
+                        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                        request.getSession().setAttribute("authError", "Thiết bị của bạn không được cấp phép hoặc đã bị khóa.");
+                        response.sendRedirect("/ops-login?error=unauthorized_device");
                         return;
                     }
 
@@ -182,7 +215,12 @@ public class SecurityConfig {
                             redirect = "/receptionist/dashboard";
                             break;
                         } else if (role.equals("ROLE_FB_STAFF")) {
-                            redirect = "/fbStaff/dashboard";
+                            Account acc = accountRepository.findByUsername(authentication.getName()).orElse(null);
+                            if (acc != null && "F&B KITCHEN".equalsIgnoreCase(acc.getRole().getRoleName())) {
+                                redirect = "/kitchenStaff/dashboard";
+                            } else {
+                                redirect = "/fbStaff/dashboard";
+                            }
                             break;
                         } else if (role.equals("ROLE_TOURGUIDE")) {
                             redirect = "/tourguide/dashboard";
@@ -193,8 +231,9 @@ public class SecurityConfig {
                 } else {
                     // Normal Customer / Guest
                     if (isFromOpsPortal) {
-                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                                .logout(request, response, authentication);
+                        // Guest tried to log in from Ops portal
+                        request.getSession().invalidate();
+                        org.springframework.security.core.context.SecurityContextHolder.clearContext();
                         response.sendRedirect("/ops-login?error=true");
                         return;
                     }

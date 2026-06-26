@@ -4,4 +4,12 @@ import java.math.BigDecimal;
 
 public interface PosService {
     void chargeToRoom(String roomNumber, BigDecimal amount);
+    
+    com.kawai.models.FoodOrder createOrder(com.kawai.dto.CreateFoodOrderRequest request, String userIdentifier);
+    
+    com.kawai.models.FoodOrder payOrder(Long id);
+    
+    void addItemsToOrder(Long orderId, java.util.List<com.kawai.dto.CartItemDto> items);
+
+    void updateOrderStatus(Long orderId, String status);
 }
