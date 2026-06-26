@@ -82,7 +82,7 @@ public class SecurityConfig {
                                 "/api/v1/payments/food-order/**", "/book-table")
                         .permitAll()
 
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/tourguide/**").hasRole("TOURGUIDE")
@@ -174,19 +174,7 @@ public class SecurityConfig {
 
                 if (isOpsUser) {
                     if (!isFromOpsPortal) {
-                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                                .logout(request, response, authentication);
-
-                        String referer = request.getHeader("Referer");
-                        if (referer != null && !referer.trim().isEmpty() && !referer.contains("/ops-login")) {
-                            if (referer.contains("?")) {
-                                response.sendRedirect(referer + "&login_error=true");
-                            } else {
-                                response.sendRedirect(referer + "?login_error=true");
-                            }
-                        } else {
-                            response.sendRedirect("/booking?login_error=true");
-                        }
+                        response.sendRedirect("/booking?login_error=true");
                         return;
                     }
 
@@ -225,9 +213,9 @@ public class SecurityConfig {
                 } else {
                     // Normal Customer / Guest
                     if (isFromOpsPortal) {
-                        new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                                .logout(request, response, authentication);
-                        response.sendRedirect("/ops-login?error=true");
+                        // Guest tried to log in from Ops portal
+                        // Redirect them to the Guest portal
+                        response.sendRedirect("/booking");
                         return;
                     }
 
