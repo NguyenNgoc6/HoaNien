@@ -379,13 +379,15 @@
                                         <td class="py-6 px-4">
                                             <div class="flex items-center gap-3">
                                                  <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'KH')}"
-                                                     class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm"
-                                                     th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}">
+                                                     class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm cursor-pointer hover:scale-105 transition-all"
+                                                     th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
+                                                     th:onclick="|showCustomerContactModal('${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}', '#EVN-00${attendee.id}', '${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}', '${attendee.customer?.email ?: '--'}', 'Phòng ${100 + (attendee.id != null ? attendee.id % 20 : 0)}', '${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}')|">
                                                      NM
                                                  </div>
                                                 <div>
                                                     <p class="font-body-md font-semibold text-on-surface cursor-pointer hover:underline animate-none"
-                                                       th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}">
+                                                       th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                       th:onclick="|showCustomerContactModal('${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}', '#EVN-00${attendee.id}', '${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}', '${attendee.customer?.email ?: '--'}', 'Phòng ${100 + (attendee.id != null ? attendee.id % 20 : 0)}', '${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}')|">
                                                         Nguyễn Minh Anh
                                                     </p>
                                                     <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}">Hà Nội</p>
@@ -420,6 +422,49 @@
                                 <span class="material-symbols-outlined text-[48px] text-beige-decorative mb-4">groups</span>
                                 <p class="font-body-md text-on-surface-variant">Không có hành khách nào đăng ký hôm nay.</p>
                             </div>
+                        </div>
+                    </div>
+                    <!-- Announcement / Banner -->
+                    <div class="glass-panel p-8 rounded-lg border-primary/10 space-y-6">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">report_problem</span>
+                            <h4 class="font-display-md text-[28px] text-primary">Báo cáo sự cố</h4>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="font-label-md text-on-surface-variant/70">Mô tả sự cố</label>
+                            <textarea
+                                id="incident-description"
+                                class="w-full bg-surface-container/30 border-none rounded-lg p-4 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none min-h-[120px]"
+                                placeholder="Nhập chi tiết sự cố tại đây..."></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button
+                                onclick="submitIncidentReport()"
+                                class="px-8 py-3 rounded-full bg-primary text-white font-label-md text-label-md shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-semibold">
+                                Gửi báo cáo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-8 rounded-lg relative overflow-hidden group">
+                        <div class="relative z-10 flex flex-col h-full justify-between">
+                            <div class="max-w-md">
+                                <h4 class="font-display-md text-[28px] text-primary mb-2">Thông tin Quan trọng (Lưu ý)</h4>
+                                <p class="font-body-md text-on-surface-variant/70">Yêu cầu tất cả nhân viên kiểm tra
+                                    thiết bị quét khuôn mặt trước giờ đón khách 30 phút. Báo cáo ngay nếu có sự cố xảy ra.</p>
+                            </div>
+                            <div class="flex items-center gap-4 mt-8">
+                                <button
+                                    class="px-6 py-2 rounded-full bg-on-background text-white font-label-md text-label-md hover:opacity-90 transition-all">Xem
+                                    chi tiết</button>
+                                <button
+                                    class="px-6 py-2 rounded-full border border-primary/20 text-primary font-label-md text-label-md hover:bg-primary/5 transition-all">Bỏ
+                                    qua</button>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute right-0 top-0 w-1/3 h-full opacity-20 group-hover:opacity-30 transition-opacity duration-700 mix-blend-overlay">
+                            <img alt="Lavender" class="w-full h-full object-cover"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeLvciBkxzpqCj99jbhYDz-jWK36X0hiX6zOFGSREI9SK6R5-Vo7lRAKfEd6Z3Wr_hSC3C__jVEYbxzQbBA-UkwdGxwaQrHu6isYZl1ibWqp4M42CGW_uMKaNtNYsHjycv_UNAjCuOeuZY4xTpjnAdYN6JsWf65fvEvvXEIJ9vCn5SP80Tgu7X6wUXuynSbPC_s_W9jdb69eSOlgBl2aRhYQQeMe7ukL-J4tGjtg1WlG9E3UW6GzWv8GF0Xi9HHgxqHfeX3CjWgZ8">
                         </div>
                     </div>
                 </div>
@@ -598,6 +643,71 @@
                         <button type="submit" class="w-full py-3 bg-[#BFAC8F] text-white font-label-caps text-[11px] hover:bg-[#BFAC8F]/90 transition-all tracking-wider font-semibold">TẠO HỒ SƠ</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Contact Modal -->
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"
+        id="customer-contact-modal">
+        <div class="max-w-md w-full mx-4 p-8 rounded-xl shadow-xl relative overflow-hidden bg-[#fdfbf7] border border-[#3a3230]/20 text-[#372618]">
+            <button class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors focus:outline-none"
+                onclick="closeCustomerContactModal()">
+                <span class="material-symbols-outlined text-2xl text-[#372618]">close</span>
+            </button>
+            <div class="flex flex-col items-center text-center space-y-6">
+                <div
+                    class="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 ring-8 ring-primary/5 bg-[#eedeea] flex items-center justify-center text-primary font-bold">
+                    <span class="font-display-md text-primary text-[40px]" id="modal-avatar-placeholder"></span>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="font-display-md text-[32px] text-primary font-bold" id="modal-customer-name"></h2>
+                    <p class="font-label-md text-primary uppercase tracking-widest font-semibold" id="modal-customer-id"></p>
+                </div>
+                <div class="w-full space-y-4 text-left">
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-primary/5">
+                        <span class="material-symbols-outlined text-primary">call</span>
+                        <div>
+                            <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Điện thoại</p>
+                            <p class="font-body-md text-on-surface" id="modal-customer-phone">+84 900 000 000</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-primary/5">
+                        <span class="material-symbols-outlined text-primary">mail</span>
+                        <div>
+                            <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Email</p>
+                            <p class="font-body-md text-on-surface" id="modal-customer-email">customer@example.com</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-primary/5">
+                        <span class="material-symbols-outlined text-primary">meeting_room</span>
+                        <div>
+                            <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Số phòng</p>
+                            <p class="font-body-md text-on-surface" id="modal-customer-room">Phòng 302</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-primary/5">
+                        <span class="material-symbols-outlined text-primary">location_on</span>
+                        <div>
+                            <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Phân loại</p>
+                            <p class="font-body-md text-on-surface" id="modal-customer-detail">Regular</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <button
+                        onclick="alert('Đang kết nối cuộc gọi đến khách hàng...')"
+                        class="flex items-center justify-center gap-2 py-3 rounded-full bg-primary text-white font-label-md hover:opacity-90 transition-all font-semibold text-[13px]">
+                        <span class="material-symbols-outlined text-[18px]">call</span>
+                        Gọi điện
+                    </button>
+                    <button
+                        onclick="alert('Đang mở hộp thoại chat với khách hàng...')"
+                        class="flex items-center justify-center gap-2 py-3 rounded-full border border-primary/20 text-primary font-label-md hover:bg-primary/5 transition-all font-semibold text-[13px]">
+                        <span class="material-symbols-outlined text-[18px]">chat</span>
+                        Gửi tin nhắn
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -867,6 +977,43 @@
 
         function closeGuideSettingsModal() {
             document.getElementById('guideSettingsModal').classList.add('hidden');
+        }
+
+        function showCustomerContactModal(name, id, phone, email, room, detail) {
+            document.getElementById('modal-customer-name').textContent = name;
+            document.getElementById('modal-customer-id').textContent = id;
+            document.getElementById('modal-customer-phone').textContent = phone;
+            document.getElementById('modal-customer-email').textContent = email;
+            document.getElementById('modal-customer-room').textContent = room;
+            document.getElementById('modal-customer-detail').textContent = detail;
+            
+            // Extract initials from name
+            const nameParts = name.trim().split(/\s+/);
+            let initials = 'KH';
+            if (nameParts.length >= 2) {
+                initials = (nameParts[nameParts.length - 2][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+            } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                initials = nameParts[0].substring(0, Math.min(2, nameParts[0].length)).toUpperCase();
+            }
+            document.getElementById('modal-avatar-placeholder').textContent = initials;
+            
+            const modal = document.getElementById('customer-contact-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeCustomerContactModal() {
+            const modal = document.getElementById('customer-contact-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function submitIncidentReport() {
+            const desc = document.getElementById('incident-description').value.trim();
+            if (!desc) {
+                alert('Vui lòng nhập mô tả sự cố.');
+                return;
+            }
+            alert('Báo cáo sự cố đã được gửi thành công đến Ban Quản lý Resort HoaNien!');
+            document.getElementById('incident-description').value = '';
         }
 
         document.addEventListener('DOMContentLoaded', loadModels);
