@@ -174,7 +174,7 @@
         .camera-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 4/5;
+            aspect-ratio: 4/3;
             background: #1a1510;
             overflow: hidden;
         }
@@ -491,7 +491,7 @@
                                 <h5 class="font-headline-md text-[20px] text-on-surface">Điểm danh FaceID</h5>
                             </div>
                             <!-- Camera Scanning Frame (Squircle) -->
-                            <div class="relative aspect-[4/5] bg-[#1a151a] rounded-xl overflow-hidden shadow-xl border-[12px] border-surface-container-low camera-container" id="camera-container">
+                            <div class="relative aspect-[4/3] bg-[#1a151a] rounded-xl overflow-hidden shadow-xl border-[12px] border-surface-container-low camera-container" id="camera-container">
                                 <video id="camera-video" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover z-0"></video>
                                 <canvas id="camera-canvas" class="hidden"></canvas>
                                 <img id="captured-image" class="absolute inset-0 w-full h-full object-cover hidden z-0" alt="Captured">
