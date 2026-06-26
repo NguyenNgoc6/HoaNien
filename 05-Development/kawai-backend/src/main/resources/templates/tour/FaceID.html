@@ -709,13 +709,13 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4 w-full">
                     <button
-                        onclick="alert('Đang kết nối cuộc gọi đến khách hàng...')"
+                        onclick="showToast('Đang kết nối cuộc gọi đến khách hàng...', 'info')"
                         class="flex items-center justify-center gap-2 py-3 rounded-full bg-primary text-white font-label-md hover:opacity-90 transition-all font-semibold text-[13px]">
                         <span class="material-symbols-outlined text-[18px]">call</span>
                         Gọi điện
                     </button>
                     <button
-                        onclick="alert('Đang mở hộp thoại chat với khách hàng...')"
+                        onclick="showToast('Đang mở hộp thoại chat với khách hàng...', 'info')"
                         class="flex items-center justify-center gap-2 py-3 rounded-full border border-primary/20 text-primary font-label-md hover:bg-primary/5 transition-all font-semibold text-[13px]">
                         <span class="material-symbols-outlined text-[18px]">chat</span>
                         Gửi tin nhắn
@@ -724,6 +724,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-24 right-8 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Script Section -->
     <script>
@@ -811,7 +814,7 @@
                 document.getElementById('btn-reset').disabled = false;
             } catch (err) {
                 console.error('Camera error:', err);
-                alert('Không thể truy cập camera');
+                showToast('Không thể truy cập camera. Vui lòng kiểm tra quyền thiết bị.', 'error');
             }
         }
 
@@ -964,7 +967,7 @@
                 });
                 const data = await resp.json();
                 if (data.success) {
-                    alert(data.name + ' đã được điểm danh.');
+                    showToast(data.name + ' đã được điểm danh thành công!', 'success');
                     window.location.href = '/tourguide/dashboard?scanned=true';
                 }
             } catch (e) {
@@ -1029,14 +1032,89 @@
         function submitIncidentReport() {
             const desc = document.getElementById('incident-description').value.trim();
             if (!desc) {
-                alert('Vui lòng nhập mô tả sự cố.');
+                showToast('Vui lòng nhập mô tả sự cố.', 'warning');
                 return;
             }
-            alert('Báo cáo sự cố đã được gửi thành công đến Ban Quản lý Resort HoaNien!');
+            showToast('Báo cáo sự cố đã được gửi thành công đến Ban Quản lý Resort HoaNien!', 'success');
             document.getElementById('incident-description').value = '';
         }
 
-        document.addEventListener('DOMContentLoaded', loadModels);
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 translate-x-12 opacity-0 pointer-events-auto max-w-sm';
+            
+            let icon = 'check_circle';
+            let iconColor = 'text-green-500';
+            let borderColor = 'border-green-500/20';
+            let bgColor = 'bg-[#fdfbf7]/95';
+            
+            if (type === 'error') {
+                icon = 'cancel';
+                iconColor = 'text-red-500';
+                borderColor = 'border-red-500/20';
+            } else if (type === 'warning') {
+                icon = 'warning';
+                iconColor = 'text-amber-500';
+                borderColor = 'border-amber-500/20';
+            } else if (type === 'info') {
+                icon = 'info';
+                iconColor = 'text-primary';
+                borderColor = 'border-primary/20';
+            }
+
+            toast.className += ` ${borderColor} ${bgColor}`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined ${iconColor} text-[20px]">${icon}</span>
+                <p class="font-body-md font-medium text-on-surface text-sm leading-tight">${message}</p>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-12', 'opacity-0');
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-12', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadModels();
+            
+            // Check for toast redirects
+            const urlParams = new URLSearchParams(window.location.search);
+            const toastParam = urlParams.get('toast');
+            if (toastParam) {
+                if (toastParam === 'update_success') {
+                    showToast('Cập nhật hồ sơ hướng dẫn viên thành công!', 'success');
+                } else if (toastParam === 'create_success') {
+                    showToast('Tạo hồ sơ hướng dẫn viên thành công!', 'success');
+                } else if (toastParam === 'delete_success') {
+                    showToast('Xóa hồ sơ hướng dẫn viên thành công!', 'success');
+                }
+                // Clean url parameters
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+            
+            const scannedParam = urlParams.get('scanned');
+            if (scannedParam === 'true') {
+                showToast('Điểm danh khách hàng thành công!', 'success');
+                // Clean url parameters
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        });
     </script>
 </body>
 
