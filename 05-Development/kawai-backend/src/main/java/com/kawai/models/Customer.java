@@ -27,6 +27,8 @@ public class Customer {
     @ManyToOne
     @JoinColumn(name = "membership_tier_id", nullable = false)
     private MembershipTier membershipTier;
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
     public Long getId() {
         return id;
@@ -98,5 +100,13 @@ public class Customer {
 
     public void setMembershipTier(MembershipTier v) {
         this.membershipTier = v;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }
