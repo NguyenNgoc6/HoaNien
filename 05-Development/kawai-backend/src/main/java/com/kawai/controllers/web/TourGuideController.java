@@ -190,6 +190,15 @@ public class TourGuideController {
         return "tour/Tour";
     }
 
+    @GetMapping("/feedback")
+    public String feedback(Principal principal, Model model) {
+        model.addAttribute("isLoggedIn", principal != null);
+        if (principal != null) {
+            model.addAttribute("username", principal.getName());
+        }
+        return "tour/Feedback";
+    }
+
     @GetMapping("/doantu")
     public String doanTu(Principal principal, Model model) {
         model.addAttribute("isLoggedIn", principal != null);
