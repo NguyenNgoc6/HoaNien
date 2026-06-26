@@ -8,9 +8,7 @@
     <title>Lịch Trình Tổng Thể - TourGuide Pro</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&amp;family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;display=swap"
         rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
@@ -27,8 +25,7 @@
         h1,
         h2,
         h3,
-        h4,
-        .font-headline {
+        h4 {
             font-family: 'Bodoni Moda', serif;
         }
 
@@ -154,7 +151,8 @@
                         "display-lg": ["Bodoni Moda"],
                         "label-sm": ["Plus Jakarta Sans"],
                         "headline-lg": ["Bodoni Moda"],
-                        "label-md": ["Plus Jakarta Sans"]
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline": ["EB Garamond", "serif"]
                     },
                     "fontSize": {
                         "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "500" }],
@@ -179,7 +177,7 @@
         class="w-full h-20 fixed top-0 left-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-white/20 px-margin-desktop flex items-center justify-between">
         <div class="flex items-center gap-12">
             <div class="flex flex-col">
-                <h1 class="font-display-md text-[32px] text-primary tracking-tight leading-tight">HoaNien</h1>
+                <h1 class="font-headline text-[32px] italic tracking-tighter text-primary leading-tight cursor-pointer" onclick="window.location.href='/'">HoaNien</h1>
                 <p class="font-label-sm text-[10px] text-on-surface-variant/60 -mt-1">Retreat Resort &amp; Hub</p>
             </div>
             <nav class="flex items-center gap-2">
@@ -230,7 +228,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12">
                 <div>
                     <h1 class="font-display-lg text-5xl text-on-surface mb-2 tracking-tight">Lịch Trình Tổng Thể</h1>
-                    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">Quản lý và theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
+                    <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant max-w-xl">Quản lý và theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
                 </div>
                 <div class="flex gap-1 glass-surface p-1 rounded-full">
                     <button
@@ -277,7 +275,7 @@
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Hành trình Đoàn Tụ - Huế</h3>
-                                            <p class="text-on-surface-variant font-body-md text-body-md">Hành trình tìm lại những nét cổ kính văn hóa xưa cũ tại cố đô.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Hành trình tìm lại những nét cổ kính văn hóa xưa cũ tại cố đô.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
@@ -313,7 +311,7 @@
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Kiến trúc Twilight &amp; Nghệ thuật Bản địa</h3>
-                                            <p class="text-on-surface-variant font-body-md text-body-md">Khám phá nét độc đáo trong thiết kế và văn hoá.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Khám phá nét độc đáo trong thiết kế và văn hoá.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
@@ -359,7 +357,7 @@
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Chèo thuyền ngắm Hoàng hôn Dọc sông Tím</h3>
-                                            <p class="text-on-surface-variant font-body-md text-body-md">Trải nghiệm thư giãn tuyệt đối giữa thiên nhiên.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Trải nghiệm thư giãn tuyệt đối giữa thiên nhiên.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
@@ -434,13 +432,13 @@
                                 <div
                                     class="flex items-start gap-3 p-4 rounded-xl bg-primary-container/10 border-l-4 border-primary">
                                     <span class="material-symbols-outlined text-primary mt-0.5">info</span>
-                                    <p class="text-label-sm font-body-md text-on-surface leading-relaxed">Đoàn khách Singapore yêu cầu hướng dẫn viên nói được tiếng Trung cơ bản.</p>
+                                    <p class="font-headline text-base font-light text-on-surface leading-relaxed">Đoàn khách Singapore yêu cầu hướng dẫn viên nói được tiếng Trung cơ bản.</p>
                                 </div>
                                 <div
                                     class="flex items-start gap-3 p-4 rounded-xl bg-surface-container-low border-l-4 border-outline">
                                     <span
                                         class="material-symbols-outlined text-on-surface-variant mt-0.5">warning</span>
-                                    <p class="text-label-sm font-body-md text-on-surface-variant leading-relaxed">Dự báo có mưa nhẹ vào lúc 16:30, chuẩn bị phương án dự phòng cho tour sông.</p>
+                                    <p class="font-headline text-base font-light text-on-surface-variant leading-relaxed">Dự báo có mưa nhẹ vào lúc 16:30, chuẩn bị phương án dự phòng cho tour sông.</p>
                                 </div>
                             </div>
                         </div>

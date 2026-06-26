@@ -7,7 +7,7 @@
     <title>HoaNien Resort | Guide Portal - Điểm danh</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;display=swap"
         rel="stylesheet">
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
@@ -93,7 +93,8 @@
                         "label-md": ["Plus Jakarta Sans"],
                         "headline-md": ["Bodoni Moda"],
                         "display-md": ["Bodoni Moda"],
-                        "body-md": ["Plus Jakarta Sans"]
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline": ["EB Garamond", "serif"]
                     },
                     "fontSize": {
                         "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
@@ -246,7 +247,7 @@
             class="w-full h-20 fixed top-0 left-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-white/20 px-margin-desktop flex items-center justify-between">
             <div class="flex items-center gap-12">
                 <div class="flex flex-col">
-                    <h1 class="font-display-md text-[32px] text-primary tracking-tight leading-tight">HoaNien</h1>
+                    <h1 class="font-headline text-[32px] italic tracking-tighter text-primary leading-tight cursor-pointer" onclick="window.location.href='/'">HoaNien</h1>
                     <p class="font-label-sm text-[10px] text-on-surface-variant/60 -mt-1">Retreat Resort &amp; Hub</p>
                 </div>
                 <nav class="flex items-center gap-2">
@@ -319,7 +320,7 @@
             <!-- Header -->
             <div class="space-y-2">
                 <h3 class="font-headline-lg text-headline-lg text-on-surface">Quản lý Đoàn Khách</h3>
-                <p class="font-body-md text-on-surface-variant/70">Theo dõi trạng thái và thực hiện điểm danh tự động qua FaceID.</p>
+                <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/70">Theo dõi trạng thái và thực hiện điểm danh tự động qua FaceID.</p>
             </div>
             <!-- Grid Layout -->
             <div class="grid grid-cols-12 gap-8 items-start">
@@ -330,7 +331,7 @@
                         <div class="flex justify-between items-start w-full">
                             <div class="space-y-1">
                                 <h4 class="font-display-md text-[32px] text-primary leading-tight" th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
-                                <p class="font-body-md text-on-surface-variant/60" th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
+                                <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/60" th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
                             </div>
                             <div
                                 class="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20 shadow-sm">
@@ -441,7 +442,7 @@
                         <div class="relative z-10 flex flex-col h-full justify-between">
                             <div class="max-w-md">
                                 <h4 class="font-display-md text-[28px] text-primary mb-2">Thông tin Quan trọng (Lưu ý)</h4>
-                                <p class="font-body-md text-on-surface-variant/70">Yêu cầu tất cả nhân viên kiểm tra
+                                <p class="font-headline text-lg font-light text-on-surface-variant/70">Yêu cầu tất cả nhân viên kiểm tra
                                     thiết bị quét khuôn mặt trước giờ đón khách 30 phút. Báo cáo ngay nếu có sự cố xảy ra.</p>
                             </div>
                             <div class="flex items-center gap-4 mt-8">
