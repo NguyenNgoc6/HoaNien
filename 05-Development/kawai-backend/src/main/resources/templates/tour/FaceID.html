@@ -250,17 +250,17 @@
                     <p class="font-label-sm text-[10px] text-on-surface-variant/60 -mt-1">Retreat Resort &amp; Hub</p>
                 </div>
                 <nav class="flex items-center gap-2">
-                    <a class="flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline"
+                    <a th:class="${requestUri == '/tourguide/tour'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                         href="/tourguide/tour">
                         <span class="material-symbols-outlined text-[20px]">map</span>
                         <span class="font-label-md text-label-md">Tours</span>
                     </a>
-                    <a class="flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline"
+                    <a th:class="${requestUri == '/tourguide/dashboard'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                         href="/tourguide/dashboard">
                         <span class="material-symbols-outlined text-[20px]">group</span>
                         <span class="font-label-md text-label-md">Customers</span>
                     </a>
-                    <a class="flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline"
+                    <a th:class="${requestUri == '/tourguide/feedback'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                         href="/tourguide/feedback">
                         <span class="material-symbols-outlined text-[20px]">rate_review</span>
                         <span class="font-label-md text-label-md">Feedback</span>
@@ -280,9 +280,6 @@
                     </button>
                 </div>
                 <div class="h-8 w-px bg-primary/10"></div>
-                <button onclick="openGuideSettingsModal(event)" class="hover:text-primary transition-colors duration-300 flex items-center justify-center focus:outline-none" title="Cài đặt thông tin hướng dẫn viên">
-                    <span class="material-symbols-outlined text-[24px] text-primary">settings</span>
-                </button>
                 <div class="relative dropdown">
                     <button class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none">
                         <div class="text-right">
@@ -296,7 +293,7 @@
                     </button>
                     <div class="dropdown-content">
                         <div
-                            class="rounded-lg py-2 shadow-xl overflow-hidden min-w-[200px] bg-primary-container border border-primary/10">
+                            class="rounded-lg py-2 shadow-xl overflow-hidden min-w-[200px] bg-[#fdfbf7] border border-primary/10">
                             <a class="flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors text-on-primary-container no-underline"
                                 href="#" onclick="openGuideSettingsModal(event)">
                                 <span class="material-symbols-outlined text-[20px]">person</span>
