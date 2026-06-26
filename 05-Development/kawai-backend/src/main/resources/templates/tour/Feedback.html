@@ -166,17 +166,17 @@
                 <a th:class="${requestUri == '/tourguide/tour'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/tour">
                     <span class="material-symbols-outlined text-[20px]">map</span>
-                    <span class="font-label-md text-label-md">Tours</span>
+                    <span class="font-label-md text-label-md">Hành trình</span>
                 </a>
                 <a th:class="${requestUri == '/tourguide/dashboard'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/dashboard">
                     <span class="material-symbols-outlined text-[20px]">group</span>
-                    <span class="font-label-md text-label-md">Customers</span>
+                    <span class="font-label-md text-label-md">Khách hàng</span>
                 </a>
                 <a th:class="${requestUri == '/tourguide/feedback'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/feedback">
                     <span class="material-symbols-outlined text-[20px]">rate_review</span>
-                    <span class="font-label-md text-label-md">Feedback</span>
+                    <span class="font-label-md text-label-md">Nhận xét</span>
                 </a>
             </nav>
         </div>
@@ -190,7 +190,7 @@
             <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
                 <div class="text-right">
                     <p class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
-                    <p class="text-[10px] text-on-surface-variant/60">Senior Guide</p>
+                    <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
                     class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 ring-4 ring-primary/5 bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
@@ -207,20 +207,20 @@
 
     <main class="pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
         <div class="relative mb-12">
-            <h1 class="font-display-md text-display-md text-on-surface mb-2">Guest Feedback</h1>
-            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Monitor your tour performance and guest satisfaction in real-time. Immediate attention required for critical reviews.</p>
+            <h1 class="font-display-md text-display-md text-on-surface mb-2">Nhận xét của khách hàng</h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Theo dõi chất lượng tour và mức độ hài lòng của khách hàng theo thời gian thực. Cần đặc biệt lưu ý các đánh giá tiêu cực.</p>
         </div>
 
         <!-- Summary Widgets -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-12">
             <div class="glass-card p-6 rounded-lg flex flex-col gap-2">
-                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Reviews</span>
+                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tổng số đánh giá</span>
                 <div class="flex items-baseline gap-2">
                     <span class="font-headline-lg text-headline-lg text-primary">1,248</span>
                 </div>
             </div>
             <div class="glass-card p-6 rounded-lg flex flex-col gap-2">
-                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Average Rating</span>
+                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Điểm trung bình</span>
                 <div class="flex items-baseline gap-2">
                     <span class="font-headline-lg text-headline-lg text-primary">4.8</span>
                     <div class="flex text-primary">
@@ -229,13 +229,13 @@
                 </div>
             </div>
             <div class="glass-card p-6 rounded-lg flex flex-col gap-2">
-                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Satisfaction Rate</span>
+                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tỷ lệ hài lòng</span>
                 <div class="flex items-baseline gap-2">
                     <span class="font-headline-lg text-headline-lg text-primary">96%</span>
                 </div>
             </div>
             <div class="glass-card p-6 rounded-lg flex flex-col gap-2">
-                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Critical Reviews</span>
+                <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Đánh giá tiêu cực</span>
                 <div class="flex items-baseline gap-2">
                     <span class="font-headline-lg text-headline-lg text-primary">14</span>
                 </div>
@@ -253,7 +253,7 @@
                     <div class="flex justify-between items-start mb-2">
                         <div>
                             <h3 class="font-headline-md text-headline-md text-on-surface">Elena Rodriguez</h3>
-                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Sapa Valley Trek</p>
+                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Hành trình Đoàn Tụ</p>
                         </div>
                         <div class="flex text-[#BFAC8F]">
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -264,7 +264,7 @@
                         </div>
                     </div>
                     <p class="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
-                        "The guide was extremely friendly and professional. The scenery was stunning and we thoroughly enjoyed our time. Highly recommended!"
+                        "Hướng dẫn viên cực kỳ thân thiện và chuyên nghiệp. Phong cảnh tuyệt đẹp và chúng tôi đã có một khoảng thời gian tuyệt vời. Rất đáng trải nghiệm!"
                     </p>
                 </div>
             </div>

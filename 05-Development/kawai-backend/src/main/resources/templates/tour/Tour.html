@@ -186,17 +186,17 @@
                 <a th:class="${requestUri == '/tourguide/tour'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/tour">
                     <span class="material-symbols-outlined text-[20px]">map</span>
-                    <span class="font-label-md text-label-md">Tours</span>
+                    <span class="font-label-md text-label-md">Hành trình</span>
                 </a>
                 <a th:class="${requestUri == '/tourguide/dashboard'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/dashboard">
                     <span class="material-symbols-outlined text-[20px]">group</span>
-                    <span class="font-label-md text-label-md">Customers</span>
+                    <span class="font-label-md text-label-md">Khách hàng</span>
                 </a>
                 <a th:class="${requestUri == '/tourguide/feedback'} ? 'flex items-center gap-2 py-2 px-4 rounded-full text-primary font-bold bg-primary/5 border border-primary/20 transition-all duration-300 no-underline' : 'flex items-center gap-2 py-2 px-4 rounded-full text-on-surface-variant/70 font-medium hover:bg-primary/5 transition-all duration-300 no-underline'"
                     href="/tourguide/feedback">
                     <span class="material-symbols-outlined text-[20px]">rate_review</span>
-                    <span class="font-label-md text-label-md">Feedback</span>
+                    <span class="font-label-md text-label-md">Nhận xét</span>
                 </a>
             </nav>
         </div>
@@ -210,7 +210,7 @@
             <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
                 <div class="text-right">
                     <p class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
-                    <p class="text-[10px] text-on-surface-variant/60">Senior Guide</p>
+                    <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
                     class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 ring-4 ring-primary/5 bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
@@ -261,7 +261,7 @@
                                 class="glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden" onclick="window.location.href='/tourguide/dashboard'">
                                 <div class="absolute top-0 right-0 p-4">
                                     <span
-                                        class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Premium</span>
+                                        class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Cao cấp</span>
                                 </div>
                                 <div class="flex gap-6 flex-col md:flex-row">
                                     <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
