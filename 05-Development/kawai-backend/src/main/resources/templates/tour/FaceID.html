@@ -382,7 +382,10 @@
                     <div class="glass-panel rounded-lg p-8 border-primary/10">
                         <div class="flex justify-between items-start w-full">
                             <div class="space-y-1">
-                                <h4 id="tour-name-display" class="font-display-md text-[32px] text-primary leading-tight" th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
+                                 <h4 id="tour-name-display" 
+                                     class="font-display-md text-[32px] text-primary leading-tight cursor-pointer hover:underline hover:opacity-80 transition-all" 
+                                     onclick="if(this.textContent.trim().includes('Tinh túy đồng nội') || this.textContent.trim().includes('Tinh Túy Đồng Nội')) showActivities()" 
+                                     th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
                                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/60" th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
                             </div>
                             <div
@@ -1261,4 +1264,29 @@
     </script>
 </body>
 
-</html>
+<!-- Activities Popup Modal (hidden by default) -->
+<div id="activities-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-surface rounded-lg shadow-lg p-6 w-11/12 max-w-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold text-on-surface">Hoạt động tour: Tinh túy đồng nội - Quảng Nam</h3>
+      <button class="text-on-surface hover:text-primary" onclick="closeActivities()">✕</button>
+    </div>
+    <ul class="list-disc list-inside text-on-surface-variant space-y-2">
+      <li>Tham quan làng nghề truyền thống</li>
+      <li>Chuyến thăm khu sản xuất đặc sản địa phương</li>
+      <li>Buổi hòa nhạc dân gian buổi tối</li>
+      <li>Trải nghiệm ẩm thực đặc sắc</li>
+    </ul>
+    <div class="mt-4 flex justify-end">
+      <button class="px-4 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80" onclick="closeActivities()">Đóng</button>
+    </div>
+  </div>
+</div>
+<script>
+  function showActivities() {
+    document.getElementById('activities-modal').classList.remove('hidden');
+  }
+  function closeActivities() {
+    document.getElementById('activities-modal').classList.add('hidden');
+  }
+</script>
