@@ -274,8 +274,26 @@ public class TourGuideController {
             model.addAttribute("username", principal.getName());
         }
         
+        // Ensure schedule 5 is set to today for demo purposes
+        java.time.LocalDate today = java.time.LocalDate.now();
+        tourScheduleRepository.findById(5L).ifPresent(sched -> {
+            if (!today.equals(sched.getDepartureDate())) {
+                sched.setDepartureDate(today);
+                tourScheduleRepository.saveAndFlush(sched);
+            }
+        });
+        
         // Fetch all tour schedules from DB
         java.util.List<com.kawai.models.TourSchedule> dbSchedules = tourScheduleRepository.findAll();
+        
+        // Ensure schedule 5 is at the top of the list for demo
+        dbSchedules.sort((s1, s2) -> {
+            if (s1.getId() != null && s1.getId() == 5L) return -1;
+            if (s2.getId() != null && s2.getId() == 5L) return 1;
+            if (s1.getDepartureDate() == null || s2.getDepartureDate() == null) return 0;
+            return s2.getDepartureDate().compareTo(s1.getDepartureDate());
+        });
+
         java.util.List<java.util.Map<String, Object>> dbToursList = new java.util.ArrayList<>();
         
         for (com.kawai.models.TourSchedule sched : dbSchedules) {
@@ -296,7 +314,9 @@ public class TourGuideController {
             String guideName = "NguynNgoc";
             if (sched.getTour() != null) {
                 String tn = sched.getTour().getTourName();
-                if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
+                if (sched.getId() != null && sched.getId() == 5L) {
+                    guideName = "NguynNgoc";
+                } else if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
                     guideName = "Ngọc Lan";
                 } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa")) {
                     guideName = "Hoàng Nam";
