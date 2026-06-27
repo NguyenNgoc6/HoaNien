@@ -1278,132 +1278,185 @@
         }
 
         function openRoomSelection() {
-            if (!validateInputs()) return;
+            console.log("openRoomSelection started");
+            try {
+                if (!validateInputs()) {
+                    console.log("validateInputs failed");
+                    return;
+                }
 
-            // Fetch active rooms for the currently logged in customer
-            fetch('/api/rooms/my-active')
-                .then(response => {
-                    if (response.status === 401) {
-                        throw new Error('UNAUTHORIZED');
-                    }
-                    if (!response.ok) {
-                        throw new Error('FAILED');
-                    }
-                    return response.json();
-                })
-                .then(activeRooms => {
-                    if (!activeRooms || activeRooms.length === 0) {
-                        // 3: if room is expired or none exist, show warning popup and redirect to room registration (/living)
-                        showWarningAlertPopup(
-                            'Yêu cầu phòng lưu trú',
-                            'Quý khách chưa đăng ký phòng hoặc phòng đã hết hạn tại HoaNien Retreat. Vui lòng thực hiện đặt phòng để trải nghiệm dịch vụ này.'
-                        );
-                        window.pendingRoomChargeRedirect = true;
-                        return;
-                    }
+                // Fetch active rooms for the currently logged in customer
+                fetch('/api/rooms/my-active')
+                    .then(response => {
+                        console.log("my-active API response status:", response.status);
+                        if (response.status === 401) {
+                            throw new Error('UNAUTHORIZED');
+                        }
+                        if (!response.ok) {
+                            throw new Error('FAILED');
+                        }
+                        return response.json();
+                    })
+                    .then(activeRooms => {
+                        console.log("activeRooms fetched:", activeRooms);
+                        if (!activeRooms || activeRooms.length === 0) {
+                            console.log("No active rooms. Showing warning alert popup.");
+                            // 3: if room is expired or none exist, show warning popup and redirect to room registration (/living)
+                            showWarningAlertPopup(
+                                'Yêu cầu phòng lưu trú',
+                                'Quý khách chưa đăng ký phòng hoặc phòng đã hết hạn tại HoaNien Retreat. Vui lòng thực hiện đặt phòng để trải nghiệm dịch vụ này.'
+                            );
+                            window.pendingRoomChargeRedirect = true;
+                            return;
+                        }
 
-                    if (activeRooms.length === 1) {
-                        // 1: automatically select room (if customer only has 1 room)
-                        const singleRoom = activeRooms[0];
-                        selectedRoomData = { id: singleRoom.roomNumber, type: singleRoom.roomType };
-                        confirmRoomSelection();
-                    } else {
-                        // 2: display choice of rooms to assign (if customer has multiple rooms)
-                        const container = document.getElementById('active-rooms-list');
-                        if (container) {
-                            container.innerHTML = activeRooms.map(r => `
-                                <div class="room-item selectable border border-brand-border p-4 flex justify-between items-center cursor-pointer transition-all hover:bg-gray-50/50"
-                                     onclick="selectRoomUI(this, '${r.roomNumber}', '${r.roomType}')">
-                                    <div class="flex items-center space-x-4">
-                                        <span class="material-symbols-outlined text-gray-400">door_front</span>
-                                        <div>
-                                            <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
-                                            <p class="text-[10px] text-gray-400 uppercase">${r.roomType}</p>
+                        if (activeRooms.length === 1) {
+                            console.log("Exactly 1 active room. Auto-selecting.");
+                            // 1: automatically select room (if customer only has 1 room)
+                            const singleRoom = activeRooms[0];
+                            selectedRoomData = { id: singleRoom.roomNumber, type: singleRoom.roomType };
+                            confirmRoomSelection();
+                        } else {
+                            console.log("Multiple active rooms. Opening modal.");
+                            // 2: display choice of rooms to assign (if customer has multiple rooms)
+                            const container = document.getElementById('active-rooms-list');
+                            if (container) {
+                                container.innerHTML = activeRooms.map((r, idx) => `
+                                    <div class="room-item selectable border ${idx === 0 ? 'border-brand-dark bg-[#FBF9F6]' : 'border-brand-border'} p-4 flex justify-between items-center cursor-pointer transition-all hover:bg-gray-50/50"
+                                         onclick="selectRoomUI(this, '${r.roomNumber}', '${r.roomType}')">
+                                        <div class="flex items-center space-x-4">
+                                            <span class="material-symbols-outlined text-gray-400">door_front</span>
+                                            <div>
+                                                <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
+                                                <p class="text-[10px] text-gray-400 uppercase">${r.roomType}</p>
+                                            </div>
                                         </div>
+                                        <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">Đang hoạt động</div>
                                     </div>
-                                    <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">Đang hoạt động</div>
-                                </div>
-                            `).join('');
-                        }
+                                `).join('');
+                            }
 
-                        selectedRoomData = null;
+                            // Auto-select the first room by default to avoid empty clicks!
+                            selectedRoomData = { id: activeRooms[0].roomNumber, type: activeRooms[0].roomType };
 
-                        const overlay = document.getElementById('overlay');
-                        const roomModal = document.getElementById('room-selection-modal');
-                        if (overlay && roomModal) {
-                            overlay.classList.add('active');
-                            roomModal.classList.add('active');
-                            document.body.style.overflow = 'hidden';
+                            const overlay = document.getElementById('overlay');
+                            const roomModal = document.getElementById('room-selection-modal');
+                            if (overlay && roomModal) {
+                                overlay.classList.add('active');
+                                roomModal.classList.add('active');
+                                document.body.style.overflow = 'hidden';
+                            } else {
+                                console.error("overlay or room-selection-modal element not found in DOM");
+                            }
                         }
-                    }
-                })
-                .catch(error => {
-                    console.error(error);
-                    if (error.message === 'UNAUTHORIZED') {
-                        openRequireLoginModal();
-                    } else {
-                        showWarningAlertPopup('Lỗi hệ thống', 'Có lỗi xảy ra khi lấy thông tin phòng nghỉ. Vui lòng thử lại sau.');
-                    }
-                });
+                    })
+                    .catch(error => {
+                        console.error("Error in active rooms fetch:", error);
+                        if (error.message === 'UNAUTHORIZED') {
+                            openRequireLoginModal();
+                        } else {
+                            showWarningAlertPopup('Lỗi hệ thống', 'Có lỗi xảy ra khi lấy thông tin phòng nghỉ. Vui lòng thử lại sau.');
+                        }
+                    });
+            } catch (err) {
+                console.error("Critical error in openRoomSelection function:", err);
+            }
         }
 
         function selectRoomUI(element, id, type) {
-            document.querySelectorAll('.room-item').forEach(el => {
-                el.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
-                el.classList.add('border-brand-border');
-            });
-            element.classList.remove('border-brand-border');
-            element.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
-            selectedRoomData = { id, type };
+            try {
+                console.log("selectRoomUI clicked for room:", id);
+                document.querySelectorAll('.room-item').forEach(el => {
+                    el.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
+                    el.classList.add('border-brand-border');
+                });
+                if (element) {
+                    element.classList.remove('border-brand-border');
+                    element.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
+                }
+                selectedRoomData = { id, type };
+            } catch (err) {
+                console.error("Error in selectRoomUI:", err);
+            }
         }
 
         function confirmRoomSelection() {
-            if (!selectedRoomData) return;
-            selectedPaymentType = 'post-room';
-            const container = document.getElementById('room-charge-container');
-            container.innerHTML = `
-        <div class="border border-brand-dark p-6 flex justify-between items-center bg-white animate-in fade-in duration-500">
-          <div class="flex items-center space-x-6">
-            <div class="w-12 h-12 bg-brand-bg flex items-center justify-center border border-brand-border">
-              <span class="material-symbols-outlined text-brand-dark">key</span>
-            </div>
-            <div>
-              <div class="flex items-center space-x-3 mb-1">
-                <h4 class="font-bold text-sm">Phòng: ${selectedRoomData.id}</h4>
-                <span class="px-2 py-0.5 bg-green-50 text-[8px] font-bold uppercase tracking-widest text-green-700 border border-green-200">Đang ở</span>
-              </div>
-              <p class="text-xs text-gray-500">Loại: ${selectedRoomData.type}</p>
-            </div>
-          </div>
-          <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
-        </div>
-      `;
-            closeModal();
+            console.log("confirmRoomSelection called, selectedRoomData:", selectedRoomData);
+            try {
+                if (!selectedRoomData) {
+                    console.warn("confirmRoomSelection called but selectedRoomData is null");
+                    return;
+                }
+                selectedPaymentType = 'post-room';
+                const container = document.getElementById('room-charge-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="border border-brand-dark p-6 flex justify-between items-center bg-white animate-in fade-in duration-500">
+                          <div class="flex items-center space-x-6">
+                            <div class="w-12 h-12 bg-brand-bg flex items-center justify-center border border-brand-border">
+                              <span class="material-symbols-outlined text-brand-dark">key</span>
+                            </div>
+                            <div>
+                              <div class="flex items-center space-x-3 mb-1">
+                                <h4 class="font-bold text-sm">Phòng: ${selectedRoomData.id}</h4>
+                                <span class="px-2 py-0.5 bg-green-50 text-[8px] font-bold uppercase tracking-widest text-green-700 border border-green-200">Đang ở</span>
+                              </div>
+                              <p class="text-xs text-gray-500">Loại: ${selectedRoomData.type}</p>
+                            </div>
+                          </div>
+                          <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
+                        </div>
+                    `;
+                } else {
+                    console.error("room-charge-container element not found in DOM");
+                }
+                closeModal();
+            } catch (err) {
+                console.error("Error in confirmRoomSelection:", err);
+            }
         }
 
         function resetToScreen1() {
-            selectedPaymentType = 'deposit';
-            const container = document.getElementById('room-charge-container');
-            container.innerHTML = `
-        <div class="payment-option border border-brand-border p-6 flex justify-between items-center group" onclick="openRoomSelection()">
-          <div>
-            <h4 class="font-bold text-sm mb-1">Tính vào phòng nghỉ</h4>
-            <p class="text-xs text-gray-500">Dành riêng cho khách đang lưu trú tại HoaNien Retreat</p>
-          </div>
-          <div>
-            <span class="material-symbols-outlined text-gray-400 group-hover:text-brand-dark transition-colors">home</span>
-          </div>
-        </div>
-      `;
-            selectedRoomData = null;
+            console.log("resetToScreen1 called");
+            try {
+                selectedPaymentType = 'deposit';
+                const container = document.getElementById('room-charge-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="payment-option border border-brand-border p-6 flex justify-between items-center group" onclick="openRoomSelection()">
+                          <div>
+                            <h4 class="font-bold text-sm mb-1">Tính vào phòng nghỉ</h4>
+                            <p class="text-xs text-gray-500">Dành riêng cho khách đang lưu trú tại HoaNien Retreat</p>
+                          </div>
+                          <div>
+                            <span class="material-symbols-outlined text-gray-400 group-hover:text-brand-dark transition-colors">home</span>
+                          </div>
+                        </div>
+                    `;
+                }
+                selectedRoomData = null;
+            } catch (err) {
+                console.error("Error in resetToScreen1:", err);
+            }
         }
 
         function closeModal() {
-            document.getElementById('overlay').classList.remove('active');
-            document.getElementById('payment-modal').classList.remove('active');
-            document.getElementById('room-selection-modal').classList.remove('active');
-            document.getElementById('activity-modal').classList.remove('active');
-            document.body.style.overflow = 'auto';
+            console.log("closeModal called");
+            try {
+                const overlay = document.getElementById('overlay');
+                const paymentModal = document.getElementById('payment-modal');
+                const roomModal = document.getElementById('room-selection-modal');
+                const activityModal = document.getElementById('activity-modal');
+                
+                if (overlay) overlay.classList.remove('active');
+                if (paymentModal) paymentModal.classList.remove('active');
+                if (roomModal) roomModal.classList.remove('active');
+                if (activityModal) activityModal.classList.remove('active');
+                
+                document.body.style.overflow = 'auto';
+            } catch (err) {
+                console.error("Error in closeModal:", err);
+            }
         }
 
         // Real-time validation: prevent past date selection
