@@ -442,7 +442,7 @@
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Trẻ
                                     em</label>
                                 <input class="text-sm py-2" id="num-children" min="0"
-                                    oninput="generateChildRows(this.value); validateCompanions()" placeholder="Số lượng..." type="number" value="0">
+                                    oninput="validateCompanions()" placeholder="Số lượng..." type="number" value="0">
                             </div>
                         </div>
                         <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-2 hidden" id="companion-error">
@@ -1408,6 +1408,7 @@
             const adultsInput = document.getElementById('num-adults');
             const childrenInput = document.getElementById('num-children');
             const errorEl = document.getElementById('companion-error');
+            const container = document.getElementById('child-rows-container');
 
             if (!participantInput || !adultsInput || !childrenInput) return true;
 
@@ -1417,23 +1418,41 @@
 
             const sum = adults + children;
 
-            if (sum !== totalParticipants) {
-                // Show error visual indicators
+            if (sum > totalParticipants) {
+                // Clear child rows immediately
+                if (container) container.innerHTML = '';
+
+                // Show visual errors
                 adultsInput.style.borderColor = '#ef4444';
                 childrenInput.style.borderColor = '#ef4444';
                 if (errorEl) {
                     errorEl.classList.remove('hidden');
-                    const lang = document.documentElement.lang || 'vi';
-                    errorEl.textContent = lang === 'vi' 
-                        ? `Tổng số người lớn (${adults}) và trẻ em (${children}) phải bằng số thành viên đã chọn (${totalParticipants})`
-                        : `Total adults (${adults}) and children (${children}) must equal total selected members (${totalParticipants})`;
+                    errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) đã vượt quá số thành viên đã chọn (${totalParticipants})`;
+                }
+
+                // Immediate popup warning
+                alert(`Vượt quá số lượng thành viên là ${totalParticipants} trên màn hình`);
+                return false;
+            } else if (sum < totalParticipants) {
+                // Hide child rows container if sum is less than total
+                if (container) container.innerHTML = '';
+
+                // Show visual errors
+                adultsInput.style.borderColor = '#ef4444';
+                childrenInput.style.borderColor = '#ef4444';
+                if (errorEl) {
+                    errorEl.classList.remove('hidden');
+                    errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) chưa đủ so với số thành viên đã chọn (${totalParticipants})`;
                 }
                 return false;
             } else {
-                // Clear errors
+                // Sum matches exactly! Clear visual errors
                 adultsInput.style.borderColor = '';
                 childrenInput.style.borderColor = '';
                 if (errorEl) errorEl.classList.add('hidden');
+
+                // Generate child name and age rows because sum matches exactly!
+                generateChildRows(children);
                 return true;
             }
         }
