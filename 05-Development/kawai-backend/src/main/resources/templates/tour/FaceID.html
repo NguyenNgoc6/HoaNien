@@ -236,6 +236,27 @@
             box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
             background: rgba(239, 68, 68, 0.05);
         }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+            }
+            .no-print, .no-print * {
+                visibility: hidden !important;
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -303,12 +324,12 @@
                     placeholder="Tìm kiếm khách hàng..." type="text">
             </div>
             <div class="flex items-center gap-4">
-                <button
+                <button onclick="window.print()"
                     class="flex items-center gap-2 px-5 py-2 rounded-full border border-primary/30 text-primary font-label-md text-[13px] hover:bg-primary/5 transition-all">
                     <span class="material-symbols-outlined text-[18px]">print</span>
                     In danh sách
                 </button>
-                <button
+                <button onclick="exportCustomerList()"
                     class="flex items-center gap-2 px-6 py-2 rounded-full bg-primary text-white font-label-md text-[13px] shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
                     <span class="material-symbols-outlined text-[18px]">file_download</span>
                     Xuất danh sách
@@ -325,12 +346,12 @@
             <!-- Grid Layout -->
             <div class="grid grid-cols-12 gap-8 items-start">
                 <!-- Left Column: Customer List -->
-                <div class="col-span-12 lg:col-span-8 space-y-8">
+                <div id="print-area" class="col-span-12 lg:col-span-8 space-y-8">
                     <!-- Tour Info Summary -->
                     <div class="glass-panel rounded-lg p-8 border-primary/10">
                         <div class="flex justify-between items-start w-full">
                             <div class="space-y-1">
-                                <h4 class="font-display-md text-[32px] text-primary leading-tight" th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
+                                <h4 id="tour-name-display" class="font-display-md text-[32px] text-primary leading-tight" th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
                                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/60" th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
                             </div>
                             <div
@@ -418,7 +439,7 @@
                         </div>
                     </div>
                     <!-- Announcement / Banner -->
-                    <div class="glass-panel p-8 rounded-lg border-primary/10 space-y-6">
+                    <div class="glass-panel p-8 rounded-lg border-primary/10 space-y-6 no-print">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-primary">report_problem</span>
                             <h4 class="font-display-md text-[28px] text-primary">Báo cáo sự cố</h4>
@@ -438,7 +459,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="glass-panel p-8 rounded-lg relative overflow-hidden group">
+                    <div class="glass-panel p-8 rounded-lg relative overflow-hidden group no-print">
                         <div class="relative z-10 flex flex-col h-full justify-between">
                             <div class="max-w-md">
                                 <h4 class="font-display-md text-[28px] text-primary mb-2">Thông tin Quan trọng (Lưu ý)</h4>
@@ -1072,6 +1093,44 @@
                 window.history.replaceState({}, document.title, cleanUrl);
             }
         });
+
+        function exportCustomerList() {
+            // Get tour name
+            const tourNameEl = document.getElementById('tour-name-display');
+            const tourName = tourNameEl ? tourNameEl.textContent.trim() : 'Danh_sach_khach_hang';
+            const cleanTourName = tourName.replace(/[^a-zA-Z0-9_ -]/g, '').replace(/\s+/g, '_');
+            
+            // Get rows
+            const rows = document.querySelectorAll('table tbody tr');
+            let csvContent = "\ufeff"; // BOM for UTF-8 in Excel
+            csvContent += "Mã Khách Hàng,Họ và Tên,Trạng thái\n";
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length >= 3) {
+                    const customerId = cols[0].textContent.trim();
+                    const nameEl = cols[1].querySelector('p') || cols[1];
+                    const name = nameEl.textContent.trim();
+                    const statusText = cols[2].textContent.trim();
+                    
+                    let status = 'Chờ điểm danh';
+                    if (statusText.includes('Đã điểm danh')) {
+                        status = 'Đã điểm danh';
+                    }
+                    
+                    csvContent += `"${customerId}","${name}","${status}"\n`;
+                }
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${cleanTourName}_Danh_sach_diem_danh.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 
