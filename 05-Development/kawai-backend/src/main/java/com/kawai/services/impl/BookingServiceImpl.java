@@ -371,6 +371,7 @@ public class BookingServiceImpl implements BookingService {
                     stubDep.setCustomer(customer);
                     stubDep.setDependentName("Khách đi kèm");
                     stubDep.setBirthDate(java.time.LocalDate.now().minusYears(18).withDayOfYear(1));
+                    stubDep.setGender("Khác");
                     dependentRepository.save(stubDep);
 
                     guest.setCustomer(null);
@@ -386,6 +387,7 @@ public class BookingServiceImpl implements BookingService {
                 com.kawai.models.Dependent dep = new com.kawai.models.Dependent();
                 dep.setCustomer(customer);
                 dep.setDependentName("Khách đi kèm");
+                dep.setGender("Khác");
                 // Calculate approximate birthDate from age (e.g., Jan 1st of birth year)
                 dep.setBirthDate(java.time.LocalDate.now().minusYears(age).withDayOfYear(1));
                 dependentRepository.save(dep);
