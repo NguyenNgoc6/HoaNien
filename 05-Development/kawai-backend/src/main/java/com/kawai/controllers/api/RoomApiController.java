@@ -157,6 +157,7 @@ public class RoomApiController {
         List<java.util.Map<String, Object>> responseList = new java.util.ArrayList<>();
         
         for (Room r : activeRooms) {
+            if (r == null) continue;
             java.util.Map<String, Object> rMap = new java.util.HashMap<>();
             rMap.put("id", r.getRoomNumber());
             rMap.put("roomNumber", r.getRoomNumber());
