@@ -888,8 +888,9 @@
                 if (dbTours[key] && tourData[key]) {
                     const dbTour = dbTours[key];
                     if (dbTour.name) {
-                        tourData[key].titleVi = dbTour.name;
-                        tourData[key].titleEn = dbTour.name;
+                        const cleanedName = dbTour.name.split(/\s*-\s*/)[0].trim();
+                        tourData[key].titleVi = cleanedName;
+                        tourData[key].titleEn = cleanedName;
                     }
                     if (dbTour.dest) {
                         tourData[key].destVi = dbTour.dest;
