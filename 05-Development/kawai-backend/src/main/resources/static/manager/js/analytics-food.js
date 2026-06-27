@@ -15,7 +15,38 @@ document.addEventListener('DOMContentLoaded',()=>{
     const ctx=document.getElementById('chart-food-donut');
     if(!ctx)return;
     const d=window.foodDonutData||{labels:["Món chính","Súp","Set Menu","Tráng miệng","Đồ uống"],values:[42,28,21,16,18]};
-    new Chart(ctx,{type:'doughnut',data:{labels:d.labels,datasets:[{data:d.values,backgroundColor:COLORS,borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} đơn`}}}}});
+    const total = d.values.reduce((a, b) => a + b, 0);
+    const totalEl = document.getElementById('food-total-val');
+    if (totalEl) totalEl.innerText = total;
+
+    const legendContainer = document.getElementById('food-legend');
+    if (legendContainer) {
+        let html = '';
+        d.labels.forEach((label, i) => {
+            const color = COLORS[i % COLORS.length];
+            html += `
+                <div style="display: flex; align-items: center; gap: 8px;" title="${label}">
+                    <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${color}; flex-shrink: 0;"></div>
+                    <div style="font-size: 13px; font-weight: 500; color: #4A4740; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${label}</div>
+                </div>
+            `;
+        });
+        legendContainer.innerHTML = html;
+    }
+
+    new Chart(ctx,{
+        type:'doughnut',
+        data:{labels:d.labels,datasets:[{data:d.values,backgroundColor:COLORS,borderWidth:0,hoverOffset:6}]},
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            cutout:'75%',
+            plugins:{
+                legend:{display:false},
+                tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} đơn`}}
+            }
+        }
+    });
 });
 
 function toggleSubmenu(id,arrowId){

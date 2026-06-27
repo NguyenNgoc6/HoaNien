@@ -23,6 +23,12 @@ function initLineToday() {
     if (!ctx) return;
     const d = window.todayData || { labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'], room: [0,0,0,0,0,0], fnb: [0,0,0,0,0,0], tour: [0,0,0,0,0,0] };
     
+    const sum = d.room.reduce((a,b)=>a+b, 0) + d.fnb.reduce((a,b)=>a+b, 0) + d.tour.reduce((a,b)=>a+b, 0);
+    if (sum === 0) {
+        ctx.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9A9485;font-size:13px;font-style:italic;">Chưa có dữ liệu doanh thu trong ngày</div>';
+        return;
+    }
+
     // Đăng ký plugin datalabels nếu có (tuỳ chọn)
     let plugins = [];
     if (typeof ChartDataLabels !== 'undefined') {
@@ -31,45 +37,24 @@ function initLineToday() {
     }
     
     new Chart(ctx, {
-        type: 'line', 
+        type: 'bar', 
         data: {
             labels: d.labels, 
             datasets: [
                 { 
                     label: 'Phòng', 
                     data: d.room, 
-                    borderColor: '#C9A96E', 
-                    backgroundColor: 'rgba(201,169,110,0.08)', 
-                    borderWidth: 2, 
-                    pointBackgroundColor: '#C9A96E',
-                    pointRadius: 4, 
-                    pointHoverRadius: 6, 
-                    tension: 0.2, 
-                    fill: true 
+                    backgroundColor: '#C9A96E'
                 },
                 { 
                     label: 'F&B', 
                     data: d.fnb, 
-                    borderColor: '#7A9C7A', 
-                    backgroundColor: 'rgba(122,156,122,0.08)', 
-                    borderWidth: 2, 
-                    pointBackgroundColor: '#7A9C7A',
-                    pointRadius: 4, 
-                    pointHoverRadius: 6, 
-                    tension: 0.2, 
-                    fill: true 
+                    backgroundColor: '#7A9C7A'
                 },
                 { 
                     label: 'Tour', 
                     data: d.tour, 
-                    borderColor: '#6B8C9A', 
-                    backgroundColor: 'rgba(107,140,154,0.08)', 
-                    borderWidth: 2, 
-                    pointBackgroundColor: '#6B8C9A',
-                    pointRadius: 4, 
-                    pointHoverRadius: 6, 
-                    tension: 0.2, 
-                    fill: true 
+                    backgroundColor: '#6B8C9A'
                 }
             ]
         }, 
@@ -81,17 +66,15 @@ function initLineToday() {
                 legend: { display: false }, 
                 tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y}M` } },
                 datalabels: {
-                    align: 'top',
+                    align: 'center',
                     font: { weight: 'bold', size: 11 },
-                    color: function(context) {
-                        return context.dataset.borderColor;
-                    },
+                    color: '#ffffff',
                     formatter: function(value) { return value > 0 ? value + 'M' : ''; }
                 }
             }, 
             scales: { 
-                x: { grid: { display: false }, border: { display: false }, ticks: { color: C_TICK } }, 
-                y: { grid: { color: C_GRID }, border: { display: false }, ticks: { color: C_TICK, callback: v => v + 'M' } } 
+                x: { stacked: true, grid: { display: false }, border: { display: false }, ticks: { color: C_TICK } }, 
+                y: { stacked: true, grid: { color: C_GRID }, border: { display: false }, ticks: { color: C_TICK, callback: v => v + 'M' } } 
             } 
         }
     });
@@ -100,16 +83,123 @@ function initLineToday() {
 function initDonut() {
     const ctx = document.getElementById('chart-donut');
     if (!ctx) return;
-    const d = window.donutData || { room: 1128, fnb: 487, tour: 231 };
-    new Chart(ctx, { type: 'doughnut', data: { labels: ['Phòng', 'F&B', 'Tour'], datasets: [{ data: [d.room, d.fnb, d.tour], backgroundColor: [C_ROOM, C_FNB, C_TOUR], borderWidth: 0, hoverOffset: 6 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}M` } } } } });
+    const dList = window.donutDataList || [
+        {name: 'Phòng', val: 1128, color: C_ROOM},
+        {name: 'F&B', val: 487, color: C_FNB},
+        {name: 'Tour', val: 231, color: C_TOUR}
+    ];
+    const labels = dList.map(item => item.name);
+    const data = dList.map(item => item.val);
+    const bgColors = dList.map(item => item.color);
+
+    new Chart(ctx, { 
+        type: 'doughnut', 
+        data: { 
+            labels: labels, 
+            datasets: [{ 
+                data: data, 
+                backgroundColor: bgColors, 
+                borderWidth: 1, 
+                borderColor: '#ffffff',
+                hoverOffset: 12,
+                hoverBorderWidth: 2,
+                hoverBorderColor: '#ffffff'
+            }] 
+        }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            cutout: '68%', 
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed}M` } } 
+            } 
+        } 
+    });
 }
 
 function initLine() {
     const ctx = document.getElementById('chart-line');
     if (!ctx) return;
-    const vals = [72, 75, 78, 80, 82, 85, 88, 91, 89, 87, 85, 83, 80, 78, 76, 79, 82, 85, 88, 92, 94, 90, 87, 84, 81, 79, 77, 80, 83, 86];
-    const labels = Array.from({ length: 30 }, (_, i) => i % 5 === 0 ? `${i + 1}/06` : '');
-    new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'Occupancy', data: vals, borderColor: C_ROOM, backgroundColor: 'rgba(201,169,110,0.08)', borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: i => `Ngày ${i[0].dataIndex + 1}/06`, label: c => ` Lấp đầy: ${c.parsed.y}%` } } }, scales: { x: { grid: { display: false }, border: { display: false }, ticks: { color: C_TICK, maxRotation: 0 } }, y: { min: 0, max: 100, grid: { color: C_GRID }, border: { display: false }, ticks: { color: C_TICK, callback: v => v + '%', stepSize: 10 } } } } });
+    const vals = window.lineVals || [72, 75, 78, 80, 82, 85, 88, 91, 89, 87, 85, 83, 80, 78, 76, 79, 82, 85, 88, 92, 94, 90, 87, 84, 81, 79, 77, 80, 83, 86];
+    const labels = window.lineLabels || Array.from({ length: 30 }, (_, i) => `${i + 1}/06`);
+    const avg = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+    const avgData = Array(vals.length).fill(avg);
+
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(201,169,110,0.3)');
+    gradient.addColorStop(1, 'rgba(201,169,110,0.0)');
+
+    new Chart(ctx, { 
+        type: 'line', 
+        data: { 
+            labels: labels, 
+            datasets: [
+                { 
+                    label: 'Tỷ lệ lấp đầy', 
+                    data: vals, 
+                    borderColor: C_ROOM, 
+                    backgroundColor: gradient, 
+                    borderWidth: 2, 
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: C_ROOM,
+                    pointBorderWidth: 2,
+                    pointRadius: 3, 
+                    pointHoverRadius: 6, 
+                    tension: 0.4, 
+                    fill: true 
+                },
+                { 
+                    label: 'TB tháng', 
+                    data: avgData, 
+                    borderColor: '#8B7355', 
+                    borderWidth: 1, 
+                    borderDash: [5, 5], 
+                    pointRadius: 0, 
+                    pointHoverRadius: 0, 
+                    fill: false 
+                }
+            ] 
+        }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            interaction: { mode: 'index', intersect: false }, 
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    callbacks: { 
+                        title: i => `Ngày ${i[0].label}`, 
+                        label: c => ` ${c.dataset.label}: ${c.parsed.y}%` 
+                    } 
+                } 
+            }, 
+            scales: { 
+                x: { 
+                    grid: { display: false }, 
+                    border: { display: false }, 
+                    ticks: { 
+                        color: C_TICK, 
+                        maxRotation: 0,
+                        autoSkip: false,
+                        callback: function(value, index, ticks) {
+                            if (index === 0 || index === ticks.length - 1 || index % 6 === 0) {
+                                return this.getLabelForValue(value);
+                            }
+                            return '';
+                        }
+                    } 
+                }, 
+                y: { 
+                    min: 0, 
+                    max: 100, 
+                    grid: { color: C_GRID }, 
+                    border: { display: false }, 
+                    ticks: { color: C_TICK, callback: v => v + '%', stepSize: 20 } 
+                } 
+            } 
+        } 
+    });
 }
 
 function toggleSubmenu(id, arrowId) {

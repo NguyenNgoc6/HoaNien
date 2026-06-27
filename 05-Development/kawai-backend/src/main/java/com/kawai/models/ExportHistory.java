@@ -11,19 +11,19 @@ public class ExportHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "report_name")
     private String reportName;
-    
+
     @Column(name = "format")
     private String format;
-    
+
     @Column(name = "exported_at")
     private LocalDateTime exportedAt;
-    
+
     @Column(name = "exported_by")
     private String exportedBy;
-    
+
     @Column(name = "file_size")
     private String fileSize;
 }

@@ -63,6 +63,9 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
        @Query(value = "SELECT COALESCE(AVG(DATEDIFF(check_out_date, check_in_date)), 0) FROM Room_Bookings", nativeQuery = true)
        Double getAverageStayDuration();
 
+       @Query(value = "SELECT DATEDIFF(check_out_date, check_in_date) AS stay_length, COUNT(*) FROM Room_Bookings GROUP BY stay_length", nativeQuery = true)
+       List<Object[]> getStayDurationDistribution();
+
        @Query("SELECT COUNT(rbd) FROM RoomBookingDetail rbd " +
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
@@ -85,4 +88,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
+
+       @Query("SELECT COUNT(b) FROM RoomBooking b WHERE b.bookingStatus = 'Error' OR b.bookingStatus = 'Failed'")
+       long countErrorBookings();
 }
