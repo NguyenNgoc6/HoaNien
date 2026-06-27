@@ -261,15 +261,26 @@
                     <h1 class="font-display-lg text-5xl text-on-surface mb-2 tracking-tight">Lịch Trình Tổng Thể</h1>
                     <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant max-w-xl">Quản lý và theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
                 </div>
-                <div class="flex gap-1 glass-surface p-1 rounded-full">
-                    <button onclick="filterTours('all', this)"
-                        class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold">Tất cả tour</button>
-                    <button onclick="filterTours('mine', this)"
-                        class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Của tôi</button>
-                    <button onclick="filterTours('upcoming', this)"
-                        class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp tới</button>
-                    <button onclick="filterTours('completed', this)"
-                        class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn thành</button>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <!-- Search Input -->
+                    <div class="relative group">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors text-[20px]">search</span>
+                        <input id="search-tour-input" oninput="performTourSearch(this.value)"
+                            class="bg-surface-container/30 border border-primary-container/20 rounded-full pl-11 pr-6 py-2 w-64 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium"
+                            placeholder="Tìm kiếm tour..." type="text">
+                    </div>
+                    <!-- Filters -->
+                    <div class="flex gap-1 glass-surface p-1 rounded-full">
+                        <button onclick="filterTours('all', this)"
+                            class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold">Tất cả tour</button>
+                        <button onclick="filterTours('mine', this)"
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Của tôi</button>
+                        <button onclick="filterTours('upcoming', this)"
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp tới</button>
+                        <button onclick="filterTours('completed', this)"
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn thành</button>
+                    </div>
                 </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
@@ -678,33 +689,77 @@
             }
         });
 
-        // Filter functionality
+        let activeTourFilter = 'all';
+
+        function removeVietnameseAccents(str) {
+            if (!str) return '';
+            return str
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D");
+        }
+
+        function matchQuery(text, query) {
+            const normText = text.toLowerCase().normalize("NFC");
+            const normQuery = query.toLowerCase().normalize("NFC");
+            if (normText.includes(normQuery)) return true;
+            
+            const accentlessText = removeVietnameseAccents(normText);
+            const accentlessQuery = removeVietnameseAccents(normQuery);
+            return accentlessText.includes(accentlessQuery);
+        }
+
         function filterTours(filterType, btn) {
+            activeTourFilter = filterType;
             const buttons = btn.parentElement.querySelectorAll('button');
             buttons.forEach(b => {
                 b.className = "px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all";
             });
             btn.className = "px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold";
 
+            applyCombinedFilter();
+        }
+
+        function performTourSearch(query) {
+            applyCombinedFilter();
+        }
+
+        function applyCombinedFilter() {
+            const query = document.getElementById('search-tour-input').value.trim();
             const cards = document.querySelectorAll('.tour-card');
+            
             cards.forEach(card => {
-                const guideName = card.getAttribute('data-guide');
-                const status = card.getAttribute('data-status');
+                const guideName = card.getAttribute('data-guide') || '';
+                const status = card.getAttribute('data-status') || '';
                 
-                let show = false;
-                if (filterType === 'all') {
-                    show = true;
-                } else if (filterType === 'mine') {
-                    show = (guideName === loggedInGuideName);
-                } else if (filterType === 'upcoming') {
-                    show = (status === 'upcoming');
-                } else if (filterType === 'completed') {
-                    show = (status === 'completed');
+                // 1. Check filter status
+                let matchesFilter = false;
+                if (activeTourFilter === 'all') {
+                    matchesFilter = true;
+                } else if (activeTourFilter === 'mine') {
+                    matchesFilter = (guideName === loggedInGuideName);
+                } else if (activeTourFilter === 'upcoming') {
+                    matchesFilter = (status === 'upcoming');
+                } else if (activeTourFilter === 'completed') {
+                    matchesFilter = (status === 'completed');
                 }
                 
-                card.style.display = show ? 'block' : 'none';
+                // 2. Check search query
+                let matchesSearch = true;
+                if (query) {
+                    const cardText = card.textContent;
+                    const dataGuide = card.getAttribute('data-guide') || '';
+                    const dataStatus = card.getAttribute('data-status') || '';
+                    const combinedCardText = `${cardText} ${dataGuide} ${dataStatus}`;
+                    
+                    matchesSearch = matchQuery(combinedCardText, query);
+                }
+                
+                card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
             });
 
+            // Update section visibility
             const sections = document.querySelectorAll('.tour-section');
             sections.forEach(sec => {
                 let visibleCount = 0;
