@@ -266,7 +266,7 @@
                 title="Thông tin cá nhân">
                 <div class="text-right">
                     <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none"
-                        th:text="${employee != null ? employee.fullName : 'NguyenNgoc'}">NguyenNgoc</p>
+                        th:text="${employee != null ? employee.fullName : 'NguynNgoc'}">NguynNgoc</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -360,7 +360,7 @@
                                      th:data-status="${tour.status}"
                                      th:data-date="${tour.date}"
                                      th:data-schedule-id="${tour.id}"
-                                     th:class="${tour.guide == (employee != null ? employee.fullName : 'Nguyen Ngọc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
+                                     th:class="${tour.guide == (employee != null ? employee.fullName : 'NguynNgoc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
                                      th:onclick="'window.location.href=\'/tourguide/dashboard?scheduleId=' + ${tour.id} + '\''">
                                     <div class="absolute top-0 right-0 p-4">
                                         <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
@@ -567,7 +567,7 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Nguyen Ngọc'}]]*/ "Nguyen Ngọc";
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'NguynNgoc'}]]*/ "NguynNgoc";
         let selectedDateFilter = null;
 
         function clearDateFilter() {
@@ -584,7 +584,7 @@
                 id: 1,
                 name: "Hành trình Đoàn Tụ - Huế",
                 time: "08:00 - 13:00",
-                guide: "Nguyen Ngọc",
+                guide: "NguynNgoc",
                 status: "upcoming",
                 date: "2026-06-26",
                 image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
@@ -617,7 +617,7 @@
                 id: 4,
                 name: "Tinh túy đồng nội - Quảng Nam",
                 time: "08:30 - 13:30",
-                guide: "Nguyen Ngọc",
+                guide: "NguynNgoc",
                 status: "upcoming",
                 date: "2026-06-27",
                 image: "/AnhTour/Com.jpg",
@@ -653,9 +653,9 @@
             toursData = dbTours;
         }
  
-        // Replace Nguyen Ngọc references with current guide's actual name
+        // Replace NguynNgoc references with current guide's actual name
         toursData.forEach(t => {
-            if (t.guide === 'Nguyen Ngọc') {
+            if (t.guide === 'NguynNgoc') {
                 t.guide = loggedInGuideName;
             }
         });
