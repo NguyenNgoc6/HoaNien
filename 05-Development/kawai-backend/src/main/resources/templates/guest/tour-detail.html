@@ -217,6 +217,11 @@
             from { transform: rotate(0deg); }
             to   { transform: rotate(360deg); }
         }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.95); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 
@@ -1359,28 +1364,40 @@
             const departureDate = document.getElementById('departureDate').value;
 
             if (!fullName || !email || !phone || !departureDate) {
-                alert(lang === 'vi' ? 'Vui lòng nhập đầy đủ thông tin (Họ tên, Email, Số điện thoại và Ngày đi).' : 'Please fill out all primary information.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Thiếu thông tin' : 'Missing Information',
+                    lang === 'vi' ? 'Vui lòng nhập đầy đủ thông tin (Họ tên, Email, Số điện thoại và Ngày đi).' : 'Please fill out all primary information.'
+                );
                 return false;
             }
 
             // Validate Full Name
             const nameRegex = /^[\p{L}]+(?:\s+[\p{L}]+)+$/u;
             if (!nameRegex.test(fullName)) {
-                alert(lang === 'vi' ? 'Họ và tên không hợp lệ. Vui lòng nhập cả họ và tên (tối thiểu 2 từ).' : 'Invalid Full Name. Please enter at least 2 words.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Họ tên không hợp lệ' : 'Invalid Name',
+                    lang === 'vi' ? 'Họ và tên không hợp lệ. Vui lòng nhập cả họ và tên (tối thiểu 2 từ).' : 'Invalid Full Name. Please enter at least 2 words.'
+                );
                 return false;
             }
 
             // Validate Phone Number
             const phoneRegex = /^(0[35789])[0-9]{8}$/;
             if (!phoneRegex.test(phone)) {
-                alert(lang === 'vi' ? 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 chữ số).' : 'Invalid phone number.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Số điện thoại không hợp lệ' : 'Invalid Phone',
+                    lang === 'vi' ? 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 chữ số).' : 'Invalid phone number.'
+                );
                 return false;
             }
 
             // Validate Email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert(lang === 'vi' ? 'Email không đúng định dạng. Vui lòng nhập lại.' : 'Invalid email format.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Email không hợp lệ' : 'Invalid Email',
+                    lang === 'vi' ? 'Email không đúng định dạng. Vui lòng nhập lại.' : 'Invalid email format.'
+                );
                 return false;
             }
 
@@ -1389,14 +1406,20 @@
             today.setHours(0, 0, 0, 0);
             const selectedDate = new Date(departureDate);
             if (selectedDate < today) {
-                alert(lang === 'vi' ? 'Ngày khởi hành không thể là ngày trong quá khứ. Vui lòng chọn lại.' : 'Departure date cannot be in the past. Please select a valid date.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Ngày khởi hành không hợp lệ' : 'Invalid Departure Date',
+                    lang === 'vi' ? 'Ngày khởi hành không thể là ngày trong quá khứ. Vui lòng chọn lại.' : 'Departure date cannot be in the past. Please select a valid date.'
+                );
                 document.getElementById('departureDate').focus();
                 return false;
             }
 
             // Validate companions total count matches participant count
             if (!validateCompanions()) {
-                alert(lang === 'vi' ? 'Tổng số thành viên (Người lớn + Trẻ em) chưa khớp với số lượng thành viên đã chọn.' : 'Total adults and children must equal total selected members.');
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Thông tin chưa khớp' : 'Count Mismatch',
+                    lang === 'vi' ? 'Tổng số thành viên (Người lớn + Trẻ em) chưa khớp với số lượng thành viên đã chọn.' : 'Total adults and children must equal total selected members.'
+                );
                 return false;
             }
 
@@ -1430,8 +1453,8 @@
                     errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) đã vượt quá số thành viên đã chọn (${totalParticipants})`;
                 }
 
-                // Immediate popup warning
-                alert(`Vượt quá số lượng thành viên là ${totalParticipants} trên màn hình`);
+                // Beautiful custom popup warning
+                showWarningAlertPopup('Vượt quá số lượng', `Vượt quá số lượng thành viên là ${totalParticipants} trên màn hình`);
                 return false;
             } else if (sum < totalParticipants) {
                 // Hide child rows container if sum is less than total
@@ -1454,6 +1477,26 @@
                 // Generate child name and age rows because sum matches exactly!
                 generateChildRows(children);
                 return true;
+            }
+        }
+
+        function showWarningAlertPopup(title, message) {
+            const popup = document.getElementById('warning-alert-popup');
+            const titleEl = document.getElementById('warning-alert-title');
+            const msgEl = document.getElementById('warning-alert-msg');
+            if (popup) {
+                if (titleEl) titleEl.textContent = title;
+                if (msgEl) msgEl.textContent = message;
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeWarningAlertPopup() {
+            const popup = document.getElementById('warning-alert-popup');
+            if (popup) {
+                popup.style.display = 'none';
+                document.body.style.overflow = 'auto';
             }
         }
 
@@ -1880,6 +1923,20 @@
                     style="width:100%; background:transparent; border:1px solid #E5E1DA; padding:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; cursor:pointer; font-family:'Montserrat',sans-serif;"
                     onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
                 Bỏ qua
+            </button>
+        </div>
+    </div>
+
+    <!-- Beautiful Warning Alert Popup -->
+    <div id="warning-alert-popup" style="display:none; position:fixed; inset:0; z-index:9200; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);">
+        <div style="background:#fff; width:100%; max-width:400px; padding:40px 32px; position:relative; box-shadow:0 25px 60px rgba(0,0,0,0.2); border:1px solid #E5E1DA; animation:scaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;" class="text-center">
+            <span class="material-symbols-outlined text-amber-500 text-5xl mb-4" style="font-weight: 300;">warning</span>
+            <h4 class="font-serif text-xl text-brand-dark mb-2" id="warning-alert-title">Thông báo</h4>
+            <p id="warning-alert-msg" style="font-family:'Montserrat',sans-serif; font-size:12px; color:#6b7280; line-height:1.7; margin-bottom:24px;"></p>
+            <button onclick="closeWarningAlertPopup()"
+                    style="width:100%; background:#2D2926; color:#fff; padding:16px 24px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; border:none; cursor:pointer; font-family:'Montserrat',sans-serif;"
+                    onmouseover="this.style.background='#C5A059'" onmouseout="this.style.background='#2D2926'">
+                Xác nhận
             </button>
         </div>
     </div>
