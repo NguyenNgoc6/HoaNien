@@ -28,6 +28,9 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.AccountRepository accountRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.CustomerRepository customerRepository;
+
     @org.springframework.web.bind.annotation.ModelAttribute
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
@@ -113,6 +116,26 @@ public class TourGuideController {
             @org.springframework.web.bind.annotation.RequestParam(value = "scanned", required = false) String scanned,
             Principal principal,
             Model model) {
+        
+        // Ensure customer 5 is renamed to Ngọc Thị in the database
+        try {
+            customerRepository.findById(5L).ifPresent(c -> {
+                if ("Lê Quang".equals(c.getFullName())) {
+                    c.setFullName("Ngọc Thị");
+                    c.setGender("Nữ");
+                    customerRepository.saveAndFlush(c);
+                }
+            });
+            accountRepository.findById(9L).ifPresent(a -> {
+                if ("lequang".equals(a.getUsername())) {
+                    a.setUsername("ngocthi");
+                    accountRepository.saveAndFlush(a);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
