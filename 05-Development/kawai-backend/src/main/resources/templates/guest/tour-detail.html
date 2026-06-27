@@ -1355,6 +1355,17 @@
             document.getElementById('room-selection-modal').classList.remove('active');
             document.getElementById('activity-modal').classList.remove('active');
             document.body.style.overflow = 'auto';
+            // Clean up VNPay QR screen if visible
+            if (vnpayCountdownTimer) {
+                clearInterval(vnpayCountdownTimer);
+                vnpayCountdownTimer = null;
+            }
+            const qrScreen = document.getElementById('vnpay-qr-screen');
+            if (qrScreen) qrScreen.style.display = 'none';
+            const qrImg = document.getElementById('vnpay-qr-img');
+            if (qrImg) { qrImg.src = ''; qrImg.style.display = 'none'; }
+            const qrLoading = document.getElementById('vnpay-qr-loading');
+            if (qrLoading) qrLoading.style.display = 'flex';
         }
 
         // Real-time validation: prevent past date selection
@@ -1603,22 +1614,6 @@
                     window.location.href = vnpayUrl;
                 }
             }, 1000);
-        }
-
-        // Override closeModal to also clean up QR screen
-        const _origCloseModal = closeModal;
-        function closeModal() {
-            _origCloseModal();
-            if (vnpayCountdownTimer) {
-                clearInterval(vnpayCountdownTimer);
-                vnpayCountdownTimer = null;
-            }
-            const screen = document.getElementById('vnpay-qr-screen');
-            if (screen) screen.style.display = 'none';
-            const qrImg = document.getElementById('vnpay-qr-img');
-            if (qrImg) { qrImg.src = ''; qrImg.style.display = 'none'; }
-            const qrLoading = document.getElementById('vnpay-qr-loading');
-            if (qrLoading) qrLoading.style.display = 'flex';
         }
 
         // Helper to translate weather description
