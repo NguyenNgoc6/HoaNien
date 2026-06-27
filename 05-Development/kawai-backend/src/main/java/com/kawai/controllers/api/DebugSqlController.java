@@ -9,7 +9,7 @@ import java.util.Map;
 public class DebugSqlController {
     @Autowired private JdbcTemplate jdbcTemplate;
     @GetMapping("/api/v1/debug/sql")
-    public List<Map<String, Object>> debugSql(@RequestParam(value="q", defaultValue="SELECT * FROM Table_Reservations") String query) {
+    public List<Map<String, Object>> debugSql(@org.springframework.web.bind.annotation.RequestParam(value="q", defaultValue="SELECT * FROM Table_Reservations") String query) {
         try {
             return jdbcTemplate.queryForList(query);
         } catch (Exception e) {

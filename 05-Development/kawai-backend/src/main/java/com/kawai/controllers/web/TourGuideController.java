@@ -160,7 +160,14 @@ public class TourGuideController {
             // Find default schedule based on logged-in guide profile
             java.util.List<com.kawai.models.TourSchedule> schedules = tourScheduleRepository.findAll();
             if (!schedules.isEmpty()) {
-                final com.kawai.models.Employee emp = (employee != null) ? employee : (principal != null ? employeeRepository.findByAccountUsername(principal.getName()).orElse(null) : null);
+                com.kawai.models.Employee emp = null;
+                if (principal != null) {
+                    emp = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
+                    if (emp == null) {
+                        emp = new com.kawai.models.Employee();
+                        emp.setFullName("NguynNgoc");
+                    }
+                }
                 final String loggedInName = (emp != null) ? emp.getFullName() : "NguynNgoc";
                 
                 targetSchedule = schedules.stream()
