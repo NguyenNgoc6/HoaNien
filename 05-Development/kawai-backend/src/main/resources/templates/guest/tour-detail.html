@@ -431,7 +431,7 @@
                     <div class="flex flex-col">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 text-black">Số lượng thành
                             viên (khách)</label>
-                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice(); validateCompanions()">
+                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice(); validateCompanions(false)" onchange="validateCompanions(true)">
                     </div>
                     <!-- Companion Section -->
                     <div data-purpose="accompanying-section">
@@ -441,13 +441,13 @@
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Người
                                     lớn</label>
-                                <input class="text-sm py-2" id="num-adults" min="1" placeholder="Số lượng..." type="number" value="1" oninput="validateCompanions()">
+                                <input class="text-sm py-2" id="num-adults" min="1" placeholder="Số lượng..." type="number" value="1" oninput="validateCompanions(false)" onchange="validateCompanions(true)">
                             </div>
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Trẻ
                                     em</label>
                                 <input class="text-sm py-2" id="num-children" min="0"
-                                    oninput="validateCompanions()" placeholder="Số lượng..." type="number" value="0">
+                                    oninput="validateCompanions(false)" onchange="validateCompanions(true)" placeholder="Số lượng..." type="number" value="0">
                             </div>
                         </div>
                         <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-2 hidden" id="companion-error">
@@ -1415,18 +1415,14 @@
             }
 
             // Validate companions total count matches participant count
-            if (!validateCompanions()) {
-                showWarningAlertPopup(
-                    lang === 'vi' ? 'Thông tin chưa khớp' : 'Count Mismatch',
-                    lang === 'vi' ? 'Tổng số thành viên (Người lớn + Trẻ em) chưa khớp với số lượng thành viên đã chọn.' : 'Total adults and children must equal total selected members.'
-                );
+            if (!validateCompanions(true)) {
                 return false;
             }
 
             return true;
         }
 
-        function validateCompanions() {
+        function validateCompanions(isBlur = false) {
             const participantInput = document.getElementById('participantCount');
             const adultsInput = document.getElementById('num-adults');
             const childrenInput = document.getElementById('num-children');
@@ -1466,6 +1462,11 @@
                 if (errorEl) {
                     errorEl.classList.remove('hidden');
                     errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) chưa đủ so với số thành viên đã chọn (${totalParticipants})`;
+                }
+
+                // If blurred (finished typing) or validating on submit, show the alert popup
+                if (isBlur) {
+                    showWarningAlertPopup('Chưa đủ số lượng', `Tổng số người lớn và trẻ em (${sum}) chưa đủ so với số lượng thành viên là ${totalParticipants}`);
                 }
                 return false;
             } else {
