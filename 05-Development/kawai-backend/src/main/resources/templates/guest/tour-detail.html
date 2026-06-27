@@ -385,7 +385,14 @@
         </section>
         <!-- END: LeftHeroSection -->
         <!-- BEGIN: RightFormSection -->
-        <section class="w-1/2 bg-white px-20 py-16 border-l border-brand-border overflow-y-auto">
+        <section class="w-1/2 bg-white px-20 py-16 border-l border-brand-border overflow-y-auto relative">
+            <!-- Blur Overlay if not logged in -->
+            <div th:if="${session.user == null}"
+                 id="booking-blur-overlay"
+                 class="absolute inset-0 z-20 bg-white/40 flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-white/50"
+                 style="backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);"
+                 onclick="openRequireLoginModal()">
+            </div>
             <div class="max-w-2xl mx-auto">
                 <div class="text-center mb-8">
                     <h2 class="text-5xl font-serif mb-2">Thông tin đặt chỗ</h2>
@@ -1596,6 +1603,32 @@
             document.body.style.overflow = 'auto';
         }
 
+        // Require Login Modal Controls
+        function openRequireLoginModal() {
+            const modal = document.getElementById('require-login-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeRequireLoginModal() {
+            const modal = document.getElementById('require-login-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function triggerLoginFromPopup() {
+            closeRequireLoginModal();
+            if (typeof openLoginModal === 'function') {
+                openLoginModal();
+            } else {
+                console.error('openLoginModal is not defined. Ensure guest/fragments/auth fragment is present.');
+            }
+        }
+
         // Helper to translate weather description
         function translateWeatherDesc(desc) {
             if (!desc) return "";
@@ -1761,6 +1794,32 @@
         </div>
     </div>
     <!-- END VNPay QR -->
+
+    <!-- Require Login Modal -->
+    <div id="require-login-modal" 
+         style="display:none; position:fixed; inset:0; z-index:9100; background:rgba(0,0,0,0.65); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);">
+        <div style="background:#fff; width:100%; max-width:440px; padding:40px 32px; position:relative; box-shadow:0 25px 60px rgba(0,0,0,0.3); border:1px solid #E5E1DA;" class="text-center">
+            <button onclick="closeRequireLoginModal()"
+                    style="position:absolute; top:16px; right:20px; font-size:1.5rem; color:#9ca3af; background:none; border:none; cursor:pointer; line-height:1;">&times;</button>
+            
+            <span class="material-symbols-outlined text-brand-gold text-5xl mb-6">lock_open</span>
+            <h3 class="font-serif text-2xl text-brand-dark mb-4">Khám Phá Hòa Niên</h3>
+            <p style="font-family:'Montserrat',sans-serif; font-size:13px; color:#4b5563; line-height:1.7; margin-bottom:28px;">
+                Quý khách hãy thực hiện đăng nhập để khám phá trải nghiệm thú vị cùng Hòa Niên Retreat Resort & Hub.
+            </p>
+            
+            <button onclick="triggerLoginFromPopup()"
+                    style="display:block; width:100%; background:#2D2926; color:#fff; padding:16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; text-align:center; border:none; cursor:pointer; margin-bottom:10px; font-family:'Montserrat',sans-serif;"
+                    onmouseover="this.style.background='#C5A059'" onmouseout="this.style.background='#2D2926'">
+                Đăng Nhập
+            </button>
+            <button onclick="closeRequireLoginModal()"
+                    style="width:100%; background:transparent; border:1px solid #E5E1DA; padding:12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; cursor:pointer; font-family:'Montserrat',sans-serif;"
+                    onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                Bỏ qua
+            </button>
+        </div>
+    </div>
 
 </body>
 
