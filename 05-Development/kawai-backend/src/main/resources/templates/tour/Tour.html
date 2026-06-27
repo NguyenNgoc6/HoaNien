@@ -441,7 +441,15 @@
                     <!-- Calendar Card -->
                     <div class="glass-surface rounded-2xl p-8 sticky top-24 border border-primary-container/20">
                         <div class="flex items-center justify-between mb-8">
-                            <h3 class="font-headline-md text-2xl text-on-surface">Tháng 6, 2026</h3>
+                            <h3 id="calendar-month-year" class="font-headline-md text-2xl text-on-surface">Tháng 6, 2026</h3>
+                            <div class="flex items-center gap-2">
+                                <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors" title="Tháng trước">
+                                    <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                                </button>
+                                <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors" title="Tháng sau">
+                                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                                </button>
+                            </div>
                         </div>
                         <!-- Date Grid -->
                         <div class="grid grid-cols-7 gap-1 text-center mb-4">
@@ -453,52 +461,8 @@
                             <div class="text-label-sm font-bold text-on-surface-variant py-2">T7</div>
                             <div class="text-label-sm font-bold text-primary py-2">CN</div>
                         </div>
-                        <div class="grid grid-cols-7 gap-1 text-center">
-                            <!-- Week 1 -->
-                            <div onclick="showDateTours('2026-06-01')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">1</div>
-                            <div onclick="showDateTours('2026-06-02')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">2</div>
-                            <div onclick="showDateTours('2026-06-03')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">3</div>
-                            <div onclick="showDateTours('2026-06-04')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">4</div>
-                            <div onclick="showDateTours('2026-06-05')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">5</div>
-                            <div onclick="showDateTours('2026-06-06')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">6</div>
-                            <div onclick="showDateTours('2026-06-07')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">7</div>
-                            <!-- Week 2 -->
-                            <div onclick="showDateTours('2026-06-08')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">8</div>
-                            <div onclick="showDateTours('2026-06-09')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">9</div>
-                            <div onclick="showDateTours('2026-06-10')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">10</div>
-                            <div onclick="showDateTours('2026-06-11')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">11</div>
-                            <div onclick="showDateTours('2026-06-12')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">12</div>
-                            <div onclick="showDateTours('2026-06-13')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">13</div>
-                            <div onclick="showDateTours('2026-06-14')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">14</div>
-                            <!-- Week 3 -->
-                            <div onclick="showDateTours('2026-06-15')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">15</div>
-                            <div onclick="showDateTours('2026-06-16')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">16</div>
-                            <div onclick="showDateTours('2026-06-17')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">17</div>
-                            <div onclick="showDateTours('2026-06-18')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">18</div>
-                            <div onclick="showDateTours('2026-06-19')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">19</div>
-                            <div onclick="showDateTours('2026-06-20')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">20</div>
-                            <div onclick="showDateTours('2026-06-21')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">21</div>
-                            <!-- Week 4 -->
-                            <div onclick="showDateTours('2026-06-22')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">22</div>
-                            <div onclick="showDateTours('2026-06-23')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">23</div>
-                            <div onclick="showDateTours('2026-06-24')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">24</div>
-                            <div onclick="showDateTours('2026-06-25')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">25</div>
-                            <div onclick="showDateTours('2026-06-26')"
-                                class="p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md cursor-pointer hover:opacity-90">26
-                                <div
-                                    class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-on-primary rounded-full">
-                                </div>
-                            </div>
-                            <div onclick="showDateTours('2026-06-27')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">27</div>
-                            <div onclick="showDateTours('2026-06-28')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">28</div>
-                            <!-- Week 5 -->
-                            <div onclick="showDateTours('2026-06-29')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">29</div>
-                            <div onclick="showDateTours('2026-06-30')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">30</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">1</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">2</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">3</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">4</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">5</div>
+                        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 text-center">
+                            <!-- Dynamic days will be rendered here by renderCalendar() -->
                         </div>
                         <div class="mt-10 pt-6 border-t border-outline-variant/30">
                             <h4 class="font-headline-md text-xl text-on-surface mb-4">Ghi chú hôm nay</h4>
@@ -876,6 +840,105 @@
                 }
             }
         });
+
+        let currentYear = 2026;
+        let currentMonth = 5; // 0-indexed, so 5 = June
+        const todayReal = new Date();
+        
+        function renderCalendar() {
+            const monthNames = [
+                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+                "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+            ];
+            
+            const monthYearEl = document.getElementById('calendar-month-year');
+            if (monthYearEl) {
+                monthYearEl.textContent = `${monthNames[currentMonth]}, ${currentYear}`;
+            }
+            
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+            
+            const totalDays = lastDayOfMonth.getDate();
+            
+            let startDayOfWeek = firstDayOfMonth.getDay();
+            let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+            
+            const grid = document.getElementById('calendar-days-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            for (let i = offset - 1; i >= 0; i--) {
+                const dayNum = prevMonthLastDay - i;
+                const prevMonthNum = currentMonth === 0 ? 11 : currentMonth - 1;
+                const prevYearNum = currentMonth === 0 ? currentYear - 1 : currentYear;
+                const dateString = `${prevYearNum}-${String(prevMonthNum + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = "p-2 text-on-surface/20 font-label-md cursor-pointer hover:bg-primary-container/10 rounded-full transition-colors";
+                dayDiv.textContent = dayNum;
+                dayDiv.onclick = () => showDateTours(dateString);
+                grid.appendChild(dayDiv);
+            }
+            
+            for (let day = 1; day <= totalDays; day++) {
+                const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasTours = toursData.some(t => t.date === dateString);
+                
+                const isTodayReal = todayReal.getDate() === day && todayReal.getMonth() === currentMonth && todayReal.getFullYear() === currentYear;
+                const isDemoHighlight = day === 26 && currentMonth === 5 && currentYear === 2026;
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.onclick = () => showDateTours(dateString);
+                
+                if (isDemoHighlight || isTodayReal) {
+                    dayDiv.className = "p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md cursor-pointer hover:opacity-90";
+                    dayDiv.innerHTML = `${day}`;
+                    const dot = document.createElement('div');
+                    dot.className = "absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-on-primary rounded-full";
+                    dayDiv.appendChild(dot);
+                } else {
+                    dayDiv.className = "p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md relative";
+                    dayDiv.textContent = day;
+                    if (hasTours) {
+                        const dot = document.createElement('div');
+                        dot.className = "absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary/45 rounded-full";
+                        dayDiv.appendChild(dot);
+                    }
+                }
+                
+                grid.appendChild(dayDiv);
+            }
+            
+            const totalCellsSoFar = offset + totalDays;
+            const remainingCells = 42 - totalCellsSoFar;
+            for (let day = 1; day <= remainingCells; day++) {
+                const nextMonthNum = currentMonth === 11 ? 0 : currentMonth + 1;
+                const nextYearNum = currentMonth === 11 ? currentYear + 1 : currentYear;
+                const dateString = `${nextYearNum}-${String(nextMonthNum + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = "p-2 text-on-surface/20 font-label-md cursor-pointer hover:bg-primary-container/10 rounded-full transition-colors";
+                dayDiv.textContent = day;
+                dayDiv.onclick = () => showDateTours(dateString);
+                grid.appendChild(dayDiv);
+            }
+        }
+        
+        function changeMonth(direction) {
+            currentMonth += direction;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        renderCalendar();
     </script>
 </body>
 
