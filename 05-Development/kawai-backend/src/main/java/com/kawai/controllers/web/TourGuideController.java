@@ -114,6 +114,7 @@ public class TourGuideController {
     @org.springframework.transaction.annotation.Transactional
     public String dashboard(
             @org.springframework.web.bind.annotation.RequestParam(value = "scanned", required = false) String scanned,
+            @org.springframework.web.bind.annotation.RequestParam(value = "scheduleId", required = false) Long scheduleId,
             Principal principal,
             Model model) {
         
@@ -142,21 +143,35 @@ public class TourGuideController {
         }
         java.time.LocalDate today = java.time.LocalDate.now();
         
-        // Luôn đảm bảo luôn có tour test FaceID (schedule ID = 5) khởi hành hôm nay để demo
-        java.util.List<com.kawai.models.TourSchedule> schedules = tourScheduleRepository.findAll();
-        if (!schedules.isEmpty()) {
-            com.kawai.models.TourSchedule targetSchedule = schedules.stream()
-                    .filter(s -> s.getId() != null && s.getId() == 5L)
-                    .findFirst()
-                    .orElse(schedules.get(0));
-            if (!today.equals(targetSchedule.getDepartureDate())) {
-                targetSchedule.setDepartureDate(today);
-                tourScheduleRepository.saveAndFlush(targetSchedule);
+        // Find targeted schedule
+        com.kawai.models.TourSchedule targetSchedule = null;
+        if (scheduleId != null) {
+            targetSchedule = tourScheduleRepository.findById(scheduleId).orElse(null);
+        }
+        
+        if (targetSchedule == null) {
+            // Default logic to find/create today's schedule ID = 5
+            java.util.List<com.kawai.models.TourSchedule> schedules = tourScheduleRepository.findAll();
+            if (!schedules.isEmpty()) {
+                targetSchedule = schedules.stream()
+                        .filter(s -> s.getId() != null && s.getId() == 5L)
+                        .findFirst()
+                        .orElse(schedules.get(0));
+                if (targetSchedule != null && targetSchedule.getId() == 5L && !today.equals(targetSchedule.getDepartureDate())) {
+                    targetSchedule.setDepartureDate(today);
+                    tourScheduleRepository.saveAndFlush(targetSchedule);
+                }
             }
         }
-
-        java.util.List<com.kawai.models.TourAttendee> attendees = tourAttendeeRepository
-                .findByTourBooking_Schedule_DepartureDate(today);
+        
+        java.util.List<com.kawai.models.TourAttendee> attendees = new java.util.ArrayList<>();
+        if (targetSchedule != null) {
+            attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(targetSchedule.getId());
+        }
+        
+        if (attendees.isEmpty()) {
+            attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(today);
+        }
 
         // Nếu không phải là load sau khi quét thành công (scanned == true), tự động reset trạng thái chờ FaceID
         if (!"true".equals(scanned)) {
@@ -169,16 +184,28 @@ public class TourGuideController {
                     didReset = true;
                 }
             }
-            if (didReset) {
-                // Re-query to get updated statuses for the model
-                attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(today);
+            if (didReset && targetSchedule != null) {
+                attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(targetSchedule.getId());
+                if (attendees.isEmpty()) {
+                    attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(today);
+                }
             }
         }
         
         model.addAttribute("attendees", attendees);
 
-        // Lấy thông tin tour từ attendee đầu tiên
-        if (!attendees.isEmpty()) {
+        // Lấy thông tin tour
+        if (targetSchedule != null) {
+            model.addAttribute("tourName",
+                    targetSchedule.getTour() != null ? targetSchedule.getTour().getTourName() : "Tour hôm nay");
+            model.addAttribute("departureTime",
+                    targetSchedule.getDepartureTime() != null ? targetSchedule.getDepartureTime().toString().substring(0, 5)
+                            : "--:--");
+            model.addAttribute("departureDate",
+                    targetSchedule.getDepartureDate() != null ? targetSchedule.getDepartureDate().toString() : today.toString());
+            model.addAttribute("scheduleStatus", targetSchedule.getScheduleStatus());
+            model.addAttribute("maxCapacity", targetSchedule.getTour() != null ? targetSchedule.getTour().getMaxCapacity() : 0);
+        } else if (!attendees.isEmpty()) {
             com.kawai.models.TourBooking tb = attendees.get(0).getTourBooking();
             if (tb != null && tb.getSchedule() != null) {
                 com.kawai.models.TourSchedule sched = tb.getSchedule();
@@ -210,6 +237,64 @@ public class TourGuideController {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
+        
+        // Fetch all tour schedules from DB
+        java.util.List<com.kawai.models.TourSchedule> dbSchedules = tourScheduleRepository.findAll();
+        java.util.List<java.util.Map<String, Object>> dbToursList = new java.util.ArrayList<>();
+        
+        for (com.kawai.models.TourSchedule sched : dbSchedules) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", sched.getId());
+            map.put("name", sched.getTour() != null ? sched.getTour().getTourName() : "Chưa xác định");
+            
+            // Format time
+            String timeStr = "08:00 - 12:00";
+            if (sched.getDepartureTime() != null) {
+                java.time.LocalTime depTime = sched.getDepartureTime();
+                java.time.LocalTime endTime = depTime.plusHours(4); // Default tour duration 4 hours
+                timeStr = depTime.toString().substring(0, 5) + " - " + endTime.toString().substring(0, 5);
+            }
+            map.put("time", timeStr);
+            
+            // Format guide name
+            String guideName = "Minh Anh";
+            if (sched.getTour() != null) {
+                String tn = sched.getTour().getTourName();
+                if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
+                    guideName = "Ngọc Lan";
+                } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa")) {
+                    guideName = "Hoàng Nam";
+                }
+            }
+            map.put("guide", guideName);
+            
+            map.put("status", sched.getScheduleStatus() != null ? sched.getScheduleStatus().toLowerCase() : "upcoming");
+            map.put("date", sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "2026-06-27");
+            
+            // Match image
+            String image = "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
+            if (sched.getTour() != null) {
+                String name = sched.getTour().getTourName();
+                if (name.contains("Tinh Túy Đồng Nội") || name.contains("Tinh túy đồng nội")) {
+                    image = "/AnhTour/com.jfif";
+                } else if (name.contains("Tĩnh Lặng Liên Hoa") || name.contains("Tĩnh lặng liên hoa")) {
+                    image = "/AnhTour/ThapMuoi.jpg";
+                } else if (name.contains("Di sản")) {
+                    image = "/AnhTour/ThuCong.jpg";
+                }
+            }
+            map.put("image", image);
+            map.put("type", "Cao cấp");
+            
+            // Count total bookings/attendees
+            int count = sched.getBookedSeats() != null ? sched.getBookedSeats() : 0;
+            map.put("guests", count + " khách");
+            
+            dbToursList.add(map);
+        }
+        
+        model.addAttribute("dbTours", dbToursList);
+        
         return "tour/Tour";
     }
 
