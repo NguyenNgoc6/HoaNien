@@ -327,7 +327,7 @@
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
-                                                <span class="text-primary font-bold font-label-md text-label-md">08:00 - 13:00</span>
+                                                <span class="text-primary font-bold font-label-md text-label-md">Ngày 26/06/2026 | 08:00 - 13:00</span>
                                                 <span class="text-on-surface-variant text-label-sm">• HDV: <span th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</span></span>
                                             </div>
                                             <h3
@@ -363,7 +363,7 @@
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
                                                 <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">09:00 - 16:00</span>
+                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">Ngày 26/06/2026 | 09:00 - 16:00</span>
                                                 <span class="text-on-surface-variant text-label-sm">• HDV: Ngọc Lan</span>
                                             </div>
                                             <h3
@@ -410,7 +410,7 @@
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
                                                 <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">14:00 - 22:00</span>
+                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">Ngày 25/06/2026 | 14:00 - 22:00</span>
                                                 <span class="text-on-surface-variant text-label-sm">• HDV: Hoàng Nam</span>
                                             </div>
                                             <h3
@@ -790,6 +790,9 @@
                 : 'bg-secondary-container/30 text-secondary border-secondary-container';
             const statusText = tour.status === 'upcoming' ? 'Sắp diễn ra' : 'Đã hoàn thành';
             
+            const parts = tour.date.split('-');
+            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            
             return `
                 <div class="glass-panel border-primary/10 rounded-xl p-4 flex gap-4 hover:scale-[1.01] transition-transform duration-300 bg-white/40 backdrop-blur-md">
                     <div class="w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
@@ -801,7 +804,7 @@
                                 <h5 class="font-headline text-lg font-bold text-on-surface leading-snug">${tour.name}</h5>
                                 <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${statusBg}">${statusText}</span>
                             </div>
-                            <p class="text-[11px] text-on-surface-variant/70 mt-1">Thời gian: <span class="font-semibold text-primary">${tour.time}</span></p>
+                            <p class="text-[11px] text-on-surface-variant/70 mt-1">Ngày: <span class="font-semibold text-on-surface">${formattedDate}</span> | Thời gian: <span class="font-semibold text-primary">${tour.time}</span></p>
                             <p class="text-[11px] text-on-surface-variant/70">Hướng dẫn viên: <span class="font-semibold text-on-surface">${tour.guide}</span></p>
                         </div>
                         <div class="flex justify-between items-center mt-2 text-[10px] text-on-surface-variant/60 font-medium">
