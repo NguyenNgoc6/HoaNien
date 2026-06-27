@@ -39,14 +39,17 @@
         .scrollbar-custom::-webkit-scrollbar {
             width: 6px;
         }
+
         .scrollbar-custom::-webkit-scrollbar-track {
             background: rgba(103, 85, 140, 0.05);
             border-radius: 9999px;
         }
+
         .scrollbar-custom::-webkit-scrollbar-thumb {
             background: rgba(103, 85, 140, 0.2);
             border-radius: 9999px;
         }
+
         .scrollbar-custom::-webkit-scrollbar-thumb:hover {
             background: rgba(103, 85, 140, 0.4);
         }
@@ -193,7 +196,8 @@
         class="w-full h-20 fixed top-0 left-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-white/20 px-margin-desktop flex items-center justify-between">
         <div class="flex items-center gap-12">
             <div class="flex flex-col">
-                <h1 class="font-headline text-[32px] italic tracking-tighter text-primary leading-tight cursor-pointer" onclick="window.location.href='/'">HoaNien</h1>
+                <h1 class="font-headline text-[32px] italic tracking-tighter text-primary leading-tight cursor-pointer"
+                    onclick="window.location.href='/'">HoaNien</h1>
                 <p class="font-label-sm text-[10px] text-on-surface-variant/60 -mt-1">Retreat Resort &amp; Hub</p>
             </div>
             <nav class="flex items-center gap-2">
@@ -224,37 +228,45 @@
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
                 <!-- Dropdown Card -->
-                <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-[#fdfbf7] border border-[#3a3230]/20 shadow-2xl rounded-2xl p-4 z-[100] text-[#372618]">
+                <div id="notificationDropdown"
+                    class="hidden absolute right-0 mt-2 w-80 bg-[#fdfbf7] border border-[#3a3230]/20 shadow-2xl rounded-2xl p-4 z-[100] text-[#372618]">
                     <div class="flex justify-between items-center border-b border-[#3a3230]/10 pb-2 mb-3">
                         <span class="font-headline text-lg font-bold">Thông báo mới</span>
-                        <button onclick="markAllNotificationsAsRead(event)" class="text-xs text-primary hover:underline font-semibold">Đọc tất cả</button>
+                        <button onclick="markAllNotificationsAsRead(event)"
+                            class="text-xs text-primary hover:underline font-semibold">Đọc tất cả</button>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto text-left" id="notifications-list">
                         <!-- Notification Item 1 -->
                         <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
                             <p class="text-xs font-semibold text-on-surface">Yêu cầu hỗ trợ từ Đoàn khách</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Đoàn khách Singapore tại Cố đô Huế yêu cầu chuẩn bị thêm nước uống đóng chai.</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Đoàn khách Singapore tại Cố
+                                đô Huế yêu cầu chuẩn bị thêm nước uống đóng chai.</p>
                             <p class="text-[9px] text-on-surface-variant/50">5 phút trước</p>
                         </div>
                         <!-- Notification Item 2 -->
                         <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
                             <p class="text-xs font-semibold text-on-surface">Cảnh báo Thời tiết</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Dự báo có mưa rào nhẹ tại khu vực Tháp Mười từ 16:30 chiều nay.</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Dự báo có mưa rào nhẹ tại khu
+                                vực Tháp Mười từ 16:30 chiều nay.</p>
                             <p class="text-[9px] text-on-surface-variant/50">20 phút trước</p>
                         </div>
                         <!-- Notification Item 3 -->
                         <div class="p-3 hover:bg-primary/5 rounded-xl transition-colors space-y-1">
                             <p class="text-xs font-medium text-on-surface-variant">Lịch trình Ngày mai</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Bạn có lịch dẫn đoàn tham quan Ninh Bình bắt đầu lúc 08:30 sáng mai.</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Bạn có lịch dẫn đoàn tham
+                                quan Ninh Bình bắt đầu lúc 08:30 sáng mai.</p>
                             <p class="text-[9px] text-on-surface-variant/50">2 giờ trước</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="h-8 w-px bg-primary/10"></div>
-            <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
+            <button onclick="openGuideSettingsModal(event)"
+                class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none"
+                title="Thông tin cá nhân">
                 <div class="text-right">
-                    <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
+                    <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none"
+                        th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -263,7 +275,9 @@
                 </div>
             </button>
             <form th:action="@{/auth/logout}" method="post" class="inline">
-                <button type="submit" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors" title="Đăng xuất">
+                <button type="submit"
+                    class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors"
+                    title="Đăng xuất">
                     <span class="material-symbols-outlined">logout</span>
                 </button>
             </form>
@@ -275,7 +289,8 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12">
                 <div>
                     <h1 class="font-display-lg text-5xl text-on-surface mb-2 tracking-tight">Lịch Trình Tổng Thể</h1>
-                    <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant max-w-xl">Quản lý và theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
+                    <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant max-w-xl">Quản lý và
+                        theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
                 </div>
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                     <!-- Search Input -->
@@ -289,35 +304,49 @@
                     <!-- Filters -->
                     <div class="flex gap-1 glass-surface p-1 rounded-full">
                         <button onclick="filterTours('all', this)"
-                            class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold">Tất cả tour</button>
+                            class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold">Tất
+                            cả tour</button>
                         <button onclick="filterTours('mine', this)"
-                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Của tôi</button>
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Của
+                            tôi</button>
                         <button onclick="filterTours('upcoming', this)"
-                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp tới</button>
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp
+                            tới</button>
                         <button onclick="filterTours('completed', this)"
-                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn thành</button>
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn
+                            thành</button>
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
                 <!-- Schedule List -->
-                <div class="lg:col-span-8 flex flex-col gap-12 max-h-[72vh] overflow-y-auto pr-4 scrollbar-custom scroll-smooth">
+                <div
+                    class="lg:col-span-8 flex flex-col gap-12 max-h-[72vh] overflow-y-auto pr-4 scrollbar-custom scroll-smooth">
                     <!-- Morning Section -->
                     <section class="tour-section">
                         <div class="flex items-center gap-4 mb-6">
                             <span
                                 class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-full">light_mode</span>
-                            <h2 class="font-headline-lg text-3xl text-on-surface">Buổi sáng <span
-                                    class="text-on-surface-variant font-normal text-body-md ml-4">(08:00 - 12:00)</span>
-                            </h2>
+                            <div>
+                                <h2 class="font-headline-lg text-3xl text-on-surface">Buổi sáng <span
+                                        class="text-on-surface-variant font-normal text-body-md ml-4">(08:00 - 12:00)</span>
+                                </h2>
+                                <p class="text-sm text-on-surface-variant/70 mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    Thứ Sáu, ngày 26/06/2026
+                                </p>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 gap-6">
                             <!-- Tour Card (Highlight Minh Anh) -->
-                            <div th:data-guide="${employee != null ? employee.fullName : 'Minh Anh'}" data-status="upcoming"
-                                class="tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden" onclick="window.location.href='/tourguide/dashboard'">
+                            <div th:data-guide="${employee != null ? employee.fullName : 'Minh Anh'}"
+                                data-status="upcoming"
+                                class="tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden"
+                                onclick="window.location.href='/tourguide/dashboard'">
                                 <div class="absolute top-0 right-0 p-4">
                                     <span
-                                        class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Cao cấp</span>
+                                        class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Cao
+                                        cấp</span>
                                 </div>
                                 <div class="flex gap-6 flex-col md:flex-row">
                                     <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
@@ -327,20 +356,25 @@
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
-                                                <span class="text-primary font-bold font-label-md text-label-md">Ngày 26/06/2026 | 08:00 - 13:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: <span th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</span></span>
+                                                <span class="text-primary font-bold font-label-md text-label-md">08:00 -
+                                                    13:00</span>
+                                                <span class="text-on-surface-variant text-label-sm">• HDV: <span
+                                                        th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh
+                                                        Anh</span></span>
                                             </div>
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Hành trình Đoàn Tụ - Huế</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Hành trình tìm lại những nét cổ kính văn hóa xưa cũ tại cố đô.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Hành
+                                                trình tìm lại những nét cổ kính văn hóa xưa cũ tại cố đô.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
                                                 <div
                                                     class="w-8 h-8 rounded-full border-2 border-primary-container bg-surface flex items-center justify-center text-xs font-bold text-primary">
                                                     12+</div>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">Khách đoàn</span>
+                                                <span class="text-on-surface-variant text-label-sm font-medium">Khách
+                                                    đoàn</span>
                                             </div>
                                             <button
                                                 class="flex items-center gap-1 text-primary font-bold font-label-md text-label-md hover:translate-x-1 transition-transform">
@@ -363,19 +397,23 @@
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
                                                 <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">Ngày 26/06/2026 | 09:00 - 16:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: Ngọc Lan</span>
+                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">09:00
+                                                    - 16:00</span>
+                                                <span class="text-on-surface-variant text-label-sm">• HDV: Ngọc
+                                                    Lan</span>
                                             </div>
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Tinh Túy Đồng Nội</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Khám phá nét độc đáo trong thiết kế và văn hoá.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Khám phá
+                                                nét độc đáo trong thiết kế và văn hoá.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="material-symbols-outlined text-primary/70 text-lg">group</span>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">8 khách</span>
+                                                <span class="text-on-surface-variant text-label-sm font-medium">8
+                                                    khách</span>
                                             </div>
                                             <button
                                                 class="flex items-center gap-1 text-on-surface-variant group-hover:text-primary font-bold font-label-md text-label-md transition-colors">
@@ -393,9 +431,15 @@
                         <div class="flex items-center gap-4 mb-6">
                             <span
                                 class="material-symbols-outlined text-secondary bg-secondary-container/30 p-2 rounded-full">wb_twilight</span>
-                            <h2 class="font-headline-lg text-3xl text-on-surface">Buổi chiều <span
-                                    class="text-on-surface-variant font-normal text-body-md ml-4">(13:30 - 17:30)</span>
-                            </h2>
+                            <div>
+                                <h2 class="font-headline-lg text-3xl text-on-surface">Buổi chiều <span
+                                        class="text-on-surface-variant font-normal text-body-md ml-4">(13:30 - 17:30)</span>
+                                </h2>
+                                <p class="text-sm text-on-surface-variant/70 mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    Thứ Năm, ngày 25/06/2026
+                                </p>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 gap-6">
                             <!-- Afternoon Tour Card -->
@@ -410,19 +454,23 @@
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
                                                 <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">Ngày 25/06/2026 | 14:00 - 22:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: Hoàng Nam</span>
+                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">14:00
+                                                    - 22:00</span>
+                                                <span class="text-on-surface-variant text-label-sm">• HDV: Hoàng
+                                                    Nam</span>
                                             </div>
                                             <h3
                                                 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
                                                 Tĩnh Lặng Liên Hoa</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Trải nghiệm thư giãn tuyệt đối giữa thiên nhiên.</p>
+                                            <p class="font-headline text-lg font-light text-on-surface-variant">Trải
+                                                nghiệm thư giãn tuyệt đối giữa thiên nhiên.</p>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="material-symbols-outlined text-primary/70 text-lg">group</span>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">20 khách</span>
+                                                <span class="text-on-surface-variant text-label-sm font-medium">20
+                                                    khách</span>
                                             </div>
                                             <button
                                                 class="flex items-center gap-1 text-on-surface-variant group-hover:text-primary font-bold font-label-md text-label-md transition-colors">
@@ -441,12 +489,17 @@
                     <!-- Calendar Card -->
                     <div class="glass-surface rounded-2xl p-8 sticky top-24 border border-primary-container/20">
                         <div class="flex items-center justify-between mb-8">
-                            <h3 id="calendar-month-year" class="font-headline-md text-2xl text-on-surface">Tháng 6, 2026</h3>
+                            <h3 id="calendar-month-year" class="font-headline-md text-2xl text-on-surface">Tháng 6, 2026
+                            </h3>
                             <div class="flex items-center gap-2">
-                                <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors" title="Tháng trước">
+                                <button onclick="changeMonth(-1)"
+                                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors"
+                                    title="Tháng trước">
                                     <span class="material-symbols-outlined text-[20px]">chevron_left</span>
                                 </button>
-                                <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors" title="Tháng sau">
+                                <button onclick="changeMonth(1)"
+                                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-primary-container/20 text-on-surface transition-colors"
+                                    title="Tháng sau">
                                     <span class="material-symbols-outlined text-[20px]">chevron_right</span>
                                 </button>
                             </div>
@@ -470,13 +523,16 @@
                                 <div
                                     class="flex items-start gap-3 p-4 rounded-xl bg-primary-container/10 border-l-4 border-primary">
                                     <span class="material-symbols-outlined text-primary mt-0.5">info</span>
-                                    <p class="font-headline text-base font-light text-on-surface leading-relaxed">Đoàn khách Singapore yêu cầu hướng dẫn viên nói được tiếng Trung cơ bản.</p>
+                                    <p class="font-headline text-base font-light text-on-surface leading-relaxed">Đoàn
+                                        khách Singapore yêu cầu hướng dẫn viên nói được tiếng Trung cơ bản.</p>
                                 </div>
                                 <div
                                     class="flex items-start gap-3 p-4 rounded-xl bg-surface-container-low border-l-4 border-outline">
                                     <span
                                         class="material-symbols-outlined text-on-surface-variant mt-0.5">warning</span>
-                                    <p class="font-headline text-base font-light text-on-surface-variant leading-relaxed">Dự báo có mưa nhẹ vào lúc 16:30, chuẩn bị phương án dự phòng cho tour sông.</p>
+                                    <p
+                                        class="font-headline text-base font-light text-on-surface-variant leading-relaxed">
+                                        Dự báo có mưa nhẹ vào lúc 16:30, chuẩn bị phương án dự phòng cho tour sông.</p>
                                 </div>
                             </div>
                         </div>
@@ -490,7 +546,8 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end">
             <div class="space-y-4">
                 <h3 class="text-3xl font-serif text-white">HoaNien</h3>
-                <p class="text-[10px] tracking-widest opacity-50 uppercase text-white">© 2026 HOANIEN RETREAT. A QUIET LUXURY TRAVEL GROUP.</p>
+                <p class="text-[10px] tracking-widest opacity-50 uppercase text-white">© 2026 HOANIEN RETREAT. A QUIET
+                    LUXURY TRAVEL GROUP.</p>
             </div>
             <div class="flex space-x-12 text-[10px] font-bold tracking-widest uppercase opacity-80">
                 <a class="hover:text-[#C5A059] no-underline text-white" href="#">Quyền riêng tư</a>
@@ -510,48 +567,68 @@
     </div>
 
     <!-- Guide Settings Modal -->
-    <div id="guideSettingsModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div id="guideSettingsModal"
+        class="fixed inset-0 z-[150] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div class="bg-[#fdfbf7] w-full max-w-lg p-8 border border-[#3a3230]/20 shadow-2xl relative text-[#372618]">
-            <button onclick="closeGuideSettingsModal()" class="absolute top-4 right-4 text-[#372618]/60 hover:text-[#372618] transition-colors focus:outline-none">
+            <button onclick="closeGuideSettingsModal()"
+                class="absolute top-4 right-4 text-[#372618]/60 hover:text-[#372618] transition-colors focus:outline-none">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
-            <h3 class="font-headline-md text-2xl text-black font-bold mb-2 border-b border-[#3a3230]/10 pb-3">Thông tin hướng dẫn viên</h3>
+            <h3 class="font-headline-md text-2xl text-black font-bold mb-2 border-b border-[#3a3230]/10 pb-3">Thông tin
+                hướng dẫn viên</h3>
 
             <div th:if="${employee != null}" class="space-y-4 mt-4">
                 <div class="space-y-1">
-                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Họ và tên</label>
-                    <input readonly th:value="${employee.fullName}" class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
+                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Họ
+                        và tên</label>
+                    <input readonly th:value="${employee.fullName}"
+                        class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
                 </div>
                 <div class="space-y-1">
-                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Giới tính</label>
-                    <input readonly th:value="${employee.gender == 'Male' ? 'Nam' : (employee.gender == 'Female' ? 'Nữ' : 'Khác')}" class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
+                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Giới
+                        tính</label>
+                    <input readonly
+                        th:value="${employee.gender == 'Male' ? 'Nam' : (employee.gender == 'Female' ? 'Nữ' : 'Khác')}"
+                        class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
                 </div>
                 <div class="space-y-1">
-                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Số CCCD</label>
-                    <input readonly th:value="${employee.cccd}" class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
+                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Số
+                        CCCD</label>
+                    <input readonly th:value="${employee.cccd}"
+                        class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
                 </div>
                 <div class="space-y-1">
-                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Số điện thoại</label>
-                    <input readonly th:value="${employee.phone}" class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
+                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Số
+                        điện thoại</label>
+                    <input readonly th:value="${employee.phone}"
+                        class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
                 </div>
                 <div class="space-y-1">
-                    <label class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Email</label>
-                    <input readonly th:value="${employee.email}" class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
+                    <label
+                        class="font-label-caps text-[10px] text-outline uppercase block text-left font-semibold">Email</label>
+                    <input readonly th:value="${employee.email}"
+                        class="w-full bg-transparent border-0 border-b border-[#3a3230]/20 py-1.5 font-body-md text-black transition-all text-left outline-none cursor-default" />
                 </div>
             </div>
             <div th:if="${employee == null}">
-                <p class="text-sm text-[#3a3230]/80 mt-4 text-left">Không tìm thấy thông tin hồ sơ hướng dẫn viên. Vui lòng liên hệ Quản lý để được hỗ trợ.</p>
+                <p class="text-sm text-[#3a3230]/80 mt-4 text-left">Không tìm thấy thông tin hồ sơ hướng dẫn viên. Vui
+                    lòng liên hệ Quản lý để được hỗ trợ.</p>
             </div>
         </div>
     </div>
 
     <!-- Calendar Date Detail Modal -->
-    <div id="calendarDateModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div class="bg-[#fdfbf7] w-full max-w-2xl p-8 border border-[#3a3230]/20 shadow-2xl relative text-[#372618] rounded-2xl overflow-y-auto max-h-[85vh]">
-            <button onclick="closeCalendarDateModal()" class="absolute top-4 right-4 text-[#372618]/60 hover:text-[#372618] transition-colors focus:outline-none">
+    <div id="calendarDateModal"
+        class="fixed inset-0 z-[150] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-[#fdfbf7] w-full max-w-2xl p-8 border border-[#3a3230]/20 shadow-2xl relative text-[#372618] rounded-2xl overflow-y-auto max-h-[85vh]">
+            <button onclick="closeCalendarDateModal()"
+                class="absolute top-4 right-4 text-[#372618]/60 hover:text-[#372618] transition-colors focus:outline-none">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
-            <h3 id="modal-date-title" class="font-headline text-3xl italic text-primary font-bold mb-6 border-b border-[#3a3230]/10 pb-3">Lịch trình ngày ...</h3>
+            <h3 id="modal-date-title"
+                class="font-headline text-3xl italic text-primary font-bold mb-6 border-b border-[#3a3230]/10 pb-3">Lịch
+                trình ngày ...</h3>
 
             <div class="space-y-6">
                 <!-- Tour của tôi -->
@@ -684,7 +761,7 @@
             const normText = text.toLowerCase().normalize("NFC");
             const normQuery = query.toLowerCase().normalize("NFC");
             if (normText.includes(normQuery)) return true;
-            
+
             const accentlessText = removeVietnameseAccents(normText);
             const accentlessQuery = removeVietnameseAccents(normQuery);
             return accentlessText.includes(accentlessQuery);
@@ -708,11 +785,11 @@
         function applyCombinedFilter() {
             const query = document.getElementById('search-tour-input').value.trim();
             const cards = document.querySelectorAll('.tour-card');
-            
+
             cards.forEach(card => {
                 const guideName = card.getAttribute('data-guide') || '';
                 const status = card.getAttribute('data-status') || '';
-                
+
                 // 1. Check filter status
                 let matchesFilter = false;
                 if (activeTourFilter === 'all') {
@@ -724,7 +801,7 @@
                 } else if (activeTourFilter === 'completed') {
                     matchesFilter = (status === 'completed');
                 }
-                
+
                 // 2. Check search query
                 let matchesSearch = true;
                 if (query) {
@@ -732,10 +809,10 @@
                     const dataGuide = card.getAttribute('data-guide') || '';
                     const dataStatus = card.getAttribute('data-status') || '';
                     const combinedCardText = `${cardText} ${dataGuide} ${dataStatus}`;
-                    
+
                     matchesSearch = matchQuery(combinedCardText, query);
                 }
-                
+
                 card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
             });
 
@@ -752,18 +829,11 @@
             });
         }
 
-        function getVietnameseDayOfWeek(dateStr) {
-            const date = new Date(dateStr);
-            const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-            return days[date.getDay()];
-        }
-
         // Calendar detail popup functions
         function showDateTours(dateStr) {
             const parts = dateStr.split('-');
             const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-            const dayOfWeek = getVietnameseDayOfWeek(dateStr);
-            document.getElementById('modal-date-title').textContent = `Lịch trình ${dayOfWeek}, ngày ${formattedDate}`;
+            document.getElementById('modal-date-title').textContent = `Lịch trình ngày ${formattedDate}`;
 
             const filteredTours = toursData.filter(t => t.date === dateStr);
             const myTours = filteredTours.filter(t => t.guide === loggedInGuideName);
@@ -792,14 +862,11 @@
         }
 
         function createModalTourCard(tour) {
-            const statusBg = tour.status === 'upcoming' 
-                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+            const statusBg = tour.status === 'upcoming'
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                 : 'bg-secondary-container/30 text-secondary border-secondary-container';
             const statusText = tour.status === 'upcoming' ? 'Sắp diễn ra' : 'Đã hoàn thành';
-            
-            const parts = tour.date.split('-');
-            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-            
+
             return `
                 <div class="glass-panel border-primary/10 rounded-xl p-4 flex gap-4 hover:scale-[1.01] transition-transform duration-300 bg-white/40 backdrop-blur-md">
                     <div class="w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
@@ -811,7 +878,7 @@
                                 <h5 class="font-headline text-lg font-bold text-on-surface leading-snug">${tour.name}</h5>
                                 <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${statusBg}">${statusText}</span>
                             </div>
-                            <p class="text-[11px] text-on-surface-variant/70 mt-1">Ngày: <span class="font-semibold text-on-surface">${formattedDate}</span> | Thời gian: <span class="font-semibold text-primary">${tour.time}</span></p>
+                            <p class="text-[11px] text-on-surface-variant/70 mt-1">Thời gian: <span class="font-semibold text-primary">${tour.time}</span></p>
                             <p class="text-[11px] text-on-surface-variant/70">Hướng dẫn viên: <span class="font-semibold text-on-surface">${tour.guide}</span></p>
                         </div>
                         <div class="flex justify-between items-center mt-2 text-[10px] text-on-surface-variant/60 font-medium">
@@ -841,7 +908,7 @@
             });
         }
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const dropdown = document.getElementById('notificationDropdown');
             if (dropdown && !dropdown.classList.contains('hidden')) {
                 const isClickInside = dropdown.contains(e.target) || e.target.closest('.dropdown-notification');
@@ -854,54 +921,54 @@
         let currentYear = 2026;
         let currentMonth = 5; // 0-indexed, so 5 = June
         const todayReal = new Date();
-        
+
         function renderCalendar() {
             const monthNames = [
                 "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
                 "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
             ];
-            
+
             const monthYearEl = document.getElementById('calendar-month-year');
             if (monthYearEl) {
                 monthYearEl.textContent = `${monthNames[currentMonth]}, ${currentYear}`;
             }
-            
+
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-            
+
             const totalDays = lastDayOfMonth.getDate();
-            
+
             let startDayOfWeek = firstDayOfMonth.getDay();
             let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-            
+
             const grid = document.getElementById('calendar-days-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            
+
             const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
             for (let i = offset - 1; i >= 0; i--) {
                 const dayNum = prevMonthLastDay - i;
                 const prevMonthNum = currentMonth === 0 ? 11 : currentMonth - 1;
                 const prevYearNum = currentMonth === 0 ? currentYear - 1 : currentYear;
                 const dateString = `${prevYearNum}-${String(prevMonthNum + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                
+
                 const dayDiv = document.createElement('div');
                 dayDiv.className = "p-2 text-on-surface/20 font-label-md cursor-pointer hover:bg-primary-container/10 rounded-full transition-colors";
                 dayDiv.textContent = dayNum;
                 dayDiv.onclick = () => showDateTours(dateString);
                 grid.appendChild(dayDiv);
             }
-            
+
             for (let day = 1; day <= totalDays; day++) {
                 const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const hasTours = toursData.some(t => t.date === dateString);
-                
+
                 const isTodayReal = todayReal.getDate() === day && todayReal.getMonth() === currentMonth && todayReal.getFullYear() === currentYear;
                 const isDemoHighlight = day === 26 && currentMonth === 5 && currentYear === 2026;
-                
+
                 const dayDiv = document.createElement('div');
                 dayDiv.onclick = () => showDateTours(dateString);
-                
+
                 if (isDemoHighlight || isTodayReal) {
                     dayDiv.className = "p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md cursor-pointer hover:opacity-90";
                     dayDiv.innerHTML = `${day}`;
@@ -917,17 +984,17 @@
                         dayDiv.appendChild(dot);
                     }
                 }
-                
+
                 grid.appendChild(dayDiv);
             }
-            
+
             const totalCellsSoFar = offset + totalDays;
             const remainingCells = 42 - totalCellsSoFar;
             for (let day = 1; day <= remainingCells; day++) {
                 const nextMonthNum = currentMonth === 11 ? 0 : currentMonth + 1;
                 const nextYearNum = currentMonth === 11 ? currentYear + 1 : currentYear;
                 const dateString = `${nextYearNum}-${String(nextMonthNum + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                
+
                 const dayDiv = document.createElement('div');
                 dayDiv.className = "p-2 text-on-surface/20 font-label-md cursor-pointer hover:bg-primary-container/10 rounded-full transition-colors";
                 dayDiv.textContent = day;
@@ -935,7 +1002,7 @@
                 grid.appendChild(dayDiv);
             }
         }
-        
+
         function changeMonth(direction) {
             currentMonth += direction;
             if (currentMonth < 0) {
