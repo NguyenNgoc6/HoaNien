@@ -190,8 +190,8 @@
                                     <td style="cursor: pointer; color: #2563eb; font-weight: 500;"
                                         th:data-id="${arr.id}" th:data-name="${arr.guestName}"
                                         th:data-phone="${arr.phone}" th:data-cccd="${arr.cccd}"
-                                        th:data-room="${arr.roomSummary}"
-                                        th:attr="onclick=|openCheckinModal('${arr.id}', '${arr.guestName}', '${arr.phone}', '${arr.cccd}', '${arr.roomSummary}', 'deps-arr-', '${arr.creditLimit}')|"
+                                        th:data-room="${arr.roomSummary}" th:data-deps="|deps-arr-${arr.id}|" th:data-credit="${arr.creditLimit}"
+                                        onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-credit'))"
                                         th:text="${arr.guestName}"></td>
                                     <td th:text="${arr.phone}"></td>
                                     <td th:text="${arr.checkInDate}"></td>
@@ -201,7 +201,8 @@
                                             <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
                                                 th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
                                                 th:data-cccd="${arr.cccd}" th:data-room="${arr.roomSummary}"
-                                                th:attr="onclick=|openCheckinModal('${arr.id}', '${arr.guestName}', '${arr.phone}', '${arr.cccd}', '${arr.roomSummary}', 'deps-arr-', '${arr.creditLimit}')|">Assign
+                                                th:data-deps="|deps-arr-${arr.id}|" th:data-credit="${arr.creditLimit}"
+                                                onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-credit'))">Assign
                                                 & Check-in</button>
                                         </div>
                                         <div th:if="${arr.isExpired == true}">
@@ -423,6 +424,62 @@
                             <div>
                                 <button type="button" class="btn btn-outline btn-sm" onclick="addDependent()"
                                     style="height: 35px; padding: 0 16px;"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tour Booking Section -->
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin: 0; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-map-location-dot" style="color: #0284c7;"></i> Book Tour (Optional)
+                        </h4>
+                        <label class="switch-toggle" style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox" id="enableTourBooking" onchange="toggleTourBooking(this.checked)" style="width: 16px; height: 16px; accent-color: #0284c7;">
+                            Đặt tour cho đoàn
+                        </label>
+                    </div>
+
+                    <div id="tourBookingContainer" style="display: none; background: #f0f9ff; padding: 16px; border-radius: 8px; border: 1px solid #bae6fd;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 13px; color: #0369a1; font-weight: 600; margin-bottom: 4px;">Select Tour & Schedule</label>
+                                <select id="tourScheduleSelect" name="tourScheduleId" style="width: 100%; padding: 8px; border: 1px solid #7dd3fc; border-radius: 4px; background: white;">
+                                    <option value="">-- Choose a tour --</option>
+                                    <th:block th:each="ts : ${tourSchedules}">
+                                        <option th:value="${ts.id}" th:data-capacity="${ts.maxCapacity - ts.bookedSeats}" th:text="${ts.tour.tourName} + ' (' + ${ts.departureTime} + ') - Còn ' + (${ts.maxCapacity - ts.bookedSeats}) + ' chỗ'"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; color: #0369a1; font-weight: 600; margin-bottom: 4px;">Participant Count</label>
+                                <input type="number" id="tourParticipantCount" name="tourParticipantCount" min="1" value="1" style="width: 100%; padding: 8px; border: 1px solid #7dd3fc; border-radius: 4px; background: white;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 13px; color: #0369a1; font-weight: 600; margin-bottom: 8px;">Allocation Mode (Chi phí & Danh sách đi)</label>
+                            <div style="display: flex; gap: 20px;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer;">
+                                    <input type="radio" name="tourAllocationMode" value="ALL" checked onchange="toggleTourAllocation()" style="accent-color: #0284c7;">
+                                    Tính chung cho toàn bộ booking
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer;">
+                                    <input type="radio" name="tourAllocationMode" value="PER_ROOM" onchange="toggleTourAllocation()" style="accent-color: #0284c7;">
+                                    Phân bổ cho từng phòng lẻ
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Giao diện phân bổ từng phòng lẻ -->
+                        <div id="tourRoomAllocationContainer" style="display: none; background: white; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 12px;">
+                            <p style="margin-top: 0; font-size: 13px; color: #64748b; margin-bottom: 12px;"><i class="fa-solid fa-circle-info"></i> Vui lòng chọn phòng sẽ chịu chi phí cho Tour này.</p>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Select Room</label>
+                                <select id="tourAllocatedRoomSelect" name="tourAllocatedRoom" style="width: 50%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                    <option value="">-- Select Assigned Room --</option>
+                                </select>
                             </div>
                         </div>
                     </div>

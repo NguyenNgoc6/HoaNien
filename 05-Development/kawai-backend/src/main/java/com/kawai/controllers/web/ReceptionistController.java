@@ -25,6 +25,7 @@ public class ReceptionistController {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final com.kawai.services.interfaces.DependentService dependentService;
     private final com.kawai.services.interfaces.CheckinService checkinService;
+    private final TourScheduleRepository tourScheduleRepository;
 
     @org.springframework.web.bind.annotation.ModelAttribute("todayLabel")
     public String getTodayLabel() {
@@ -238,6 +239,8 @@ public class ReceptionistController {
             inventory.computeIfAbsent(cat, k -> new ArrayList<>()).add(r.getRoomNumber());
         }
         model.addAttribute("roomInventory", inventory);
+
+        model.addAttribute("tourSchedules", tourScheduleRepository.findAll());
 
         return "receptionist/check-in";
     }

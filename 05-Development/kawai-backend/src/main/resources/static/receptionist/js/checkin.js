@@ -69,9 +69,9 @@ function updateCheckinCreditLimitDisplay() {
     assignedRooms.forEach(r => totalAllocated += (r.allocatedCreditLimit || 0));
     let remaining = checkinMasterCreditLimit - totalAllocated;
     let displayEl = document.getElementById('checkinRemainingCreditDisplay');
-    if(displayEl) {
+    if (displayEl) {
         displayEl.innerText = remaining.toLocaleString() + ' VND';
-        if(remaining < 0) {
+        if (remaining < 0) {
             displayEl.style.color = 'red';
         } else {
             displayEl.style.color = '#16a34a';
@@ -104,7 +104,7 @@ function removeAssignedRoom(roomNumber) {
 function renderAssignedRooms() {
     const container = document.getElementById('assignedRoomsList');
     container.innerHTML = '';
-    
+
     document.querySelectorAll('input[name="assignedRoomNumbers"]').forEach(el => el.remove());
     document.querySelectorAll('input[name="allocatedCreditLimits"]').forEach(el => el.remove());
 
@@ -122,14 +122,14 @@ function renderAssignedRooms() {
     assignedRooms.forEach((a, index) => {
         const row = document.createElement('div');
         row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background:#e0f2fe; margin-bottom: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid #bae6fd;';
-        
+
         const infoSpan = document.createElement('span');
         infoSpan.style.cssText = 'color:#0284c7; font-weight: 500; font-size: 14px;';
         infoSpan.innerText = `${a.room} (${a.type})`;
-        
+
         const rightDiv = document.createElement('div');
         rightDiv.style.cssText = 'display: flex; align-items: center; gap: 10px;';
-        
+
         const limitInput = document.createElement('input');
         limitInput.type = 'number';
         limitInput.className = 'form-control';
@@ -137,16 +137,16 @@ function renderAssignedRooms() {
         limitInput.placeholder = 'Credit Limit';
         limitInput.value = a.allocatedCreditLimit || 0;
         limitInput.min = "0";
-        limitInput.oninput = function() { handleCheckinCreditInput(this, index); };
-        
+        limitInput.oninput = function () { handleCheckinCreditInput(this, index); };
+
         const delBtn = document.createElement('i');
         delBtn.className = 'fa-solid fa-xmark';
         delBtn.style.cssText = 'cursor:pointer; color: #ef4444; font-size: 16px;';
-        delBtn.onclick = function() { removeAssignedRoom(a.room); };
-        
+        delBtn.onclick = function () { removeAssignedRoom(a.room); };
+
         rightDiv.appendChild(limitInput);
         rightDiv.appendChild(delBtn);
-        
+
         row.appendChild(infoSpan);
         row.appendChild(rightDiv);
         container.appendChild(row);
@@ -156,7 +156,7 @@ function renderAssignedRooms() {
         hiddenInput.name = 'assignedRoomNumbers';
         hiddenInput.value = a.room;
         document.getElementById('checkinFormWrapper').appendChild(hiddenInput);
-        
+
         const hiddenLimitInput = document.createElement('input');
         hiddenLimitInput.type = 'hidden';
         hiddenLimitInput.name = 'allocatedCreditLimits';
@@ -174,6 +174,18 @@ function renderAssignedRooms() {
             depRoomSelect.appendChild(opt);
         });
     }
+
+    const tourAllocatedRoomSelect = document.getElementById('tourAllocatedRoomSelect');
+    if (tourAllocatedRoomSelect) {
+        tourAllocatedRoomSelect.innerHTML = '<option value="">-- Select Assigned Room --</option>';
+        assignedRooms.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.room;
+            opt.innerText = `${a.room} (${a.type})`;
+            tourAllocatedRoomSelect.appendChild(opt);
+        });
+    }
+
     updateCheckinCreditLimitDisplay();
 }
 
@@ -437,10 +449,10 @@ document.getElementById('checkinFormWrapper').addEventListener('submit', functio
     }
 
     const assignedRoomNumbers = assignedRooms.map(r => r.room);
-    
+
     // Master customer đứng đầu phòng đầu tiên
     const masterRoom = assignedRoomNumbers[0];
-    
+
     // Kiểm tra các phòng còn lại xem đã có đủ người đứng đầu chưa
     const primaryInputs = document.querySelectorAll(`input[name$=".isPrimaryContact"][value="true"]`);
     const primaryRooms = [];
@@ -466,4 +478,57 @@ document.getElementById('checkinFormWrapper').addEventListener('submit', functio
         e.preventDefault();
         alert(`Thiếu người đứng đầu cho phòng: ${missingRooms.join(', ')}. Vui lòng chọn 1 người phụ thuộc làm người đứng đầu cho mỗi phòng này trước khi hoàn tất Check-in!`);
     }
+
+    // Validate Tour Booking if enabled
+    const enableTourBooking = document.getElementById('enableTourBooking');
+    if (enableTourBooking && enableTourBooking.checked) {
+        const scheduleSelect = document.getElementById('tourScheduleSelect');
+        const participantCount = document.getElementById('tourParticipantCount');
+        const allocationMode = document.querySelector('input[name="tourAllocationMode"]:checked');
+        const allocatedRoomSelect = document.getElementById('tourAllocatedRoomSelect');
+
+        if (!scheduleSelect || !scheduleSelect.value) {
+            e.preventDefault();
+            alert('Vui lòng chọn Tour & Lịch trình!');
+            return;
+        }
+
+        if (!participantCount || !participantCount.value || parseInt(participantCount.value) < 1) {
+            e.preventDefault();
+            alert('Số lượng người đi tour không hợp lệ!');
+            return;
+        }
+
+        if (allocationMode && allocationMode.value === 'PER_ROOM') {
+            if (!allocatedRoomSelect || !allocatedRoomSelect.value) {
+                e.preventDefault();
+                alert('Vui lòng chọn một phòng để phân bổ Tour!');
+                return;
+            }
+        }
+    }
 });
+
+function toggleTourBooking(isChecked) {
+    const container = document.getElementById('tourBookingContainer');
+    if (container) {
+        container.style.display = isChecked ? 'block' : 'none';
+    }
+    // Xóa validation errors hoặc input fields nếu tắt
+    if (!isChecked) {
+        document.getElementById('tourScheduleSelect').value = '';
+        document.getElementById('tourParticipantCount').value = '1';
+        document.querySelector('input[name="tourAllocationMode"][value="ALL"]').checked = true;
+        toggleTourAllocation();
+    }
+}
+
+function toggleTourAllocation() {
+    const allocationMode = document.querySelector('input[name="tourAllocationMode"]:checked').value;
+    const roomAllocationContainer = document.getElementById('tourRoomAllocationContainer');
+
+    if (roomAllocationContainer) {
+        roomAllocationContainer.style.display = (allocationMode === 'PER_ROOM') ? 'block' : 'none';
+    }
+}
+

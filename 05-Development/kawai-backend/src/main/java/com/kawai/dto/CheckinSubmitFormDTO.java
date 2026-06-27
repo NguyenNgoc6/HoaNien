@@ -20,6 +20,10 @@ public class CheckinSubmitFormDTO {
     // Danh sách người đi kèm, form frontend gửi lên dạng dependents[0].fullName,
     // dependents[1].fullName...
     private List<DependentRegistrationDTO> dependents = new ArrayList<>();
+    private Long tourScheduleId;
+    private Integer tourParticipantCount;
+    private String tourAllocationMode;
+    private String tourAllocatedRoom;
 
     public CheckinSubmitFormDTO() {
     }
@@ -56,8 +60,13 @@ public class CheckinSubmitFormDTO {
         this.cccd = cccd;
     }
 
-    public List<java.math.BigDecimal> getAllocatedCreditLimits() { return allocatedCreditLimits; }
-    public void setAllocatedCreditLimits(List<java.math.BigDecimal> allocatedCreditLimits) { this.allocatedCreditLimits = allocatedCreditLimits; }
+    public List<java.math.BigDecimal> getAllocatedCreditLimits() {
+        return allocatedCreditLimits;
+    }
+
+    public void setAllocatedCreditLimits(List<java.math.BigDecimal> allocatedCreditLimits) {
+        this.allocatedCreditLimits = allocatedCreditLimits;
+    }
 
     public List<String> getAssignedRoomNumbers() {
         return assignedRoomNumbers;
@@ -73,5 +82,37 @@ public class CheckinSubmitFormDTO {
 
     public void setDependents(List<DependentRegistrationDTO> dependents) {
         this.dependents = dependents;
+    }
+
+    public Long getTourScheduleId() {
+        return tourScheduleId;
+    }
+
+    public void setTourScheduleId(Long tourScheduleId) {
+        this.tourScheduleId = tourScheduleId;
+    }
+
+    public Integer getTourParticipantCount() {
+        return tourParticipantCount;
+    }
+
+    public void setTourParticipantCount(Integer tourParticipantCount) {
+        this.tourParticipantCount = tourParticipantCount;
+    }
+
+    public String getTourAllocationMode() {
+        return tourAllocationMode;
+    }
+
+    public void setTourAllocationMode(String tourAllocationMode) {
+        this.tourAllocationMode = tourAllocationMode;
+    }
+
+    public String getTourAllocatedRoom() {
+        return tourAllocatedRoom;
+    }
+
+    public void setTourAllocatedRoom(String tourAllocatedRoom) {
+        this.tourAllocatedRoom = tourAllocatedRoom;
     }
 }

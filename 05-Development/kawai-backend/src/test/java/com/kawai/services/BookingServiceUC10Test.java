@@ -107,7 +107,7 @@ class BookingServiceUC10Test {
         private RoomBookingDetailRepository roomBookingDetailRepository;
 
         @Mock
-        private com.kawai.services.interfaces.PaymentGatewayService paymentGatewayService;
+        private com.kawai.services.interfaces.PaymentRefundService paymentRefundService;
 
         @Mock
         private com.kawai.services.interfaces.NotificationService notificationService;
@@ -126,8 +126,9 @@ class BookingServiceUC10Test {
 
         @org.junit.jupiter.api.BeforeEach
         void setUp() {
-                org.springframework.test.util.ReflectionTestUtils.setField(bookingService, "workflowRepository", workflowRepository);
-                
+                org.springframework.test.util.ReflectionTestUtils.setField(bookingService, "workflowRepository",
+                                workflowRepository);
+
                 com.kawai.models.Customer customer = new com.kawai.models.Customer();
                 customer.setId(1L);
                 lenient().when(customerRepository.findById(any())).thenReturn(Optional.of(customer));

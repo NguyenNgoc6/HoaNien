@@ -61,4 +61,9 @@ public interface BookingService {
      * Get folios for a booking based on role (Master Booker or Primary Contact).
      */
     java.util.List<java.util.Map<String, Object>> getBookingFolios(Long bookingId, Long customerId);
+
+    /**
+     * Delete a pending booking completely when user exits the payment flow.
+     */
+    void deletePendingBooking(Long bookingId, Long customerId);
 }

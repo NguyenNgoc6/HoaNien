@@ -89,14 +89,14 @@ public class ProfileController {
             List<RoomBooking> masterBookings = roomBookingRepository.findByCustomerOrderByIdDesc(customer);
             // Get details where customer is occupant
             List<RoomBookingDetail> occupantDetails = roomBookingDetailRepository.findByCustomer(customer);
-            
+
             java.util.Set<RoomBooking> uniqueBookings = new java.util.HashSet<>(masterBookings);
             for (RoomBookingDetail d : occupantDetails) {
                 if (d.getRoomBooking() != null) {
                     uniqueBookings.add(d.getRoomBooking());
                 }
             }
-            
+
             List<RoomBooking> roomBookings = uniqueBookings.stream()
                     .filter(b -> {
                         String status = b.getBookingStatus() != null ? b.getBookingStatus().toUpperCase() : "";
@@ -118,20 +118,22 @@ public class ProfileController {
             for (RoomBooking rb : roomBookings) {
                 List<RoomBookingDetail> allDetails = roomBookingDetailRepository.findByRoomBookingId(rb.getId());
                 List<RoomBookingDetail> visibleDetails;
-                
+
                 if (rb.getCustomer() != null && rb.getCustomer().getId().equals(customer.getId())) {
                     visibleDetails = allDetails; // Master sees all
                 } else {
                     visibleDetails = allDetails.stream()
-                        .filter(d -> d.getCustomer() != null && d.getCustomer().getId().equals(customer.getId()))
-                        .collect(java.util.stream.Collectors.toList());
+                            .filter(d -> d.getCustomer() != null && d.getCustomer().getId().equals(customer.getId()))
+                            .collect(java.util.stream.Collectors.toList());
                 }
-                
+
                 visibleDetailsMap.put(rb.getId(), visibleDetails);
-                
+
                 for (RoomBookingDetail d : visibleDetails) {
-                    java.math.BigDecimal subLimit = d.getSubCreditLimit() != null ? d.getSubCreditLimit() : java.math.BigDecimal.ZERO;
-                    List<com.kawai.models.FolioItem> folioItems = folioItemRepository.findByRoomBookingDetailId(d.getId());
+                    java.math.BigDecimal subLimit = d.getSubCreditLimit() != null ? d.getSubCreditLimit()
+                            : java.math.BigDecimal.ZERO;
+                    List<com.kawai.models.FolioItem> folioItems = folioItemRepository
+                            .findByRoomBookingDetailId(d.getId());
                     java.math.BigDecimal spent = folioItems.stream()
                             .filter(f -> !Boolean.TRUE.equals(f.getIsSettledSeparately()))
                             .map(com.kawai.models.FolioItem::getAmount)
@@ -194,13 +196,12 @@ public class ProfileController {
     }
 
     @GetMapping("/bookings")
-    public String viewBookingHistory(Authentication authentication, Model model, 
+    public String viewBookingHistory(Authentication authentication, Model model,
             @org.springframework.web.bind.annotation.RequestParam(value = "payment", required = false) String paymentStatus) {
         if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
             return "redirect:/booking";
         }
 
-        
         String redirectUrl = "redirect:/profile#bookings";
         if (paymentStatus != null) {
             redirectUrl += "?payment=" + paymentStatus;
@@ -335,7 +336,8 @@ public class ProfileController {
                     dependentRepository.delete(dep);
                     redirectAttributes.addFlashAttribute("success", "Xóa người đi cùng thành công!");
                 } catch (Exception e) {
-                    redirectAttributes.addFlashAttribute("error", "Không thể xóa người đi cùng vì đang được sử dụng trong các đơn đặt phòng!");
+                    redirectAttributes.addFlashAttribute("error",
+                            "Không thể xóa người đi cùng vì đang được sử dụng trong các đơn đặt phòng!");
                 }
             } else {
                 redirectAttributes.addFlashAttribute("error", "Không tìm thấy người đi cùng!");
@@ -345,9 +347,10 @@ public class ProfileController {
     }
 
     @PostMapping("/avatar")
-    public String uploadAvatar(@org.springframework.web.bind.annotation.RequestParam("avatarFile") org.springframework.web.multipart.MultipartFile file,
-                               Authentication authentication,
-                               RedirectAttributes redirectAttributes) {
+    public String uploadAvatar(
+            @org.springframework.web.bind.annotation.RequestParam("avatarFile") org.springframework.web.multipart.MultipartFile file,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
         if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
             return "redirect:/booking";
         }
@@ -363,19 +366,19 @@ public class ProfileController {
                     extension = originalFilename.substring(originalFilename.lastIndexOf("."));
                 }
                 String newFilename = "avatar_" + customer.getId() + "_" + System.currentTimeMillis() + extension;
-                
+
                 String currentWorkingDir = System.getProperty("user.dir");
                 java.nio.file.Path uploadDir = java.nio.file.Paths.get(currentWorkingDir, "uploads", "avatars");
                 if (!java.nio.file.Files.exists(uploadDir)) {
                     java.nio.file.Files.createDirectories(uploadDir);
                 }
-                
+
                 java.nio.file.Path filePath = uploadDir.resolve(newFilename);
                 file.transferTo(filePath.toFile());
-                
+
                 customer.setAvatarUrl("/uploads/avatars/" + newFilename);
                 customerRepository.save(customer);
-                
+
                 redirectAttributes.addFlashAttribute("success", "Cập nhật ảnh đại diện thành công!");
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", "Lỗi tải lên ảnh đại diện: " + e.getMessage());

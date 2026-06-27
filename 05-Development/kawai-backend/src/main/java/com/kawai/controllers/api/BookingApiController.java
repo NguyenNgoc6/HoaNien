@@ -141,6 +141,23 @@ public class BookingApiController {
         }
     }
 
+    @DeleteMapping("/{bookingId}")
+    public ResponseEntity<?> deletePendingBooking(Principal principal, @PathVariable Long bookingId) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("status", "error", "message", "Quý khách cần đăng nhập!"));
+        }
+        try {
+            Customer customer = resolveCurrentCustomer(principal);
+            bookingService.deletePendingBooking(bookingId, customer.getId());
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Đã xóa đơn đặt phòng thành công!"));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("status", "error", "message", "Đã xảy ra lỗi hệ thống"));
+        }
+    }
+
     @GetMapping("/{bookingId}")
     public ResponseEntity<?> getBookingDetail(Principal principal, @PathVariable Long bookingId) {
         if (principal == null) {
