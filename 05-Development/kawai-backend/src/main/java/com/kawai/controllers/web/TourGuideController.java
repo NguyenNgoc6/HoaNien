@@ -275,7 +275,14 @@ public class TourGuideController {
             }
             map.put("guide", guideName);
             
-            map.put("status", sched.getScheduleStatus() != null ? sched.getScheduleStatus().toLowerCase() : "upcoming");
+            String dbStatus = sched.getScheduleStatus();
+            String mappedStatus = "upcoming";
+            if (dbStatus != null) {
+                if ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus) || "done".equalsIgnoreCase(dbStatus)) {
+                    mappedStatus = "completed";
+                }
+            }
+            map.put("status", mappedStatus);
             map.put("date", sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "2026-06-27");
             
             // Match image

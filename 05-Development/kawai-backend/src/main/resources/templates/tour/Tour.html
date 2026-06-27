@@ -322,6 +322,17 @@
                 <!-- Schedule List -->
                 <div id="schedule-list-container"
                     class="lg:col-span-8 flex flex-col gap-12 max-h-[72vh] overflow-y-auto pr-4 scrollbar-custom scroll-smooth">
+                    <!-- Active Date Filter Indicator -->
+                    <div id="date-filter-indicator" class="hidden flex items-center justify-between bg-primary/5 border border-primary/20 rounded-xl p-4 mb-4">
+                        <div class="flex items-center gap-2 text-primary font-medium">
+                            <span class="material-symbols-outlined text-[20px]">filter_alt</span>
+                            <span>Đang lọc theo ngày: <span id="filtered-date-text" class="font-bold">27/06/2026</span></span>
+                        </div>
+                        <button onclick="clearDateFilter()" class="text-sm text-red-600 hover:text-red-800 font-bold hover:underline">
+                            Xóa lọc
+                        </button>
+                    </div>
+
                     <!-- Dynamic Tour Schedules Section -->
                     <section class="tour-section">
                         <div class="flex items-center gap-4 mb-6">
@@ -336,36 +347,46 @@
                         </div>
                         <div class="grid grid-cols-1 gap-6">
                             <!-- Loop over dbTours -->
-                            <div th:each="tour : ${dbTours}"
-                                 th:data-guide="${tour.guide}"
-                                 th:data-status="${tour.status}"
-                                 th:data-schedule-id="${tour.id}"
-                                 th:class="${tour.guide == (employee != null ? employee.fullName : 'Minh Anh')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
-                                 th:onclick="'window.location.href=\'/tourguide/dashboard?scheduleId=' + ${tour.id} + '\''">
-                                <div class="absolute top-0 right-0 p-4">
-                                    <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
-                                </div>
-                                <div class="flex gap-6 flex-col md:flex-row">
-                                    <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
-                                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" th:src="${tour.image}" />
+                            <div th:each="tour, iterStat : ${dbTours}" class="w-full">
+                                <!-- Date Heading Group -->
+                                <h3 th:if="${iterStat.first || dbTours[iterStat.index - 1].date != tour.date}" 
+                                    class="text-xl font-bold text-primary mt-6 mb-4 border-b border-primary/10 pb-2 flex items-center gap-2"
+                                    th:data-section-date="${tour.date}">
+                                    <span class="material-symbols-outlined text-lg">calendar_month</span>
+                                    <span>Ngày <span th:text="${#strings.substring(tour.date, 8, 10) + '/' + #strings.substring(tour.date, 5, 7) + '/' + #strings.substring(tour.date, 0, 4)}">27/06/2026</span></span>
+                                </h3>
+
+                                <div th:data-guide="${tour.guide}"
+                                     th:data-status="${tour.status}"
+                                     th:data-date="${tour.date}"
+                                     th:data-schedule-id="${tour.id}"
+                                     th:class="${tour.guide == (employee != null ? employee.fullName : 'Nguyen Ngọc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
+                                     th:onclick="'window.location.href=\'/tourguide/dashboard?scheduleId=' + ${tour.id} + '\''">
+                                    <div class="absolute top-0 right-0 p-4">
+                                        <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
                                     </div>
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <span class="text-primary font-bold font-label-md text-label-md" th:text="${tour.time}">08:00 - 13:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: <span th:text="${tour.guide}">Minh Anh</span></span>
-                                                <span class="text-on-surface-variant text-label-sm">• Ngày: <span th:text="${tour.date}">2026-06-27</span></span>
-                                            </div>
-                                            <h3 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2" th:text="${tour.name}">Hành trình Đoàn Tụ - Huế</h3>
+                                    <div class="flex gap-6 flex-col md:flex-row">
+                                        <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
+                                            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" th:src="${tour.image}" />
                                         </div>
-                                        <div class="flex items-center justify-between mt-6">
-                                            <div class="flex items-center gap-2">
-                                                <span class="material-symbols-outlined text-primary/70 text-lg">group</span>
-                                                <span class="text-on-surface-variant text-label-sm font-medium" th:text="${tour.guests}">12 khách</span>
+                                        <div class="flex-1 flex flex-col justify-between">
+                                            <div>
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="text-primary font-bold font-label-md text-label-md" th:text="${tour.time}">08:00 - 13:00</span>
+                                                    <span class="text-on-surface-variant text-label-sm">• HDV: <span th:text="${tour.guide}">Minh Anh</span></span>
+                                                    <span class="text-on-surface-variant text-label-sm">• Ngày: <span th:text="${tour.date}">2026-06-27</span></span>
+                                                </div>
+                                                <h3 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2" th:text="${tour.name}">Hành trình Đoàn Tụ - Huế</h3>
                                             </div>
-                                            <button class="flex items-center gap-1 text-primary font-bold font-label-md text-label-md hover:translate-x-1 transition-transform">
-                                                Chi tiết điểm danh <span class="material-symbols-outlined text-base">arrow_forward</span>
-                                            </button>
+                                            <div class="flex items-center justify-between mt-6">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="material-symbols-outlined text-primary/70 text-lg">group</span>
+                                                    <span class="text-on-surface-variant text-label-sm font-medium" th:text="${tour.guests}">12 khách</span>
+                                                </div>
+                                                <button class="flex items-center gap-1 text-primary font-bold font-label-md text-label-md hover:translate-x-1 transition-transform">
+                                                    Chi tiết điểm danh <span class="material-symbols-outlined text-base">arrow_forward</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -546,7 +567,16 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Nguyen Ngọc'}]]*/ "Nguyen Ngọc"        // Tour datasets
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Nguyen Ngọc'}]]*/ "Nguyen Ngọc";
+        let selectedDateFilter = null;
+
+        function clearDateFilter() {
+            selectedDateFilter = null;
+            document.getElementById('date-filter-indicator').classList.add('hidden');
+            applyCombinedFilter();
+        }
+
+        // Tour datasets
         const dbTours = /*[[${dbTours}]]*/ [];
         
         let toursData = [
@@ -681,6 +711,7 @@
             cards.forEach(card => {
                 const guideName = card.getAttribute('data-guide') || '';
                 const status = card.getAttribute('data-status') || '';
+                const cardDate = card.getAttribute('data-date') || '';
 
                 // 1. Check filter status
                 let matchesFilter = false;
@@ -694,7 +725,13 @@
                     matchesFilter = (status === 'completed');
                 }
 
-                // 2. Check search query
+                // 2. Check date filter
+                let matchesDate = true;
+                if (selectedDateFilter) {
+                    matchesDate = (cardDate === selectedDateFilter);
+                }
+
+                // 3. Check search query
                 let matchesSearch = true;
                 if (query) {
                     const cardText = card.textContent;
@@ -705,7 +742,16 @@
                     matchesSearch = matchQuery(combinedCardText, query);
                 }
 
-                card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
+                card.style.display = (matchesFilter && matchesSearch && matchesDate) ? 'block' : 'none';
+            });
+
+            // Update date headings visibility
+            const dateHeadings = document.querySelectorAll('[data-section-date]');
+            dateHeadings.forEach(heading => {
+                const dateVal = heading.getAttribute('data-section-date');
+                const siblingCards = Array.from(document.querySelectorAll(`.tour-card[data-date="${dateVal}"]`));
+                const hasVisible = siblingCards.some(c => c.style.display !== 'none');
+                heading.style.display = hasVisible ? 'flex' : 'none';
             });
 
             // Update section visibility
@@ -723,8 +769,17 @@
 
         // Calendar detail popup functions
         function showDateTours(dateStr) {
+            selectedDateFilter = dateStr;
             const parts = dateStr.split('-');
             const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+            // Update indicator
+            document.getElementById('filtered-date-text').textContent = formattedDate;
+            document.getElementById('date-filter-indicator').classList.remove('hidden');
+
+            // Apply filter to left list
+            applyCombinedFilter();
+
             document.getElementById('modal-date-title').textContent = `Lịch trình ngày ${formattedDate}`;
 
             const filteredTours = toursData.filter(t => t.date === dateStr);
