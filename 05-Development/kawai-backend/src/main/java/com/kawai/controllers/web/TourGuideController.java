@@ -157,14 +157,36 @@ public class TourGuideController {
         }
         
         if (targetSchedule == null) {
-            // Default logic to find/create today's schedule ID = 5
+            // Find default schedule based on logged-in guide profile
             java.util.List<com.kawai.models.TourSchedule> schedules = tourScheduleRepository.findAll();
             if (!schedules.isEmpty()) {
+                final com.kawai.models.Employee emp = (employee != null) ? employee : (principal != null ? employeeRepository.findByAccountUsername(principal.getName()).orElse(null) : null);
+                final String loggedInName = (emp != null) ? emp.getFullName() : "NguynNgoc";
+                
                 targetSchedule = schedules.stream()
-                        .filter(s -> s.getId() != null && s.getId() == 5L)
+                        .filter(s -> {
+                            String guideName = "NguynNgoc";
+                            if (s.getTour() != null) {
+                                String tn = s.getTour().getTourName();
+                                if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
+                                    guideName = "Ngọc Lan";
+                                } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa")) {
+                                    guideName = "Hoàng Nam";
+                                }
+                            }
+                            return guideName.equalsIgnoreCase(loggedInName);
+                        })
                         .findFirst()
-                        .orElse(schedules.get(0));
-                if (targetSchedule != null && targetSchedule.getId() == 5L && !today.equals(targetSchedule.getDepartureDate())) {
+                        .orElse(null);
+                
+                if (targetSchedule == null) {
+                    targetSchedule = schedules.stream()
+                            .filter(s -> s.getId() != null && s.getId() == 1L)
+                            .findFirst()
+                            .orElse(schedules.get(0));
+                }
+                
+                if (targetSchedule != null && !today.equals(targetSchedule.getDepartureDate())) {
                     targetSchedule.setDepartureDate(today);
                     tourScheduleRepository.saveAndFlush(targetSchedule);
                 }
