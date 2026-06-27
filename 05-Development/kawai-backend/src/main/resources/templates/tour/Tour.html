@@ -752,11 +752,18 @@
             });
         }
 
+        function getVietnameseDayOfWeek(dateStr) {
+            const date = new Date(dateStr);
+            const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+            return days[date.getDay()];
+        }
+
         // Calendar detail popup functions
         function showDateTours(dateStr) {
             const parts = dateStr.split('-');
             const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-            document.getElementById('modal-date-title').textContent = `Lịch trình ngày ${formattedDate}`;
+            const dayOfWeek = getVietnameseDayOfWeek(dateStr);
+            document.getElementById('modal-date-title').textContent = `Lịch trình ${dayOfWeek}, ngày ${formattedDate}`;
 
             const filteredTours = toursData.filter(t => t.date === dateStr);
             const myTours = filteredTours.filter(t => t.guide === loggedInGuideName);
