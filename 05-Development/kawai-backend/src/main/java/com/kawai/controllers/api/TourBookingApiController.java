@@ -4,10 +4,12 @@ import com.kawai.dto.TourBookingRequest;
 import com.kawai.models.*;
 import com.kawai.repositories.*;
 import com.kawai.services.interfaces.TourBookingService;
+import com.kawai.services.interfaces.VnPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,8 +43,11 @@ public class TourBookingApiController {
     @Autowired
     private TourBookingRepository tourBookingRepository;
 
+    @Autowired
+    private VnPayService vnPayService;
+
     @PostMapping
-    public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal) {
+    public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal, HttpServletRequest httpRequest) {
         try {
             Long tourId = Long.valueOf(payload.get("tourId").toString());
             LocalDate departureDate = LocalDate.parse(payload.get("departureDate").toString(), DateTimeFormatter.ISO_LOCAL_DATE);
@@ -124,6 +129,7 @@ public class TourBookingApiController {
             } else {
                 request.setPostToRoom(false);
             }
+            request.setPaymentMethod(paymentMethod);
 
             // 4. Create Tour Booking
             Long bookingId = tourBookingService.createTourBooking(request);
@@ -137,13 +143,30 @@ public class TourBookingApiController {
             java.math.BigDecimal totalPrice = tour.getBasePrice().multiply(java.math.BigDecimal.valueOf(participantCount));
             responsePayload.put("totalPrice", totalPrice);
             responsePayload.put("paymentMethod", paymentMethod);
-            responsePayload.put("depositAmount", totalPrice.multiply(new java.math.BigDecimal("0.3")));
+            java.math.BigDecimal depositAmount = totalPrice.multiply(new java.math.BigDecimal("0.3"));
+            responsePayload.put("depositAmount", depositAmount);
             responsePayload.put("roomNumber", roomNumber);
             if (customer != null) {
                 responsePayload.put("customerName", customer.getFullName());
                 responsePayload.put("customerEmail", customer.getEmail());
                 responsePayload.put("customerPhone", customer.getPhone());
             }
+
+            // If VNPay payment, generate payment URL
+            if ("vnpay".equalsIgnoreCase(paymentMethod)) {
+                // Determine the payment type sent from frontend: "deposit" or "full"
+                String vnpPaymentType = (String) payload.getOrDefault("vnpPaymentType", "deposit");
+                java.math.BigDecimal payAmount = "full".equalsIgnoreCase(vnpPaymentType) ? totalPrice : depositAmount;
+                try {
+                    String clientIp = httpRequest.getHeader("X-Forwarded-For");
+                    if (clientIp == null || clientIp.isBlank()) clientIp = httpRequest.getRemoteAddr();
+                    String vnpayUrl = vnPayService.createPaymentUrlForTourBooking(bookingId, payAmount, vnpPaymentType, clientIp);
+                    responsePayload.put("vnpayUrl", vnpayUrl);
+                } catch (Exception vnpEx) {
+                    responsePayload.put("vnpayError", vnpEx.getMessage());
+                }
+            }
+
             return ResponseEntity.ok(responsePayload);
         } catch (Exception e) {
             e.printStackTrace();

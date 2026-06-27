@@ -172,7 +172,8 @@ public class TourBookingServiceImpl implements TourBookingService {
                 }
 
                 // 7. Gửi email xác nhận đặt tour (bất đồng bộ, không block)
-                if (emailService != null) {
+                // Nếu thanh toán qua VNPay, email sẽ được gửi sau khi VNPay xác nhận thành công (trong VnPayServiceImpl.verifyIpn)
+                if (emailService != null && !"vnpay".equalsIgnoreCase(request.getPaymentMethod())) {
                         String roomNumber = null;
                         if (request.isPostToRoom() && request.getRoomBookingDetailId() != null) {
                                 RoomBookingDetail detail = roomBookingDetailRepository.findById(request.getRoomBookingDetailId()).orElse(null);

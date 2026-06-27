@@ -44,6 +44,9 @@ public class PaymentApiController {
             } else {
                 redirectUrl = "/order-food?payment=" + ("00".equals(rspCode) ? "success" : "failed");
             }
+        } else if (txnRef != null && txnRef.startsWith("TOUR_")) {
+            redirectUrl = "/tours/detail?payment=" + ("00".equals(rspCode) ? "success" : "failed");
+            System.err.println("[VNPay Return] -> Redirecting to tour-detail (TOUR_ prefix)");
         } else if (txnRef != null && (txnRef.startsWith("TXN-") || txnRef.startsWith("FOLIO_"))) {
             redirectUrl = "/receptionist/folio?payment=" + ("00".equals(rspCode) ? "success" : "failed");
         } else if (txnRef != null && txnRef.startsWith("WALKIN_")) {

@@ -30,6 +30,9 @@ public class TourBookingRequest {
     private boolean postToRoom = false;
     private Long roomBookingDetailId;
 
+    // Payment method: "counter", "post-room", "vnpay"
+    private String paymentMethod = "counter";
+
     public TourBookingRequest() {
     }
 
@@ -81,5 +84,13 @@ public class TourBookingRequest {
 
     public void setRoomBookingDetailId(Long roomBookingDetailId) {
         this.roomBookingDetailId = roomBookingDetailId;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }
