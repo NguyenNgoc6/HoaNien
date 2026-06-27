@@ -1305,6 +1305,7 @@
 
   function normalizeKey(name) {
     return name.toLowerCase()
+      .replace(/đ/g, 'd')
       .normalize('NFD').replace(/\p{Diacritic}/gu, '')
       .replace(/\s+/g, ' ').trim();
   }
