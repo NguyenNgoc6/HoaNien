@@ -712,40 +712,8 @@
         <!-- Room Selection Modal -->
         <div class="bg-white w-full max-w-lg p-10 shadow-2xl relative flex flex-col" id="room-selection-modal">
             <h3 class="text-2xl font-serif mb-8 text-center">Chọn phòng để gán</h3>
-            <div class="space-y-3 mb-10">
-                <div class="room-item selectable border border-brand-border p-4 flex justify-between items-center cursor-pointer"
-                    onclick="selectRoomUI(this, 'HN-101', 'Deluxe Sea View')">
-                    <div class="flex items-center space-x-4">
-                        <span class="material-symbols-outlined text-gray-400">door_front</span>
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-widest">HN-101</p>
-                            <p class="text-[10px] text-gray-400 uppercase">Deluxe Sea View</p>
-                        </div>
-                    </div>
-                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Trống</div>
-                </div>
-                <div
-                    class="room-item border border-brand-border p-4 flex justify-between items-center opacity-40 bg-gray-50 cursor-not-allowed grayscale">
-                    <div class="flex items-center space-x-4">
-                        <span class="material-symbols-outlined text-gray-400">door_front</span>
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-widest">HN-102</p>
-                            <p class="text-[10px] text-gray-400 uppercase">Suite Garden</p>
-                        </div>
-                    </div>
-                    <div class="text-[9px] font-bold text-red-800 uppercase tracking-widest">Đang ở</div>
-                </div>
-                <div class="room-item selectable border border-brand-border p-4 flex justify-between items-center cursor-pointer"
-                    onclick="selectRoomUI(this, 'HN-103', 'Deluxe Sea View')">
-                    <div class="flex items-center space-x-4">
-                        <span class="material-symbols-outlined text-gray-400">door_front</span>
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-widest">HN-103</p>
-                            <p class="text-[10px] text-gray-400 uppercase">Deluxe Sea View</p>
-                        </div>
-                    </div>
-                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Trống</div>
-                </div>
+            <div id="active-rooms-list" class="space-y-3 mb-10">
+                <!-- Will be dynamically populated -->
             </div>
             <div class="flex space-x-4">
                 <button
@@ -1311,17 +1279,81 @@
 
         function openRoomSelection() {
             if (!validateInputs()) return;
-            const overlay = document.getElementById('overlay');
-            const roomModal = document.getElementById('room-selection-modal');
 
-            overlay.classList.add('active');
-            roomModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            // Fetch active rooms for the currently logged in customer
+            fetch('/api/rooms/my-active')
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('UNAUTHORIZED');
+                    }
+                    if (!response.ok) {
+                        throw new Error('FAILED');
+                    }
+                    return response.json();
+                })
+                .then(activeRooms => {
+                    if (!activeRooms || activeRooms.length === 0) {
+                        // 3: if room is expired or none exist, show warning popup and redirect to room registration (/living)
+                        showWarningAlertPopup(
+                            'Yêu cầu phòng lưu trú',
+                            'Quý khách chưa đăng ký phòng hoặc phòng đã hết hạn tại HoaNien Retreat. Vui lòng thực hiện đặt phòng để trải nghiệm dịch vụ này.'
+                        );
+                        window.pendingRoomChargeRedirect = true;
+                        return;
+                    }
+
+                    if (activeRooms.length === 1) {
+                        // 1: automatically select room (if customer only has 1 room)
+                        const singleRoom = activeRooms[0];
+                        selectedRoomData = { id: singleRoom.roomNumber, type: singleRoom.roomType };
+                        confirmRoomSelection();
+                    } else {
+                        // 2: display choice of rooms to assign (if customer has multiple rooms)
+                        const container = document.getElementById('active-rooms-list');
+                        if (container) {
+                            container.innerHTML = activeRooms.map(r => `
+                                <div class="room-item selectable border border-brand-border p-4 flex justify-between items-center cursor-pointer transition-all hover:bg-gray-50/50"
+                                     onclick="selectRoomUI(this, '${r.roomNumber}', '${r.roomType}')">
+                                    <div class="flex items-center space-x-4">
+                                        <span class="material-symbols-outlined text-gray-400">door_front</span>
+                                        <div>
+                                            <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
+                                            <p class="text-[10px] text-gray-400 uppercase">${r.roomType}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">Đang hoạt động</div>
+                                </div>
+                            `).join('');
+                        }
+
+                        selectedRoomData = null;
+
+                        const overlay = document.getElementById('overlay');
+                        const roomModal = document.getElementById('room-selection-modal');
+                        if (overlay && roomModal) {
+                            overlay.classList.add('active');
+                            roomModal.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    if (error.message === 'UNAUTHORIZED') {
+                        openRequireLoginModal();
+                    } else {
+                        showWarningAlertPopup('Lỗi hệ thống', 'Có lỗi xảy ra khi lấy thông tin phòng nghỉ. Vui lòng thử lại sau.');
+                    }
+                });
         }
 
         function selectRoomUI(element, id, type) {
-            document.querySelectorAll('.room-item').forEach(el => el.classList.remove('selected'));
-            element.classList.add('selected');
+            document.querySelectorAll('.room-item').forEach(el => {
+                el.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
+                el.classList.add('border-brand-border');
+            });
+            element.classList.remove('border-brand-border');
+            element.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
             selectedRoomData = { id, type };
         }
 
@@ -1537,6 +1569,10 @@
             if (popup) {
                 popup.style.display = 'none';
                 document.body.style.overflow = 'auto';
+            }
+            if (window.pendingRoomChargeRedirect) {
+                window.pendingRoomChargeRedirect = false;
+                window.location.href = '/living';
             }
         }
 
