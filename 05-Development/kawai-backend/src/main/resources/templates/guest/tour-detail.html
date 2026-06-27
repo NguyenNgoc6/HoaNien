@@ -260,32 +260,32 @@
     <div class="fixed top-20 w-full z-40 bg-white/30 backdrop-blur-md border-b border-brand-border/30">
         <div class="max-w-7xl mx-auto px-6 h-12 flex items-center justify-center space-x-12">
             <a href="javascript:void(0)" onclick="loadTour('doantu')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-brand-dark border-b border-brand-dark pb-1"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="doantu" data-i18n="nav_doantu">Đoàn Tụ</a>
             <a href="javascript:void(0)" onclick="loadTour('dongnoi')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="dongnoi" data-i18n="nav_dongnoi">Đồng Nội</a>
             <a href="javascript:void(0)" onclick="loadTour('disan')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="disan" data-i18n="nav_disan">Di Sản</a>
             <a href="javascript:void(0)" onclick="loadTour('tinhlang')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="tinhlang" data-i18n="nav_tinhlang">Tĩnh Lặng</a>
         </div>
     </div>
     <div class="fixed w-full z-40 bg-white/30 backdrop-blur-md border-b border-brand-border/30">
         <div class="max-w-7xl mx-auto px-6 h-12 flex items-center justify-center space-x-12">
             <a href="javascript:void(0)" onclick="loadTour('doantu')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-brand-dark border-b border-brand-dark pb-1"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="doantu" data-i18n="nav_doantu">Đoàn Tụ</a>
             <a href="javascript:void(0)" onclick="loadTour('dongnoi')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="dongnoi" data-i18n="nav_dongnoi">Đồng Nội</a>
             <a href="javascript:void(0)" onclick="loadTour('disan')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="disan" data-i18n="nav_disan">Di Sản</a>
             <a href="javascript:void(0)" onclick="loadTour('tinhlang')"
-                class="sub-nav-link text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-brand-dark transition-colors"
+                class="sub-nav-link text-[11px] font-bold tracking-[0.25em] uppercase text-gray-600 hover:text-brand-dark transition-all pb-1"
                 data-tour="tinhlang" data-i18n="nav_tinhlang">Tĩnh Lặng</a>
         </div>
     </div>
@@ -1114,11 +1114,11 @@
 
             document.querySelectorAll('.sub-nav-link').forEach(link => {
                 if (link.dataset.tour === currentTour) {
-                    link.classList.add('border-brand-dark', 'text-brand-dark');
-                    link.classList.remove('text-gray-400');
+                    link.classList.add('border-b-2', 'border-brand-dark', 'text-brand-dark');
+                    link.classList.remove('text-gray-600');
                 } else {
-                    link.classList.remove('border-brand-dark', 'text-brand-dark');
-                    link.classList.add('text-gray-400');
+                    link.classList.remove('border-b-2', 'border-brand-dark', 'text-brand-dark');
+                    link.classList.add('text-gray-600');
                 }
             });
 
