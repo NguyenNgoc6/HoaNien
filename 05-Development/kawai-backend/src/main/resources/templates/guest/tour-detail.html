@@ -691,43 +691,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- VNPay QR Payment Screen (shown after booking is created) -->
-            <div id="vnpay-qr-screen" style="display:none; position:absolute; inset:0; background:#fff; z-index:10; flex-direction:column; align-items:center; justify-content:center; padding:40px;" class="flex">
-                <button class="absolute top-6 right-6 text-2xl text-gray-400 hover:text-brand-dark transition-colors" onclick="closeModal()">&times;</button>
-                <div class="text-center w-full max-w-sm mx-auto">
-                    <!-- Header -->
-                    <div class="flex items-center justify-center gap-3 mb-6">
-                        <div class="w-8 h-[1px] bg-brand-gold"></div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-brand-gold">Thanh toán VNPay</p>
-                        <div class="w-8 h-[1px] bg-brand-gold"></div>
-                    </div>
-                    <h3 class="text-2xl font-serif mb-2">Quét mã để thanh toán</h3>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-6" id="vnpay-qr-amount-label">Số tiền: ---</p>
-
-                    <!-- QR Code -->
-                    <div class="relative inline-block mb-4">
-                        <div class="w-48 h-48 bg-gray-50 border-2 border-brand-border flex items-center justify-center mx-auto" id="vnpay-qr-loading">
-                            <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#1a1a1a;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                        </div>
-                        <img id="vnpay-qr-img" src="" alt="VNPay QR" class="w-48 h-48 border-2 border-brand-border mx-auto" style="display:none;">
-                    </div>
-                    <p class="text-[9px] text-gray-400 mb-6">Sử dụng ứng dụng ngân hàng hoặc VNPay để quét mã QR</p>
-
-                    <!-- Countdown -->
-                    <div class="mb-5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-sm flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined text-amber-500 text-sm">timer</span>
-                        <p class="text-[10px] text-amber-700">Tự động chuyển đến VNPay sau <strong id="vnpay-countdown">5</strong> giây</p>
-                    </div>
-
-                    <!-- Action buttons -->
-                    <a id="vnpay-redirect-btn" href="#" target="_blank"
-                        class="block w-full bg-brand-dark text-white py-4 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-brand-gold transition-colors text-center mb-3">
-                        Mở trang thanh toán VNPay
-                    </a>
-                    <button onclick="closeModal()" class="w-full border border-brand-border py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition">
-                        Hủy giao dịch
-                    </button>
                 </div>
             </div>
         </div>
@@ -1355,17 +1318,6 @@
             document.getElementById('room-selection-modal').classList.remove('active');
             document.getElementById('activity-modal').classList.remove('active');
             document.body.style.overflow = 'auto';
-            // Clean up VNPay QR screen if visible
-            if (vnpayCountdownTimer) {
-                clearInterval(vnpayCountdownTimer);
-                vnpayCountdownTimer = null;
-            }
-            const qrScreen = document.getElementById('vnpay-qr-screen');
-            if (qrScreen) qrScreen.style.display = 'none';
-            const qrImg = document.getElementById('vnpay-qr-img');
-            if (qrImg) { qrImg.src = ''; qrImg.style.display = 'none'; }
-            const qrLoading = document.getElementById('vnpay-qr-loading');
-            if (qrLoading) qrLoading.style.display = 'flex';
         }
 
         // Real-time validation: prevent past date selection
@@ -1489,8 +1441,16 @@
             })
             .then(data => {
                 if (data.vnpayUrl) {
-                    // Show VNPay QR screen instead of immediately redirecting
+                    // Close main modal then show VNPay QR screen
+                    closeModal();
                     showVnpayQrScreen(data.vnpayUrl, data.totalPrice, data.depositAmount, vnpPaymentType);
+                } else if (data.vnpayError) {
+                    // VNPay URL generation failed
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT CHỖ' : 'CONFIRM BOOKING';
+                    }
+                    alert((lang === 'vi' ? 'Lỗi tạo liên kết VNPay: ' : 'VNPay error: ') + data.vnpayError);
                 } else {
                     closeModal();
                     showPaymentToast('success',
@@ -1566,7 +1526,7 @@
             setTimeout(() => { toast.style.display = 'none'; }, 7000);
         }
 
-        // Show VNPay QR payment screen
+        // Show VNPay QR payment screen (fixed overlay, outside all modals)
         let vnpayCountdownTimer = null;
         function showVnpayQrScreen(vnpayUrl, totalPrice, depositAmount, paymentType) {
             const screen = document.getElementById('vnpay-qr-screen');
@@ -1583,21 +1543,27 @@
             const typeLabel = paymentType === 'full' ? 'Toàn bộ' : 'Đặt cọc 30%';
             if (amountLabel) amountLabel.textContent = `${typeLabel} — ${formattedAmount}`;
 
-            // Set redirect link
-            if (redirectBtn) redirectBtn.href = vnpayUrl;
+            // Set redirect link (opens in current tab - VNPay needs to redirect back)
+            if (redirectBtn) {
+                redirectBtn.href = vnpayUrl;
+                redirectBtn.removeAttribute('target'); // open in same tab for proper return redirect
+            }
 
-            // Show the screen
+            // Show the fixed overlay
             screen.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
 
             // Generate QR code using qrserver.com API
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(vnpayUrl)}&size=192x192&margin=8&format=png`;
-            if (qrImg) {
+            if (qrImg && qrLoading) {
+                qrImg.style.display = 'none';
+                qrLoading.style.display = 'flex';
                 qrImg.onload = () => {
-                    if (qrLoading) qrLoading.style.display = 'none';
+                    qrLoading.style.display = 'none';
                     qrImg.style.display = 'block';
                 };
                 qrImg.onerror = () => {
-                    if (qrLoading) qrLoading.innerHTML = '<p class="text-xs text-gray-400 p-4">Không tải được QR. Dùng nút bên dưới.</p>';
+                    qrLoading.innerHTML = '<p style="font-size:11px;color:#9ca3af;padding:12px;text-align:center;">Không tải được QR.<br>Dùng nút bên dưới.</p>';
                 };
                 qrImg.src = qrApiUrl;
             }
@@ -1614,6 +1580,20 @@
                     window.location.href = vnpayUrl;
                 }
             }, 1000);
+        }
+
+        function closeVnpayQrScreen() {
+            if (vnpayCountdownTimer) {
+                clearInterval(vnpayCountdownTimer);
+                vnpayCountdownTimer = null;
+            }
+            const screen = document.getElementById('vnpay-qr-screen');
+            if (screen) screen.style.display = 'none';
+            const qrImg = document.getElementById('vnpay-qr-img');
+            if (qrImg) { qrImg.src = ''; qrImg.style.display = 'none'; }
+            const qrLoading = document.getElementById('vnpay-qr-loading');
+            if (qrLoading) qrLoading.style.display = 'flex';
+            document.body.style.overflow = 'auto';
         }
 
         // Helper to translate weather description
@@ -1730,6 +1710,58 @@
         });
     </script>
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
+
+    <!-- VNPay QR Fixed Overlay (outside all modals to avoid overflow clipping) -->
+    <div id="vnpay-qr-screen"
+         style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; width:100%; max-width:440px; padding:40px 32px; position:relative; box-shadow:0 25px 60px rgba(0,0,0,0.3);">
+            <button onclick="closeVnpayQrScreen()"
+                    style="position:absolute; top:16px; right:20px; font-size:1.5rem; color:#9ca3af; background:none; border:none; cursor:pointer; line-height:1;">&times;</button>
+
+            <!-- Header -->
+            <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:20px;">
+                <div style="width:32px; height:1px; background:#C5A059;"></div>
+                <p style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; color:#C5A059; font-family:'Montserrat',sans-serif;">Thanh toán VNPay</p>
+                <div style="width:32px; height:1px; background:#C5A059;"></div>
+            </div>
+            <h3 style="font-family:'Playfair Display',serif; font-size:1.5rem; text-align:center; margin-bottom:4px;">Quét mã để thanh toán</h3>
+            <p id="vnpay-qr-amount-label"
+               style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#9ca3af; text-align:center; margin-bottom:24px; font-family:'Montserrat',sans-serif;">Số tiền: ---</p>
+
+            <!-- QR Code -->
+            <div style="display:flex; justify-content:center; margin-bottom:12px;">
+                <div id="vnpay-qr-loading"
+                     style="width:192px; height:192px; background:#f9fafb; border:2px solid #E5E1DA; display:flex; align-items:center; justify-content:center;">
+                    <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#2D2926;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                </div>
+                <img id="vnpay-qr-img" src="" alt="VNPay QR"
+                     style="width:192px; height:192px; border:2px solid #E5E1DA; display:none;">
+            </div>
+            <p style="font-size:9px; color:#9ca3af; text-align:center; margin-bottom:20px; font-family:'Montserrat',sans-serif;">Sử dụng app ngân hàng hoặc VNPay để quét mã QR</p>
+
+            <!-- Countdown -->
+            <div style="margin-bottom:20px; padding:12px 16px; background:#fffbeb; border:1px solid #fde68a; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span class="material-symbols-outlined" style="color:#f59e0b; font-size:18px;">timer</span>
+                <p style="font-size:10px; color:#92400e; font-family:'Montserrat',sans-serif;">
+                    Tự động chuyển đến VNPay sau <strong id="vnpay-countdown">5</strong> giây
+                </p>
+            </div>
+
+            <!-- Action buttons -->
+            <a id="vnpay-redirect-btn" href="#"
+               style="display:block; width:100%; background:#2D2926; color:#fff; padding:16px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; text-align:center; text-decoration:none; margin-bottom:10px; font-family:'Montserrat',sans-serif; box-sizing:border-box;"
+               onmouseover="this.style.background='#C5A059'" onmouseout="this.style.background='#2D2926'">
+                Mở trang thanh toán VNPay
+            </a>
+            <button onclick="closeVnpayQrScreen()"
+                    style="width:100%; background:transparent; border:1px solid #E5E1DA; padding:12px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; cursor:pointer; font-family:'Montserrat',sans-serif;"
+                    onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                Hủy giao dịch
+            </button>
+        </div>
+    </div>
+    <!-- END VNPay QR -->
+
 </body>
 
 </html>
