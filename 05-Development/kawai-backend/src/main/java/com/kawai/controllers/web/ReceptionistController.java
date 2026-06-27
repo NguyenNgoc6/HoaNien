@@ -25,7 +25,7 @@ public class ReceptionistController {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final com.kawai.services.interfaces.DependentService dependentService;
     private final com.kawai.services.interfaces.CheckinService checkinService;
-    private final TourScheduleRepository tourScheduleRepository;
+    private final TourBookingRepository tourBookingRepository;
 
     @org.springframework.web.bind.annotation.ModelAttribute("todayLabel")
     public String getTodayLabel() {
@@ -202,9 +202,12 @@ public class ReceptionistController {
                 map.put("creditLimit", new java.math.BigDecimal("5000000.00"));
             }
 
+            // Chỉ tính roomSummary cho các phòng CHƯA check-in (pending)
+            // để JS dropdown khớp với backend pendingDetails khi submit
             String roomSummary = "N/A";
             Map<String, Long> categoryCount = details.stream()
-                    .filter(d -> d.getCategory() != null)
+                    .filter(d -> d.getCategory() != null
+                            && !"CHECKED_IN".equalsIgnoreCase(d.getDetailStatus()))
                     .collect(Collectors.groupingBy(d -> d.getCategory().getCategoryName(),
                             Collectors.counting()));
 
@@ -218,6 +221,12 @@ public class ReceptionistController {
             // (Removed unused detailsList creation)
             List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
             map.put("dependents", deps);
+
+            // Tìm TourBookings chưa được gán phòng cụ thể (roomBookingDetail IS NULL)
+            // → các tour này lễ tân sẽ phân bổ khi check-in
+            List<com.kawai.models.TourBooking> unallocatedTours =
+                    tourBookingRepository.findByRoomBookingIdAndRoomBookingDetailIsNull(b.getId());
+            map.put("tourBookings", unallocatedTours);
 
             pagedArrivals.add(map);
         }
@@ -240,7 +249,6 @@ public class ReceptionistController {
         }
         model.addAttribute("roomInventory", inventory);
 
-        model.addAttribute("tourSchedules", tourScheduleRepository.findAll());
 
         return "receptionist/check-in";
     }

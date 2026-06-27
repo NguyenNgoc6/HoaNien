@@ -20,10 +20,10 @@ public class CheckinSubmitFormDTO {
     // Danh sách người đi kèm, form frontend gửi lên dạng dependents[0].fullName,
     // dependents[1].fullName...
     private List<DependentRegistrationDTO> dependents = new ArrayList<>();
-    private Long tourScheduleId;
-    private Integer tourParticipantCount;
+    // Tour allocation: phân bổ tour đã đặt vào phòng vật lý khi check-in
+    // (không tạo mới TourBooking, chỉ ghi nhận roomBookingDetail cho từng tour)
     private String tourAllocationMode;
-    private String tourAllocatedRoom;
+    private List<TourRoomAllocationDTO> tourAllocations = new ArrayList<>();
 
     public CheckinSubmitFormDTO() {
     }
@@ -84,22 +84,6 @@ public class CheckinSubmitFormDTO {
         this.dependents = dependents;
     }
 
-    public Long getTourScheduleId() {
-        return tourScheduleId;
-    }
-
-    public void setTourScheduleId(Long tourScheduleId) {
-        this.tourScheduleId = tourScheduleId;
-    }
-
-    public Integer getTourParticipantCount() {
-        return tourParticipantCount;
-    }
-
-    public void setTourParticipantCount(Integer tourParticipantCount) {
-        this.tourParticipantCount = tourParticipantCount;
-    }
-
     public String getTourAllocationMode() {
         return tourAllocationMode;
     }
@@ -108,11 +92,11 @@ public class CheckinSubmitFormDTO {
         this.tourAllocationMode = tourAllocationMode;
     }
 
-    public String getTourAllocatedRoom() {
-        return tourAllocatedRoom;
+    public List<TourRoomAllocationDTO> getTourAllocations() {
+        return tourAllocations;
     }
 
-    public void setTourAllocatedRoom(String tourAllocatedRoom) {
-        this.tourAllocatedRoom = tourAllocatedRoom;
+    public void setTourAllocations(List<TourRoomAllocationDTO> tourAllocations) {
+        this.tourAllocations = tourAllocations;
     }
 }
