@@ -118,6 +118,9 @@ public class TourBookingApiController {
             request.setParticipantCount(participantCount);
             request.setWalkInTour(false);
 
+            List<String> childAges = (List<String>) payload.get("childAges");
+            request.setChildAges(childAges);
+
             if ("post-room".equalsIgnoreCase(paymentMethod)) {
                 request.setPostToRoom(true);
                 if (roomNumber != null && !roomNumber.trim().isEmpty()) {
@@ -140,7 +143,27 @@ public class TourBookingApiController {
             responsePayload.put("bookingId", bookingId);
             responsePayload.put("message", "Đặt tour thành công!");
             responsePayload.put("tourName", tour.getTourName());
-            java.math.BigDecimal totalPrice = tour.getBasePrice().multiply(java.math.BigDecimal.valueOf(participantCount));
+
+            // Calculate totalPrice considering children discount
+            java.math.BigDecimal totalPrice = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal basePrice = tour.getBasePrice();
+            int childCount = childAges != null ? childAges.size() : 0;
+            int adultCount = participantCount - childCount;
+            if (adultCount < 0) adultCount = 0;
+
+            totalPrice = totalPrice.add(basePrice.multiply(java.math.BigDecimal.valueOf(adultCount)));
+            if (childAges != null) {
+                for (String age : childAges) {
+                    if ("Dưới 2 tuổi".equalsIgnoreCase(age)) {
+                        // free
+                    } else if ("2 - 11 tuổi".equalsIgnoreCase(age)) {
+                        totalPrice = totalPrice.add(basePrice.multiply(new java.math.BigDecimal("0.5")));
+                    } else {
+                        totalPrice = totalPrice.add(basePrice.multiply(new java.math.BigDecimal("0.5")));
+                    }
+                }
+            }
+
             responsePayload.put("totalPrice", totalPrice);
             responsePayload.put("paymentMethod", paymentMethod);
             java.math.BigDecimal depositAmount = totalPrice.multiply(new java.math.BigDecimal("0.3"));

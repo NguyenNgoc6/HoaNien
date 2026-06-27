@@ -87,9 +87,30 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         "TOUR-001: Hết chỗ. Chỉ còn " + remainingCapacity + " chỗ trống");
                 }
 
-                // 3. Tính tổng giá
-                BigDecimal totalPrice = schedule.getTour().getBasePrice()
-                                .multiply(BigDecimal.valueOf(request.getParticipantCount()));
+                // 3. Tính tổng giá (Dưới 2 tuổi miễn phí, 2 - 11 tuổi giảm 50%)
+                BigDecimal totalPrice = BigDecimal.ZERO;
+                BigDecimal basePrice = schedule.getTour().getBasePrice();
+                int childCount = request.getChildAges() != null ? request.getChildAges().size() : 0;
+                int adultCount = request.getParticipantCount() - childCount;
+                if (adultCount < 0) adultCount = 0;
+
+                // Người lớn tính 100% giá
+                totalPrice = totalPrice.add(basePrice.multiply(BigDecimal.valueOf(adultCount)));
+
+                // Trẻ em tính theo độ tuổi
+                if (request.getChildAges() != null) {
+                        for (String age : request.getChildAges()) {
+                                if ("Dưới 2 tuổi".equalsIgnoreCase(age)) {
+                                        // Miễn phí
+                                } else if ("2 - 11 tuổi".equalsIgnoreCase(age)) {
+                                        // Giảm 50%
+                                        totalPrice = totalPrice.add(basePrice.multiply(new BigDecimal("0.5")));
+                                } else {
+                                        // Mặc định giảm 50%
+                                        totalPrice = totalPrice.add(basePrice.multiply(new BigDecimal("0.5")));
+                                }
+                        }
+                }
 
                 // 4. Tạo TourBooking
                 TourBooking booking = new TourBooking();

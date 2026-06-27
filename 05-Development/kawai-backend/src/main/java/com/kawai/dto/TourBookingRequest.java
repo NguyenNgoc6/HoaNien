@@ -33,7 +33,17 @@ public class TourBookingRequest {
     // Payment method: "counter", "post-room", "vnpay"
     private String paymentMethod = "counter";
 
+    private java.util.List<String> childAges;
+
     public TourBookingRequest() {
+    }
+
+    public java.util.List<String> getChildAges() {
+        return childAges;
+    }
+
+    public void setChildAges(java.util.List<String> childAges) {
+        this.childAges = childAges;
     }
 
     // --- Getters & Setters ---

@@ -1054,9 +1054,39 @@
         }
 
         function updateTotalPrice() {
-            const qty = parseInt(document.getElementById('participantCount').value) || 1;
+            const participantInput = document.getElementById('participantCount');
+            const adultsInput = document.getElementById('num-adults');
+            const childrenInput = document.getElementById('num-children');
+
+            const qty = parseInt(participantInput.value) || 1;
             const tourInfo = tourData[currentTour];
-            const totalPrice = tourInfo.price * qty;
+            const basePrice = tourInfo.price;
+
+            let totalPrice = basePrice * qty; // Mặc định tính 100%
+
+            if (adultsInput && childrenInput) {
+                const adults = parseInt(adultsInput.value) || 0;
+                const children = parseInt(childrenInput.value) || 0;
+                const sum = adults + children;
+
+                if (sum === qty) {
+                    let calculatedPrice = basePrice * adults;
+                    for (let i = 0; i < children; i++) {
+                        const ageEl = document.getElementById(`child-age-${i}`);
+                        const ageVal = ageEl ? ageEl.value : '';
+                        if (ageVal === 'Dưới 2 tuổi') {
+                            calculatedPrice += 0; // Miễn phí
+                        } else if (ageVal === '2 - 11 tuổi') {
+                            calculatedPrice += basePrice * 0.5; // Giảm 50%
+                        } else {
+                            // Mặc định giảm 50% khi chưa chọn
+                            calculatedPrice += basePrice * 0.5;
+                        }
+                    }
+                    totalPrice = calculatedPrice;
+                }
+            }
+
             const depositPrice = Math.round(totalPrice * 0.3);
 
             document.getElementById('displayTotalPrice').textContent = formatVND(totalPrice);
@@ -1213,6 +1243,7 @@
         function selectAge(index, age) {
             document.getElementById(`child-age-${index}`).value = age;
             toggleAgePicker(index);
+            updateTotalPrice();
         }
 
         function selectPaymentMethod(method) {
@@ -1523,6 +1554,15 @@
             // vnpPaymentType = 'deposit' | 'full' based on which payment option opened the modal
             const vnpPaymentType = selectedPaymentType === 'full' ? 'full' : 'deposit';
 
+            const childAges = [];
+            const childrenQty = parseInt(document.getElementById('num-children').value) || 0;
+            for (let i = 0; i < childrenQty; i++) {
+                const ageEl = document.getElementById(`child-age-${i}`);
+                if (ageEl) {
+                    childAges.push(ageEl.value);
+                }
+            }
+
             const payload = {
                 tourId: tourInfo.id,
                 departureDate: departureDate,
@@ -1532,7 +1572,8 @@
                 participantCount: participantCount,
                 paymentMethod: isVnpay ? 'vnpay' : selectedPaymentType,
                 roomNumber: roomNumber,
-                vnpPaymentType: vnpPaymentType
+                vnpPaymentType: vnpPaymentType,
+                childAges: childAges
             };
 
             // Show loading state on confirm button
