@@ -283,7 +283,7 @@
     <main class="flex min-h-screen bg-brand-bg pt-32"
         style="background-image: url('/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg'); background-size: cover; background-position: center center; background-attachment: fixed;">
         <!-- BEGIN: LeftHeroSection -->
-        <section class="w-1/2 px-12 py-16 overflow-y-auto relative"
+        <section id="leftHeroSection" class="w-1/2 px-12 py-16 overflow-y-auto relative"
             style="background-image: url('/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;">
             <div class="max-w-xl mx-auto mb-10 relative z-10" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5)">
                 <div class="flex items-center space-x-4 mb-6">
@@ -293,7 +293,7 @@
                 </div>
                 <h2 id="tourTitle" class="text-6xl font-serif font-bold text-white">Đoàn Tụ</h2>
             </div>
-            <div class="absolute inset-0 bg-black/60 z-0 pointer-events-none" style="opacity: 0;"></div>
+            <div class="absolute inset-0 bg-black/60 z-0 pointer-events-none"></div>
             <div class="max-w-xl mx-auto space-y-8 relative z-10">
                 <!-- Section 1 - Overview -->
                 <div class="premium-card p-10 text-white"
@@ -326,7 +326,7 @@
                 </div>
                 <!-- Section 2 - Quote -->
                 <div class="premium-card p-10 text-white"
-                    style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: rgba(0, 0, 0, 0.05) 0px 8px 32px 0px;">
+                    style="display: none;">
                     <div class="flex flex-col space-y-4">
                         <span class="text-[10px] font-bold uppercase tracking-widest text-brand-gold">Triết lý hành
                             trình</span>
@@ -343,52 +343,8 @@
                         <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-gold">Hoạt động trong
                             ngày</span>
                     </div>
-                    <div class="relative pl-6 space-y-8">
-                        <!-- Timeline Item 0 -->
-                        <div class="timeline-item flex items-start space-x-6 relative group cursor-pointer active"
-                            id="timeline-0" onclick="handleMapScroll(event, 0)">
-                            <div class="timeline-line"></div>
-                            <div class="timeline-dot mt-1.5"></div>
-                            <div class="flex-1">
-                                <span
-                                    class="text-[9px] font-bold text-brand-gold uppercase tracking-[0.25em] block mb-1">08:00
-                                    - 10:00</span>
-                                <h4 class="font-serif font-bold text-base mb-1 text-white group-hover:text-brand-gold transition-colors"
-                                    onclick="openActivityModal(0)">Khám phá Đại Nội (Imperial City)</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed font-light">Hành trình xuyên không về cố
-                                    đô Huế, khám phá kiến trúc cung đình tinh xảo...</p>
-                            </div>
-                        </div>
-                        <!-- Timeline Item 1 -->
-                        <div class="timeline-item flex items-start space-x-6 relative group cursor-pointer"
-                            id="timeline-1" onclick="handleMapScroll(event, 1)">
-                            <div class="timeline-line"></div>
-                            <div class="timeline-dot mt-1.5"></div>
-                            <div class="flex-1">
-                                <span
-                                    class="text-[9px] font-bold text-brand-gold uppercase tracking-[0.25em] block mb-1">10:00
-                                    - 12:00</span>
-                                <h4 class="font-serif font-bold text-base mb-1 text-white group-hover:text-brand-gold transition-colors"
-                                    onclick="openActivityModal(1)">Thưởng thức Trà Cung Đình</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed font-light">Thưởng thức tinh hoa ẩm thực
-                                    trà Việt giữa không gian di sản cổ kính...</p>
-                            </div>
-                        </div>
-                        <!-- Timeline Item 2 -->
-                        <div class="timeline-item flex items-start space-x-6 relative group cursor-pointer"
-                            id="timeline-2" onclick="handleMapScroll(event, 2)">
-                            <div class="timeline-line"></div>
-                            <div class="timeline-dot mt-1.5"></div>
-                            <div class="flex-1">
-                                <span
-                                    class="text-[9px] font-bold text-brand-gold uppercase tracking-[0.25em] block mb-1">14:00
-                                    - 17:00</span>
-                                <h4 class="font-serif font-bold text-base mb-1 text-white group-hover:text-brand-gold transition-colors"
-                                    onclick="openActivityModal(2)">Du ngoạn Sông Hương</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed font-light">Ngắm nhìn cố đô yên bình trên
-                                    chiếc thuyền rồng truyền thống...</p>
-                            </div>
-                        </div>
+                    <div id="timeline-container" class="relative pl-6 space-y-8">
+                        <!-- Timeline items will be rendered dynamically -->
                     </div>
                 </div>
                 <!-- Interactive Map Section -->
@@ -405,40 +361,8 @@
                             <!-- Background Map Image Cover (Mockup) -->
                             <div class="absolute inset-0 bg-black/20"></div>
                             <!-- Pins Group -->
-                            <div class="absolute inset-0">
-                                <!-- Activity Pin 0: Dai Noi -->
-                                <div class="absolute transition-all duration-700 ease-in-out map-marker hidden"
-                                    id="pin-0" style="top: 45%; left: 48%;">
-                                    <svg class="map-pin-svg" fill="#C5A059" height="42" viewBox="0 0 32 42" width="32"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16344 24.8366 0 16 0ZM16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22Z"
-                                            fill="currentColor"></path>
-                                        <circle cx="16" cy="16" fill="white" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <!-- Activity Pin 1: Tra Cung Dinh -->
-                                <div class="absolute transition-all duration-700 ease-in-out map-marker hidden"
-                                    id="pin-1" style="top: 50%; left: 52%;">
-                                    <svg class="map-pin-svg" fill="#C5A059" height="42" viewBox="0 0 32 42" width="32"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16344 24.8366 0 16 0ZM16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22Z"
-                                            fill="currentColor"></path>
-                                        <circle cx="16" cy="16" fill="white" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <!-- Activity Pin 2: Song Huong -->
-                                <div class="absolute transition-all duration-700 ease-in-out map-marker hidden"
-                                    id="pin-2" style="top: 58%; left: 40%;">
-                                    <svg class="map-pin-svg" fill="#C5A059" height="42" viewBox="0 0 32 42" width="32"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16344 24.8366 0 16 0ZM16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22Z"
-                                            fill="currentColor"></path>
-                                        <circle cx="16" cy="16" fill="white" r="4"></circle>
-                                    </svg>
-                                </div>
+                            <div id="map-pins-container" class="absolute inset-0">
+                                <!-- Pins will be rendered dynamically -->
                             </div>
                         </div>
                     </div>
@@ -923,29 +847,144 @@
             }
         }
 
-        const activities = [
-            {
-                time: "08:00",
-                title: "Khám phá Đại Nội (Imperial City)",
-                desc: "Hành trình xuyên không về cố đô Huế, khám phá kiến trúc cung đình tinh xảo. Quý khách sẽ được tham quan Điện Thái Hòa, Thế Miếu và các cung điện lộng lẫy khác, lắng nghe những giai thoại về triều đại nhà Nguyễn.",
-                image: "https://lh3.googleusercontent.com/aida/AP1WRLuLL5Izs2UvzjZ5hvyRCN8ptBTww-0CeLmjHOm1_PPrf48kr6ShNgjHCVWa0C4gsaJVZZwZ0EH6iEz0TzjGn5gbdU98Tbf8OALK_JCdqe9-yhF2NYHj31uV024CdVwGrAzxDR-0JqoHvUAXPnUT2ZoioVEeSImipl_9m5ygMoIlc8gJcgp_qRYBN5mTgM-o6aA-foBrnT-QHQLmtGkTPmaYY3AvrNnSx1nl_aWU4gO-EdRQrhOLF78GrtBU",
-                coords: { top: '45%', left: '48%' }
-            },
-            {
-                time: "10:00",
-                title: "Thưởng thức Trà Cung Đình",
-                desc: "Thưởng thức tinh hoa ẩm thực trà Việt giữa không gian di sản cổ kính. Trà được pha từ các loại thảo mộc quý hiếm theo công thức tiến vua xưa kia, đi kèm với các loại bánh ngọt truyền thống đặc sắc của Huế.",
-                image: "https://lh3.googleusercontent.com/aida/AP1WRLvfuZDKaVo6yf7f8YWPDu1jm68_SboAFbtXnu1S6RSG6xEVl2N33EvUWaG14dIa35anIW7d-ro6IOMHmt1yr9MA2wLcSGWVKTDHpRqW5MThngaD_53PoZ9KjmW3_6Df7GKqYVb3C17dvvg1ds_B2T1e8Wx8-6Ua-zLT64bhH4id4WTpw-BObitkYXZ7nR9ALB6DP5iYksKkon5LPj5KZl4laRuSpxSumrTy0MasLdU379O-F9wYw0HHk8Ke",
-                coords: { top: '50%', left: '52%' }
-            },
-            {
-                time: "14:00",
-                title: "Du ngoạn Sông Hương",
-                desc: "Ngắm nhìn cố đô yên bình trên chiếc thuyền rồng truyền thống lướt nhẹ trên dòng sông Hương thơ mộng. Chuyến đi sẽ đưa quý khách qua các địa danh nổi tiếng hai bên bờ sông, tận hưởng làn gió mát lành và không gian tĩnh lặng.",
-                image: "https://lh3.googleusercontent.com/aida/AP1WRLsAxsPs5r2kvGoyuzwLi5HZNuqZFFJ92LYmgV2zf3VVi05_rp0P1FIjGTkhnt_yYR6R6IQjVqoUK2S2TtEuQtrwfCt_DIWjhkdBsJi4brBXRdsMVNvfm5NsRG1XzflD7aZffpBJlDVKtz1uIAqPvyYVctHm-h0qxIJfPuGZ05rvpSBiDwbHDDReK2fzQwtanrEH-ZuatIZKHHkSLCx7Yu6WvSDvYTjedkshVAfKkDxWCi2s8KYXnJZrg7wu",
-                coords: { top: '58%', left: '40%' }
+        const tourActivities = {
+            doantu: [
+                {
+                    time: "08:00 - 10:00",
+                    title: "Khám phá Đại Nội (Imperial City)",
+                    desc: "Hành trình xuyên không về cố đô Huế, khám phá kiến trúc cung đình tinh xảo. Quý khách sẽ được tham quan Điện Thái Hòa, Thế Miếu...",
+                    image: "https://lh3.googleusercontent.com/aida/AP1WRLuLL5Izs2UvzjZ5hvyRCN8ptBTww-0CeLmjHOm1_PPrf48kr6ShNgjHCVWa0C4gsaJVZZwZ0EH6iEz0TzjGn5gbdU98Tbf8OALK_JCdqe9-yhF2NYHj31uV024CdVwGrAzxDR-0JqoHvUAXPnUT2ZoioVEeSImipl_9m5ygMoIlc8gJcgp_qRYBN5mTgM-o6aA-foBrnT-QHQLmtGkTPmaYY3AvrNnSx1nl_aWU4gO-EdRQrhOLF78GrtBU",
+                    coords: { top: '45%', left: '48%' }
+                },
+                {
+                    time: "10:00 - 12:00",
+                    title: "Thưởng thức Trà Cung Đình",
+                    desc: "Thưởng thức tinh hoa ẩm thực trà Việt giữa không gian di sản cổ kính. Trà được pha từ các loại thảo mộc quý hiếm...",
+                    image: "https://lh3.googleusercontent.com/aida/AP1WRLvfuZDKaVo6yf7f8YWPDu1jm68_SboAFbtXnu1S6RSG6xEVl2N33EvUWaG14dIa35anIW7d-ro6IOMHmt1yr9MA2wLcSGWVKTDHpRqW5MThngaD_53PoZ9KjmW3_6Df7GKqYVb3C17dvvg1ds_B2T1e8Wx8-6Ua-zLT64bhH4id4WTpw-BObitkYXZ7nR9ALB6DP5iYksKkon5LPj5KZl4laRuSpxSumrTy0MasLdU379O-F9wYw0HHk8Ke",
+                    coords: { top: '50%', left: '52%' }
+                },
+                {
+                    time: "14:00 - 17:00",
+                    title: "Du ngoạn Sông Hương",
+                    desc: "Ngắm nhìn cố đô yên bình trên chiếc thuyền rồng truyền thống lướt nhẹ trên dòng sông Hương thơ mộng...",
+                    image: "https://lh3.googleusercontent.com/aida/AP1WRLsAxsPs5r2kvGoyuzwLi5HZNuqZFFJ92LYmgV2zf3VVi05_rp0P1FIjGTkhnt_yYR6R6IQjVqoUK2S2TtEuQtrwfCt_DIWjhkdBsJi4brBXRdsMVNvfm5NsRG1XzflD7aZffpBJlDVKtz1uIAqPvyYVctHm-h0qxIJfPuGZ05rvpSBiDwbHDDReK2fzQwtanrEH-ZuatIZKHHkSLCx7Yu6WvSDvYTjedkshVAfKkDxWCi2s8KYXnJZrg7wu",
+                    coords: { top: '58%', left: '40%' }
+                }
+            ],
+            dongnoi: [
+                {
+                    time: "08:30 - 10:30",
+                    title: "Làng gốm Thanh Hà",
+                    desc: "Tìm hiểu nghệ thuật làm gốm thủ công mộc mạc bên dòng sông Thu Bồn. Tự tay trải nghiệm xoay gốm tạo hình đất sét.",
+                    image: "/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg",
+                    coords: { top: '40%', left: '46%' }
+                },
+                {
+                    time: "10:30 - 12:30",
+                    title: "Vườn rau Trà Quế",
+                    desc: "Dạo quanh vườn rau hữu cơ nổi tiếng, tham gia xới đất, trồng rau và thưởng thức ly nước hạt sen mát lạnh.",
+                    image: "/AnhTour/com.jfif",
+                    coords: { top: '48%', left: '50%' }
+                },
+                {
+                    time: "13:00 - 15:30",
+                    title: "Trải nghiệm ẩm thực",
+                    desc: "Thưởng thức bữa trưa đậm đà hương vị Quảng Nam với các món đặc sản từ nông sản sạch thu hoạch ngay tại vườn.",
+                    image: "/AnhTour/Com.jpg",
+                    coords: { top: '55%', left: '44%' }
+                }
+            ],
+            disan: [
+                {
+                    time: "09:00 - 11:30",
+                    title: "Làng chiếu cói Kim Sơn",
+                    desc: "Khám phá quy trình dệt chiếu truyền thống tinh xảo từ sợi cói tự nhiên của các nghệ nhân địa phương.",
+                    image: "/AnhTour/ThuCong.jpg",
+                    coords: { top: '42%', left: '48%' }
+                },
+                {
+                    time: "11:30 - 13:30",
+                    title: "Thưởng thức ẩm thực Tràng An",
+                    desc: "Bữa trưa đặc sắc tại nhà hàng ven sông Ninh Bình với đặc sản thịt dê núi, cơm cháy và rượu Kim Sơn.",
+                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    coords: { top: '49%', left: '51%' }
+                },
+                {
+                    time: "13:30 - 16:00",
+                    title: "Trải nghiệm thêu Văn Lâm",
+                    desc: "Học cách thêu những họa tiết truyền thống tinh tế trên nền vải lanh tự nhiên cùng các nghệ nhân lão luyện.",
+                    image: "/AnhTour/ThuCong.jpg",
+                    coords: { top: '56%', left: '45%' }
+                }
+            ],
+            tinhlang: [
+                {
+                    time: "08:00 - 10:30",
+                    title: "Chèo xuồng ngắm sen",
+                    desc: "Thả mình giữa cánh đồng sen mênh mông bạt ngàn tại Tháp Mười, ngắm hoa sen chớm nở đón ánh bình minh.",
+                    image: "/AnhTour/ThapMuoi.jpg",
+                    coords: { top: '44%', left: '46%' }
+                },
+                {
+                    time: "10:30 - 13:00",
+                    title: "Thiền hành đầm sen",
+                    desc: "Thưởng trà sen hữu cơ và tham gia các hoạt động thiền hành, hít thở thư giãn tinh thần giữa thiên nhiên.",
+                    image: "/AnhTour/ThapMuoi.jpg",
+                    coords: { top: '52%', left: '52%' }
+                },
+                {
+                    time: "13:00 - 15:30",
+                    title: "Ẩm thực sen Tháp Mười",
+                    desc: "Khám phá thực đơn đặc biệt làm hoàn toàn từ sen: cơm hấp lá sen, súp hạt sen, gỏi ngó sen thanh mát.",
+                    image: "/AnhTour/ThapMuoi.jpg",
+                    coords: { top: '60%', left: '42%' }
+                }
+            ]
+        };
+
+        function renderActivities() {
+            const list = tourActivities[currentTour] || [];
+            
+            // 1. Timeline list HTML
+            const timelineContainer = document.getElementById('timeline-container');
+            if (timelineContainer) {
+                timelineContainer.innerHTML = list.map((act, index) => {
+                    const activeClass = index === 0 ? 'active' : '';
+                    return `
+                        <div class="timeline-item flex items-start space-x-6 relative group cursor-pointer ${activeClass}"
+                            id="timeline-${index}" onclick="handleMapScroll(event, ${index})">
+                            <div class="timeline-line"></div>
+                            <div class="timeline-dot mt-1.5"></div>
+                            <div class="flex-1">
+                                <span class="text-[9px] font-bold text-brand-gold uppercase tracking-[0.25em] block mb-1">${act.time}</span>
+                                <h4 class="font-serif font-bold text-base mb-1 text-white group-hover:text-brand-gold transition-colors"
+                                    onclick="openActivityModal(${index})">${act.title}</h4>
+                                <p class="text-xs text-gray-300 leading-relaxed font-light">${act.desc}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
-        ];
+            
+            // 2. Map pins HTML
+            const pinsContainer = document.getElementById('map-pins-container');
+            if (pinsContainer) {
+                pinsContainer.innerHTML = list.map((act, index) => {
+                    return `
+                        <div class="absolute transition-all duration-700 ease-in-out map-marker"
+                            id="pin-${index}" style="top: ${act.coords.top}; left: ${act.coords.left};" onclick="focusActivity(${index})">
+                            <svg class="map-pin-svg" fill="#C5A059" height="42" viewBox="0 0 32 42" width="32"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16344 24.8366 0 16 0ZM16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22Z"
+                                    fill="currentColor"></path>
+                                <circle cx="16" cy="16" fill="white" r="4"></circle>
+                            </svg>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
 
         function formatVND(amount) {
             return amount.toLocaleString('vi-VN') + ' VNĐ';
@@ -1000,6 +1039,12 @@
                 mainDiv.style.backgroundImage = `url('${tourInfo.image}')`;
             }
 
+            const leftHero = document.getElementById('leftHeroSection');
+            if (leftHero && tourInfo.image) {
+                leftHero.style.backgroundImage = `url('${tourInfo.image}')`;
+            }
+
+            renderActivities();
             displayCachedWeather();
             updateTotalPrice();
         }
@@ -1021,13 +1066,17 @@
         // Interaction Logic: Focus Activity from Timeline
         function focusActivity(index) {
             document.querySelectorAll('.timeline-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(`timeline-${index}`).classList.add('active');
+            const timelineEl = document.getElementById(`timeline-${index}`);
+            if (timelineEl) timelineEl.classList.add('active');
 
             const container = document.getElementById('map-pins-layer');
-            const activity = activities[index];
+            const list = tourActivities[currentTour] || [];
+            const activity = list[index];
 
-            container.style.transform = `scale(1.2) translate(${-(parseFloat(activity.coords.left) - 50) * 2}%, ${-(parseFloat(activity.coords.top) - 50) * 2}%)`;
-            container.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            if (container && activity) {
+                container.style.transform = `scale(1.2) translate(${-(parseFloat(activity.coords.left) - 50) * 2}%, ${-(parseFloat(activity.coords.top) - 50) * 2}%)`;
+                container.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            }
         }
 
         function toggleDiscountSection() {
@@ -1050,7 +1099,9 @@
         }
 
         function openActivityModal(index) {
-            const data = activities[index];
+            const list = tourActivities[currentTour] || [];
+            const data = list[index];
+            if (!data) return;
             const overlay = document.getElementById('overlay');
             const modal = document.getElementById('activity-modal');
 
