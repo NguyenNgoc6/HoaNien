@@ -1022,7 +1022,14 @@
                                 <span class="text-[9px] font-bold text-brand-gold uppercase tracking-[0.25em] block mb-1">${act.time}</span>
                                 <h4 class="font-serif font-bold text-base mb-1 text-white group-hover:text-brand-gold transition-colors"
                                     onclick="openActivityModal(${index})">${act.title}</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed font-light">${act.desc}</p>
+                                <p class="text-xs text-gray-300 leading-relaxed font-light mb-2">${act.desc}</p>
+                                <div class="mt-2">
+                                    <button onclick="handleMapScroll(event, ${index}); event.stopPropagation();" 
+                                            class="inline-flex items-center space-x-1 text-[10px] font-bold uppercase tracking-widest text-brand-gold hover:text-white transition-colors">
+                                        <span class="material-symbols-outlined text-[13px]">location_on</span>
+                                        <span>Xem vị trí</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
