@@ -407,7 +407,8 @@
                         <div class="flex flex-col">
                             <label class="text-[10px] font-bold uppercase tracking-widest mb-2 text-black">Ngày
                                 đi</label>
-                            <input class="text-sm py-2" id="departureDate" type="date" value="2026-06-26">
+                            <input class="text-sm py-2" id="departureDate" type="date" value="2026-06-26" oninput="validateDepartureDate(this)">
+                            <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-1 hidden" id="date-error">Không thể chọn ngày trong quá khứ</p>
                         </div>
                     </div>
                     <div class="flex flex-col">
@@ -1272,6 +1273,27 @@
             document.body.style.overflow = 'auto';
         }
 
+        // Real-time validation: prevent past date selection
+        function validateDepartureDate(input) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(input.value);
+            const errorEl = document.getElementById('date-error');
+            if (selected < today) {
+                input.style.borderColor = '#ef4444';
+                if (errorEl) errorEl.classList.remove('hidden');
+                // Reset to today
+                input.value = today.toISOString().split('T')[0];
+                setTimeout(() => {
+                    input.style.borderColor = '';
+                    if (errorEl) errorEl.classList.add('hidden');
+                }, 2500);
+            } else {
+                input.style.borderColor = '';
+                if (errorEl) errorEl.classList.add('hidden');
+            }
+        }
+
         function validateInputs() {
             const lang = document.documentElement.lang || 'vi';
             const fullName = document.getElementById('fullName').value.trim();
@@ -1302,6 +1324,16 @@
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 alert(lang === 'vi' ? 'Email không đúng định dạng. Vui lòng nhập lại.' : 'Invalid email format.');
+                return false;
+            }
+
+            // Validate departure date is not in the past
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(departureDate);
+            if (selectedDate < today) {
+                alert(lang === 'vi' ? 'Ngày khởi hành không thể là ngày trong quá khứ. Vui lòng chọn lại.' : 'Departure date cannot be in the past. Please select a valid date.');
+                document.getElementById('departureDate').focus();
                 return false;
             }
 
@@ -1478,7 +1510,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
             const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('departureDate').value = todayStr;
+            const dateInput = document.getElementById('departureDate');
+            if (dateInput) {
+                dateInput.min = todayStr;  // Block past dates in native picker
+                dateInput.value = todayStr;
+            }
             fetchWeather(todayStr);
         });
     </script>
