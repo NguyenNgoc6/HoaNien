@@ -426,7 +426,7 @@
                     <div class="flex flex-col">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 text-black">Số lượng thành
                             viên (khách)</label>
-                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice()">
+                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice(); validateCompanions()">
                     </div>
                     <!-- Companion Section -->
                     <div data-purpose="accompanying-section">
@@ -436,15 +436,18 @@
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Người
                                     lớn</label>
-                                <input class="text-sm py-2" min="1" placeholder="Số lượng..." type="number" value="1">
+                                <input class="text-sm py-2" id="num-adults" min="1" placeholder="Số lượng..." type="number" value="1" oninput="validateCompanions()">
                             </div>
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Trẻ
                                     em</label>
                                 <input class="text-sm py-2" id="num-children" min="0"
-                                    oninput="generateChildRows(this.value)" placeholder="Số lượng..." type="number">
+                                    oninput="generateChildRows(this.value); validateCompanions()" placeholder="Số lượng..." type="number" value="0">
                             </div>
                         </div>
+                        <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-2 hidden" id="companion-error">
+                            Tổng số người lớn và trẻ em phải bằng số lượng thành viên đã chọn
+                        </p>
                         <div class="space-y-6" id="child-rows-container"></div>
                     </div>
                     <!-- Notes Section -->
@@ -1391,7 +1394,48 @@
                 return false;
             }
 
+            // Validate companions total count matches participant count
+            if (!validateCompanions()) {
+                alert(lang === 'vi' ? 'Tổng số thành viên (Người lớn + Trẻ em) chưa khớp với số lượng thành viên đã chọn.' : 'Total adults and children must equal total selected members.');
+                return false;
+            }
+
             return true;
+        }
+
+        function validateCompanions() {
+            const participantInput = document.getElementById('participantCount');
+            const adultsInput = document.getElementById('num-adults');
+            const childrenInput = document.getElementById('num-children');
+            const errorEl = document.getElementById('companion-error');
+
+            if (!participantInput || !adultsInput || !childrenInput) return true;
+
+            const totalParticipants = parseInt(participantInput.value) || 1;
+            const adults = parseInt(adultsInput.value) || 0;
+            const children = parseInt(childrenInput.value) || 0;
+
+            const sum = adults + children;
+
+            if (sum !== totalParticipants) {
+                // Show error visual indicators
+                adultsInput.style.borderColor = '#ef4444';
+                childrenInput.style.borderColor = '#ef4444';
+                if (errorEl) {
+                    errorEl.classList.remove('hidden');
+                    const lang = document.documentElement.lang || 'vi';
+                    errorEl.textContent = lang === 'vi' 
+                        ? `Tổng số người lớn (${adults}) và trẻ em (${children}) phải bằng số thành viên đã chọn (${totalParticipants})`
+                        : `Total adults (${adults}) and children (${children}) must equal total selected members (${totalParticipants})`;
+                }
+                return false;
+            } else {
+                // Clear errors
+                adultsInput.style.borderColor = '';
+                childrenInput.style.borderColor = '';
+                if (errorEl) errorEl.classList.add('hidden');
+                return true;
+            }
         }
 
         function submitBookingFlow() {
