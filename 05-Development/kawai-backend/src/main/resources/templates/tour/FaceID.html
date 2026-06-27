@@ -384,7 +384,7 @@
                             <div class="space-y-1">
                                  <h4 id="tour-name-display" 
                                      class="font-display-md text-[32px] text-primary leading-tight cursor-pointer hover:underline hover:opacity-80 transition-all" 
-                                     onclick="if(this.textContent.trim().includes('Tinh túy đồng nội') || this.textContent.trim().includes('Tinh Túy Đồng Nội')) showActivities()" 
+                                     onclick="showActivities(this.textContent.trim())" 
                                      th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ</h4>
                                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/60" th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
                             </div>
@@ -1269,68 +1269,73 @@
   <div class="bg-surface rounded-lg shadow-2xl p-8 w-11/12 max-w-lg border border-primary/10">
     <div class="flex justify-between items-center mb-6 border-b border-primary/10 pb-4">
       <h3 class="text-2xl font-display-md font-bold text-primary">Lịch Trình Chi Tiết</h3>
-      <button class="text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold" onclick="closeActivities()">✕</button>
+      <button class="text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold" onclick="closeActivities()">&#x2715;</button>
     </div>
-    <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-custom">
-      <p class="font-headline text-lg font-light text-on-surface-variant mb-4 italic">Tinh túy đồng nội - Quảng Nam (Khởi hành: 08:00)</p>
-      
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">08:00 - 08:30</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Đón khách & Di chuyển</p>
-          <p class="text-sm opacity-80">Xe đón khách tại điểm hẹn và khởi hành đi Quảng Nam.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">08:30 - 10:00</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Làng nghệ truyền thống</p>
-          <p class="text-sm opacity-80">Tham quan làng nghệ truyền thống, tìm hiểu các công đoạn chế tác thủ công lâu đời.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">10:00 - 11:30</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Khu sản xuất đặc sản</p>
-          <p class="text-sm opacity-80">Ghé thăm khu sản xuất thủ công, thưởng thức nông sản và đặc sản địa phương sạch.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">11:30 - 13:00</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Trải nghiệm ẩm thực</p>
-          <p class="text-sm opacity-80">Thưởng thức bữa trưa với các món đặc sản đồng quê mang hương vị chuẩn bản địa.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">13:00 - 15:00</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Trực tiếp trải nghiệm</p>
-          <p class="text-sm opacity-80">Khách tự tay làm thử các sản phẩm lưu niệm dưới sự hướng dẫn của nghệ nhân bản địa.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4 items-start">
-        <span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">15:00 - 16:00</span>
-        <div class="text-on-surface-variant">
-          <p class="font-semibold text-on-surface">Hòa nhạc dân gian & Trà chiều</p>
-          <p class="text-sm opacity-80">Thưởng thức trà thảo mộc organic và nghe hòa nhạc dân gian đặc sắc trước khi kết thúc tour.</p>
-        </div>
-      </div>
-    </div>
+    <div id="activities-content" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-custom"></div>
     <div class="mt-6 pt-4 border-t border-primary/10 flex justify-end">
       <button class="px-6 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80 font-bold transition-all shadow-md" onclick="closeActivities()">Đóng</button>
     </div>
   </div>
 </div>
 <script>
-  function showActivities() {
+  const TOUR_ITINERARIES = {
+    'tinh tuy': {
+      subtitle: 'Tinh túy đồng nội - Quảng Nam (Khởi hành: 08:00)',
+      activities: [
+        { time: '08:00 - 08:30', title: 'Đón khách & Di chuyển', desc: 'Xe đón khách tại điểm hẹn và khởi hành đi Quảng Nam.' },
+        { time: '08:30 - 10:00', title: 'Làng nghề truyền thống', desc: 'Tham quan làng nghề truyền thống, tìm hiểu các công đoạn chế tác thủ công lâu đời.' },
+        { time: '10:00 - 11:30', title: 'Khu sản xuất đặc sản', desc: 'Ghé thăm khu sản xuất thủ công, thưởng thức nông sản và đặc sản địa phương sạch.' },
+        { time: '11:30 - 13:00', title: 'Trải nghiệm ẩm thực', desc: 'Thưởng thức bữa trưa với các món đặc sản đồng quê mang hương vị chuẩn bản địa.' },
+        { time: '13:00 - 15:00', title: 'Trực tiếp trải nghiệm', desc: 'Khách tự tay làm thử các sản phẩm lưu niệm dưới sự hướng dẫn của nghệ nhân bản địa.' },
+        { time: '15:00 - 16:00', title: 'Hòa nhạc dân gian & Trà chiều', desc: 'Thưởng thức trà thảo mộc organic và nghe hòa nhạc dân gian đặc sắc trước khi kết thúc tour.' }
+      ]
+    },
+    'doan tu': {
+      subtitle: 'Hành trình Đoàn Tụ - Huế (Khởi hành: 08:00)',
+      activities: [
+        { time: '08:00 - 08:30', title: 'Đón khách & Di chuyển', desc: 'Xe đón khách tại khách sạn, khởi hành cùng hướng dẫn viên đến thành phố Huế.' },
+        { time: '08:30 - 10:00', title: 'Kinh Thành Huế', desc: 'Tham quan Kinh Thành Huế — di sản thế giới UNESCO, khám phá các ô phố cổ và đình lăng mẫu.' },
+        { time: '10:00 - 11:30', title: 'Chợ Đông Ba & Phố Cổ', desc: 'Dạo bước chợ Đông Ba, mua sắm đặc sản Huế: đường bao tử, mè xửng, nón bài thơ.' },
+        { time: '11:30 - 13:00', title: 'Bữa trưa cơm Huế', desc: 'Thưởng thức bữa cơm Huế chính thống: bánh bèo, bánh nậm, cơm hến, bún bò Huế tại nhà hàng truyền thống.' },
+        { time: '13:00 - 15:00', title: 'Lăng Tự Đức & Chùa Thiên Mụ', desc: 'Tham quan Lăng Tự Đức và chùa Thiên Mụ — biểu tượng linh thiêng của xứ Huế bên bờ sông Hương.' },
+        { time: '15:00 - 16:00', title: 'Trà chiều & Ngắm hoàng hôn', desc: 'Nghỉ ngơi bên bờ sông Hương, thưởng trà sen Huế, ngắm hoàng hôn rồi lên xe đưa khách về.' }
+      ]
+    }
+  };
+
+  function normalizeKey(name) {
+    return name.toLowerCase()
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  function showActivities(tourName) {
+    const norm = normalizeKey(tourName || '');
+    let key = null;
+    if (norm.includes('tinh tuy') || norm.includes('tinh t')) key = 'tinh tuy';
+    else if (norm.includes('doan tu') || norm.includes('doan t')) key = 'doan tu';
+
+    if (!key) return;
+
+    const data = TOUR_ITINERARIES[key];
+    const content = document.getElementById('activities-content');
+
+    content.innerHTML = [
+      '<p class="font-headline text-lg font-light text-on-surface-variant mb-4 italic">' + data.subtitle + '</p>',
+      ...data.activities.map(a =>
+        '<div class="flex gap-4 items-start">' +
+          '<span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">' + a.time + '</span>' +
+          '<div class="text-on-surface-variant">' +
+            '<p class="font-semibold text-on-surface">' + a.title + '</p>' +
+            '<p class="text-sm opacity-80">' + a.desc + '</p>' +
+          '</div>' +
+        '</div>'
+      )
+    ].join('');
+
     document.getElementById('activities-modal').classList.remove('hidden');
   }
+
   function closeActivities() {
     document.getElementById('activities-modal').classList.add('hidden');
   }
