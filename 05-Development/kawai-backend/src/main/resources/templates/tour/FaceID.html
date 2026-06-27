@@ -1191,19 +1191,38 @@
             }
         });
 
+        function removeVietnameseAccents(str) {
+            if (!str) return '';
+            return str
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D");
+        }
+
+        function matchQuery(text, query) {
+            const normText = text.toLowerCase().normalize("NFC");
+            const normQuery = query.toLowerCase().normalize("NFC");
+            if (normText.includes(normQuery)) return true;
+            
+            const accentlessText = removeVietnameseAccents(normText);
+            const accentlessQuery = removeVietnameseAccents(normQuery);
+            return accentlessText.includes(accentlessQuery);
+        }
+
         function performSearch(query) {
-            const cleanQuery = query.toLowerCase().trim();
+            const cleanQuery = query.trim();
             if (!cleanQuery) {
                 document.querySelectorAll('table tbody tr').forEach(r => r.style.display = '');
                 return;
             }
             
-            const tourName = document.getElementById('tour-name-display') ? document.getElementById('tour-name-display').textContent.toLowerCase() : '';
+            const tourName = document.getElementById('tour-name-display') ? document.getElementById('tour-name-display').textContent : '';
             const tourMetaEl = document.querySelector('[th\\:text*="departureDate"]') || document.querySelector('.font-headline.text-lg.md\\:text-xl.font-light.text-on-surface-variant\\/60') || document.querySelector('#print-area p');
-            const tourMeta = tourMetaEl ? tourMetaEl.textContent.toLowerCase() : '';
+            const tourMeta = tourMetaEl ? tourMetaEl.textContent : '';
             const tourDetailsText = (tourName + " " + tourMeta);
             
-            const matchesTour = tourDetailsText.includes(cleanQuery);
+            const matchesTour = matchQuery(tourDetailsText, cleanQuery);
             
             const rows = document.querySelectorAll('table tbody tr');
             rows.forEach(row => {
@@ -1212,7 +1231,7 @@
                     return;
                 }
                 
-                const idText = row.querySelector('td:first-child') ? row.querySelector('td:first-child').textContent.toLowerCase() : '';
+                const idText = row.querySelector('td:first-child') ? row.querySelector('td:first-child').textContent : '';
                 const dataEl = row.querySelector('[data-name]');
                 
                 let nameText = '';
@@ -1222,17 +1241,17 @@
                 let roomText = '';
                 
                 if (dataEl) {
-                    nameText = (dataEl.getAttribute('data-name') || '').toLowerCase();
-                    phoneText = (dataEl.getAttribute('data-phone') || '').toLowerCase();
-                    emailText = (dataEl.getAttribute('data-email') || '').toLowerCase();
-                    membershipText = (dataEl.getAttribute('data-membership') || '').toLowerCase();
-                    roomText = (dataEl.getAttribute('data-room') || '').toLowerCase();
+                    nameText = (dataEl.getAttribute('data-name') || '');
+                    phoneText = (dataEl.getAttribute('data-phone') || '');
+                    emailText = (dataEl.getAttribute('data-email') || '');
+                    membershipText = (dataEl.getAttribute('data-membership') || '');
+                    roomText = (dataEl.getAttribute('data-room') || '');
                 }
                 
-                const statusText = row.textContent.toLowerCase();
+                const statusText = row.textContent;
                 const combinedText = `${idText} ${nameText} ${phoneText} ${emailText} ${membershipText} ${roomText} ${statusText}`;
                 
-                if (combinedText.includes(cleanQuery)) {
+                if (matchQuery(combinedText, cleanQuery)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
