@@ -912,12 +912,11 @@
                 const hasTours = toursData.some(t => t.date === dateString);
 
                 const isTodayReal = todayReal.getDate() === day && todayReal.getMonth() === currentMonth && todayReal.getFullYear() === currentYear;
-                const isDemoHighlight = day === 26 && currentMonth === 5 && currentYear === 2026;
 
                 const dayDiv = document.createElement('div');
                 dayDiv.onclick = () => showDateTours(dateString);
 
-                if (isDemoHighlight || isTodayReal) {
+                if (isTodayReal) {
                     dayDiv.className = "p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md cursor-pointer hover:opacity-90";
                     dayDiv.innerHTML = `${day}`;
                     const dot = document.createElement('div');
@@ -928,7 +927,7 @@
                     dayDiv.textContent = day;
                     if (hasTours) {
                         const dot = document.createElement('div');
-                        dot.className = "absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary/45 rounded-full";
+                        dot.className = "absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary/45 rounded-full";
                         dayDiv.appendChild(dot);
                     }
                 }
