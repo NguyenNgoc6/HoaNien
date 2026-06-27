@@ -431,7 +431,7 @@
                     <div class="flex flex-col">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 text-black">Số lượng thành
                             viên (khách)</label>
-                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice(); validateCompanions(false)" onchange="validateCompanions(true)">
+                        <input class="text-sm py-2" id="participantCount" min="1" type="number" value="1" oninput="updateTotalPrice(); validateCompanions(false, false)" onchange="validateCompanions(true, false)">
                     </div>
                     <!-- Companion Section -->
                     <div data-purpose="accompanying-section">
@@ -441,13 +441,13 @@
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Người
                                     lớn</label>
-                                <input class="text-sm py-2" id="num-adults" min="1" placeholder="Số lượng..." type="number" value="1" oninput="validateCompanions(false)" onchange="validateCompanions(true)">
+                                <input class="text-sm py-2" id="num-adults" min="1" placeholder="Số lượng..." type="number" value="1" oninput="validateCompanions(false, false)" onchange="validateCompanions(true, false)">
                             </div>
                             <div class="flex flex-col">
                                 <label class="text-[9px] font-bold uppercase tracking-widest mb-1 text-black">Trẻ
                                     em</label>
                                 <input class="text-sm py-2" id="num-children" min="0"
-                                    oninput="validateCompanions(false)" onchange="validateCompanions(true)" placeholder="Số lượng..." type="number" value="0">
+                                    oninput="validateCompanions(false, false)" onchange="validateCompanions(true, true)" placeholder="Số lượng..." type="number" value="0">
                             </div>
                         </div>
                         <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-2 hidden" id="companion-error">
@@ -1415,14 +1415,14 @@
             }
 
             // Validate companions total count matches participant count
-            if (!validateCompanions(true)) {
+            if (!validateCompanions(true, true)) {
                 return false;
             }
 
             return true;
         }
 
-        function validateCompanions(isBlur = false) {
+        function validateCompanions(isBlur = false, triggerInsufficientPopup = false) {
             const participantInput = document.getElementById('participantCount');
             const adultsInput = document.getElementById('num-adults');
             const childrenInput = document.getElementById('num-children');
@@ -1449,7 +1449,7 @@
                     errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) đã vượt quá số thành viên đã chọn (${totalParticipants})`;
                 }
 
-                // Beautiful custom popup warning
+                // Beautiful custom popup warning (always trigger immediately on exceeds)
                 showWarningAlertPopup('Vượt quá số lượng', `Vượt quá số lượng thành viên là ${totalParticipants} trên màn hình`);
                 return false;
             } else if (sum < totalParticipants) {
@@ -1464,8 +1464,8 @@
                     errorEl.textContent = `Tổng số người lớn (${adults}) và trẻ em (${children}) chưa đủ so với số thành viên đã chọn (${totalParticipants})`;
                 }
 
-                // If blurred (finished typing) or validating on submit, show the alert popup
-                if (isBlur) {
+                // Show insufficient popup ONLY when configured to do so (e.g. after children blur or on submit)
+                if (isBlur && triggerInsufficientPopup) {
                     showWarningAlertPopup('Chưa đủ số lượng', `Tổng số người lớn và trẻ em (${sum}) chưa đủ so với số lượng thành viên là ${totalParticipants}`);
                 }
                 return false;
