@@ -286,8 +286,8 @@ public class TourGuideController {
             map.put("image", image);
             map.put("type", "Cao cấp");
             
-            // Count total bookings/attendees
-            int count = sched.getBookedSeats() != null ? sched.getBookedSeats() : 0;
+            // Count total bookings/attendees dynamically from database
+            int count = tourAttendeeRepository.findByTourBooking_Schedule_Id(sched.getId()).size();
             map.put("guests", count + " khách");
             
             dbToursList.add(map);

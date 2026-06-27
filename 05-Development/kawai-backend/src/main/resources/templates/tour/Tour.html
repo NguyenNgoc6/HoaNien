@@ -322,165 +322,49 @@
                 <!-- Schedule List -->
                 <div id="schedule-list-container"
                     class="lg:col-span-8 flex flex-col gap-12 max-h-[72vh] overflow-y-auto pr-4 scrollbar-custom scroll-smooth">
-                    <!-- Morning Section -->
+                    <!-- Dynamic Tour Schedules Section -->
                     <section class="tour-section">
                         <div class="flex items-center gap-4 mb-6">
-                            <span
-                                class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-full">light_mode</span>
+                            <span class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-full">calendar_today</span>
                             <div>
-                                <h2 class="font-headline-lg text-3xl text-on-surface">Buổi sáng <span
-                                        class="text-on-surface-variant font-normal text-body-md ml-4">(08:00 - 12:00)</span>
-                                </h2>
+                                <h2 class="font-headline-lg text-3xl text-on-surface">Danh sách Hành trình</h2>
                                 <p class="text-sm text-on-surface-variant/70 mt-1 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
-                                    Thứ Sáu, ngày 26/06/2026
+                                    <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                    Quản lý và cập nhật tình trạng điểm danh cho các tour.
                                 </p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 gap-6">
-                            <!-- Tour Card (Highlight Minh Anh) -->
-                            <div th:data-guide="${employee != null ? employee.fullName : 'Minh Anh'}"
-                                data-status="upcoming"
-                                data-schedule-id="1"
-                                class="tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden"
-                                onclick="window.location.href='/tourguide/dashboard?scheduleId=1'">
+                            <!-- Loop over dbTours -->
+                            <div th:each="tour : ${dbTours}"
+                                 th:data-guide="${tour.guide}"
+                                 th:data-status="${tour.status}"
+                                 th:data-schedule-id="${tour.id}"
+                                 th:class="${tour.guide == (employee != null ? employee.fullName : 'Minh Anh')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
+                                 th:onclick="'window.location.href=\'/tourguide/dashboard?scheduleId=' + ${tour.id} + '\''">
                                 <div class="absolute top-0 right-0 p-4">
-                                    <span
-                                        class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Cao
-                                        cấp</span>
+                                    <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
                                 </div>
                                 <div class="flex gap-6 flex-col md:flex-row">
                                     <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
-                                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                            src="/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg" />
+                                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" th:src="${tour.image}" />
                                     </div>
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div>
                                             <div class="flex items-center gap-2 mb-2">
-                                                <span class="text-primary font-bold font-label-md text-label-md">08:00 -
-                                                    13:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: <span
-                                                        th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh
-                                                        Anh</span></span>
+                                                <span class="text-primary font-bold font-label-md text-label-md" th:text="${tour.time}">08:00 - 13:00</span>
+                                                <span class="text-on-surface-variant text-label-sm">• HDV: <span th:text="${tour.guide}">Minh Anh</span></span>
+                                                <span class="text-on-surface-variant text-label-sm">• Ngày: <span th:text="${tour.date}">2026-06-27</span></span>
                                             </div>
-                                            <h3
-                                                class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
-                                                Hành trình Đoàn Tụ - Huế</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Hành
-                                                trình tìm lại những nét cổ kính văn hóa xưa cũ tại cố đô.</p>
+                                            <h3 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2" th:text="${tour.name}">Hành trình Đoàn Tụ - Huế</h3>
                                         </div>
                                         <div class="flex items-center justify-between mt-6">
                                             <div class="flex items-center gap-2">
-                                                <div
-                                                    class="w-8 h-8 rounded-full border-2 border-primary-container bg-surface flex items-center justify-center text-xs font-bold text-primary">
-                                                    12+</div>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">Khách
-                                                    đoàn</span>
+                                                <span class="material-symbols-outlined text-primary/70 text-lg">group</span>
+                                                <span class="text-on-surface-variant text-label-sm font-medium" th:text="${tour.guests}">12 khách</span>
                                             </div>
-                                            <button
-                                                class="flex items-center gap-1 text-primary font-bold font-label-md text-label-md hover:translate-x-1 transition-transform">
-                                                Bắt đầu quét FaceID <span
-                                                    class="material-symbols-outlined text-base">arrow_forward</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Regular Tour Card -->
-                            <div data-guide="Ngọc Lan" data-status="upcoming"
-                                data-schedule-id="5"
-                                class="tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30"
-                                onclick="window.location.href='/tourguide/dashboard?scheduleId=5'">
-                                <div class="flex gap-6 flex-col md:flex-row">
-                                    <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
-                                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                            src="/AnhTour/com.jfif" />
-                                    </div>
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">09:00
-                                                    - 16:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: Ngọc
-                                                    Lan</span>
-                                            </div>
-                                            <h3
-                                                class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
-                                                Tinh Túy Đồng Nội</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Khám phá
-                                                nét độc đáo trong thiết kế và văn hoá.</p>
-                                        </div>
-                                        <div class="flex items-center justify-between mt-6">
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    class="material-symbols-outlined text-primary/70 text-lg">group</span>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">8
-                                                    khách</span>
-                                            </div>
-                                            <button
-                                                class="flex items-center gap-1 text-on-surface-variant group-hover:text-primary font-bold font-label-md text-label-md transition-colors">
-                                                Chi tiết <span
-                                                    class="material-symbols-outlined text-base">arrow_forward</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                    <!-- Afternoon Section -->
-                    <section class="tour-section">
-                        <div class="flex items-center gap-4 mb-6">
-                            <span
-                                class="material-symbols-outlined text-secondary bg-secondary-container/30 p-2 rounded-full">wb_twilight</span>
-                            <div>
-                                <h2 class="font-headline-lg text-3xl text-on-surface">Buổi chiều <span
-                                        class="text-on-surface-variant font-normal text-body-md ml-4">(13:30 - 17:30)</span>
-                                </h2>
-                                <p class="text-sm text-on-surface-variant/70 mt-1 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
-                                    Thứ Năm, ngày 25/06/2026
-                                </p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 gap-6">
-                            <!-- Afternoon Tour Card -->
-                            <div data-guide="Hoàng Nam" data-status="completed"
-                                data-schedule-id="3"
-                                class="tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer"
-                                onclick="window.location.href='/tourguide/dashboard?scheduleId=3'">
-                                <div class="flex gap-6 flex-col md:flex-row">
-                                    <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
-                                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                            src="/AnhTour/ThapMuoi.jpg" />
-                                    </div>
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <span
-                                                    class="text-on-surface-variant font-bold font-label-md text-label-md">14:00
-                                                    - 22:00</span>
-                                                <span class="text-on-surface-variant text-label-sm">• HDV: Hoàng
-                                                    Nam</span>
-                                            </div>
-                                            <h3
-                                                class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2">
-                                                Tĩnh Lặng Liên Hoa</h3>
-                                            <p class="font-headline text-lg font-light text-on-surface-variant">Trải
-                                                nghiệm thư giãn tuyệt đối giữa thiên nhiên.</p>
-                                        </div>
-                                        <div class="flex items-center justify-between mt-6">
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    class="material-symbols-outlined text-primary/70 text-lg">group</span>
-                                                <span class="text-on-surface-variant text-label-sm font-medium">20
-                                                    khách</span>
-                                            </div>
-                                            <button
-                                                class="flex items-center gap-1 text-on-surface-variant group-hover:text-primary font-bold font-label-md text-label-md transition-colors">
-                                                Chi tiết <span
-                                                    class="material-symbols-outlined text-base">arrow_forward</span>
+                                            <button class="flex items-center gap-1 text-primary font-bold font-label-md text-label-md hover:translate-x-1 transition-transform">
+                                                Chi tiết điểm danh <span class="material-symbols-outlined text-base">arrow_forward</span>
                                             </button>
                                         </div>
                                     </div>
@@ -662,22 +546,10 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Minh Anh'}]]*/ "Minh Anh";
-
-        function openGuideSettingsModal(e) {
-            e.stopPropagation();
-            document.getElementById('guideSettingsModal').classList.remove('hidden');
-        }
-
-        // Close guide settings modal
-        function closeGuideSettingsModal() {
-            document.getElementById('guideSettingsModal').classList.add('hidden');
-        }
-
-        // Tour datasets
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Minh Anh'}]]*/ "Minh Anh"        // Tour datasets
         const dbTours = /*[[${dbTours}]]*/ [];
         
-        const toursData = [
+        let toursData = [
             {
                 id: 1,
                 name: "Hành trình Đoàn Tụ - Huế",
@@ -745,21 +617,12 @@
                 guests: "18 khách"
             }
         ];
-
-        // Merge DB tours into toursData
+ 
+        // If there are real database schedules, we use them as the primary source of truth!
         if (dbTours && dbTours.length > 0) {
-            dbTours.forEach(dbTour => {
-                const existing = toursData.find(t => t.id === dbTour.id || (t.name === dbTour.name && t.date === dbTour.date));
-                if (existing) {
-                    existing.id = dbTour.id;
-                    existing.guests = dbTour.guests;
-                    existing.status = dbTour.status;
-                } else {
-                    toursData.push(dbTour);
-                }
-            });
+            toursData = dbTours;
         }
-
+ 
         // Replace Minh Anh references with current guide's actual name
         toursData.forEach(t => {
             if (t.guide === 'Minh Anh') {
