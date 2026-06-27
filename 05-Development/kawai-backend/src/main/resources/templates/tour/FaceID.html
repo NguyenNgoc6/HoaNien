@@ -350,7 +350,7 @@
             <div class="relative group">
                 <span
                     class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors text-[20px]">search</span>
-                <input
+                <input id="search-customer-input" oninput="performSearch(this.value)"
                     class="bg-surface-container/30 border-none rounded-full pl-11 pr-6 py-2 w-80 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium"
                     placeholder="Tìm kiếm khách hàng..." type="text">
             </div>
@@ -1190,6 +1190,55 @@
                 }
             }
         });
+
+        function performSearch(query) {
+            const cleanQuery = query.toLowerCase().trim();
+            if (!cleanQuery) {
+                document.querySelectorAll('table tbody tr').forEach(r => r.style.display = '');
+                return;
+            }
+            
+            const tourName = document.getElementById('tour-name-display') ? document.getElementById('tour-name-display').textContent.toLowerCase() : '';
+            const tourMetaEl = document.querySelector('[th\\:text*="departureDate"]') || document.querySelector('.font-headline.text-lg.md\\:text-xl.font-light.text-on-surface-variant\\/60') || document.querySelector('#print-area p');
+            const tourMeta = tourMetaEl ? tourMetaEl.textContent.toLowerCase() : '';
+            const tourDetailsText = (tourName + " " + tourMeta);
+            
+            const matchesTour = tourDetailsText.includes(cleanQuery);
+            
+            const rows = document.querySelectorAll('table tbody tr');
+            rows.forEach(row => {
+                if (matchesTour) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const idText = row.querySelector('td:first-child') ? row.querySelector('td:first-child').textContent.toLowerCase() : '';
+                const dataEl = row.querySelector('[data-name]');
+                
+                let nameText = '';
+                let phoneText = '';
+                let emailText = '';
+                let membershipText = '';
+                let roomText = '';
+                
+                if (dataEl) {
+                    nameText = (dataEl.getAttribute('data-name') || '').toLowerCase();
+                    phoneText = (dataEl.getAttribute('data-phone') || '').toLowerCase();
+                    emailText = (dataEl.getAttribute('data-email') || '').toLowerCase();
+                    membershipText = (dataEl.getAttribute('data-membership') || '').toLowerCase();
+                    roomText = (dataEl.getAttribute('data-room') || '').toLowerCase();
+                }
+                
+                const statusText = row.textContent.toLowerCase();
+                const combinedText = `${idText} ${nameText} ${phoneText} ${emailText} ${membershipText} ${roomText} ${statusText}`;
+                
+                if (combinedText.includes(cleanQuery)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
     </script>
 </body>
 
