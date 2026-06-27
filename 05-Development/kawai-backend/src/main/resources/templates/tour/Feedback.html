@@ -183,10 +183,41 @@
         </div>
         <!-- 3. Profile & Icons -->
         <div class="flex items-center gap-4">
-            <button
-                class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/5 transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <div class="relative dropdown-notification">
+                <button onclick="toggleNotificationDropdown(event)"
+                    class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary/5 transition-colors relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <!-- Red badge for unread notifications -->
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <!-- Dropdown Card -->
+                <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-[#fdfbf7] border border-[#3a3230]/20 shadow-2xl rounded-2xl p-4 z-[100] text-[#372618]">
+                    <div class="flex justify-between items-center border-b border-[#3a3230]/10 pb-2 mb-3">
+                        <span class="font-headline text-lg font-bold">Thông báo mới</span>
+                        <button onclick="markAllNotificationsAsRead(event)" class="text-xs text-primary hover:underline font-semibold">Đọc tất cả</button>
+                    </div>
+                    <div class="space-y-3 max-h-64 overflow-y-auto text-left" id="notifications-list">
+                        <!-- Notification Item 1 -->
+                        <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
+                            <p class="text-xs font-semibold text-on-surface">Yêu cầu hỗ trợ từ Đoàn khách</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Đoàn khách Singapore tại Cố đô Huế yêu cầu chuẩn bị thêm nước uống đóng chai.</p>
+                            <p class="text-[9px] text-on-surface-variant/50">5 phút trước</p>
+                        </div>
+                        <!-- Notification Item 2 -->
+                        <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
+                            <p class="text-xs font-semibold text-on-surface">Cảnh báo Thời tiết</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Dự báo có mưa rào nhẹ tại khu vực Tháp Mười từ 16:30 chiều nay.</p>
+                            <p class="text-[9px] text-on-surface-variant/50">20 phút trước</p>
+                        </div>
+                        <!-- Notification Item 3 -->
+                        <div class="p-3 hover:bg-primary/5 rounded-xl transition-colors space-y-1">
+                            <p class="text-xs font-medium text-on-surface-variant">Lịch trình Ngày mai</p>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Bạn có lịch dẫn đoàn tham quan Ninh Bình bắt đầu lúc 08:30 sáng mai.</p>
+                            <p class="text-[9px] text-on-surface-variant/50">2 giờ trước</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="h-8 w-px bg-primary/10"></div>
             <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
                 <div class="text-right">
@@ -334,6 +365,34 @@
         function closeGuideSettingsModal() {
             document.getElementById('guideSettingsModal').classList.add('hidden');
         }
+
+        function toggleNotificationDropdown(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function markAllNotificationsAsRead(e) {
+            if (e) e.stopPropagation();
+            const badge = document.querySelector('.dropdown-notification button .bg-red-500');
+            if (badge) {
+                badge.remove();
+            }
+            const items = document.querySelectorAll('#notifications-list > div');
+            items.forEach(item => {
+                item.className = 'p-3 hover:bg-primary/5 rounded-xl transition-colors space-y-1';
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                const isClickInside = dropdown.contains(e.target) || e.target.closest('.dropdown-notification');
+                if (!isClickInside) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        });
     </script>
 </body>
 
