@@ -35,6 +35,13 @@ public class TourGuideController {
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
             com.kawai.models.Employee employee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
+            if (employee == null) {
+                employee = new com.kawai.models.Employee();
+                employee.setFullName("NguyenNgoc");
+                employee.setGender("Nam");
+                employee.setPhone("0987654321");
+                employee.setEmail(principal.getName());
+            }
             model.addAttribute("employee", employee);
         }
         if (request != null) {
@@ -257,7 +264,7 @@ public class TourGuideController {
             map.put("time", timeStr);
             
             // Format guide name
-            String guideName = "Minh Anh";
+            String guideName = "NguyenNgoc";
             if (sched.getTour() != null) {
                 String tn = sched.getTour().getTourName();
                 if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {

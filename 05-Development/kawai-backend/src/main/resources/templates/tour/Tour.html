@@ -266,7 +266,7 @@
                 title="Thông tin cá nhân">
                 <div class="text-right">
                     <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none"
-                        th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
+                        th:text="${employee != null ? employee.fullName : 'NguyenNgoc'}">NguyenNgoc</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -546,7 +546,7 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Minh Anh'}]]*/ "Minh Anh"        // Tour datasets
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'NguyenNgoc'}]]*/ "NguyenNgoc"        // Tour datasets
         const dbTours = /*[[${dbTours}]]*/ [];
         
         let toursData = [
@@ -554,7 +554,7 @@
                 id: 1,
                 name: "Hành trình Đoàn Tụ - Huế",
                 time: "08:00 - 13:00",
-                guide: "Minh Anh",
+                guide: "NguyenNgoc",
                 status: "upcoming",
                 date: "2026-06-26",
                 image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
@@ -587,7 +587,7 @@
                 id: 4,
                 name: "Tinh túy đồng nội - Quảng Nam",
                 time: "08:30 - 13:30",
-                guide: "Minh Anh",
+                guide: "NguyenNgoc",
                 status: "upcoming",
                 date: "2026-06-27",
                 image: "/AnhTour/Com.jpg",
@@ -623,9 +623,9 @@
             toursData = dbTours;
         }
  
-        // Replace Minh Anh references with current guide's actual name
+        // Replace NguyenNgoc references with current guide's actual name
         toursData.forEach(t => {
-            if (t.guide === 'Minh Anh') {
+            if (t.guide === 'NguyenNgoc') {
                 t.guide = loggedInGuideName;
             }
         });
