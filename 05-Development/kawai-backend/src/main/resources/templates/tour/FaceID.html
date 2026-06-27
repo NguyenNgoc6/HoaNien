@@ -493,7 +493,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="glass-panel p-8 rounded-lg relative overflow-hidden group no-print">
+                    <div id="notice-banner-card" class="glass-panel p-8 rounded-lg relative overflow-hidden group no-print">
                         <div class="relative z-10 flex flex-col h-full justify-between">
                             <div class="max-w-md">
                                 <h4 class="font-display-md text-[28px] text-primary mb-2">Thông tin Quan trọng (Lưu ý)</h4>
@@ -501,10 +501,10 @@
                                     thiết bị quét khuôn mặt trước giờ đón khách 30 phút. Báo cáo ngay nếu có sự cố xảy ra.</p>
                             </div>
                             <div class="flex items-center gap-4 mt-8">
-                                <button
+                                <button onclick="showImportantNoteDetails()"
                                     class="px-6 py-2 rounded-full bg-on-background text-white font-label-md text-label-md hover:opacity-90 transition-all">Xem
                                     chi tiết</button>
-                                <button
+                                <button onclick="dismissImportantNote()"
                                     class="px-6 py-2 rounded-full border border-primary/20 text-primary font-label-md text-label-md hover:bg-primary/5 transition-all">Bỏ
                                     qua</button>
                             </div>
@@ -1340,4 +1340,72 @@
   function closeActivities() {
     document.getElementById('activities-modal').classList.add('hidden');
   }
+
+  function dismissImportantNote() {
+    const card = document.getElementById('notice-banner-card');
+    if (card) {
+        card.style.transition = 'all 0.4s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 400);
+    }
+  }
+
+  function showImportantNoteDetails() {
+    document.getElementById('notice-details-modal').classList.remove('hidden');
+  }
+
+  function closeImportantNoteDetails() {
+    document.getElementById('notice-details-modal').classList.add('hidden');
+  }
 </script>
+
+<!-- Important Notes Details Modal -->
+<div id="notice-details-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-[200] transition-all duration-300">
+  <div class="bg-[#fdfbf7] rounded-lg shadow-2xl p-8 w-11/12 max-w-lg border border-[#3a3230]/20 relative text-[#372618]">
+    <button class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold" onclick="closeImportantNoteDetails()">✕</button>
+    <div class="flex items-center gap-3 mb-6 border-b border-primary/10 pb-4">
+      <span class="material-symbols-outlined text-primary text-3xl">info</span>
+      <h3 class="text-2xl font-display-md font-bold text-primary">Quy Trình Kiểm Tra & Hướng Dẫn</h3>
+    </div>
+    <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 scrollbar-custom text-on-surface-variant">
+      <div>
+        <p class="font-bold text-primary mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-primary"></span> 1. Kiểm tra Thiết bị (Trước 30 phút)
+        </p>
+        <p class="text-sm pl-4 leading-relaxed">
+          Đảm bảo kết nối internet ổn định. Kiểm tra chất lượng camera, làm sạch ống kính thiết bị quét để FaceID nhận diện chính xác nhất. Kiểm tra pin hoặc nguồn điện cấp cho thiết bị quét.
+        </p>
+      </div>
+      <div>
+        <p class="font-bold text-primary mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-primary"></span> 2. Chuẩn bị Ánh sáng & Vị trí quét
+        </p>
+        <p class="text-sm pl-4 leading-relaxed">
+          Đặt thiết bị ở vị trí đón khách có đầy đủ ánh sáng tự nhiên hoặc đèn bổ trợ. Tránh nguồn ánh sáng ngược mạnh chiếu thẳng vào ống kính làm giảm độ chính xác của camera.
+        </p>
+      </div>
+      <div>
+        <p class="font-bold text-primary mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-primary"></span> 3. Báo cáo Sự cố Kịp thời
+        </p>
+        <p class="text-sm pl-4 leading-relaxed">
+          Nếu camera không hoạt động, thư viện face-api không load thành công, hoặc sai lệch thông tin khách hàng, hãy điền mô tả sự cố và gửi báo cáo ngay lập tức để bộ phận kỹ thuật hỗ trợ.
+        </p>
+      </div>
+      <div>
+        <p class="font-bold text-primary mb-2 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-primary"></span> 4. Điểm danh thủ công dự phòng
+        </p>
+        <p class="text-sm pl-4 leading-relaxed">
+          Trong trường hợp khách không nhận diện được hoặc hệ thống FaceID gián đoạn, hãy bấm nút tích xanh ✔ cạnh tên khách hàng trong bảng danh sách để thực hiện điểm danh thủ công.
+        </p>
+      </div>
+    </div>
+    <div class="mt-6 pt-4 border-t border-primary/10 flex justify-end">
+      <button class="px-6 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80 font-bold transition-all shadow-md text-sm" onclick="closeImportantNoteDetails()">Đã hiểu</button>
+    </div>
+  </div>
+</div>
