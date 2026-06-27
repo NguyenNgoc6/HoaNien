@@ -37,7 +37,7 @@ public class TourGuideController {
             com.kawai.models.Employee employee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
             if (employee == null) {
                 employee = new com.kawai.models.Employee();
-                employee.setFullName("NguyenNgoc");
+                employee.setFullName("Nguyen Ngọc");
                 employee.setGender("Nam");
                 employee.setPhone("0987654321");
                 employee.setEmail(principal.getName());
@@ -264,7 +264,7 @@ public class TourGuideController {
             map.put("time", timeStr);
             
             // Format guide name
-            String guideName = "NguyenNgoc";
+            String guideName = "Nguyen Ngọc";
             if (sched.getTour() != null) {
                 String tn = sched.getTour().getTourName();
                 if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {

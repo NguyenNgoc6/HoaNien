@@ -546,7 +546,7 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'NguyenNgoc'}]]*/ "NguyenNgoc"        // Tour datasets
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Nguyen Ngọc'}]]*/ "Nguyen Ngọc"        // Tour datasets
         const dbTours = /*[[${dbTours}]]*/ [];
         
         let toursData = [
@@ -554,7 +554,7 @@
                 id: 1,
                 name: "Hành trình Đoàn Tụ - Huế",
                 time: "08:00 - 13:00",
-                guide: "NguyenNgoc",
+                guide: "Nguyen Ngọc",
                 status: "upcoming",
                 date: "2026-06-26",
                 image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
@@ -587,7 +587,7 @@
                 id: 4,
                 name: "Tinh túy đồng nội - Quảng Nam",
                 time: "08:30 - 13:30",
-                guide: "NguyenNgoc",
+                guide: "Nguyen Ngọc",
                 status: "upcoming",
                 date: "2026-06-27",
                 image: "/AnhTour/Com.jpg",
@@ -623,9 +623,9 @@
             toursData = dbTours;
         }
  
-        // Replace NguyenNgoc references with current guide's actual name
+        // Replace Nguyen Ngọc references with current guide's actual name
         toursData.forEach(t => {
-            if (t.guide === 'NguyenNgoc') {
+            if (t.guide === 'Nguyen Ngọc') {
                 t.guide = loggedInGuideName;
             }
         });
@@ -649,6 +649,14 @@
             const accentlessText = removeVietnameseAccents(normText);
             const accentlessQuery = removeVietnameseAccents(normQuery);
             return accentlessText.includes(accentlessQuery);
+        }
+
+        function isSameGuide(name1, name2) {
+            if (!name1 || !name2) return false;
+            const clean = str => removeVietnameseAccents(str.toLowerCase().normalize("NFC")).replace(/\s+/g, '').replace(/[uy]/g, 'u');
+            const c1 = clean(name1);
+            const c2 = clean(name2);
+            return c1 === c2 || c1.includes(c2) || c2.includes(c1);
         }
 
         function filterTours(filterType, btn) {
@@ -679,7 +687,7 @@
                 if (activeTourFilter === 'all') {
                     matchesFilter = true;
                 } else if (activeTourFilter === 'mine') {
-                    matchesFilter = (guideName === loggedInGuideName);
+                    matchesFilter = isSameGuide(guideName, loggedInGuideName);
                 } else if (activeTourFilter === 'upcoming') {
                     matchesFilter = (status === 'upcoming');
                 } else if (activeTourFilter === 'completed') {
@@ -720,8 +728,8 @@
             document.getElementById('modal-date-title').textContent = `Lịch trình ngày ${formattedDate}`;
 
             const filteredTours = toursData.filter(t => t.date === dateStr);
-            const myTours = filteredTours.filter(t => t.guide === loggedInGuideName);
-            const otherTours = filteredTours.filter(t => t.guide !== loggedInGuideName);
+            const myTours = filteredTours.filter(t => isSameGuide(t.guide, loggedInGuideName));
+            const otherTours = filteredTours.filter(t => !isSameGuide(t.guide, loggedInGuideName));
 
             const myToursContainer = document.getElementById('my-tours-list');
             const otherToursContainer = document.getElementById('other-tours-list');
