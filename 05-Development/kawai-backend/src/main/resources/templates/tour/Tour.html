@@ -207,7 +207,7 @@
             <div class="h-8 w-px bg-primary/10"></div>
             <button onclick="openGuideSettingsModal(event)" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none" title="Thông tin cá nhân">
                 <div class="text-right">
-                    <p class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
+                    <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none" th:text="${employee != null ? employee.fullName : 'Minh Anh'}">Minh Anh</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -231,13 +231,13 @@
                     <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant max-w-xl">Quản lý và theo dõi các hành trình tham quan chuyên nghiệp tại HoaNien.</p>
                 </div>
                 <div class="flex gap-1 glass-surface p-1 rounded-full">
-                    <button
-                        class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md">Tất cả tour</button>
-                    <button
+                    <button onclick="filterTours('all', this)"
+                        class="px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold">Tất cả tour</button>
+                    <button onclick="filterTours('mine', this)"
                         class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Của tôi</button>
-                    <button
+                    <button onclick="filterTours('upcoming', this)"
                         class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp tới</button>
-                    <button
+                    <button onclick="filterTours('completed', this)"
                         class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn thành</button>
                 </div>
             </div>
@@ -245,7 +245,7 @@
                 <!-- Schedule List -->
                 <div class="lg:col-span-8 flex flex-col gap-12">
                     <!-- Morning Section -->
-                    <section>
+                    <section class="tour-section">
                         <div class="flex items-center gap-4 mb-6">
                             <span
                                 class="material-symbols-outlined text-primary bg-primary-container/30 p-2 rounded-full">light_mode</span>
@@ -255,8 +255,8 @@
                         </div>
                         <div class="grid grid-cols-1 gap-6">
                             <!-- Tour Card (Highlight Minh Anh) -->
-                            <div
-                                class="glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden" onclick="window.location.href='/tourguide/dashboard'">
+                            <div th:data-guide="${employee != null ? employee.fullName : 'Minh Anh'}" data-status="upcoming"
+                                class="tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden" onclick="window.location.href='/tourguide/dashboard'">
                                 <div class="absolute top-0 right-0 p-4">
                                     <span
                                         class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold">Cao cấp</span>
@@ -294,8 +294,8 @@
                                 </div>
                             </div>
                             <!-- Regular Tour Card -->
-                            <div
-                                class="glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30">
+                            <div data-guide="Ngọc Lan" data-status="upcoming"
+                                class="tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30">
                                 <div class="flex gap-6 flex-col md:flex-row">
                                     <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
                                         <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -331,7 +331,7 @@
                         </div>
                     </section>
                     <!-- Afternoon Section -->
-                    <section>
+                    <section class="tour-section">
                         <div class="flex items-center gap-4 mb-6">
                             <span
                                 class="material-symbols-outlined text-secondary bg-secondary-container/30 p-2 rounded-full">wb_twilight</span>
@@ -341,7 +341,8 @@
                         </div>
                         <div class="grid grid-cols-1 gap-6">
                             <!-- Afternoon Tour Card -->
-                            <div class="glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer">
+                            <div data-guide="Hoàng Nam" data-status="completed"
+                                class="tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer">
                                 <div class="flex gap-6 flex-col md:flex-row">
                                     <div class="w-full md:w-56 h-40 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
                                         <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -395,36 +396,51 @@
                             <div class="text-label-sm font-bold text-primary py-2">CN</div>
                         </div>
                         <div class="grid grid-cols-7 gap-1 text-center">
-                            <div class="p-2 text-on-surface/20 font-label-md">29</div>
-                            <div class="p-2 text-on-surface/20 font-label-md">30</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">1</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">2</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">3</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">4</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">5</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">6</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">7</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">8</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">9</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">10</div>
-                            <div
-                                class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">11</div>
-                            <div
-                                class="p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md">26
+                            <!-- Week 1 -->
+                            <div onclick="showDateTours('2026-06-01')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">1</div>
+                            <div onclick="showDateTours('2026-06-02')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">2</div>
+                            <div onclick="showDateTours('2026-06-03')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">3</div>
+                            <div onclick="showDateTours('2026-06-04')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">4</div>
+                            <div onclick="showDateTours('2026-06-05')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">5</div>
+                            <div onclick="showDateTours('2026-06-06')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">6</div>
+                            <div onclick="showDateTours('2026-06-07')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">7</div>
+                            <!-- Week 2 -->
+                            <div onclick="showDateTours('2026-06-08')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">8</div>
+                            <div onclick="showDateTours('2026-06-09')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">9</div>
+                            <div onclick="showDateTours('2026-06-10')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">10</div>
+                            <div onclick="showDateTours('2026-06-11')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">11</div>
+                            <div onclick="showDateTours('2026-06-12')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">12</div>
+                            <div onclick="showDateTours('2026-06-13')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">13</div>
+                            <div onclick="showDateTours('2026-06-14')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">14</div>
+                            <!-- Week 3 -->
+                            <div onclick="showDateTours('2026-06-15')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">15</div>
+                            <div onclick="showDateTours('2026-06-16')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">16</div>
+                            <div onclick="showDateTours('2026-06-17')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">17</div>
+                            <div onclick="showDateTours('2026-06-18')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">18</div>
+                            <div onclick="showDateTours('2026-06-19')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">19</div>
+                            <div onclick="showDateTours('2026-06-20')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">20</div>
+                            <div onclick="showDateTours('2026-06-21')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">21</div>
+                            <!-- Week 4 -->
+                            <div onclick="showDateTours('2026-06-22')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">22</div>
+                            <div onclick="showDateTours('2026-06-23')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">23</div>
+                            <div onclick="showDateTours('2026-06-24')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">24</div>
+                            <div onclick="showDateTours('2026-06-25')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">25</div>
+                            <div onclick="showDateTours('2026-06-26')"
+                                class="p-2 bg-primary text-on-primary font-bold rounded-full shadow-lg relative font-label-md cursor-pointer hover:opacity-90">26
                                 <div
                                     class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-on-primary rounded-full">
                                 </div>
                             </div>
+                            <div onclick="showDateTours('2026-06-27')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">27</div>
+                            <div onclick="showDateTours('2026-06-28')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">28</div>
+                            <!-- Week 5 -->
+                            <div onclick="showDateTours('2026-06-29')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">29</div>
+                            <div onclick="showDateTours('2026-06-30')" class="p-2 text-on-surface hover:bg-primary-container/20 rounded-full cursor-pointer transition-colors font-label-md">30</div>
+                            <div class="p-2 text-on-surface/20 font-label-md">1</div>
+                            <div class="p-2 text-on-surface/20 font-label-md">2</div>
+                            <div class="p-2 text-on-surface/20 font-label-md">3</div>
+                            <div class="p-2 text-on-surface/20 font-label-md">4</div>
+                            <div class="p-2 text-on-surface/20 font-label-md">5</div>
                         </div>
                         <div class="mt-10 pt-6 border-t border-outline-variant/30">
                             <h4 class="font-headline-md text-xl text-on-surface mb-4">Ghi chú hôm nay</h4>
@@ -507,14 +523,228 @@
         </div>
     </div>
 
-    <script>
+    <!-- Calendar Date Detail Modal -->
+    <div id="calendarDateModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#fdfbf7] w-full max-w-2xl p-8 border border-[#3a3230]/20 shadow-2xl relative text-[#372618] rounded-2xl overflow-y-auto max-h-[85vh]">
+            <button onclick="closeCalendarDateModal()" class="absolute top-4 right-4 text-[#372618]/60 hover:text-[#372618] transition-colors focus:outline-none">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            <h3 id="modal-date-title" class="font-headline text-3xl italic text-primary font-bold mb-6 border-b border-[#3a3230]/10 pb-3">Lịch trình ngày ...</h3>
+
+            <div class="space-y-6">
+                <!-- Tour của tôi -->
+                <div>
+                    <h4 class="font-headline text-xl italic text-on-surface font-semibold mb-3 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                        Tour của tôi
+                    </h4>
+                    <div id="my-tours-list" class="space-y-4">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Tour của hướng dẫn viên khác -->
+                <div>
+                    <h4 class="font-headline text-xl italic text-on-surface font-semibold mb-3 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                        Tour của hướng dẫn viên khác
+                    </h4>
+                    <div id="other-tours-list" class="space-y-4">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'Minh Anh'}]]*/ "Minh Anh";
+
         function openGuideSettingsModal(e) {
             e.stopPropagation();
             document.getElementById('guideSettingsModal').classList.remove('hidden');
         }
 
+        // Close guide settings modal
         function closeGuideSettingsModal() {
             document.getElementById('guideSettingsModal').classList.add('hidden');
+        }
+
+        // Tour datasets
+        const toursData = [
+            {
+                id: 1,
+                name: "Hành trình Đoàn Tụ - Huế",
+                time: "08:00 - 13:00",
+                guide: "Minh Anh",
+                status: "upcoming",
+                date: "2026-06-26",
+                image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                type: "Cao cấp",
+                guests: "12 khách"
+            },
+            {
+                id: 2,
+                name: "Kiến trúc Twilight & Nghệ thuật Bản địa",
+                time: "09:00 - 16:00",
+                guide: "Ngọc Lan",
+                status: "upcoming",
+                date: "2026-06-26",
+                image: "/AnhTour/com.jfif",
+                type: "Tiêu chuẩn",
+                guests: "8 khách"
+            },
+            {
+                id: 3,
+                name: "Chèo thuyền ngắm Hoàng hôn Dọc sông Tím",
+                time: "14:00 - 22:00",
+                guide: "Hoàng Nam",
+                status: "completed",
+                date: "2026-06-25",
+                image: "/AnhTour/ThapMuoi.jpg",
+                type: "Tiêu chuẩn",
+                guests: "20 khách"
+            },
+            {
+                id: 4,
+                name: "Tinh túy đồng nội - Quảng Nam",
+                time: "08:30 - 13:30",
+                guide: "Minh Anh",
+                status: "upcoming",
+                date: "2026-06-27",
+                image: "/AnhTour/Com.jpg",
+                type: "Cao cấp",
+                guests: "15 khách"
+            },
+            {
+                id: 5,
+                name: "Di sản thủ công - Ninh Bình",
+                time: "09:00 - 15:00",
+                guide: "Ngọc Lan",
+                status: "upcoming",
+                date: "2026-06-27",
+                image: "/AnhTour/ThuCong.jpg",
+                type: "Tiêu chuẩn",
+                guests: "10 khách"
+            },
+            {
+                id: 6,
+                name: "Tĩnh lặng liên hoa - Tháp Mười",
+                time: "08:00 - 12:00",
+                guide: "Hoàng Nam",
+                status: "completed",
+                date: "2026-06-24",
+                image: "/AnhTour/ThapMuoi.jpg",
+                type: "Tiêu chuẩn",
+                guests: "18 khách"
+            }
+        ];
+
+        // Replace Minh Anh references with current guide's actual name
+        toursData.forEach(t => {
+            if (t.guide === 'Minh Anh') {
+                t.guide = loggedInGuideName;
+            }
+        });
+
+        // Filter functionality
+        function filterTours(filterType, btn) {
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.className = "px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all";
+            });
+            btn.className = "px-6 py-2 rounded-full text-on-primary bg-primary font-label-md text-label-md shadow-md font-bold";
+
+            const cards = document.querySelectorAll('.tour-card');
+            cards.forEach(card => {
+                const guideName = card.getAttribute('data-guide');
+                const status = card.getAttribute('data-status');
+                
+                let show = false;
+                if (filterType === 'all') {
+                    show = true;
+                } else if (filterType === 'mine') {
+                    show = (guideName === loggedInGuideName);
+                } else if (filterType === 'upcoming') {
+                    show = (status === 'upcoming');
+                } else if (filterType === 'completed') {
+                    show = (status === 'completed');
+                }
+                
+                card.style.display = show ? 'block' : 'none';
+            });
+
+            const sections = document.querySelectorAll('.tour-section');
+            sections.forEach(sec => {
+                let visibleCount = 0;
+                sec.querySelectorAll('.tour-card').forEach(c => {
+                    if (c.style.display !== 'none') {
+                        visibleCount++;
+                    }
+                });
+                sec.style.display = (visibleCount === 0) ? 'none' : 'block';
+            });
+        }
+
+        // Calendar detail popup functions
+        function showDateTours(dateStr) {
+            const parts = dateStr.split('-');
+            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            document.getElementById('modal-date-title').textContent = `Lịch trình ngày ${formattedDate}`;
+
+            const filteredTours = toursData.filter(t => t.date === dateStr);
+            const myTours = filteredTours.filter(t => t.guide === loggedInGuideName);
+            const otherTours = filteredTours.filter(t => t.guide !== loggedInGuideName);
+
+            const myToursContainer = document.getElementById('my-tours-list');
+            const otherToursContainer = document.getElementById('other-tours-list');
+
+            if (myTours.length === 0) {
+                myToursContainer.innerHTML = `<p class="text-sm text-[#3a3230]/60 italic pl-5">Không có tour nào của bạn trong ngày này.</p>`;
+            } else {
+                myToursContainer.innerHTML = myTours.map(createModalTourCard).join('');
+            }
+
+            if (otherTours.length === 0) {
+                otherToursContainer.innerHTML = `<p class="text-sm text-[#3a3230]/60 italic pl-5">Không có tour nào của hướng dẫn viên khác trong ngày này.</p>`;
+            } else {
+                otherToursContainer.innerHTML = otherTours.map(createModalTourCard).join('');
+            }
+
+            document.getElementById('calendarDateModal').classList.remove('hidden');
+        }
+
+        function closeCalendarDateModal() {
+            document.getElementById('calendarDateModal').classList.add('hidden');
+        }
+
+        function createModalTourCard(tour) {
+            const statusBg = tour.status === 'upcoming' 
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                : 'bg-secondary-container/30 text-secondary border-secondary-container';
+            const statusText = tour.status === 'upcoming' ? 'Sắp diễn ra' : 'Đã hoàn thành';
+            
+            return `
+                <div class="glass-panel border-primary/10 rounded-xl p-4 flex gap-4 hover:scale-[1.01] transition-transform duration-300 bg-white/40 backdrop-blur-md">
+                    <div class="w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
+                        <img src="${tour.image}" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h5 class="font-headline text-lg font-bold text-on-surface leading-snug">${tour.name}</h5>
+                                <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${statusBg}">${statusText}</span>
+                            </div>
+                            <p class="text-[11px] text-on-surface-variant/70 mt-1">Thời gian: <span class="font-semibold text-primary">${tour.time}</span></p>
+                            <p class="text-[11px] text-on-surface-variant/70">Hướng dẫn viên: <span class="font-semibold text-on-surface">${tour.guide}</span></p>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 text-[10px] text-on-surface-variant/60 font-medium">
+                            <span>${tour.guests}</span>
+                            <span>${tour.type}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
     </script>
 </body>
