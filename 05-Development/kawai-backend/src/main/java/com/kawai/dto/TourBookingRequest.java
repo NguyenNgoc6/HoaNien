@@ -114,4 +114,4 @@ public class TourBookingRequest {
     public void setPromoCode(String promoCode) {
         this.promoCode = promoCode;
     }
-}
+}

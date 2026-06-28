@@ -92,7 +92,8 @@ public class TourBookingApiController {
                     customer.setGender("Nam"); // default
                     customer.setCccdPassportEncrypted("GUEST_" + System.currentTimeMillis());
                     customer.setLoyaltyPoints(0);
-                    customer.setMembershipTier(membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
+                    customer.setMembershipTier(
+                            membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
                     customer = customerRepository.save(customer);
                 }
             }
@@ -120,7 +121,23 @@ public class TourBookingApiController {
             request.setScheduleId(schedule.getId());
             request.setCustomerId(customer.getId());
             request.setParticipantCount(participantCount);
-            request.setWalkInTour(false);
+            request.setParticipantCount(participantCount);
+
+            if (roomNumber == null || roomNumber.trim().isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn phòng bạn đang lưu trú.");
+            }
+
+            Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
+            if (roomOpt.isEmpty() || roomOpt.get().getCurrentBookingDetailId() == null) {
+                throw new IllegalArgumentException("Phòng không hợp lệ hoặc bạn chưa nhận phòng.");
+            }
+
+            Long detailId = roomOpt.get().getCurrentBookingDetailId();
+            RoomBookingDetail detail = roomBookingDetailRepository.findById(detailId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin đặt phòng chi tiết."));
+
+            request.setRoomBookingDetailId(detailId);
+            request.setRoomBookingId(detail.getRoomBooking().getId());
 
             List<String> childAges = (List<String>) payload.get("childAges");
             request.setChildAges(childAges);
@@ -133,12 +150,6 @@ public class TourBookingApiController {
 
             if ("post-room".equalsIgnoreCase(paymentMethod)) {
                 request.setPostToRoom(true);
-                if (roomNumber != null && !roomNumber.trim().isEmpty()) {
-                    Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
-                    if (roomOpt.isPresent() && roomOpt.get().getCurrentBookingDetailId() != null) {
-                        request.setRoomBookingDetailId(roomOpt.get().getCurrentBookingDetailId());
-                    }
-                }
             } else {
                 request.setPostToRoom(false);
             }
