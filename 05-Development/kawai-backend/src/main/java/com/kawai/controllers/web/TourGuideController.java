@@ -311,6 +311,12 @@ public class TourGuideController {
         
         // Fetch all tour schedules from DB
         java.util.List<com.kawai.models.TourSchedule> dbSchedules = tourScheduleRepository.findAll();
+        System.out.println("DEBUG: dbSchedules size = " + (dbSchedules != null ? dbSchedules.size() : "null"));
+        if (dbSchedules != null) {
+            for (com.kawai.models.TourSchedule s : dbSchedules) {
+                System.out.println("DEBUG: Schedule ID=" + s.getId() + ", date=" + s.getDepartureDate() + ", tour=" + (s.getTour() != null ? s.getTour().getTourName() : "null"));
+            }
+        }
         
         // Ensure schedule 5 is at the top of the list for demo
         dbSchedules.sort((s1, s2) -> {

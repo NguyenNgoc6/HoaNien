@@ -266,7 +266,7 @@
                 title="Thông tin cá nhân">
                 <div class="text-right">
                     <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none"
-                        th:text="${employee != null ? employee.fullName : 'NguynNgoc'}">NguynNgoc</p>
+                        th:text="${employee?.fullName ?: 'NguynNgoc'}">NguynNgoc</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -360,8 +360,8 @@
                                      th:data-status="${tour.status}"
                                      th:data-date="${tour.date}"
                                      th:data-schedule-id="${tour.id}"
-                                     th:class="${tour.guide == (employee != null ? employee.fullName : 'NguynNgoc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
-                                     th:onclick="'handleViewDetails(' + ${tour.id} + ', \'' + ${tour.guide} + '\')'">
+                                     th:class="${tour.guide == (employee?.fullName ?: 'NguynNgoc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
+                                     th:onclick="|handleViewDetails(${tour.id}, '${tour.guide}')|">
                                     <div class="absolute top-0 right-0 p-4">
                                         <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
                                     </div>
@@ -583,7 +583,7 @@
     </div>
 
     <script th:inline="javascript">
-        const loggedInGuideName = /*[[${employee != null ? employee.fullName : 'NguynNgoc'}]]*/ "NguynNgoc";
+        const loggedInGuideName = /*[[${employee?.fullName ?: 'NguynNgoc'}]]*/ "NguynNgoc";
         let selectedDateFilter = null;
 
         function clearDateFilter() {
