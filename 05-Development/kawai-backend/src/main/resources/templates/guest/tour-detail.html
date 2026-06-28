@@ -1451,7 +1451,7 @@
             summaryMembers.innerText = `${qty - numChildren} Người lớn, ${numChildren} Trẻ em`;
             
             // Update title and label based on payment type
-            document.getElementById('modal-payment-title').innerText = (type === 'deposit') ? 'Thanh toán (Đặt cọc 30%)' : 'Thanh toán (Tổng cộng)';
+            document.getElementById('modal-payment-title').innerText = (type === 'deposit') ? 'Thanh toán Đặt cọc (30%)' : 'Thanh toán Trọn gói (100%)';
             document.getElementById('modal-payment-label').innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
 
             // Display final payment amount based on type
