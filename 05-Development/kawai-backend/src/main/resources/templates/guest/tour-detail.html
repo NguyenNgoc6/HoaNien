@@ -1894,7 +1894,7 @@
                             confirmBtn.disabled = false;
                             confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT CHỖ' : 'CONFIRM BOOKING';
                         }
-                        alert((lang === 'vi' ? 'Lỗi tạo liên kết VNPay: ' : 'VNPay error: ') + data.vnpayError);
+                        showWarningAlertPopup(lang === 'vi' ? 'Lỗi thanh toán' : 'Payment Error', data.vnpayError);
                     } else {
                         closeModal();
                         showPaymentToast('success',
@@ -1910,7 +1910,10 @@
                         confirmBtn.disabled = false;
                         confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT CHỖ' : 'CONFIRM BOOKING';
                     }
-                    alert((lang === 'vi' ? 'Lỗi: ' : 'Error: ') + error.message);
+                    if (error.message.includes('phòng') || error.message.includes('Phòng')) {
+                        window.pendingRoomChargeRedirect = true;
+                    }
+                    showWarningAlertPopup(lang === 'vi' ? 'Thông báo từ hệ thống' : 'System Alert', error.message);
                 });
         }
 
