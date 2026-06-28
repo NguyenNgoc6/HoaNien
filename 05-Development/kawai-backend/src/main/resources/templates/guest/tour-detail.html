@@ -1821,7 +1821,10 @@
         function submitBookingFlow() {
             const consentChk = document.getElementById('tourConsent');
             if (!consentChk || !consentChk.checked) {
-                alert(document.documentElement.lang === 'vi' ? 'Vui lòng tích chọn đồng ý cung cấp thông tin để tiếp tục.' : 'Please consent to data processing to continue.');
+                showWarningAlertPopup(
+                    document.documentElement.lang === 'vi' ? 'Yêu cầu chấp thuận' : 'Consent Required',
+                    document.documentElement.lang === 'vi' ? 'Vui lòng tích chọn đồng ý cung cấp thông tin để tiếp tục.' : 'Please consent to data processing to continue.'
+                );
                 return;
             }
 
