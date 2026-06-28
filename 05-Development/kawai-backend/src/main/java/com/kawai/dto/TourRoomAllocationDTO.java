@@ -1,4 +1,4 @@
-﻿package com.kawai.dto;
+package com.kawai.dto;
 
 /**
  * DTO dung tai check-in form: map tung TourBooking chua phan bo -> phong vat ly.

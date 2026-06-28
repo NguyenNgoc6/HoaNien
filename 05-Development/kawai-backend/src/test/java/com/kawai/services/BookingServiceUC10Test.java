@@ -409,7 +409,7 @@ class BookingServiceUC10Test {
                 BigDecimal depositDB = new BigDecimal("3500000");
                 RoomBooking booking = new RoomBooking();
                 booking.setId(201L);
-                booking.setBookingStatus("Pending");
+                booking.setBookingStatus("CONFIRMED");
                 booking.setDepositAmount(depositDB);
                 booking.setCancellationDeadline(LocalDate.now().plusDays(3)); // còn 3 ngày → trước deadline
                 booking.setCheckInDate(LocalDate.now().plusDays(5));
@@ -454,7 +454,7 @@ class BookingServiceUC10Test {
                 // Arrange: đã qua deadline → tịch thu cọc
                 RoomBooking booking = new RoomBooking();
                 booking.setId(202L);
-                booking.setBookingStatus("Pending");
+                booking.setBookingStatus("CONFIRMED");
                 booking.setDepositAmount(new BigDecimal("2000000"));
                 booking.setCancellationDeadline(LocalDate.now().minusDays(1)); // qua deadline rồi
                 booking.setCheckInDate(LocalDate.now().plusDays(1));

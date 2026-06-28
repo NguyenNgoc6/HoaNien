@@ -219,11 +219,12 @@ public class BookingApiController {
             String email = (String) payload.get("email");
             String cccd = (String) payload.get("cccd");
             String notes = (String) payload.get("notes");
+            String address = (String) payload.get("address");
 
             String paymentMethod = (String) payload.get("paymentMethod");
 
             // 2. Chốt booking: Xác nhận available, gắn thông tin khách, chuyển sang Pending_Payment hoặc Confirmed
-            bookingService.confirmBooking(bookingId, customer.getId(), fullName, phone, email, cccd, notes, paymentMethod);
+            bookingService.confirmBooking(bookingId, customer.getId(), fullName, phone, email, cccd, address, notes, paymentMethod);
 
             Map<String, Object> response = new java.util.HashMap<>();
             response.put("status", "success");

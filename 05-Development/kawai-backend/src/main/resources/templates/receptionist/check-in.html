@@ -179,12 +179,13 @@
                                     <th>Phone</th>
                                     <th>Check-in Date</th>
                                     <th>Booking Date</th>
+                                    <th>Notes</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:if="${#lists.isEmpty(arrivals)}">
-                                    <td colspan="5" style="text-align: center;">No arrivals today</td>
+                                    <td colspan="6" style="text-align: center;">No arrivals today</td>
                                 </tr>
                                 <tr th:each="arr : ${arrivals}">
                                     <td style="cursor: pointer; color: #2563eb; font-weight: 500;"
@@ -197,27 +198,16 @@
                                     <td th:text="${arr.phone}"></td>
                                     <td th:text="${arr.checkInDate}"></td>
                                     <td th:text="${arr.bookingDate}" style="color: #4b5563;"></td>
+                                    <td th:text="${arr.notes}" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:title="${arr.notes}"></td>
                                     <td>
-                                        <div th:if="${arr.isExpired == false}">
-                                            <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
-                                                th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
-                                                th:data-cccd="${arr.cccd}" th:data-room="${arr.roomSummary}"
-                                                th:data-deps="|deps-arr-${arr.id}|"
-                                                th:data-tours="|tours-arr-${arr.id}|"
-                                                th:data-credit="${arr.creditLimit}"
-                                                onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))">Assign
-                                                & Check-in</button>
-                                        </div>
-                                        <div th:if="${arr.isExpired == true}">
-                                            <form
-                                                th:action="@{/receptionist/check-in/cancel-no-show/{id}(id=${arr.id})}"
-                                                method="post"
-                                                onsubmit="return confirm('Xác nhận hủy đơn quá hạn này và đánh dấu No-Show?');">
-                                                <button type="submit" class="btn btn-primary btn-sm"
-                                                    style="background-color: #ef4444; border-color: #ef4444; color: white;">Hủy
-                                                    (No-Show)</button>
-                                            </form>
-                                        </div>
+                                        <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
+                                            th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
+                                            th:data-cccd="${arr.cccd}" th:data-room="${arr.roomSummary}"
+                                            th:data-deps="|deps-arr-${arr.id}|"
+                                            th:data-tours="|tours-arr-${arr.id}|"
+                                            th:data-credit="${arr.creditLimit}"
+                                            onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))">Assign
+                                            & Check-in</button>
                                         <!-- Hidden data for dependents -->
                                         <div th:id="'deps-arr-' + ${arr.id}" style="display:none;">
                                             <ul>

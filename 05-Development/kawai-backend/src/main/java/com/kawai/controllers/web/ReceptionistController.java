@@ -127,6 +127,11 @@ public class ReceptionistController {
                     if (rb.getCheckInDate() == null || !rb.getCheckInDate().equals(dateFilter)) {
                         continue;
                     }
+                } else if (keyword == null || keyword.trim().isEmpty()) {
+                    // Mặc định ẩn đơn quá khứ nếu KHÔNG dùng bộ lọc (không có keyword, không chọn ngày)
+                    if (rb.getCheckInDate() != null && rb.getCheckInDate().isBefore(java.time.LocalDate.now())) {
+                        continue;
+                    }
                 }
 
                 filteredArrivals.add(b);
@@ -187,18 +192,16 @@ public class ReceptionistController {
                     b.getBookingDate() != null
                             ? b.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                             : "");
+            map.put("notes", b.getNotes() != null ? b.getNotes() : "");
 
             if (b instanceof RoomBooking) {
                 RoomBooking rb = (RoomBooking) b;
                 map.put("checkInDate", rb.getCheckInDate() != null
                         ? rb.getCheckInDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                         : "N/A");
-                map.put("isExpired",
-                        rb.getCheckInDate() != null && rb.getCheckInDate().isBefore(java.time.LocalDate.now()));
                 map.put("creditLimit", rb.getCreditLimit() != null ? rb.getCreditLimit() : new java.math.BigDecimal("5000000.00"));
             } else {
                 map.put("checkInDate", "N/A");
-                map.put("isExpired", false);
                 map.put("creditLimit", new java.math.BigDecimal("5000000.00"));
             }
 
@@ -414,18 +417,7 @@ public class ReceptionistController {
         return "receptionist/night-audit";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/check-in/cancel-no-show/{id}")
-    public String cancelNoShow(@org.springframework.web.bind.annotation.PathVariable Long id,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-        try {
-            checkinService.markAsNoShow(id);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Đã đánh dấu hủy thành công và giải phóng phòng!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/receptionist/check-in";
-    }
+
 
     private boolean matchesKeyword(Booking b, String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {

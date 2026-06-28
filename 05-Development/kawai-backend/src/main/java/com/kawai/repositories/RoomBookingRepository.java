@@ -37,12 +37,15 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.room.roomNumber = :roomNumber " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
        long countOverlappingBookings(@Param("roomNumber") String roomNumber,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
 
        List<RoomBooking> findByBookingStatusInAndHoldExpiresAtBefore(List<String> statuses, LocalDateTime time);
+
+       List<RoomBooking> findByBookingStatusAndCheckInDateBefore(String status, LocalDate date);
 
        @Query(value = "SELECT DATE(rb.check_in_date) FROM Room_Bookings rb GROUP BY DATE(rb.check_in_date) ORDER BY COUNT(rb.room_booking_id) DESC LIMIT 1", nativeQuery = true)
        java.sql.Date findPeakOccupancyDate();
@@ -66,7 +69,8 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
        long countOverlappingBookingsByCategoryWithoutExclude(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
@@ -77,6 +81,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
+                     "AND rbd.roomBooking.bookingStatus != 'Pending' " +
                      "AND rbd.roomBooking.bookingStatus != 'Checked_In'")
        long countOverlappingNotCheckedIn(
                      @Param("categoryName") String categoryName,

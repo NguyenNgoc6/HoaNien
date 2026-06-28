@@ -590,11 +590,17 @@ public class BookingServiceImpl implements BookingService {
             throw new BusinessException("BKG-005", "Invalid booking status");
         }
 
+        if ("Pending".equalsIgnoreCase(booking.getBookingStatus()) || "Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
+            deletePendingBooking(bookingId, customerId);
+            BookingResponseDTO response = new BookingResponseDTO();
+            response.setBookingId(bookingId);
+            response.setBookingStatus("CANCELLED");
+            response.setDepositAmount(BigDecimal.ZERO);
+            return response;
+        }
+
         // Nếu booking chưa đóng tiền cọc (depositAmount = null hoặc = 0)
-        // HOẶC đang ở trạng thái HOLD (chưa thanh toán thực tế dù depositAmount đã được
-        // tính sẵn)
-        if (booking.getDepositAmount() == null || booking.getDepositAmount().compareTo(BigDecimal.ZERO) <= 0
-                || "Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getDepositAmount() == null || booking.getDepositAmount().compareTo(BigDecimal.ZERO) <= 0) {
             booking.setBookingStatus("CANCELLED");
             roomBookingRepository.save(booking);
             BookingResponseDTO response = new BookingResponseDTO();
@@ -767,7 +773,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public void confirmBooking(Long bookingId, Long customerId, String fullName, String phone, String email,
-            String cccd, String notes, String paymentMethod) {
+            String cccd, String address, String notes, String paymentMethod) {
         RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
                 .orElseThrow(() -> new BusinessException("FORBIDDEN",
                         "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
@@ -848,6 +854,12 @@ public class BookingServiceImpl implements BookingService {
             // Chỉ cập nhật nếu profile chưa có cccd
             if (customer.getCccdPassportEncrypted() == null || customer.getCccdPassportEncrypted().isEmpty()) {
                 customer.setCccdPassportEncrypted(com.kawai.utils.EncryptionUtils.encrypt(cccd.trim()));
+            }
+        }
+        
+        if (customer.getAddress() == null || customer.getAddress().trim().isEmpty()) {
+            if (address != null && !address.trim().isEmpty()) {
+                customer.setAddress(address.trim());
             }
         }
         customerRepository.save(customer);
