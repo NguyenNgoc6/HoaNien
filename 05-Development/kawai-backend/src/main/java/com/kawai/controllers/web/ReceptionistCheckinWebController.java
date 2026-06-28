@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Controller xử lý Form Submit Web MVC cho Lễ tân Check-in (Không dùng fetch
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @RequestMapping("/receptionist/checkin")
+@PreAuthorize("hasAnyAuthority('OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')")
 public class ReceptionistCheckinWebController {
 
     private static final Logger log = LoggerFactory.getLogger(ReceptionistCheckinWebController.class);
@@ -279,7 +281,7 @@ public class ReceptionistCheckinWebController {
                     }
                     RoomBookingDetail detail = roomBookingDetailRepo.findById(detailId).orElse(null);
                     if (detail != null) {
-                        tourBooking.setRoomBookingDetail(detail);
+                        // tourBooking.setRoomBookingDetail(detail);
                         tourBookingRepo.save(tourBooking);
                         log.info("Phân bổ TourBooking {} vào phòng {} (detail {})",
                                 tourBooking.getId(), allocation.getRoomNumber(), detailId);
