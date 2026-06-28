@@ -19,11 +19,11 @@ public class TourBooking extends Booking {
     @Column(name = "is_walk_in_tour", nullable = false)
     private Boolean isWalkInTour = false;
 
-    @ManyToOne
-    @JoinColumn(name = "room_booking_id", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_booking_id")
     private RoomBooking roomBooking;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_booking_detail_id")
     private RoomBookingDetail roomBookingDetail;
 }
