@@ -151,6 +151,18 @@ public class TourGuideController {
                     employeeRepository.saveAndFlush(e);
                 }
             });
+            employeeRepository.findById(6L).ifPresent(e -> {
+                if ("Phạm Quốc Bảo".equals(e.getFullName())) {
+                    e.setFullName("Ngọc Lan");
+                    employeeRepository.saveAndFlush(e);
+                }
+            });
+            employeeRepository.findById(7L).ifPresent(e -> {
+                if ("Trần Thu Hà".equals(e.getFullName())) {
+                    e.setFullName("Hoàng Nam");
+                    employeeRepository.saveAndFlush(e);
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,6 +177,17 @@ public class TourGuideController {
         com.kawai.models.TourSchedule targetSchedule = null;
         if (scheduleId != null) {
             targetSchedule = tourScheduleRepository.findById(scheduleId).orElse(null);
+            if (targetSchedule != null) {
+                com.kawai.models.Employee emp = null;
+                if (principal != null) {
+                    emp = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
+                }
+                String loggedInName = (emp != null) ? emp.getFullName() : "NguynNgoc";
+                String guideName = getGuideForSchedule(targetSchedule);
+                if (!guideName.equalsIgnoreCase(loggedInName)) {
+                    return "redirect:/tourguide/tour?error=unauthorized";
+                }
+            }
         }
         
         if (targetSchedule == null) {
@@ -183,7 +206,7 @@ public class TourGuideController {
                 
                 targetSchedule = schedules.stream()
                         .filter(s -> {
-                            String guideName = "NguynNgoc";
+                            String guideName = getGuideForSchedule(s);
                             return guideName.equalsIgnoreCase(loggedInName);
                         })
                         .findFirst()
@@ -191,7 +214,7 @@ public class TourGuideController {
                 
                 if (targetSchedule == null) {
                     targetSchedule = schedules.stream()
-                            .filter(s -> s.getId() != null && s.getId() == 1L)
+                            .filter(s -> s.getId() != null && s.getId() == 5L)
                             .findFirst()
                             .orElse(schedules.get(0));
                 }
@@ -314,8 +337,7 @@ public class TourGuideController {
             map.put("time", timeStr);
             
             // Format guide name
-            String guideName = "NguynNgoc";
-            map.put("guide", guideName);
+            map.put("guide", getGuideForSchedule(sched));
             
             String dbStatus = sched.getScheduleStatus();
             String mappedStatus = "upcoming";
@@ -502,5 +524,23 @@ public class TourGuideController {
         tourRepository.save(tour);
         
         return "redirect:/tourguide/" + tourType;
+    }
+
+    private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
+        if (sched == null) return "NguynNgoc";
+        if (sched.getId() != null && sched.getId() == 5L) {
+            return "NguynNgoc";
+        }
+        if (sched.getTour() != null) {
+            String tn = sched.getTour().getTourName();
+            if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
+                return "Ngọc Lan";
+            } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
+                return "Hoàng Nam";
+            } else if (tn.contains("Di sản") || tn.contains("di sản") || tn.contains("disan")) {
+                return "Ngọc Lan";
+            }
+        }
+        return "NguynNgoc";
     }
 }
