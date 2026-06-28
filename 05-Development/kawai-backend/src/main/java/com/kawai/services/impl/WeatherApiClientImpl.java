@@ -90,23 +90,23 @@ public class WeatherApiClientImpl implements WeatherApiClient {
         String loc = location.toLowerCase();
         
         if (loc.contains("huế") || loc.contains("hue")) {
-            String[] options = {"Mild Sunlight", "Sunny", "Partly Cloudy", "Light Rain", "Cloudy"};
+            String[] options = {"Partly Cloudy", "Sunny", "Clear Sky", "Light rain", "Cloudy"};
             String desc = options[rand.nextInt(options.length)];
             double temp = 24 + rand.nextInt(9); // 24 to 32°C
             return new WeatherInfo(desc, temp);
         } else if (loc.contains("quảng nam") || loc.contains("quang nam")) {
-            String[] options = {"Sunny", "Hot", "Partly Cloudy", "Passing Showers", "Clear Sky"};
+            String[] options = {"Sunny", "Clear Sky", "Partly Cloudy", "Patchy rain possible"};
             String desc = options[rand.nextInt(options.length)];
             double temp = 27 + rand.nextInt(8); // 27 to 34°C
             return new WeatherInfo(desc, temp);
         } else if (loc.contains("ninh bình") || loc.contains("ninh binh")) {
-            String[] options = {"Cool & Misty", "Overcast", "Partly Cloudy", "Windy", "Light Drizzle"};
+            String[] options = {"Mist", "Overcast", "Partly Cloudy", "Light drizzle"};
             String desc = options[rand.nextInt(options.length)];
             double temp = 19 + rand.nextInt(9); // 19 to 27°C
             return new WeatherInfo(desc, temp);
         } else {
             // Đồng sen Tháp Mười
-            String[] options = {"Clear Sky", "Sunny & Humid", "Partly Cloudy", "Heavy Rain", "Warm Breeze"};
+            String[] options = {"Clear Sky", "Sunny", "Partly Cloudy", "Heavy rain"};
             String desc = options[rand.nextInt(options.length)];
             double temp = 28 + rand.nextInt(7); // 28 to 34°C
             return new WeatherInfo(desc, temp);
