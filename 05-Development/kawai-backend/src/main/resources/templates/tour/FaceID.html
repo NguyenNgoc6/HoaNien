@@ -421,7 +421,7 @@
                                                      th:data-id="'#EVN-00' + ${attendee.id}"
                                                      th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
                                                      th:data-email="${attendee.customer?.email ?: '--'}"
-                                                     th:data-membership="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}"
+                                                     th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
                                                      th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
                                                      onclick="showCustomerContactModal(this)">
                                                      NM
@@ -433,12 +433,12 @@
                                                        th:data-id="'#EVN-00' + ${attendee.id}"
                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
                                                        th:data-email="${attendee.customer?.email ?: '--'}"
-                                                       th:data-membership="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}"
+                                                       th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
                                                        th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
                                                        onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
-                                                    <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer != null ? attendee.customer.membershipTier : 'Khách đi cùng'}">Hà Nội</p>
+                                                    <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}">Hà Nội</p>
                                                 </div>
                                             </div>
                                         </td>

@@ -35,7 +35,12 @@ public class TourGuideController {
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
             com.kawai.models.Employee employee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
-            if (employee == null) {
+            if (employee != null) {
+                if ("Nguyễn Hướng Dẫn".equals(employee.getFullName())) {
+                    employee.setFullName("NguynNgoc");
+                    employeeRepository.saveAndFlush(employee);
+                }
+            } else {
                 employee = new com.kawai.models.Employee();
                 employee.setFullName("NguynNgoc");
                 employee.setGender("Nam");
