@@ -110,6 +110,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan dat coc phong " + bookingId);
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_BankCode", "NCB");
 
         String returnUrl = vnPayConfig.getReturnUrl();
         if (returnUrl.contains("?")) {
@@ -195,6 +196,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan dat coc phong " + bookingId);
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
@@ -271,6 +273,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don goi mon " + orderId);
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
@@ -348,6 +351,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
@@ -403,6 +407,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan hoa don folio");
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
