@@ -41,7 +41,17 @@ public class TourBookingRequest {
     // Mã giảm giá (tùy chọn)
     private String promoCode;
 
+    private String vnpPaymentType;
+
     public TourBookingRequest() {
+    }
+
+    public String getVnpPaymentType() {
+        return vnpPaymentType;
+    }
+
+    public void setVnpPaymentType(String vnpPaymentType) {
+        this.vnpPaymentType = vnpPaymentType;
     }
 
     public java.util.List<String> getChildAges() {

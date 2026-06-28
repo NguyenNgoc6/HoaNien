@@ -527,8 +527,12 @@ public class VnPayServiceImpl implements VnPayService {
                         // Send confirmation email after successful VNPay payment
                         if (emailService != null && tourBooking.getCustomer() != null) {
                             try {
-                                emailService.sendBookingConfirmation(tourBooking, tourBooking.getCustomer(), false,
-                                        null);
+                                String paymentType = "deposit";
+                                if (parts.length > 2) {
+                                    paymentType = parts[2].toLowerCase();
+                                }
+                                emailService.sendBookingConfirmation(tourBooking, tourBooking.getCustomer(), "vnpay",
+                                        paymentType, null);
                             } catch (Exception emailEx) {
                                 System.err.println("[VNPay IPN] Loi gui email xac nhan tour booking #" + tourBookingId
                                         + ": " + emailEx.getMessage());
