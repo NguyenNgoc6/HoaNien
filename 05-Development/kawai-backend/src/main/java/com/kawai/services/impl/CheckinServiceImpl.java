@@ -190,7 +190,7 @@ public class CheckinServiceImpl implements CheckinService {
         }
 
         private void validateDetailIsCheckedIn(RoomBookingDetail detail) {
-                if (!STATUS_CHECKED_IN.equals(detail.getDetailStatus())) {
+                if (!STATUS_CHECKED_IN.equalsIgnoreCase(detail.getDetailStatus())) {
                         throw new IllegalStateException("Chỉ có thể đổi phòng cho khách đang CHECKED_IN");
                 }
         }
@@ -290,18 +290,4 @@ public class CheckinServiceImpl implements CheckinService {
                                                 "Role CUSTOMER không tồn tại trong hệ thống"));
         }
 
-        @Override
-        @Transactional
-        public void markAsNoShow(Long bookingId) {
-                RoomBooking booking = roomBookingRepo.findById(bookingId)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Không tìm thấy đơn phòng ID: " + bookingId));
-
-                if (!"Confirmed".equals(booking.getBookingStatus())) {
-                        throw new IllegalArgumentException("Chỉ có thể hủy No-Show với đơn đã Confirmed.");
-                }
-
-                booking.setBookingStatus("No-Show");
-                roomBookingRepo.save(booking);
-        }
 }
