@@ -336,11 +336,7 @@ public class VnPayServiceImpl implements VnPayService {
         // 3. Build params VNPay
         long amountVal = amount.multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
         String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String tourName = tourBooking.getSchedule() != null && tourBooking.getSchedule().getTour() != null
-                ? removeAccents(tourBooking.getSchedule().getTour().getTourName())
-                : "Tour";
-        String orderInfo = "Thanh toan tour " + tourName + " #" + tourBookingId
-                + ("deposit".equalsIgnoreCase(paymentType) ? " (Dat coc 30%)" : " (Toan bo)");
+        String orderInfo = "Thanh toan tour " + tourBookingId + ("deposit".equalsIgnoreCase(paymentType) ? " dat coc" : " toan bo");
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getApiVersion());
@@ -359,32 +355,36 @@ public class VnPayServiceImpl implements VnPayService {
         String expireDate = LocalDateTime.now().plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
-        // 4. Build hash & query
+        // 4. Build hash & query using exact same loop logic as room booking URL builder
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
-        Collections.sort(fieldNames);
+        java.util.Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
-        try {
-            for (String fieldName : fieldNames) {
-                String fieldValue = vnp_Params.get(fieldName);
-                if (fieldValue != null && fieldValue.length() > 0) {
-                    hashData.append(fieldName).append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())).append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
-                    query.append('&');
-                    hashData.append('&');
+        java.util.Iterator<String> itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String fieldName = itr.next();
+            String fieldValue = vnp_Params.get(fieldName);
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                try {
+                    hashData.append(fieldName);
+                    hashData.append('=');
+                    hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
+                    query.append('=');
+                    query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    if (itr.hasNext()) {
+                        query.append('&');
+                        hashData.append('&');
+                    }
+                } catch (java.io.UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (java.io.UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
         }
-        query.setLength(query.length() - 1);
-        hashData.setLength(hashData.length() - 1);
-
+        String queryUrl = query.toString();
         String vnp_SecureHash = VnPayUtil.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
-        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
-        return vnPayConfig.getPayUrl() + "?" + query;
+        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
+        return vnPayConfig.getPayUrl() + "?" + queryUrl;
     }
 
     @Override
