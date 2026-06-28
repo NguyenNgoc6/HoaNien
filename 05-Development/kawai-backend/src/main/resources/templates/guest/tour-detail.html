@@ -1452,7 +1452,7 @@
                             console.log("Exactly 1 active room. Auto-selecting.");
                             // 1: automatically select room (if customer only has 1 room)
                             const singleRoom = activeRooms[0];
-                            selectedRoomData = { id: singleRoom.roomNumber, type: singleRoom.roomType };
+                            selectedRoomData = { id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType };
                             confirmRoomSelection();
                         } else {
                             console.log("Multiple active rooms. Opening modal.");
@@ -1461,7 +1461,7 @@
                             if (container) {
                                 container.innerHTML = activeRooms.map((r, idx) => `
                                     <div class="room-item selectable border ${idx === 0 ? 'border-brand-dark bg-[#FBF9F6]' : 'border-brand-border'} p-4 flex justify-between items-center cursor-pointer transition-all hover:bg-gray-50/50"
-                                         onclick="selectRoomUI(this, '${r.roomNumber}', '${r.roomType}')">
+                                         onclick="selectRoomUI(this, '${r.id}', '${r.roomNumber.replace(/'/g, "\\'")}', '${r.roomType}')">
                                         <div class="flex items-center space-x-4">
                                             <span class="material-symbols-outlined text-gray-400">door_front</span>
                                             <div>
@@ -1469,13 +1469,13 @@
                                                 <p class="text-[10px] text-gray-400 uppercase">${r.roomType}</p>
                                             </div>
                                         </div>
-                                        <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">Đang hoạt động</div>
+                                        <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</div>
                                     </div>
                                 `).join('');
                             }
 
                             // Auto-select the first room by default to avoid empty clicks!
-                            selectedRoomData = { id: activeRooms[0].roomNumber, type: activeRooms[0].roomType };
+                            selectedRoomData = { id: activeRooms[0].id, roomNumber: activeRooms[0].roomNumber, type: activeRooms[0].roomType };
 
                             const overlay = document.getElementById('overlay');
                             const roomModal = document.getElementById('room-selection-modal');
@@ -1501,9 +1501,9 @@
             }
         }
 
-        function selectRoomUI(element, id, type) {
+        function selectRoomUI(element, id, roomNumber, type) {
             try {
-                console.log("selectRoomUI clicked for room:", id);
+                console.log("selectRoomUI clicked for room:", id, roomNumber);
                 document.querySelectorAll('.room-item').forEach(el => {
                     el.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
                     el.classList.add('border-brand-border');
@@ -1512,7 +1512,7 @@
                     element.classList.remove('border-brand-border');
                     element.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
                 }
-                selectedRoomData = { id, type };
+                selectedRoomData = { id, roomNumber, type };
             } catch (err) {
                 console.error("Error in selectRoomUI:", err);
             }
@@ -1528,6 +1528,9 @@
                 selectedPaymentType = 'post-room';
                 const container = document.getElementById('room-charge-container');
                 if (container) {
+                    const isVirtual = selectedRoomData.id.startsWith("Virtual_");
+                    const statusText = isVirtual ? "Đã đặt" : "Đang ở";
+                    const statusClass = isVirtual ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-green-50 text-green-700 border-green-200";
                     container.innerHTML = `
                         <div class="border border-brand-dark p-6 flex justify-between items-center bg-white animate-in fade-in duration-500">
                           <div class="flex items-center space-x-6">
@@ -1536,8 +1539,8 @@
                             </div>
                             <div>
                               <div class="flex items-center space-x-3 mb-1">
-                                <h4 class="font-bold text-sm">Phòng: ${selectedRoomData.id}</h4>
-                                <span class="px-2 py-0.5 bg-green-50 text-[8px] font-bold uppercase tracking-widest text-green-700 border border-green-200">Đang ở</span>
+                                <h4 class="font-bold text-sm">Phòng: ${selectedRoomData.roomNumber}</h4>
+                                <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
                               </div>
                               <p class="text-xs text-gray-500">Loại: ${selectedRoomData.type}</p>
                             </div>
