@@ -151,15 +151,25 @@ public class TourBookingApiController {
             if (roomNumber == null || roomNumber.trim().isEmpty()) {
                 // Tự động tìm booking detail đang hoạt động của khách hàng này để liên kết
                 List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                if (customerDetails.isEmpty()) {
+                    throw new IllegalArgumentException("Vui lòng thực hiện đặt phòng trước khi đặt tour.");
+                }
+                
+                // Tìm xem có cái nào đang hoạt động và bao gồm ngày tour không
                 for (RoomBookingDetail rbd : customerDetails) {
                     if ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
                             || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())) {
-                        detail = rbd;
-                        break;
+                        LocalDate checkIn = rbd.getRoomBooking().getCheckInDate();
+                        LocalDate checkOut = rbd.getRoomBooking().getCheckOutDate();
+                        if (!departureDate.isBefore(checkIn) && !departureDate.isAfter(checkOut)) {
+                            detail = rbd;
+                            break;
+                        }
                     }
                 }
+                
                 if (detail == null) {
-                    throw new IllegalArgumentException("Vui lòng thực hiện đặt phòng trước khi đặt tour.");
+                    throw new IllegalArgumentException("Khách đặt phòng đã hết thời hạn, cần đăng ký phòng mới.");
                 }
             } else {
                 if (roomNumber.toUpperCase().startsWith("VIRTUAL_")) {
@@ -194,16 +204,23 @@ public class TourBookingApiController {
                         }
                     }
                 }
-            }
+                
+                if (detail == null) {
+                    // Check if they ever booked any room
+                    List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                    if (customerDetails.isEmpty()) {
+                        throw new IllegalArgumentException("Vui lòng thực hiện đặt phòng trước khi đặt tour.");
+                    } else {
+                        throw new IllegalArgumentException("Khách đặt phòng đã hết thời hạn, cần đăng ký phòng mới.");
+                    }
+                }
 
-            if (detail == null) {
-                throw new IllegalArgumentException("Phòng không hợp lệ hoặc bạn chưa nhận phòng/đặt phòng thành công.");
-            }
-
-            LocalDate checkIn = detail.getRoomBooking().getCheckInDate();
-            LocalDate checkOut = detail.getRoomBooking().getCheckOutDate();
-            if (departureDate.isBefore(checkIn) || departureDate.isAfter(checkOut)) {
-                throw new IllegalArgumentException("Khách đặt phòng đã hết thời hạn, cần đăng ký phòng mới.");
+                // Check if the tour departure date is outside the room booking duration
+                LocalDate checkIn = detail.getRoomBooking().getCheckInDate();
+                LocalDate checkOut = detail.getRoomBooking().getCheckOutDate();
+                if (departureDate.isBefore(checkIn) || departureDate.isAfter(checkOut)) {
+                    throw new IllegalArgumentException("Khách đặt phòng đã hết thời hạn, cần đăng ký phòng mới.");
+                }
             }
 
             request.setRoomBookingDetailId(detail.getId());
