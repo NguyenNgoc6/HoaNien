@@ -200,6 +200,12 @@ public class TourBookingApiController {
                 throw new IllegalArgumentException("Phòng không hợp lệ hoặc bạn chưa nhận phòng/đặt phòng thành công.");
             }
 
+            LocalDate checkIn = detail.getRoomBooking().getCheckInDate();
+            LocalDate checkOut = detail.getRoomBooking().getCheckOutDate();
+            if (departureDate.isBefore(checkIn) || departureDate.isAfter(checkOut)) {
+                throw new IllegalArgumentException("Khách đặt phòng đã hết thời hạn, cần đăng ký phòng mới.");
+            }
+
             request.setRoomBookingDetailId(detail.getId());
             request.setRoomBookingId(detail.getRoomBooking().getId());
 
