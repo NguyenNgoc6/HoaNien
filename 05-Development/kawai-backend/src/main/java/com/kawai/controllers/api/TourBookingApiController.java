@@ -117,7 +117,8 @@ public class TourBookingApiController {
             for (TourSchedule es : existingSchedulesOnDay) {
                 // If it is a different schedule
                 if (schedule == null || !es.getId().equals(schedule.getId())) {
-                    if (es.getTour() != null) {
+                    int bookingsCount = tourBookingRepository.countByScheduleAndBookingStatus(es, "Confirmed");
+                    if (bookingsCount > 0 && es.getTour() != null) {
                         String existingGuide = getGuideNameForTour(es.getTour().getTourName());
                         if (scheduleHasSpecialCustomer(es)) {
                             existingGuide = "NguynNgoc";
