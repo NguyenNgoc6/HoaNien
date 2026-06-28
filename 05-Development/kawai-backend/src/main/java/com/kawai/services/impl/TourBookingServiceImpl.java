@@ -46,6 +46,7 @@ public class TourBookingServiceImpl implements TourBookingService {
         private final EmployeeRepository employeeRepository;
         private final RoomBookingDetailRepository roomBookingDetailRepository;
         private final PromotionRepository promotionRepository;
+        private final BookingRepository bookingRepository;
 
         @Autowired(required = false)
         private EmailService emailService;
@@ -58,7 +59,8 @@ public class TourBookingServiceImpl implements TourBookingService {
                         TourStaffAssignmentRepository tourStaffAssignmentRepository,
                         EmployeeRepository employeeRepository,
                         RoomBookingDetailRepository roomBookingDetailRepository,
-                        PromotionRepository promotionRepository) {
+                        PromotionRepository promotionRepository,
+                        BookingRepository bookingRepository) {
                 this.tourScheduleRepository = tourScheduleRepository;
                 this.tourBookingRepository = tourBookingRepository;
                 this.tourAttendeeRepository = tourAttendeeRepository;
@@ -68,6 +70,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                 this.employeeRepository = employeeRepository;
                 this.roomBookingDetailRepository = roomBookingDetailRepository;
                 this.promotionRepository = promotionRepository;
+                this.bookingRepository = bookingRepository;
         }
 
         @Override
@@ -132,6 +135,10 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 boolean notExpired = promo.getValidTo() == null
                                                 || !promo.getValidTo().isBefore(LocalDate.now());
                                 if (isActive && notExpired) {
+                                        long uses = bookingRepository.countByCustomerIdAndPromoCode(customer.getId(), promoCode);
+                                        if (uses >= 1) {
+                                                throw new IllegalArgumentException("Khách hàng đã vượt quá số lần sử dụng mã giảm giá này (1 lần) [ERR_PROMO_USAGE_EXCEEDED]");
+                                        }
                                         BigDecimal discountValue = promo.getDiscountValue();
                                         boolean isFixed = "FIXED_AMOUNT".equalsIgnoreCase(promo.getDiscountType())
                                                         || discountValue.compareTo(new BigDecimal("100")) >= 0;
