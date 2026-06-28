@@ -646,7 +646,7 @@
                 </table>
             </div>
             <div class="w-full md:w-1/2 p-10">
-                <h3 class="text-2xl font-serif mb-8">Thanh toán</h3>
+                <h3 class="text-2xl font-serif mb-8" id="modal-payment-title">Thanh toán</h3>
                 <div class="space-y-6 pt-2">
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">Chọn phương
                         thức</label>
@@ -1450,7 +1450,8 @@
 
             summaryMembers.innerText = `${qty - numChildren} Người lớn, ${numChildren} Trẻ em`;
             
-            // Update label based on payment type
+            // Update title and label based on payment type
+            document.getElementById('modal-payment-title').innerText = (type === 'deposit') ? 'Thanh toán (Đặt cọc 30%)' : 'Thanh toán (Tổng cộng)';
             document.getElementById('modal-payment-label').innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
 
             // Display final payment amount based on type
