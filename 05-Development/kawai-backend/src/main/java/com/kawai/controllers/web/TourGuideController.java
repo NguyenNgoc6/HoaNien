@@ -537,6 +537,59 @@ public class TourGuideController {
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
         if (sched == null) return "NguynNgoc";
+        if (sched.getDepartureDate() == null) {
+            return getPreferredGuide(sched);
+        }
+        
+        // Find all schedules on the same departure date
+        java.util.List<com.kawai.models.TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(sched.getDepartureDate());
+        if (daySchedules == null || daySchedules.size() <= 1) {
+            return getPreferredGuide(sched);
+        }
+        
+        // Sort by ID to ensure deterministic assignment
+        daySchedules.sort((s1, s2) -> {
+            Long id1 = s1.getId() != null ? s1.getId() : 0L;
+            Long id2 = s2.getId() != null ? s2.getId() : 0L;
+            return id1.compareTo(id2);
+        });
+        
+        java.util.Set<String> takenGuides = new java.util.HashSet<>();
+        java.util.List<String> allGuides = java.util.Arrays.asList("NguynNgoc", "Ngọc Lan", "Hoàng Nam");
+        
+        String assignedGuide = null;
+        
+        for (com.kawai.models.TourSchedule s : daySchedules) {
+            String pref = getPreferredGuide(s);
+            String finalGuide;
+            if (!takenGuides.contains(pref)) {
+                finalGuide = pref;
+            } else {
+                // Find a free guide
+                finalGuide = null;
+                for (String g : allGuides) {
+                    if (!takenGuides.contains(g)) {
+                        finalGuide = g;
+                        break;
+                    }
+                }
+                if (finalGuide == null) {
+                    // Fallback if all guides are taken
+                    finalGuide = pref;
+                }
+            }
+            takenGuides.add(finalGuide);
+            
+            if (s.getId() != null && s.getId().equals(sched.getId())) {
+                assignedGuide = finalGuide;
+            }
+        }
+        
+        return assignedGuide != null ? assignedGuide : getPreferredGuide(sched);
+    }
+
+    private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
+        if (sched == null) return "NguynNgoc";
         if (scheduleHasSpecialCustomer(sched)) {
             return "NguynNgoc";
         }
