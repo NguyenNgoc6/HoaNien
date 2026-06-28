@@ -337,7 +337,7 @@ public class VnPayServiceImpl implements VnPayService {
         long amountVal = amount.multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
         String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String tourName = tourBooking.getSchedule() != null && tourBooking.getSchedule().getTour() != null
-                ? tourBooking.getSchedule().getTour().getTourName()
+                ? removeAccents(tourBooking.getSchedule().getTour().getTourName())
                 : "Tour";
         String orderInfo = "Thanh toan tour " + tourName + " #" + tourBookingId
                 + ("deposit".equalsIgnoreCase(paymentType) ? " (Dat coc 30%)" : " (Toan bo)");
@@ -369,9 +369,9 @@ public class VnPayServiceImpl implements VnPayService {
                 String fieldValue = vnp_Params.get(fieldName);
                 if (fieldValue != null && fieldValue.length() > 0) {
                     hashData.append(fieldName).append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString())).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
                     query.append('&');
                     hashData.append('&');
                 }
@@ -611,5 +611,12 @@ public class VnPayServiceImpl implements VnPayService {
         response.put("RspCode", "00");
         response.put("Message", "Confirm Success");
         return response;
+    }
+
+    private String removeAccents(String src) {
+        if (src == null) return "";
+        String normalized = java.text.Normalizer.normalize(src, java.text.Normalizer.Form.NFD);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(normalized).replaceAll("").replace('Đ', 'D').replace('đ', 'd');
     }
 }
