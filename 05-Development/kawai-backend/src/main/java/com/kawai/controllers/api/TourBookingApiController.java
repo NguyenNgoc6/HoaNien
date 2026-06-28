@@ -148,14 +148,6 @@ public class TourBookingApiController {
                 request.setPromoCode(promoCode.trim());
             }
 
-            List<String> childAges = (List<String>) payload.get("childAges");
-            request.setChildAges(childAges);
-
-            // Mã giảm giá (tùy chọn)
-            String promoCode = payload.get("promoCode") != null ? payload.get("promoCode").toString() : null;
-            if (promoCode != null && !promoCode.trim().isEmpty()) {
-                request.setPromoCode(promoCode.trim());
-            }
 
             if ("post-room".equalsIgnoreCase(paymentMethod)) {
                 request.setPostToRoom(true);
