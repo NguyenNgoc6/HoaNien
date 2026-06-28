@@ -124,20 +124,50 @@ public class TourBookingApiController {
             request.setParticipantCount(participantCount);
 
             if (roomNumber == null || roomNumber.trim().isEmpty()) {
-                throw new IllegalArgumentException("Vui lòng chọn phòng bạn đang lưu trú.");
+                throw new IllegalArgumentException("Vui lòng chọn phòng bạn đã đặt hoặc đang lưu trú.");
             }
 
-            Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
-            if (roomOpt.isEmpty() || roomOpt.get().getCurrentBookingDetailId() == null) {
-                throw new IllegalArgumentException("Phòng không hợp lệ hoặc bạn chưa nhận phòng.");
+            RoomBookingDetail detail = null;
+
+            if (roomNumber.toUpperCase().startsWith("VIRTUAL_")) {
+                try {
+                    Long detailId = Long.parseLong(roomNumber.substring(8));
+                    detail = roomBookingDetailRepository.findById(detailId).orElse(null);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Mã đặt phòng không hợp lệ.");
+                }
+            } else {
+                Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
+                if (roomOpt.isEmpty()) {
+                    throw new IllegalArgumentException("Phòng không hợp lệ.");
+                }
+                Room room = roomOpt.get();
+
+                // 1. Kiểm tra nếu khách đã check-in (phòng có currentBookingDetailId)
+                if (room.getCurrentBookingDetailId() != null) {
+                    detail = roomBookingDetailRepository.findById(room.getCurrentBookingDetailId()).orElse(null);
+                }
+
+                // 2. Nếu chưa check-in, tìm Booking Detail đã được xác nhận (Confirmed) của khách cho phòng này
+                if (detail == null) {
+                    List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                    for (RoomBookingDetail rbd : customerDetails) {
+                        if (rbd.getRoom() != null && rbd.getRoom().getRoomNumber().equals(roomNumber)
+                                && ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
+                                    || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus()))) {
+                            detail = rbd;
+                            break;
+                        }
+                    }
+                }
             }
 
-            Long detailId = roomOpt.get().getCurrentBookingDetailId();
-            RoomBookingDetail detail = roomBookingDetailRepository.findById(detailId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin đặt phòng chi tiết."));
+            if (detail == null) {
+                throw new IllegalArgumentException("Phòng không hợp lệ hoặc bạn chưa nhận phòng/đặt phòng thành công.");
+            }
 
-            request.setRoomBookingDetailId(detailId);
-            // request.setRoomBookingId(detail.getRoomBooking().getId());
+            request.setRoomBookingDetailId(detail.getId());
+            request.setRoomBookingId(detail.getRoomBooking().getId());
 
             List<String> childAges = (List<String>) payload.get("childAges");
             request.setChildAges(childAges);

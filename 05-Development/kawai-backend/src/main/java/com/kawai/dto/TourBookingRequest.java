@@ -29,6 +29,9 @@ public class TourBookingRequest {
     // Post to Room fields
     private boolean postToRoom = false;
     private Long roomBookingDetailId;
+    
+    @NotNull(message = "roomBookingId is required")
+    private Long roomBookingId;
 
     // Payment method: "counter", "post-room", "vnpay"
     private String paymentMethod = "counter";
@@ -113,5 +116,13 @@ public class TourBookingRequest {
 
     public void setPromoCode(String promoCode) {
         this.promoCode = promoCode;
+    }
+
+    public Long getRoomBookingId() {
+        return roomBookingId;
+    }
+
+    public void setRoomBookingId(Long roomBookingId) {
+        this.roomBookingId = roomBookingId;
     }
 }
