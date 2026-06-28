@@ -69,6 +69,7 @@ public class VnPayServiceImpl implements VnPayService {
     @Autowired
     private InvoicePdfService invoicePdfService;
 
+    @Autowired
     private TourBookingRepository tourBookingRepository;
 
     @Autowired(required = false)

@@ -1836,9 +1836,7 @@
                 })
                 .then(data => {
                     if (data.vnpayUrl) {
-                        // Close main modal then show VNPay QR screen
-                        closeModal();
-                        showVnpayQrScreen(data.vnpayUrl, data.totalPrice, data.depositAmount, vnpPaymentType);
+                        window.location.href = data.vnpayUrl;
                     } else if (data.vnpayError) {
                         // VNPay URL generation failed
                         if (confirmBtn) {
