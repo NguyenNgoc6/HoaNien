@@ -1842,6 +1842,7 @@
         function submitBookingFlow() {
             const consentChk = document.getElementById('tourConsent');
             if (!consentChk || !consentChk.checked) {
+                closeModal();
                 window.pendingConsentFocus = true;
                 showWarningAlertPopup(
                     document.documentElement.lang === 'vi' ? 'Yêu cầu chấp thuận' : 'Consent Required',
