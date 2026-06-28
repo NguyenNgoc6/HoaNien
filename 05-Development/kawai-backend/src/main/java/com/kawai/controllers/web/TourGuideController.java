@@ -140,6 +140,12 @@ public class TourGuideController {
                     accountRepository.saveAndFlush(a);
                 }
             });
+            employeeRepository.findById(5L).ifPresent(e -> {
+                if ("Nguyễn Hướng Dẫn".equals(e.getFullName())) {
+                    e.setFullName("NguynNgoc");
+                    employeeRepository.saveAndFlush(e);
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -173,14 +179,6 @@ public class TourGuideController {
                 targetSchedule = schedules.stream()
                         .filter(s -> {
                             String guideName = "NguynNgoc";
-                            if (s.getTour() != null) {
-                                String tn = s.getTour().getTourName();
-                                if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
-                                    guideName = "Ngọc Lan";
-                                } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa")) {
-                                    guideName = "Hoàng Nam";
-                                }
-                            }
                             return guideName.equalsIgnoreCase(loggedInName);
                         })
                         .findFirst()
@@ -312,16 +310,6 @@ public class TourGuideController {
             
             // Format guide name
             String guideName = "NguynNgoc";
-            if (sched.getTour() != null) {
-                String tn = sched.getTour().getTourName();
-                if (sched.getId() != null && sched.getId() == 5L) {
-                    guideName = "NguynNgoc";
-                } else if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội")) {
-                    guideName = "Ngọc Lan";
-                } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa")) {
-                    guideName = "Hoàng Nam";
-                }
-            }
             map.put("guide", guideName);
             
             String dbStatus = sched.getScheduleStatus();
