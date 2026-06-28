@@ -47,10 +47,12 @@ public class TourBookingApiController {
     private VnPayService vnPayService;
 
     @PostMapping
-    public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal,
+            HttpServletRequest httpRequest) {
         try {
             Long tourId = Long.valueOf(payload.get("tourId").toString());
-            LocalDate departureDate = LocalDate.parse(payload.get("departureDate").toString(), DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate departureDate = LocalDate.parse(payload.get("departureDate").toString(),
+                    DateTimeFormatter.ISO_LOCAL_DATE);
             String fullName = (String) payload.get("fullName");
             String email = (String) payload.get("email");
             String phone = (String) payload.get("phone");
@@ -63,8 +65,7 @@ public class TourBookingApiController {
             if (principal != null) {
                 String identifier = principal.getName();
                 if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
-                    org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken = 
-                        (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                    org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken = (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
                     identifier = oauthToken.getPrincipal().getAttribute("email");
                 }
                 if (identifier != null) {
@@ -78,7 +79,7 @@ public class TourBookingApiController {
                         .filter(c -> email.equalsIgnoreCase(c.getEmail()))
                         .findFirst()
                         .orElse(null);
-                
+
                 if (customer == null) {
                     // Create transient Guest Customer
                     customer = new Customer();
@@ -121,6 +122,12 @@ public class TourBookingApiController {
             List<String> childAges = (List<String>) payload.get("childAges");
             request.setChildAges(childAges);
 
+            // Mã giảm giá (tùy chọn)
+            String promoCode = payload.get("promoCode") != null ? payload.get("promoCode").toString() : null;
+            if (promoCode != null && !promoCode.trim().isEmpty()) {
+                request.setPromoCode(promoCode.trim());
+            }
+
             if ("post-room".equalsIgnoreCase(paymentMethod)) {
                 request.setPostToRoom(true);
                 if (roomNumber != null && !roomNumber.trim().isEmpty()) {
@@ -149,7 +156,8 @@ public class TourBookingApiController {
             java.math.BigDecimal basePrice = tour.getBasePrice();
             int childCount = childAges != null ? childAges.size() : 0;
             int adultCount = participantCount - childCount;
-            if (adultCount < 0) adultCount = 0;
+            if (adultCount < 0)
+                adultCount = 0;
 
             totalPrice = totalPrice.add(basePrice.multiply(java.math.BigDecimal.valueOf(adultCount)));
             if (childAges != null) {
@@ -182,8 +190,10 @@ public class TourBookingApiController {
                 java.math.BigDecimal payAmount = "full".equalsIgnoreCase(vnpPaymentType) ? totalPrice : depositAmount;
                 try {
                     String clientIp = httpRequest.getHeader("X-Forwarded-For");
-                    if (clientIp == null || clientIp.isBlank()) clientIp = httpRequest.getRemoteAddr();
-                    String vnpayUrl = vnPayService.createPaymentUrlForTourBooking(bookingId, payAmount, vnpPaymentType, clientIp);
+                    if (clientIp == null || clientIp.isBlank())
+                        clientIp = httpRequest.getRemoteAddr();
+                    String vnpayUrl = vnPayService.createPaymentUrlForTourBooking(bookingId, payAmount, vnpPaymentType,
+                            clientIp);
                     responsePayload.put("vnpayUrl", vnpayUrl);
                 } catch (Exception vnpEx) {
                     responsePayload.put("vnpayError", vnpEx.getMessage());
@@ -195,8 +205,7 @@ public class TourBookingApiController {
             e.printStackTrace();
             return ResponseEntity.status(400).body(Map.of(
                     "status", "error",
-                    "message", e.getMessage() != null ? e.getMessage() : "Unknown error"
-            ));
+                    "message", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 
@@ -212,14 +221,14 @@ public class TourBookingApiController {
         TourBooking tb = optTb.get();
         TourSchedule schedule = tb.getSchedule();
         Tour tour = schedule != null ? schedule.getTour() : null;
-        
+
         Map<String, Object> data = new java.util.HashMap<>();
         data.put("id", tb.getId());
         data.put("bookingStatus", tb.getBookingStatus());
         data.put("participantCount", tb.getParticipantCount());
         data.put("tourCharge", tb.getTourCharge());
         data.put("paymentType", "UNKNOWN");
-        
+
         if (schedule != null) {
             data.put("departureDate", schedule.getDepartureDate().toString());
             data.put("departureTime", schedule.getDepartureTime().toString());

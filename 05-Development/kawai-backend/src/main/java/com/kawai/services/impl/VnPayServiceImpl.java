@@ -305,7 +305,8 @@ public class VnPayServiceImpl implements VnPayService {
 
     @Override
     @Transactional
-    public String createPaymentUrlForTourBooking(Long tourBookingId, java.math.BigDecimal amount, String paymentType, String ipAddress) {
+    public String createPaymentUrlForTourBooking(Long tourBookingId, java.math.BigDecimal amount, String paymentType,
+            String ipAddress) {
         com.kawai.models.TourBooking tourBooking = tourBookingRepository.findById(tourBookingId)
                 .orElseThrow(() -> new BusinessException("TOUR_BOOKING_NOT_FOUND", "Không tìm thấy đơn đặt tour"));
 
@@ -318,7 +319,8 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setCreatedAt(LocalDateTime.now());
 
         // 2. Sinh transactionRef
-        String transactionRef = "TOUR_" + tourBookingId + "_" + paymentType.toUpperCase() + "_" + System.currentTimeMillis();
+        String transactionRef = "TOUR_" + tourBookingId + "_" + paymentType.toUpperCase() + "_"
+                + System.currentTimeMillis();
         txn.setTransactionRef(transactionRef);
         paymentTransactionRepository.save(txn);
 
@@ -326,7 +328,8 @@ public class VnPayServiceImpl implements VnPayService {
         long amountVal = amount.multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
         String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String tourName = tourBooking.getSchedule() != null && tourBooking.getSchedule().getTour() != null
-                ? tourBooking.getSchedule().getTour().getTourName() : "Tour";
+                ? tourBooking.getSchedule().getTour().getTourName()
+                : "Tour";
         String orderInfo = "Thanh toan tour " + tourName + " #" + tourBookingId
                 + ("deposit".equalsIgnoreCase(paymentType) ? " (Dat coc 30%)" : " (Toan bo)");
 
@@ -497,16 +500,19 @@ public class VnPayServiceImpl implements VnPayService {
                 try {
                     String[] parts = txnRef.split("_");
                     Long tourBookingId = Long.parseLong(parts[1]);
-                    com.kawai.models.TourBooking tourBooking = tourBookingRepository.findById(tourBookingId).orElse(null);
+                    com.kawai.models.TourBooking tourBooking = tourBookingRepository.findById(tourBookingId)
+                            .orElse(null);
                     if (tourBooking != null) {
                         tourBooking.setBookingStatus("Confirmed");
                         tourBookingRepository.save(tourBooking);
                         // Send confirmation email after successful VNPay payment
                         if (emailService != null && tourBooking.getCustomer() != null) {
                             try {
-                                emailService.sendBookingConfirmation(tourBooking, tourBooking.getCustomer(), false, null);
+                                emailService.sendBookingConfirmation(tourBooking, tourBooking.getCustomer(), false,
+                                        null);
                             } catch (Exception emailEx) {
-                                System.err.println("[VNPay IPN] Loi gui email xac nhan tour booking #" + tourBookingId + ": " + emailEx.getMessage());
+                                System.err.println("[VNPay IPN] Loi gui email xac nhan tour booking #" + tourBookingId
+                                        + ": " + emailEx.getMessage());
                             }
                         }
                     }
@@ -536,7 +542,7 @@ public class VnPayServiceImpl implements VnPayService {
                     booking.setBookingStatus("Confirmed");
                 }
             }
-            
+
             // Xử lý checkout phòng nếu giao dịch xuất phát từ Folio
             if (txnRef != null && txnRef.startsWith("FOLIO_")) {
                 try {
@@ -545,7 +551,8 @@ public class VnPayServiceImpl implements VnPayService {
                         Long detailId = Long.parseLong(parts[2]);
                         RoomBookingDetail detail = roomBookingDetailRepository.findById(detailId).orElse(null);
                         if (detail != null && detail.getRoomBooking() != null) {
-                            java.util.List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(detail.getRoomBooking().getId());
+                            java.util.List<RoomBookingDetail> details = roomBookingDetailRepository
+                                    .findByRoomBookingId(detail.getRoomBooking().getId());
                             for (RoomBookingDetail d : details) {
                                 if ("Checked_In".equals(d.getDetailStatus())) {
                                     d.setDetailStatus("Checked_Out");

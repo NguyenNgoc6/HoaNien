@@ -35,6 +35,9 @@ public class TourBookingRequest {
 
     private java.util.List<String> childAges;
 
+    // Mã giảm giá (tùy chọn)
+    private String promoCode;
+
     public TourBookingRequest() {
     }
 
@@ -103,4 +106,12 @@ public class TourBookingRequest {
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-}
+
+    public String getPromoCode() {
+        return promoCode;
+    }
+
+    public void setPromoCode(String promoCode) {
+        this.promoCode = promoCode;
+    }
+}
