@@ -372,29 +372,16 @@
                     </div>
                 </div>
                 <!-- Interactive Map Section -->
-                <div class="glass-map flex flex-col relative overflow-hidden h-[450px]" id="map-section">
-                    <div class="absolute top-6 left-6 z-10 flex items-center space-x-3">
-                        <span class="material-symbols-outlined text-white text-[20px]">explore</span>
-                        <h4 class="font-serif text-lg text-white font-bold"
+                <div class="glass-map flex flex-col relative overflow-hidden h-[450px]" id="map-section" style="border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 2px;">
+                    <div class="absolute top-6 left-6 z-10 flex items-center space-x-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-sm border border-white/20">
+                        <span class="material-symbols-outlined text-white text-[18px]">explore</span>
+                        <h4 class="font-serif text-xs text-white font-bold tracking-widest uppercase"
                             style="text-shadow: 0 1px 2px rgba(0,0,0,0.5)">Bản đồ hành trình</h4>
                     </div>
-                    <!-- Zoom & Pan Layer Wrapper -->
-                    <div class="relative flex-1 overflow-hidden">
-                        <div class="absolute inset-0 w-[150%] h-[150%] origin-center transition-transform duration-700 ease-in-out"
-                            id="map-pins-layer"
-                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAQvH-i9sT2XwI_65jN6r7F03h-Hl52n0iBqD7y8X7j9C6vGzJ2XwH4M9wH4Z_G5C6t-7sR_b_V8e6e5O3X_l3s2L9C2F5e6b7d-8yR-b_V8e6e5O3X_l3s2L9C2F5e6'); background-size: cover; background-position: center; transform: scale(1.0) translate(0%, 0%);">
-                            <!-- Background Map Image Cover (Mockup) -->
-                            <div class="absolute inset-0 bg-black/20"></div>
-                            <!-- Pins Group -->
-                            <div id="map-pins-container" class="absolute inset-0">
-                                <!-- Pins will be rendered dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-white/10 backdrop-blur-sm border-t border-brand-border/20">
-                        <p class="text-[9px] text-white/60 text-center uppercase tracking-widest italic">Cảm ứng: Bấm
-                            vào địa điểm để xem chi tiết</p>
-                    </div>
+                    <!-- Google Maps Iframe -->
+                    <iframe id="google-map-iframe" class="w-full h-full border-0" 
+                        src="https://maps.google.com/maps?q=Dai+Noi+Hue&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                        allowfullscreen="" loading="lazy"></iframe>
                 </div>
                 <div class="mt-8 text-center px-6">
                     <p class="font-serif italic text-base text-white/90 leading-relaxed">
@@ -933,21 +920,24 @@
                     title: "Khám phá Đại Nội (Imperial City)",
                     desc: "Hành trình xuyên không về cố đô Huế, khám phá kiến trúc cung đình tinh xảo. Quý khách sẽ được tham quan Điện Thái Hòa, Thế Miếu...",
                     image: "https://lh3.googleusercontent.com/aida/AP1WRLuLL5Izs2UvzjZ5hvyRCN8ptBTww-0CeLmjHOm1_PPrf48kr6ShNgjHCVWa0C4gsaJVZZwZ0EH6iEz0TzjGn5gbdU98Tbf8OALK_JCdqe9-yhF2NYHj31uV024CdVwGrAzxDR-0JqoHvUAXPnUT2ZoioVEeSImipl_9m5ygMoIlc8gJcgp_qRYBN5mTgM-o6aA-foBrnT-QHQLmtGkTPmaYY3AvrNnSx1nl_aWU4gO-EdRQrhOLF78GrtBU",
-                    coords: { top: '45%', left: '48%' }
+                    coords: { top: '45%', left: '48%' },
+                    mapQuery: "Đại Nội Huế, Phú Hậu, Thành phố Huế, Thừa Thiên Huế"
                 },
                 {
                     time: "10:00 - 12:00",
                     title: "Thưởng thức Trà Cung Đình",
                     desc: "Thưởng thức tinh hoa ẩm thực trà Việt giữa không gian di sản cổ kính. Trà được pha từ các loại thảo mộc quý hiếm...",
                     image: "https://lh3.googleusercontent.com/aida/AP1WRLvfuZDKaVo6yf7f8YWPDu1jm68_SboAFbtXnu1S6RSG6xEVl2N33EvUWaG14dIa35anIW7d-ro6IOMHmt1yr9MA2wLcSGWVKTDHpRqW5MThngaD_53PoZ9KjmW3_6Df7GKqYVb3C17dvvg1ds_B2T1e8Wx8-6Ua-zLT64bhH4id4WTpw-BObitkYXZ7nR9ALB6DP5iYksKkon5LPj5KZl4laRuSpxSumrTy0MasLdU379O-F9wYw0HHk8Ke",
-                    coords: { top: '50%', left: '52%' }
+                    coords: { top: '50%', left: '52%' },
+                    mapQuery: "Duyệt Thị Đường, Thuận Thành, Thành phố Huế"
                 },
                 {
                     time: "14:00 - 17:00",
                     title: "Du ngoạn Sông Hương",
                     desc: "Ngắm nhìn cố đô yên bình trên chiếc thuyền rồng truyền thống lướt nhẹ trên dòng sông Hương thơ mộng...",
                     image: "https://lh3.googleusercontent.com/aida/AP1WRLsAxsPs5r2kvGoyuzwLi5HZNuqZFFJ92LYmgV2zf3VVi05_rp0P1FIjGTkhnt_yYR6R6IQjVqoUK2S2TtEuQtrwfCt_DIWjhkdBsJi4brBXRdsMVNvfm5NsRG1XzflD7aZffpBJlDVKtz1uIAqPvyYVctHm-h0qxIJfPuGZ05rvpSBiDwbHDDReK2fzQwtanrEH-ZuatIZKHHkSLCx7Yu6WvSDvYTjedkshVAfKkDxWCi2s8KYXnJZrg7wu",
-                    coords: { top: '58%', left: '40%' }
+                    coords: { top: '58%', left: '40%' },
+                    mapQuery: "Sông Hương, Thành phố Huế, Thừa Thiên Huế"
                 }
             ],
             dongnoi: [
@@ -956,21 +946,24 @@
                     title: "Làng gốm Thanh Hà",
                     desc: "Tìm hiểu nghệ thuật làm gốm thủ công mộc mạc bên dòng sông Thu Bồn. Tự tay trải nghiệm xoay gốm tạo hình đất sét.",
                     image: "/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg",
-                    coords: { top: '40%', left: '46%' }
+                    coords: { top: '40%', left: '46%' },
+                    mapQuery: "Làng gốm Thanh Hà, Điện Biên Phủ, Thanh Hà, Hội An"
                 },
                 {
                     time: "10:30 - 12:30",
                     title: "Vườn rau Trà Quế",
                     desc: "Dạo quanh vườn rau hữu cơ nổi tiếng, tham gia xới đất, trồng rau và thưởng thức ly nước hạt sen mát lạnh.",
                     image: "/AnhTour/com.jfif",
-                    coords: { top: '48%', left: '50%' }
+                    coords: { top: '48%', left: '50%' },
+                    mapQuery: "Làng rau Trà Quế, Cẩm Hà, Hội An, Quảng Nam"
                 },
                 {
                     time: "13:00 - 16:00",
                     title: "Trải nghiệm ẩm thực",
                     desc: "Thưởng thức bữa trưa đậm đà hương vị Quảng Nam với các món đặc sản từ nông sản sạch thu hoạch ngay tại vườn.",
                     image: "/AnhTour/Com.jpg",
-                    coords: { top: '55%', left: '44%' }
+                    coords: { top: '55%', left: '44%' },
+                    mapQuery: "Phố cổ Hội An, Minh An, Hội An, Quảng Nam"
                 }
             ],
             disan: [
@@ -979,21 +972,24 @@
                     title: "Làng chiếu cói Kim Sơn",
                     desc: "Khám phá quy trình dệt chiếu truyền thống tinh xảo từ sợi cói tự nhiên của các nghệ nhân địa phương.",
                     image: "/AnhTour/ThuCong.jpg",
-                    coords: { top: '42%', left: '48%' }
+                    coords: { top: '42%', left: '48%' },
+                    mapQuery: "Làng chiếu cói Kim Sơn, Ninh Bình"
                 },
                 {
                     time: "11:30 - 13:30",
                     title: "Thưởng thức ẩm thực Tràng An",
                     desc: "Bữa trưa đặc sắc tại nhà hàng ven sông Ninh Bình với đặc sản thịt dê núi, cơm cháy và rượu Kim Sơn.",
                     image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
-                    coords: { top: '49%', left: '51%' }
+                    coords: { top: '49%', left: '51%' },
+                    mapQuery: "Khu du lịch sinh thái Tràng An, Ninh Bình"
                 },
                 {
                     time: "13:30 - 16:00",
                     title: "Trải nghiệm thêu Văn Lâm",
                     desc: "Học cách thêu những họa tiết truyền thống tinh tế trên nền vải lanh tự nhiên cùng các nghệ nhân lão luyện.",
                     image: "/AnhTour/ThuCong.jpg",
-                    coords: { top: '56%', left: '45%' }
+                    coords: { top: '56%', left: '45%' },
+                    mapQuery: "Làng nghề thêu ren Văn Lâm, Ninh Hải, Hoa Lư, Ninh Bình"
                 }
             ],
             tinhlang: [
@@ -1002,21 +998,24 @@
                     title: "Chèo xuồng ngắm sen",
                     desc: "Thả mình giữa cánh đồng sen mênh mông bạt ngàn tại Tháp Mười, ngắm hoa sen chớm nở đón ánh bình minh.",
                     image: "/AnhTour/ThapMuoi.jpg",
-                    coords: { top: '44%', left: '46%' }
+                    coords: { top: '44%', left: '46%' },
+                    mapQuery: "Đồng Sen Tháp Mười, Mỹ Hòa, Tháp Mười, Đồng Tháp"
                 },
                 {
                     time: "10:30 - 13:00",
                     title: "Thiền hành đầm sen",
                     desc: "Thưởng trà sen hữu cơ và tham gia các hoạt động thiền hành, hít thở thư giãn tinh thần giữa thiên nhiên.",
                     image: "/AnhTour/ThapMuoi.jpg",
-                    coords: { top: '52%', left: '52%' }
+                    coords: { top: '52%', left: '52%' },
+                    mapQuery: "Khu du lịch Đồng Sen Tháp Mười, Tháp Mười, Đồng Tháp"
                 },
                 {
                     time: "13:00 - 16:00",
                     title: "Ẩm thực sen Tháp Mười",
                     desc: "Khám phá thực đơn đặc biệt làm hoàn toàn từ sen: cơm hấp lá sen, súp hạt sen, gỏi ngó sen thanh mát.",
                     image: "/AnhTour/ThapMuoi.jpg",
-                    coords: { top: '60%', left: '42%' }
+                    coords: { top: '60%', left: '42%' },
+                    mapQuery: "Tháp Mười, Đồng Tháp"
                 }
             ]
         };
@@ -1052,23 +1051,8 @@
                 }).join('');
             }
 
-            // 2. Map pins HTML
-            const pinsContainer = document.getElementById('map-pins-container');
-            if (pinsContainer) {
-                pinsContainer.innerHTML = list.map((act, index) => {
-                    return `
-                        <div class="absolute transition-all duration-700 ease-in-out map-marker"
-                            id="pin-${index}" style="top: ${act.coords.top}; left: ${act.coords.left};" onclick="focusActivity(${index})">
-                            <svg class="map-pin-svg" fill="#C5A059" height="42" viewBox="0 0 32 42" width="32"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M16 0C7.16344 0 0 7.16344 0 16C0 28 16 42 16 42C16 42 32 28 32 16C32 7.16344 24.8366 0 16 0ZM16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22Z"
-                                    fill="currentColor"></path>
-                                <circle cx="16" cy="16" fill="white" r="4"></circle>
-                            </svg>
-                        </div>
-                    `;
-                }).join('');
+            if (list.length > 0) {
+                updateGoogleMap(list[0].mapQuery);
             }
         }
 
@@ -1204,13 +1188,17 @@
             const timelineEl = document.getElementById(`timeline-${index}`);
             if (timelineEl) timelineEl.classList.add('active');
 
-            const container = document.getElementById('map-pins-layer');
             const list = tourActivities[currentTour] || [];
             const activity = list[index];
+            if (activity && activity.mapQuery) {
+                updateGoogleMap(activity.mapQuery);
+            }
+        }
 
-            if (container && activity) {
-                container.style.transform = `scale(1.2) translate(${-(parseFloat(activity.coords.left) - 50) * 2}%, ${-(parseFloat(activity.coords.top) - 50) * 2}%)`;
-                container.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+        function updateGoogleMap(query) {
+            const iframe = document.getElementById('google-map-iframe');
+            if (iframe && query) {
+                iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
             }
         }
 
