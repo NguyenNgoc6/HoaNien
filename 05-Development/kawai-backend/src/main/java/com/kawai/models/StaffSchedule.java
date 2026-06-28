@@ -23,7 +23,6 @@ public class StaffSchedule {
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
-    @org.hibernate.envers.Audited(targetAuditMode = org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED)
     private Employee employee;
 
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
