@@ -74,6 +74,9 @@ public class Customer {
     }
 
     public String getPhone() {
+        if (phone == null || "N/A".equalsIgnoreCase(phone.trim())) {
+            return "";
+        }
         return phone;
     }
 
