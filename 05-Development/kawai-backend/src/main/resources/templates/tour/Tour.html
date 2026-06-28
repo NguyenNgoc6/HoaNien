@@ -361,7 +361,7 @@
                                      th:data-date="${tour.date}"
                                      th:data-schedule-id="${tour.id}"
                                      th:class="${tour.guide == (employee?.fullName ?: 'NguynNgoc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
-                                     th:onclick="|handleViewDetails(${tour.id}, '${tour.guide}')|">
+                                     onclick="handleViewDetails(this)">
                                     <div class="absolute top-0 right-0 p-4">
                                         <span class="bg-primary/10 text-primary text-label-sm font-label-sm px-4 py-1 rounded-full border border-primary/20 uppercase tracking-widest font-bold" th:text="${tour.type}">Cao cấp</span>
                                     </div>
@@ -846,7 +846,19 @@
             `;
         }
 
-        function handleViewDetails(scheduleId, guideName) {
+        function handleViewDetails(arg1, arg2) {
+            let scheduleId, guideName;
+            if (arg2 !== undefined) {
+                // Called from calendar modal (passed as two arguments)
+                scheduleId = arg1;
+                guideName = arg2;
+            } else {
+                // Called from HTML click: handleViewDetails(this)
+                const element = arg1;
+                scheduleId = element.getAttribute('data-schedule-id');
+                guideName = element.getAttribute('data-guide');
+            }
+
             if (!isSameGuide(guideName, loggedInGuideName)) {
                 showUnauthorizedModal(guideName);
                 return;

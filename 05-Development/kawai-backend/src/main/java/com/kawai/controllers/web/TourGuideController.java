@@ -31,6 +31,9 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.CustomerRepository customerRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourBookingRepository tourBookingRepository;
+
     @org.springframework.web.bind.annotation.ModelAttribute
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
@@ -534,6 +537,9 @@ public class TourGuideController {
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
         if (sched == null) return "NguynNgoc";
+        if (scheduleHasSpecialCustomer(sched)) {
+            return "NguynNgoc";
+        }
         if (sched.getId() != null && sched.getId() == 5L) {
             return "NguynNgoc";
         }
@@ -548,5 +554,22 @@ public class TourGuideController {
             }
         }
         return "NguynNgoc";
+    }
+
+    private boolean scheduleHasSpecialCustomer(com.kawai.models.TourSchedule sched) {
+        if (sched == null || sched.getId() == null) return false;
+        try {
+            java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(sched);
+            if (bookings != null) {
+                for (com.kawai.models.TourBooking b : bookings) {
+                    if (b.getCustomer() != null && "ngocnguyenthuy999@gmail.com".equalsIgnoreCase(b.getCustomer().getEmail())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

@@ -103,8 +103,33 @@ public class TourBookingApiController {
                     .orElseThrow(() -> new IllegalArgumentException("Tour not found with ID: " + tourId));
 
             List<TourSchedule> schedules = tourScheduleRepository.findByTourIdAndDepartureDate(tourId, departureDate);
-            TourSchedule schedule;
-            if (schedules.isEmpty()) {
+            TourSchedule schedule = schedules.isEmpty() ? null : schedules.get(0);
+
+            // Determine guide for this booking
+            String guideForNewTour = getGuideNameForTour(tour.getTourName());
+            boolean isSpecialCustomer = "ngocnguyenthuy999@gmail.com".equalsIgnoreCase(email);
+            if (isSpecialCustomer) {
+                guideForNewTour = "NguynNgoc";
+            }
+
+            // Verify guide limit: 1 guide per day
+            List<TourSchedule> existingSchedulesOnDay = tourScheduleRepository.findByDepartureDate(departureDate);
+            for (TourSchedule es : existingSchedulesOnDay) {
+                // If it is a different schedule
+                if (schedule == null || !es.getId().equals(schedule.getId())) {
+                    if (es.getTour() != null) {
+                        String existingGuide = getGuideNameForTour(es.getTour().getTourName());
+                        if (scheduleHasSpecialCustomer(es)) {
+                            existingGuide = "NguynNgoc";
+                        }
+                        if (existingGuide.equalsIgnoreCase(guideForNewTour)) {
+                            throw new IllegalArgumentException("Hướng dẫn viên phụ trách (" + guideForNewTour + ") đã kẹt lịch trình tour khác trong ngày này. Vui lòng chọn ngày khác.");
+                        }
+                    }
+                }
+            }
+
+            if (schedule == null) {
                 schedule = new TourSchedule();
                 schedule.setTour(tour);
                 schedule.setDepartureDate(departureDate);
@@ -112,8 +137,6 @@ public class TourBookingApiController {
                 schedule.setBookedSeats(0);
                 schedule.setScheduleStatus("Open");
                 schedule = tourScheduleRepository.save(schedule);
-            } else {
-                schedule = schedules.get(0);
             }
 
             // 3. Prepare TourBookingRequest DTO
@@ -298,5 +321,35 @@ public class TourBookingApiController {
             }
         }
         return ResponseEntity.ok(data);
+    }
+
+    private String getGuideNameForTour(String tourName) {
+        if (tourName == null) return "NguynNgoc";
+        String tn = tourName.toLowerCase();
+        if (tn.contains("tinh túy đồng nội") || tn.contains("tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
+            return "Ngọc Lan";
+        } else if (tn.contains("tĩnh lặng liên hoa") || tn.contains("tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
+            return "Hoàng Nam";
+        } else if (tn.contains("di sản") || tn.contains("disan")) {
+            return "Ngọc Lan";
+        }
+        return "NguynNgoc";
+    }
+
+    private boolean scheduleHasSpecialCustomer(TourSchedule sched) {
+        if (sched == null || sched.getId() == null) return false;
+        try {
+            java.util.List<TourBooking> bookings = tourBookingRepository.findBySchedule(sched);
+            if (bookings != null) {
+                for (TourBooking b : bookings) {
+                    if (b.getCustomer() != null && "ngocnguyenthuy999@gmail.com".equalsIgnoreCase(b.getCustomer().getEmail())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

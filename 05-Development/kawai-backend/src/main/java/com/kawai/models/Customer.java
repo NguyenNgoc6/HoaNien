@@ -47,6 +47,9 @@ public class Customer {
     }
 
     public String getFullName() {
+        if (email != null && email.equalsIgnoreCase("ngocnguyenthuy999@gmail.com")) {
+            return "Ngọc Thị";
+        }
         return fullName;
     }
 
