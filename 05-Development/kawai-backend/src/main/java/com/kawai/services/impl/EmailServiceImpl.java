@@ -141,6 +141,12 @@ public class EmailServiceImpl implements EmailService {
                 paymentAmountVal = finalPrice;
             }
 
+            String customerNotes = "";
+            if (booking.getNotes() != null && booking.getNotes().contains("customerNotes=")) {
+                int idx = booking.getNotes().indexOf("customerNotes=");
+                customerNotes = booking.getNotes().substring(idx + "customerNotes=".length()).trim();
+            }
+
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
             ctx.setVariable("customerName", customer.getFullName());
             ctx.setVariable("bookingId", booking.getId());
@@ -169,6 +175,7 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("roomDetail", roomDetail);
             ctx.setVariable("paymentLabel", paymentLabel);
             ctx.setVariable("paymentAmount", formatVnd(paymentAmountVal));
+            ctx.setVariable("customerNotes", customerNotes);
 
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);
             sendEmail(customer.getEmail(), "Xác nhận đặt tour - " + tourName + " | Hòa Niên Retreat & Resort", html);

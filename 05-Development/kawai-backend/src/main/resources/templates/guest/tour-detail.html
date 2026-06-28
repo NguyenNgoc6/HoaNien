@@ -480,10 +480,9 @@
                         </p>
                         <div class="space-y-6" id="child-rows-container"></div>
                     </div>
-                    <!-- Notes Section -->
                     <div class="flex flex-col">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 text-black">Ghi chú</label>
-                        <textarea class="text-sm py-2 resize-none"
+                        <textarea class="text-sm py-2 resize-none" id="customerNotes"
                             placeholder="Yêu cầu đặc biệt về thực phẩm, dị ứng..." rows="2"></textarea>
                     </div>
                     <!-- Discount Code Section -->
@@ -1871,6 +1870,8 @@
                 }
             }
 
+            const customerNotes = document.getElementById('customerNotes') ? document.getElementById('customerNotes').value.trim() : '';
+
             const payload = {
                 tourId: tourInfo.id,
                 departureDate: departureDate,
@@ -1882,7 +1883,8 @@
                 roomNumber: roomNumber,
                 vnpPaymentType: vnpPaymentType,
                 childAges: childAges,
-                promoCode: appliedPromoState ? appliedPromoState.code : null
+                promoCode: appliedPromoState ? appliedPromoState.code : null,
+                notes: customerNotes
             };
 
 

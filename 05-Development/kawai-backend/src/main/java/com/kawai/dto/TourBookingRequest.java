@@ -135,4 +135,14 @@ public class TourBookingRequest {
     public void setRoomBookingId(Long roomBookingId) {
         this.roomBookingId = roomBookingId;
     }
+
+    private String notes;
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }

@@ -426,7 +426,9 @@
               <span class="info-value" th:text="${adultCount} + ' Người lớn, ' + ${childCount} + ' Trẻ em'">2 Người lớn, 1 Trẻ em</span>
             </div>
             <div class="info-row" th:if="${childDiscountVal != null and childDiscountVal > 0}">
-              <span class="info-label" style="color: #ef4444;">Giảm giá trẻ em:</span>
+              <span class="info-label" style="color: #ef4444;">Giảm giá trẻ em:<br/>
+                <small style="color: #9ca3af; font-size: 10px; font-weight: normal; text-transform: none;">(Dưới 2 tuổi: -100%, 2 - 11 tuổi: -50%)</small>
+              </span>
               <span class="info-value" style="color: #ef4444; font-weight: 500;" th:text="'-' + ${childDiscount}">-25.000 VNĐ</span>
             </div>
             <div class="info-row" th:if="${promoDiscountVal != null and promoDiscountVal > 0}">
@@ -486,6 +488,12 @@
           <strong>50%</strong> chi phí.<br />
           • <strong>Hỗ trợ:</strong> Liên hệ lễ tân hoặc gọi <strong th:text="${resortPhone}">1900 xxxx</strong> để được
           hỗ trợ.
+        </div>
+
+        <!-- Ghi chú của khách hàng -->
+        <div class="note-box" th:if="${customerNotes != null and !customerNotes.isEmpty()}" style="border-left: 3px solid #ef4444; background: #fdfaf8; margin-bottom: 28px;">
+          <span class="note-title" style="color: #ef4444;">Yêu cầu đặc biệt từ Quý khách</span>
+          • <strong th:text="${customerNotes}">Yêu cầu đặc biệt</strong>
         </div>
 
         <p class="closing-text">

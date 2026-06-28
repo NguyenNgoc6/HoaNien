@@ -192,13 +192,16 @@ public class TourBookingServiceImpl implements TourBookingService {
                         paymentTypeStr = "full";
                 }
 
+                String customerNotes = request.getNotes() != null ? request.getNotes().trim() : "";
+                customerNotes = customerNotes.replace(";", " ").replace("=", " ");
                 String serializedNotes = "adults=" + adultCount
                                 + ";children=" + childCount
                                 + ";childDiscount=" + childDiscount
                                 + ";promoDiscount=" + promoDiscount
                                 + ";originalPrice=" + originalPrice
                                 + ";paymentMethod=" + paymentMethodStr
-                                + ";paymentType=" + paymentTypeStr;
+                                + ";paymentType=" + paymentTypeStr
+                                + ";customerNotes=" + customerNotes;
                 booking.setNotes(serializedNotes);
 
                 TourBooking savedBooking = tourBookingRepository.save(booking);

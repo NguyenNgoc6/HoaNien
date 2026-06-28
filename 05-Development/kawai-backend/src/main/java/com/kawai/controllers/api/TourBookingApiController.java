@@ -197,6 +197,7 @@ public class TourBookingApiController {
             }
             request.setPaymentMethod(paymentMethod);
             request.setVnpPaymentType(payload.get("vnpPaymentType") != null ? payload.get("vnpPaymentType").toString() : null);
+            request.setNotes(payload.get("notes") != null ? payload.get("notes").toString() : null);
 
             // 4. Create Tour Booking
             Long bookingId = tourBookingService.createTourBooking(request);
