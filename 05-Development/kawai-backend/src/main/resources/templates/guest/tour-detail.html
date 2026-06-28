@@ -644,9 +644,17 @@
                             <td class="py-4 font-bold text-gray-400 uppercase tracking-wider">Tổng cộng</td>
                             <td class="py-4 text-right" id="modal-total-price">1.200.000 VNĐ</td>
                         </tr>
+                        <tr class="border-b border-brand-border hidden" id="modal-row-child-discount">
+                            <td class="py-4 font-bold text-red-400 uppercase tracking-wider">Giảm giá trẻ em</td>
+                            <td class="py-4 text-right text-red-500 font-medium" id="modal-child-discount-amount">-0 VNĐ</td>
+                        </tr>
+                        <tr class="border-b border-brand-border hidden" id="modal-row-promo-discount">
+                            <td class="py-4 font-bold text-red-400 uppercase tracking-wider">Mã giảm giá</td>
+                            <td class="py-4 text-right text-red-500 font-medium" id="modal-promo-discount-amount">-0 VNĐ</td>
+                        </tr>
                         <tr>
-                            <td class="py-4 font-bold text-gray-400 uppercase tracking-wider">Số tiền thanh toán</td>
-                            <td class="py-4 text-right text-lg font-bold" id="modal-payment-amount">---</td>
+                            <td class="py-4 font-bold text-gray-400 uppercase tracking-wider" id="modal-payment-label">Số tiền thanh toán</td>
+                            <td class="py-4 text-right text-lg font-bold text-brand-dark" id="modal-payment-amount">---</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1396,18 +1404,80 @@
             const modal = document.getElementById('payment-modal');
             const amountSpan = document.getElementById('modal-payment-amount');
             const summaryMembers = document.getElementById('modal-summary-members');
-            const numChildren = document.getElementById('num-children').value || 0;
+            const numChildren = parseInt(document.getElementById('num-children').value) || 0;
             const qty = parseInt(document.getElementById('participantCount').value) || 1;
 
             const tourInfo = tourData[currentTour];
-            const totalPrice = tourInfo.price * qty;
+            const basePrice = tourInfo.price;
 
+            // 1. Calculate raw total (original price before any discount)
+            const rawTotal = basePrice * qty;
+
+            // 2. Calculate child discount
+            let childDiscount = 0;
+            for (let i = 0; i < numChildren; i++) {
+                const ageEl = document.getElementById(`child-age-${i}`);
+                const ageVal = ageEl ? ageEl.value : '';
+                if (ageVal === 'Dưới 2 tuổi') {
+                    childDiscount += basePrice;
+                } else {
+                    childDiscount += basePrice * 0.5;
+                }
+            }
+
+            // Price after child discount
+            const priceAfterChild = rawTotal - childDiscount;
+
+            // 3. Calculate promo discount
+            let promoDiscount = 0;
+            if (appliedPromoState) {
+                const isFixed = appliedPromoState.discountType === 'FIXED_AMOUNT';
+                if (isFixed) {
+                    promoDiscount = Number(appliedPromoState.discountAmount);
+                } else {
+                    promoDiscount = Math.round(priceAfterChild * Number(appliedPromoState.discountValue) / 100);
+                }
+                if (promoDiscount > priceAfterChild) {
+                    promoDiscount = priceAfterChild;
+                }
+            }
+
+            // Final calculated price
+            const finalPrice = priceAfterChild - promoDiscount;
+
+            // 4. Update UI in modal
             document.getElementById('modal-service-name').innerText = 'Hành trình ' + tourInfo.titleVi;
             document.getElementById('modal-departure-date').innerText = document.getElementById('departureDate').value;
-            document.getElementById('modal-total-price').innerText = formatVND(totalPrice);
+            
+            // Set raw total price
+            document.getElementById('modal-total-price').innerText = formatVND(rawTotal);
 
-            summaryMembers.innerText = `${qty} Khách, ${numChildren} Trẻ em`;
-            amountSpan.innerText = (type === 'deposit') ? formatVND(Math.round(totalPrice * 0.3)) : formatVND(totalPrice);
+            // Display Child Discount
+            const childRow = document.getElementById('modal-row-child-discount');
+            if (childDiscount > 0) {
+                document.getElementById('modal-child-discount-amount').innerText = '-' + formatVND(childDiscount);
+                childRow.classList.remove('hidden');
+            } else {
+                childRow.classList.add('hidden');
+            }
+
+            // Display Promo Discount
+            const promoRow = document.getElementById('modal-row-promo-discount');
+            if (promoDiscount > 0) {
+                document.getElementById('modal-promo-discount-amount').innerText = '-' + formatVND(promoDiscount);
+                promoRow.classList.remove('hidden');
+            } else {
+                promoRow.classList.add('hidden');
+            }
+
+            summaryMembers.innerText = `${qty - numChildren} Người lớn, ${numChildren} Trẻ em`;
+            
+            // Update label based on payment type
+            document.getElementById('modal-payment-label').innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
+
+            // Display final payment amount based on type
+            const paymentAmount = (type === 'deposit') ? Math.round(finalPrice * 0.3) : finalPrice;
+            amountSpan.innerText = formatVND(paymentAmount);
 
             overlay.classList.add('active');
             modal.classList.add('active');
