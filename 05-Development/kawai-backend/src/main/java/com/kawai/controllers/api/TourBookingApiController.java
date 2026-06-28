@@ -123,40 +123,51 @@ public class TourBookingApiController {
             request.setParticipantCount(participantCount);
             request.setParticipantCount(participantCount);
 
-            if (roomNumber == null || roomNumber.trim().isEmpty()) {
-                throw new IllegalArgumentException("Vui lòng chọn phòng bạn đã đặt hoặc đang lưu trú.");
-            }
-
             RoomBookingDetail detail = null;
 
-            if (roomNumber.toUpperCase().startsWith("VIRTUAL_")) {
-                try {
-                    Long detailId = Long.parseLong(roomNumber.substring(8));
-                    detail = roomBookingDetailRepository.findById(detailId).orElse(null);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Mã đặt phòng không hợp lệ.");
+            if (roomNumber == null || roomNumber.trim().isEmpty()) {
+                // Tự động tìm booking detail đang hoạt động của khách hàng này để liên kết
+                List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                for (RoomBookingDetail rbd : customerDetails) {
+                    if ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
+                            || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())) {
+                        detail = rbd;
+                        break;
+                    }
+                }
+                if (detail == null) {
+                    throw new IllegalArgumentException("Vui lòng thực hiện đặt phòng trước khi đặt tour.");
                 }
             } else {
-                Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
-                if (roomOpt.isEmpty()) {
-                    throw new IllegalArgumentException("Phòng không hợp lệ.");
-                }
-                Room room = roomOpt.get();
+                if (roomNumber.toUpperCase().startsWith("VIRTUAL_")) {
+                    try {
+                        Long detailId = Long.parseLong(roomNumber.substring(8));
+                        detail = roomBookingDetailRepository.findById(detailId).orElse(null);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Mã đặt phòng không hợp lệ.");
+                    }
+                } else {
+                    Optional<Room> roomOpt = roomRepository.findByRoomNumber(roomNumber);
+                    if (roomOpt.isEmpty()) {
+                        throw new IllegalArgumentException("Phòng không hợp lệ.");
+                    }
+                    Room room = roomOpt.get();
 
-                // 1. Kiểm tra nếu khách đã check-in (phòng có currentBookingDetailId)
-                if (room.getCurrentBookingDetailId() != null) {
-                    detail = roomBookingDetailRepository.findById(room.getCurrentBookingDetailId()).orElse(null);
-                }
+                    // 1. Kiểm tra nếu khách đã check-in (phòng có currentBookingDetailId)
+                    if (room.getCurrentBookingDetailId() != null) {
+                        detail = roomBookingDetailRepository.findById(room.getCurrentBookingDetailId()).orElse(null);
+                    }
 
-                // 2. Nếu chưa check-in, tìm Booking Detail đã được xác nhận (Confirmed) của khách cho phòng này
-                if (detail == null) {
-                    List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
-                    for (RoomBookingDetail rbd : customerDetails) {
-                        if (rbd.getRoom() != null && rbd.getRoom().getRoomNumber().equals(roomNumber)
-                                && ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
-                                    || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus()))) {
-                            detail = rbd;
-                            break;
+                    // 2. Nếu chưa check-in, tìm Booking Detail đã được xác nhận (Confirmed) của khách cho phòng này
+                    if (detail == null) {
+                        List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                        for (RoomBookingDetail rbd : customerDetails) {
+                            if (rbd.getRoom() != null && rbd.getRoom().getRoomNumber().equals(roomNumber)
+                                    && ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
+                                        || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus()))) {
+                                detail = rbd;
+                                break;
+                            }
                         }
                     }
                 }
