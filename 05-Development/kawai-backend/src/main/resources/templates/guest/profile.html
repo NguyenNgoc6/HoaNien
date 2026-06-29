@@ -43,6 +43,7 @@
         button:active, a.bg-hoanien-text:active { transform: scale(0.97) translateY(0.5px); transition: transform 0.1s ease; }
         button, a.bg-hoanien-text { transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease; }
     </style>
+    <link rel="stylesheet" th:href="@{/f&amp;bStaff/css/refund-modal.css}" />
 </head>
 
 <body class="bg-hoanien-bg text-hoanien-text antialiased flex flex-col min-h-screen">
@@ -543,6 +544,14 @@
                                                 class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-all text-[11px] uppercase tracking-wider flex items-center gap-2">
                                             <span class="material-symbols-outlined text-[16px]">credit_card</span>
                                             Thanh toán ngay
+                                        </button>
+                                        <button th:if="${fo.orderStatus == 'Pending'}" type="button"
+                                                th:data-id="${fo.id}"
+                                                th:data-payment="${fo.paymentType}"
+                                                onclick="cancelOrderGuest(this.getAttribute('data-id'), this.getAttribute('data-payment'))"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-all text-[11px] uppercase tracking-wider flex items-center gap-2 mt-2">
+                                            <span class="material-symbols-outlined text-[16px]">close</span>
+                                            Hủy đơn
                                         </button>
                                     </div>
                                 </div>
@@ -1289,6 +1298,90 @@
         }
 
 
+        function editCreditLimit(bookingId, detailId, currentLimit) {
+            currentEditingBookingId = bookingId;
+            currentEditingDetailId = detailId;
+            document.getElementById('newCreditLimitInput').value = currentLimit;
+            
+            const modal = document.getElementById('editCreditLimitModal');
+            const content = document.getElementById('editCreditLimitModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeEditCreditLimitModal() {
+            const modal = document.getElementById('editCreditLimitModal');
+            const content = document.getElementById('editCreditLimitModalContent');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveCreditLimit() {
+            const btn = document.getElementById('btnSaveCreditLimit');
+            const newLimit = document.getElementById('newCreditLimitInput').value;
+            
+            if(!newLimit || newLimit < 0) {
+                alert("Vui lòng nhập số tiền hợp lệ!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[16px]">refresh</span> Đang lưu...';
+
+            fetch(`/api/bookings/${currentEditingBookingId}/rooms/${currentEditingDetailId}/credit-limit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ newLimit: newLimit })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(resObj => {
+                if(resObj.status !== 200) {
+                    alert(resObj.body.message || "Đã xảy ra lỗi.");
+                    btn.disabled = false;
+                    btn.innerHTML = 'Lưu hạn mức';
+                } else {
+                    alert(resObj.body.message);
+                    window.location.reload();
+                }
+            })
+            .catch(err => {
+                alert("Lỗi kết nối mạng.");
+                btn.disabled = false;
+                btn.innerHTML = 'Lưu hạn mức';
+            });
+        }
+
+        function cancelOrderGuest(id, paymentType) {
+            if (paymentType && (paymentType.includes('Ví') || paymentType.includes('Thẻ') || paymentType.includes('Online') || paymentType.toUpperCase().includes('VNPAY'))) {
+                openRefundModal(id);
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.')) return;
+            
+            fetch('/api/pos/orders/' + id + '/cancel', {
+                method: 'POST'
+            })
+            .then(res => {
+                if(!res.ok) return res.json().then(e => { throw new Error(e.message) });
+                return res.json();
+            })
+            .then(data => {
+                alert('Đã hủy đơn thành công!');
+                window.location.reload();
+            })
+            .catch(err => alert('Lỗi: ' + err.message));
+        }
     </script>
 
 
@@ -1343,5 +1436,7 @@
     </div>
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
+    <div th:replace="~{f&amp;bStaff/refund-modal :: #refundModal}"></div>
+    <script th:src="@{/f&amp;bStaff/js/refund-modal.js}"></script>
 </body>
 </html>
