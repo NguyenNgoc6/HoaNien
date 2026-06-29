@@ -1,3 +1,19 @@
+
+function showToast(msg, type = 'error') {
+    if (typeof Toastify !== 'undefined') {
+        Toastify({
+            text: msg,
+            backgroundColor: type === 'error' ? '#ef4444' : (type === 'success' ? '#22c55e' : '#f59e0b'),
+            duration: 3500,
+            close: true,
+            gravity: 'top',
+            position: 'right'
+        }).showToast();
+    } else {
+        showToast(msg);
+    }
+}
+
 function updateAvailableRooms() {
     const typeSelect = document.getElementById('bookTypeSelect');
     const roomSelect = document.getElementById('physicalRoomSelect');
@@ -283,6 +299,13 @@ function cancelCheckinModal() {
     }
 }
 
+function calculateAge(dobStr) {
+    if (!dobStr) return 0;
+    const dob = new Date(dobStr);
+    const diff = Date.now() - dob.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+}
+
 let depIndexCounter = 0;
 
 function addDependent() {
@@ -292,17 +315,23 @@ function addDependent() {
     const roomId = document.getElementById('depRoom').value;
     const isPrimary = document.getElementById('depIsPrimary').checked;
     if (!name || !dob) {
-        alert('Please fill Name and Date of Birth!');
+        showToast('Please fill Name and Date of Birth!');
         return;
     }
+    const age = calculateAge(dob);
+    if (age >= 14 && !id) {
+        showToast('Người đi kèm từ 14 tuổi trở lên bắt buộc phải cung cấp CCCD/Passport!');
+        return;
+    }
+    
     if (!roomId) {
-        alert('Please assign the guest to a room!');
+        showToast('Please assign the guest to a room!');
         return;
     }
 
     if (isPrimary) {
         if (assignedRooms.length > 0 && roomId === assignedRooms[0].room) {
-            alert(`Phòng ${roomId} đã được chỉ định cho khách chính đứng đầu! Vui lòng không chọn người đi kèm làm người đứng đầu cho phòng này.`);
+            showToast(`Phòng ${roomId} đã được chỉ định cho khách chính đứng đầu! Vui lòng không chọn người đi kèm làm người đứng đầu cho phòng này.`);
             return;
         }
 
@@ -318,7 +347,7 @@ function addDependent() {
             }
         });
         if (conflict) {
-            alert(`Phòng này đã có người đứng đầu! Vui lòng chọn người khác hoặc bỏ chọn người đứng đầu cũ.`);
+            showToast(`Phòng này đã có người đứng đầu! Vui lòng chọn người khác hoặc bỏ chọn người đứng đầu cũ.`);
             return;
         }
     }
@@ -326,11 +355,11 @@ function addDependent() {
     // Kiểm tra ngày sinh không được ở tương lai
     const todayStr = new Date().toISOString().split('T')[0];
     if (dob > todayStr) {
-        alert('Ngày sinh không được vượt quá ngày hiện tại!');
+        showToast('Ngày sinh không được vượt quá ngày hiện tại!');
         return;
     }
     if (dob < '1900-01-01') {
-        alert('Ngày sinh không hợp lệ!');
+        showToast('Ngày sinh không hợp lệ!');
         return;
     }
 
@@ -339,13 +368,13 @@ function addDependent() {
         const isNumericOnly = /^\d+$/.test(id);
         if (isNumericOnly) {
             if (id.length !== 12) {
-                alert('Số CCCD không hợp lệ! Nếu chỉ nhập số, CCCD phải gồm đúng 12 chữ số.');
+                showToast('Số CCCD không hợp lệ! Nếu chỉ nhập số, CCCD phải gồm đúng 12 chữ số.');
                 return;
             }
         } else {
             const isValidPassport = /^[A-Za-z0-9]{6,15}$/.test(id);
             if (!isValidPassport) {
-                alert('Số Passport không hợp lệ! Passport phải từ 6-15 ký tự chữ và số.');
+                showToast('Số Passport không hợp lệ! Passport phải từ 6-15 ký tự chữ và số.');
                 return;
             }
         }
@@ -366,6 +395,11 @@ function addDependent() {
     document.getElementById('depDob').value = '';
     document.getElementById('depRoom').value = '';
     document.getElementById('depIsPrimary').checked = false;
+    
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    if (btnAddDependent) {
+        btnAddDependent.innerHTML = '<i class="fa-solid fa-plus"></i> Add';
+    }
 }
 
 function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumber, isPrimary = false) {
@@ -418,7 +452,7 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
             <input type="hidden" name="dependents[${depIndexCounter}].gender" value="Other" />
         </td>
         <td style="padding: 12px 16px;">
-            <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg})"><i class="fa-solid fa-camera"></i></button>
+            <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg}, '${name}')"><i class="fa-solid fa-camera"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Edit" onclick="editDependentRow(this, '${name}', '${cccd}', '${dob}', ${depIdArg}, ${roomIdArg}, ${isPrimary})"><i class="fa-solid fa-pen"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="Delete" onclick="this.closest('tr').remove()"><i class="fa-solid fa-trash"></i></button>
         </td>
@@ -453,10 +487,14 @@ function editDependentRow(btn, name, cccd, dob, depId, roomId, isPrimary) {
         toggleDependentsList();
     }
 
-    // Thay vì xóa luôn, ta chỉ ẩn nó đi và đánh dấu
     const tr = btn.closest('tr');
     tr.classList.add('editing-row');
     tr.style.display = 'none';
+    
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    if (btnAddDependent) {
+        btnAddDependent.innerHTML = '<i class="fa-solid fa-check"></i> Update';
+    }
 }
 
 function toggleDependentsList() {
@@ -476,7 +514,52 @@ if (_checkinForm) {
     _checkinForm.addEventListener('submit', async function (e) {
         if (assignedRooms.length === 0) {
             e.preventDefault();
-            alert('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
+            showToast('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
+            return;
+        }
+
+        const mainPhone = document.getElementById('modalGuestPhone').value;
+        const mainCccd = document.getElementById('modalGuestCccd').value;
+        if (!mainPhone || !mainCccd) {
+            e.preventDefault();
+            showToast('Khách đứng đầu (chủ đoàn) phải điền đầy đủ số điện thoại và CCCD!');
+            return;
+        }
+
+        // Ràng buộc FaceID cho chủ đoàn
+        // Lấy targetId của CUSTOMER là bookingId
+        const submitBookingId = document.getElementById('submitBookingId').value;
+        if (!pendingFaceEnrollments[submitBookingId]) {
+            e.preventDefault();
+            showToast('Người chủ đoàn bắt buộc phải cập nhật khuôn mặt (FaceID) để hoàn tất đơn!');
+            return;
+        }
+
+        let missingFaceName = null;
+        document.querySelectorAll('.faceid-mapping-id').forEach(input => {
+            const row = input.closest('tr');
+            if (row && row.style.display !== 'none') {
+                const targetId = input.getAttribute('data-target-id');
+                const dobInput = row.querySelector('input[name$=".dateOfBirth"]');
+                const nameInput = row.querySelector('input[name$=".fullName"]');
+                if (dobInput) {
+                    const age = calculateAge(dobInput.value);
+                    // Bắt buộc FaceID nếu đủ 14 tuổi, VÀ khách hàng mới hoặc phụ thuộc mới (có thể check targetId bắt đầu bằng NEW_)
+                    if (age >= 14) {
+                        // Nếu backend có check FaceID rồi thì không nói, ở đây force capture tại UI
+                        // Chỉ force nếu là NEW_ hoặc chưa có vector. 
+                        // Tạm thời nếu user muốn thì force hết. Hoặc nếu nó không nằm trong targetId (tức là targetId bắt đầu bằng NEW_)
+                        if (targetId && targetId.startsWith('NEW_') && !pendingFaceEnrollments[targetId]) {
+                            missingFaceName = nameInput ? nameInput.value : 'Người đi kèm';
+                        }
+                    }
+                }
+            }
+        });
+
+        if (missingFaceName) {
+            e.preventDefault();
+            showToast(`Thành viên ${missingFaceName} từ 14 tuổi trở lên bắt buộc phải cập nhật khuôn mặt (FaceID mới) để hoàn tất đơn!`);
             return;
         }
 
@@ -504,7 +587,7 @@ if (_checkinForm) {
 
         if (missingRooms.length > 0) {
             e.preventDefault();
-            alert('Thieu nguoi dung dau cho phong: ' + missingRooms.join(', '));
+            showToast('Thieu nguoi dung dau cho phong: ' + missingRooms.join(', '));
             return;
         }
 
@@ -515,7 +598,7 @@ if (_checkinForm) {
                 const unassigned = Array.from(hiddenRoomInputs).filter(inp => !inp.value);
                 if (unassigned.length > 0) {
                     e.preventDefault();
-                    alert('Che do Phan bo tung tour: vui long chon phong cho tat ca ' + currentUnallocatedTours.length + ' tour!');
+                    showToast('Che do Phan bo tung tour: vui long chon phong cho tat ca ' + currentUnallocatedTours.length + ' tour!');
                     return;
                 }
             }
@@ -725,14 +808,14 @@ async function loadFaceApiModels() {
         return true;
     } catch (error) {
         console.error("Lỗi khi tải FaceAPI models:", error);
-        alert("Không thể tải AI Models. Vui lòng kiểm tra kết nối mạng.");
+        showToast("Không thể tải AI Models. Vui lòng kiểm tra kết nối mạng.");
         return false;
     }
 }
 
-async function openEnrollModal(type, targetId) {
+async function openEnrollModal(type, targetId, targetName) {
     if (!targetId || targetId === "undefined" || targetId === "") {
-        alert("Không xác định được ID Khách hàng! Hãy kiểm tra lại.");
+        showToast("Không xác định được ID Khách hàng! Hãy kiểm tra lại.");
         return;
     }
     
@@ -754,7 +837,7 @@ async function openEnrollModal(type, targetId) {
     const overlay = document.getElementById('enrollOverlay');
     const captureBtn = document.getElementById('captureBtn');
     
-    document.getElementById('enrollTargetName').innerText = type === 'CUSTOMER' ? "Đang đăng ký cho Người Đặt Phòng..." : "Đang đăng ký cho Người Đi Kèm...";
+    document.getElementById('enrollTargetName').innerText = type === 'CUSTOMER' ? "Đang đăng ký cho Người Đặt Phòng..." : "Đang đăng ký cho " + (targetName || "Người Đi Kèm...");
     
     modal.style.display = 'flex';
     overlay.style.display = 'flex';
@@ -779,7 +862,7 @@ async function openEnrollModal(type, targetId) {
     } catch (err) {
         console.error("Không có quyền truy cập camera: ", err);
         overlay.innerText = 'Lỗi truy cập Camera';
-        alert("Vui lòng cấp quyền truy cập Camera cho trình duyệt.");
+        showToast("Vui lòng cấp quyền truy cập Camera cho trình duyệt.");
     }
 }
 
@@ -811,7 +894,7 @@ async function captureFace() {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
         
         if (!detection) {
-            alert("Không tìm thấy khuôn mặt rõ ràng. Vui lòng nhìn thẳng vào camera và thử lại.");
+            showToast("Không tìm thấy khuôn mặt rõ ràng. Vui lòng nhìn thẳng vào camera và thử lại.");
             overlay.style.display = 'none';
             captureBtn.disabled = false;
             return;
@@ -829,7 +912,7 @@ async function captureFace() {
             
             // Threshold = 0.5 for faceapi
             if (distance < 0.5) {
-                alert("Khuôn mặt này đã được quét cho một người khác trong đoàn! Vui lòng quét khuôn mặt khác.");
+                showToast("Khuôn mặt này đã được quét cho một người khác trong đoàn! Vui lòng quét khuôn mặt khác.");
                 overlay.style.display = 'none';
                 captureBtn.disabled = false;
                 return;
@@ -880,7 +963,7 @@ async function captureFace() {
         
     } catch (e) {
         console.error("Lỗi quét:", e);
-        alert("Đã xảy ra lỗi khi quét khuôn mặt.");
+        showToast("Đã xảy ra lỗi khi quét khuôn mặt.");
         overlay.style.display = 'none';
         captureBtn.disabled = false;
     }
