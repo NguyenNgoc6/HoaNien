@@ -5,6 +5,7 @@ import com.kawai.models.Customer;
 import com.kawai.models.Role;
 import com.kawai.repositories.AccountRepository;
 import com.kawai.repositories.CustomerRepository;
+import com.kawai.repositories.MembershipTierRepository;
 import com.kawai.repositories.RoleRepository;
 
 import org.slf4j.Logger;
@@ -28,6 +29,9 @@ public class OAuthAccountService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private MembershipTierRepository membershipTierRepository;
 
     // Không inject PasswordEncoder để tránh circular dependency
 
@@ -88,6 +92,16 @@ public class OAuthAccountService {
         customer.setGender("Other");
         customer.setPhone("N/A");
         customer.setCccdPassportEncrypted(null);
+        
+        com.kawai.models.MembershipTier regularTier = membershipTierRepository.findByTierNameIgnoreCase("Regular")
+                .orElseGet(() -> {
+                    log.warn("MembershipTier 'Regular' không tồn tại, đang tạo mới...");
+                    com.kawai.models.MembershipTier newTier = new com.kawai.models.MembershipTier(
+                            "Regular", 0, 999, java.math.BigDecimal.ZERO, "Thành viên mặc định");
+                    return membershipTierRepository.save(newTier);
+                });
+        customer.setMembershipTier(regularTier);
+        
         customerRepository.save(customer);
         log.info("Đã tạo Customer mới: id={}, email={}", customer.getId(), email);
 

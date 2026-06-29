@@ -26,7 +26,7 @@ function selectFormat(fmt) {
 function handleExport() {
     const type = document.getElementById('export-type')?.value || 'revenue';
     const from = document.getElementById('export-from')?.value;
-    const to = document.getElementById('export-to')?.value;
+    const to   = document.getElementById('export-to')?.value;
 
     if (!from || !to) {
         alert('Vui lòng chọn khoảng thời gian trước khi xuất báo cáo.');
@@ -37,20 +37,21 @@ function handleExport() {
         return;
     }
 
-    const typeLabels = {
-        revenue: 'Doanh thu tổng hợp',
-        room: 'Báo cáo phòng',
-        fnb: 'Báo cáo F&B',
-        tour: 'Báo cáo Tour',
-        occupancy: 'Tỷ lệ lấp đầy',
-        stay: 'Thời gian lưu trú'
-    };
-    const label = typeLabels[type] || type;
+    const btn = document.getElementById('btn-export');
+    const origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Đang xuất...';
 
-    // TODO: Thay bằng API call thực khi có backend
-    // fetch(`/manager/api/export?type=${type}&from=${from}&to=${to}&format=${selectedFormat}`)
-    console.log('[Export]', { type, from, to, format: selectedFormat });
-    alert(`✓ Đang xuất: "${label}"\n   Từ: ${from}  →  Đến: ${to}\n   Định dạng: .${selectedFormat}\n\n(Mock — chưa kết nối backend)`);
+    const url = `/manager/export/download?type=${encodeURIComponent(type)}&from=${from}&to=${to}&format=${selectedFormat}`;
+    window.location.href = url;
+
+    // Restore button after 3 seconds
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+        // Reload page to refresh history table
+        setTimeout(() => location.reload(), 500);
+    }, 3000);
 }
 
 function toggleSubmenu(id, arrowId) {
