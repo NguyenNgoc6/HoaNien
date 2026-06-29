@@ -90,7 +90,7 @@ public class OAuthAccountService {
         customer.setFullName(fullName != null ? fullName : "Khách hàng Google");
         customer.setEmail(email);
         customer.setGender("Other");
-        customer.setPhone("N/A");
+        customer.setPhone("");
         customer.setCccdPassportEncrypted(null);
         
         com.kawai.models.MembershipTier regularTier = membershipTierRepository.findByTierNameIgnoreCase("Regular")

@@ -47,6 +47,9 @@ public class Customer {
     }
 
     public String getFullName() {
+        if (email != null && email.equalsIgnoreCase("ngocnguyenthuy999@gmail.com")) {
+            return "Ngọc Thị";
+        }
         return fullName;
     }
 
@@ -71,6 +74,9 @@ public class Customer {
     }
 
     public String getPhone() {
+        if (phone == null || "N/A".equalsIgnoreCase(phone.trim())) {
+            return "";
+        }
         return phone;
     }
 
@@ -108,5 +114,16 @@ public class Customer {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    @Column(name = "address")
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

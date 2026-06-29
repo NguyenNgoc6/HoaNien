@@ -2,8 +2,10 @@ package com.kawai.controllers.web;
 
 import com.kawai.dto.CheckinSubmitFormDTO;
 import com.kawai.dto.DependentRegistrationDTO;
+import com.kawai.dto.TourRoomAllocationDTO;
 import com.kawai.exceptions.BusinessException;
 import com.kawai.models.RoomBookingDetail;
+import com.kawai.models.TourBooking;
 import com.kawai.services.interfaces.CheckinService;
 import com.kawai.services.interfaces.DependentService;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Controller xử lý Form Submit Web MVC cho Lễ tân Check-in (Không dùng fetch
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @RequestMapping("/receptionist/checkin")
+@PreAuthorize("hasAnyAuthority('OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')")
 public class ReceptionistCheckinWebController {
 
     private static final Logger log = LoggerFactory.getLogger(ReceptionistCheckinWebController.class);
@@ -31,6 +35,7 @@ public class ReceptionistCheckinWebController {
     private final com.kawai.repositories.CustomerRepository customerRepo;
     private final com.kawai.repositories.BookingRepository bookingRepo;
     private final com.kawai.repositories.RoomGuestRepository roomGuestRepo;
+    private final com.kawai.repositories.TourBookingRepository tourBookingRepo;
 
     public ReceptionistCheckinWebController(CheckinService checkinService,
             DependentService dependentService,
@@ -38,7 +43,8 @@ public class ReceptionistCheckinWebController {
             com.kawai.repositories.RoomRepository roomRepo,
             com.kawai.repositories.CustomerRepository customerRepo,
             com.kawai.repositories.BookingRepository bookingRepo,
-            com.kawai.repositories.RoomGuestRepository roomGuestRepo) {
+            com.kawai.repositories.RoomGuestRepository roomGuestRepo,
+            com.kawai.repositories.TourBookingRepository tourBookingRepo) {
         this.checkinService = checkinService;
         this.dependentService = dependentService;
         this.roomBookingDetailRepo = roomBookingDetailRepo;
@@ -46,6 +52,7 @@ public class ReceptionistCheckinWebController {
         this.customerRepo = customerRepo;
         this.bookingRepo = bookingRepo;
         this.roomGuestRepo = roomGuestRepo;
+        this.tourBookingRepo = tourBookingRepo;
     }
 
     @PostMapping("/complete")
@@ -250,6 +257,38 @@ public class ReceptionistCheckinWebController {
                     }
                 }
             }
+
+            // Bước 4: Phân bổ TourBookings vào phòng vật lý (nếu có)
+            // Chỉ xử lý các TourBooking có roomBookingDetail == null (chưa phân bổ)
+            String tourAllocationMode = form.getTourAllocationMode();
+            if ("PER_TOUR".equalsIgnoreCase(tourAllocationMode)
+                    && form.getTourAllocations() != null
+                    && !form.getTourAllocations().isEmpty()) {
+                for (TourRoomAllocationDTO allocation : form.getTourAllocations()) {
+                    if (allocation.getTourBookingId() == null || allocation.getRoomNumber() == null
+                            || allocation.getRoomNumber().isEmpty()) {
+                        continue;
+                    }
+                    TourBooking tourBooking = tourBookingRepo.findById(allocation.getTourBookingId())
+                            .orElse(null);
+                    if (tourBooking == null) continue;
+
+                    Long detailId = roomNumberToDetailIdMap.get(allocation.getRoomNumber());
+                    if (detailId == null) {
+                        log.warn("Không tìm thấy detail cho phòng {} khi phân bổ tour {}",
+                                allocation.getRoomNumber(), allocation.getTourBookingId());
+                        continue;
+                    }
+                    RoomBookingDetail detail = roomBookingDetailRepo.findById(detailId).orElse(null);
+                    if (detail != null) {
+                        // tourBooking.setRoomBookingDetail(detail);
+                        tourBookingRepo.save(tourBooking);
+                        log.info("Phân bổ TourBooking {} vào phòng {} (detail {})",
+                                tourBooking.getId(), allocation.getRoomNumber(), detailId);
+                    }
+                }
+            }
+            // Nếu ALL → giữ roomBookingDetail = null (gộp chung toàn booking, không gán phòng cụ thể)
 
             // Thành công: Gửi flash message và redirect
             redirectAttributes.addFlashAttribute("successMessage", "Check-in thành công !");

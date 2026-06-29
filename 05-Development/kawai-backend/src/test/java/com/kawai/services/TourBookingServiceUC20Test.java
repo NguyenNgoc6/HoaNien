@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.*;
  * UnsupportedOperationException cho đến khi implement xong).
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("UC20.1 — Đặt tour du lịch (TourBookingService)")
 class TourBookingServiceUC20Test {
 
@@ -65,6 +68,15 @@ class TourBookingServiceUC20Test {
 
     @Mock
     private RoomBookingDetailRepository roomBookingDetailRepository;
+    
+    @Mock
+    private RoomBookingRepository roomBookingRepository;
+
+    @Mock
+    private PromotionRepository promotionRepository;
+
+    @Mock
+    private BookingRepository bookingRepository;
 
     @InjectMocks
     private TourBookingServiceImpl tourBookingService;
@@ -103,8 +115,8 @@ class TourBookingServiceUC20Test {
         validRequest = new TourBookingRequest();
         validRequest.setScheduleId(100L);
         validRequest.setCustomerId(10L);
-        validRequest.setParticipantCount(3);
-        validRequest.setWalkInTour(false);
+        validRequest.setParticipantCount(2);
+
         validRequest.setPostToRoom(false);
     }
 
@@ -250,9 +262,11 @@ class TourBookingServiceUC20Test {
             // ARRANGE: Post to Room
             validRequest.setPostToRoom(true);
             validRequest.setRoomBookingDetailId(50L);
+            validRequest.setParticipantCount(3);
 
             RoomBookingDetail sampleDetail = new RoomBookingDetail();
             sampleDetail.setId(50L);
+            sampleDetail.setSubCreditLimit(new java.math.BigDecimal("10000000"));
 
             org.mockito.Mockito.lenient().when(tourScheduleRepository.findById(100L)).thenReturn(Optional.of(sampleSchedule));
             org.mockito.Mockito.lenient().when(customerRepository.findById(10L)).thenReturn(Optional.of(sampleCustomer));

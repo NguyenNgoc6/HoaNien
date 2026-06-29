@@ -1,4 +1,4 @@
-/* export.js — Xuất báo cáo: form handling + format selection */
+/* export.js - report export form handling */
 
 let selectedFormat = 'xlsx';
 
@@ -23,35 +23,51 @@ function selectFormat(fmt) {
     if (chip) chip.classList.add('active');
 }
 
-function handleExport() {
+async function handleExport() {
     const type = document.getElementById('export-type')?.value || 'revenue';
     const from = document.getElementById('export-from')?.value;
     const to   = document.getElementById('export-to')?.value;
 
     if (!from || !to) {
-        alert('Vui lòng chọn khoảng thời gian trước khi xuất báo cáo.');
+        alert('Vui long chon khoang thoi gian truoc khi xuat bao cao.');
         return;
     }
     if (from > to) {
-        alert('"Từ ngày" phải nhỏ hơn hoặc bằng "Đến ngày".');
+        alert('Tu ngay phai nho hon hoac bang Den ngay.');
         return;
     }
 
+    const typeLabels = {
+        revenue: 'Doanh thu tong hop',
+        room: 'Bao cao phong',
+        fnb: 'Bao cao F&B',
+        tour: 'Bao cao Tour',
+        occupancy: 'Ty le lap day',
+        stay: 'Thoi gian luu tru'
+    };
+    const label = typeLabels[type] || type;
+
     const btn = document.getElementById('btn-export');
-    const origText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Đang xuất...';
-
-    const url = `/manager/export/download?type=${encodeURIComponent(type)}&from=${from}&to=${to}&format=${selectedFormat}`;
-    window.location.href = url;
-
-    // Restore button after 3 seconds
-    setTimeout(() => {
-        btn.disabled = false;
-        btn.innerHTML = origText;
-        // Reload page to refresh history table
-        setTimeout(() => location.reload(), 500);
-    }, 3000);
+    if (btn) btn.disabled = true;
+    try {
+        const response = await fetch(`/manager/api/reports/export?type=${encodeURIComponent(type)}&from=${from}&to=${to}&format=${selectedFormat}`);
+        if (!response.ok) {
+            throw new Error(await response.text() || 'Khong the xuat bao cao.');
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${label}-${from}-${to}.${selectedFormat === 'xlsx' ? 'csv' : selectedFormat}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        alert(err.message || 'Khong the xuat bao cao.');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
 }
 
 function toggleSubmenu(id, arrowId) {
@@ -61,5 +77,8 @@ function toggleSubmenu(id, arrowId) {
     const open = s.classList.contains('open');
     document.querySelectorAll('.mgr-submenu').forEach(e => e.classList.remove('open'));
     document.querySelectorAll('.mgr-nav-arrow').forEach(e => e.classList.remove('open'));
-    if (!open) { s.classList.add('open'); a.classList.add('open'); }
+    if (!open) {
+        s.classList.add('open');
+        a.classList.add('open');
+    }
 }
