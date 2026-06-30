@@ -43,6 +43,7 @@
         button:active, a.bg-hoanien-text:active { transform: scale(0.97) translateY(0.5px); transition: transform 0.1s ease; }
         button, a.bg-hoanien-text { transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease; }
     </style>
+    <link rel="stylesheet" th:href="@{/f&amp;bStaff/css/refund-modal.css}" />
 </head>
 
 <body class="bg-hoanien-bg text-hoanien-text antialiased flex flex-col min-h-screen">
@@ -348,7 +349,6 @@
                                                 <div class="flex flex-col">
                                                     <div class="flex items-center gap-1 justify-end">
                                                         <span class="text-[9px] uppercase tracking-wider opacity-50">Cấp mức</span>
-                                                        <button type="button" th:if="${booking.customer != null and booking.customer.id == customer.id}" th:onclick="'editCreditLimit(' + ${booking.id} + ', ' + ${detail.id} + ', ' + ${detail.subCreditLimit != null ? detail.subCreditLimit : 0} + ')'" class="material-symbols-outlined text-[12px] opacity-40 hover:opacity-100 hover:text-hoanien-text transition-all" title="Chỉnh sửa hạn mức">edit</button>
                                                     </div>
                                                     <span class="font-semibold text-hoanien-text"><span th:text="${detail.subCreditLimit != null ? #numbers.formatDecimal(detail.subCreditLimit, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>đ</span>
                                                 </div>
@@ -544,6 +544,14 @@
                                                 class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-all text-[11px] uppercase tracking-wider flex items-center gap-2">
                                             <span class="material-symbols-outlined text-[16px]">credit_card</span>
                                             Thanh toán ngay
+                                        </button>
+                                        <button th:if="${fo.orderStatus == 'Pending'}" type="button"
+                                                th:data-id="${fo.id}"
+                                                th:data-payment="${fo.paymentType}"
+                                                onclick="cancelOrderGuest(this.getAttribute('data-id'), this.getAttribute('data-payment'))"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-all text-[11px] uppercase tracking-wider flex items-center gap-2 mt-2">
+                                            <span class="material-symbols-outlined text-[16px]">close</span>
+                                            Hủy đơn
                                         </button>
                                     </div>
                                 </div>
@@ -1289,9 +1297,6 @@
             }, 300);
         }
 
-        // --- EDIT CREDIT LIMIT LOGIC ---
-        let currentEditingBookingId = null;
-        let currentEditingDetailId = null;
 
         function editCreditLimit(bookingId, detailId, currentLimit) {
             currentEditingBookingId = bookingId;
@@ -1355,32 +1360,30 @@
                 btn.innerHTML = 'Lưu hạn mức';
             });
         }
+
+        function cancelOrderGuest(id, paymentType) {
+            if (paymentType && (paymentType.includes('Ví') || paymentType.includes('Thẻ') || paymentType.includes('Online') || paymentType.toUpperCase().includes('VNPAY'))) {
+                openRefundModal(id);
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.')) return;
+            
+            fetch('/api/pos/orders/' + id + '/cancel', {
+                method: 'POST'
+            })
+            .then(res => {
+                if(!res.ok) return res.json().then(e => { throw new Error(e.message) });
+                return res.json();
+            })
+            .then(data => {
+                alert('Đã hủy đơn thành công!');
+                window.location.reload();
+            })
+            .catch(err => alert('Lỗi: ' + err.message));
+        }
     </script>
 
-    <!-- Edit Credit Limit Modal -->
-    <div id="editCreditLimitModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
-        <div id="editCreditLimitModalContent" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl transform scale-95 transition-all duration-300 overflow-hidden">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-serif text-xl font-medium text-hoanien-text">Cấu hình Hạn mức</h3>
-                    <button type="button" onclick="closeEditCreditLimitModal()" class="material-symbols-outlined text-gray-400 hover:text-red-500 transition-colors">close</button>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider opacity-70 font-semibold mb-2">Hạn mức mới (VNĐ)</label>
-                        <input type="number" id="newCreditLimitInput" class="w-full bg-white border border-hoanien-text/20 rounded-lg px-4 py-3 focus:border-hoanien-text focus:outline-none transition-colors" placeholder="VD: 5000000" min="0" step="500000" />
-                        <p class="text-[10px] text-hoanien-text/60 mt-2">* Tổng hạn mức các phòng không được vượt quá hạn mức tối đa của đơn đặt phòng.</p>
-                    </div>
-                </div>
-
-                <div class="mt-8 flex justify-end gap-3">
-                    <button type="button" onclick="closeEditCreditLimitModal()" class="px-5 py-2.5 rounded-full border border-hoanien-text/20 text-hoanien-text font-medium text-sm hover:bg-hoanien-text/5 transition-colors">Hủy</button>
-                    <button type="button" id="btnSaveCreditLimit" onclick="saveCreditLimit()" class="px-5 py-2.5 rounded-full bg-hoanien-text text-white font-medium text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2">Lưu hạn mức</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Tier Info Modal -->
     <div id="tierInfoModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
@@ -1433,5 +1436,7 @@
     </div>
 
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
+    <div th:replace="~{f&amp;bStaff/refund-modal :: #refundModal}"></div>
+    <script th:src="@{/f&amp;bStaff/js/refund-modal.js}"></script>
 </body>
 </html>

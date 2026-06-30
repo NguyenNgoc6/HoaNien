@@ -125,22 +125,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // UX: Bấm vào bất kỳ đâu trên dòng cũng sẽ toggle
-    document.querySelectorAll("tbody tr[data-id]").forEach(tr => {
-        tr.style.cursor = 'pointer';
-        tr.style.transition = 'background-color 0.2s ease';
-        tr.addEventListener("click", (e) => {
-            // Không trigger nếu bấm vào button, input hoặc thẻ a
-            if (e.target.closest('button') || e.target.closest('a') || e.target.tagName === 'INPUT') return;
-            
-            const isSelected = tr.classList.toggle('row-selected');
-            if (isSelected) {
-                tr.style.backgroundColor = 'rgba(201, 169, 110, 0.15)';
-            } else {
-                tr.style.backgroundColor = '';
-            }
-            updateBulkToolbar();
+        if (allowedBulkTabs.includes(activeTab)) {
+        document.querySelectorAll("tbody tr[data-id]").forEach(tr => {
+            tr.style.cursor = 'pointer';
+            tr.style.transition = 'background-color 0.2s ease';
+            tr.addEventListener("click", (e) => {
+                if (e.target.closest('button') || e.target.closest('a') || e.target.tagName === 'INPUT') return;
+                
+                const isSelected = tr.classList.toggle('row-selected');
+                if (isSelected) {
+                    tr.style.backgroundColor = 'rgba(201, 169, 110, 0.15)';
+                } else {
+                    tr.style.backgroundColor = '';
+                }
+                updateBulkToolbar();
+            });
         });
-    });
+    }
 
     if (btnBulkDelete) {
         btnBulkDelete.addEventListener("click", () => {
@@ -919,7 +920,7 @@ function handleSavePermissions() {
 function applyToggleUI(btn, next) {
     btn.dataset.value = String(next);
 
-    btn.innerHTML = `<i data-lucide="${next ? 'toggle-right' : 'toggle-left'}" class="w-[22px] h-[22px] ${next ? 'text-[#C9A96E]' : 'text-[#8B7355]'}"></i>`;
+    btn.innerHTML = `<i data-lucide="${next ? 'toggle-right' : 'toggle-left'}" style="width: 22px; height: 22px; color: ${next ? '#C9A96E' : '#8B7355'}"></i>`;
     if (typeof lucide !== "undefined") lucide.createIcons();
 
     // Đồng bộ data-value trên <td> để edit modal đọc đúng
@@ -931,6 +932,15 @@ function applyToggleUI(btn, next) {
     // Cập nhật text và màu của badge
     const tr = btn.closest("tr");
     if (tr) {
+        try {
+            if (tr.dataset.entity) {
+                const entityObj = JSON.parse(tr.dataset.entity);
+                if (entityObj.status !== undefined) {
+                    entityObj.status = next ? "Hoạt động" : "Ngừng hoạt động";
+                    tr.dataset.entity = JSON.stringify(entityObj);
+                }
+            }
+        } catch(e) {}
         const statusTd = tr.querySelector('td[data-key="status"]');
         if (statusTd) {
             statusTd.dataset.value = String(next);

@@ -1,3 +1,109 @@
+
+
+function showToast(msg, type = 'error') {
+    let container = document.getElementById('custom-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'custom-toast-container';
+        
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #custom-toast-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .custom-toast {
+                display: flex;
+                align-items: flex-start;
+                padding: 16px;
+                border-radius: 8px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                border-left: 4px solid;
+                width: 320px;
+                transform: translateX(120%);
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                font-family: 'Inter', sans-serif;
+            }
+            .custom-toast.show {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            .custom-toast.error {
+                background-color: #fef2f2;
+                border-color: #ef4444;
+                color: #7f1d1d;
+            }
+            .custom-toast.success {
+                background-color: #f0fdf4;
+                border-color: #22c55e;
+                color: #14532d;
+            }
+            .custom-toast-icon {
+                font-size: 20px;
+                margin-right: 12px;
+                margin-top: 2px;
+            }
+            .custom-toast.error .custom-toast-icon {
+                color: #ef4444;
+            }
+            .custom-toast.success .custom-toast-icon {
+                color: #22c55e;
+            }
+            .custom-toast-content {
+                flex: 1;
+            }
+            .custom-toast-title {
+                font-weight: 700;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+                margin: 0 0 4px 0;
+            }
+            .custom-toast-message {
+                font-size: 12px;
+                opacity: 0.9;
+                margin: 0;
+                line-height: 1.4;
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `custom-toast ${type}`;
+    
+    const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+    const title = type === 'error' ? 'LỖI' : 'THÀNH CÔNG';
+    
+    toast.innerHTML = `
+        <i class="fa-solid ${icon} custom-toast-icon"></i>
+        <div class="custom-toast-content">
+            <h4 class="custom-toast-title">${title}</h4>
+            <p class="custom-toast-message">${msg}</p>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // trigger animation
+    requestAnimationFrame(() => {
+        setTimeout(() => toast.classList.add('show'), 10);
+    });
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+
 function updateAvailableRooms() {
     const typeSelect = document.getElementById('bookTypeSelect');
     const roomSelect = document.getElementById('physicalRoomSelect');
@@ -189,6 +295,14 @@ function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDi
         console.error('[openCheckinModal] CRITICAL: #checkinModal không tìm thấy trong DOM!');
         return;
     }
+
+    const currentBookingId = document.getElementById('submitBookingId').value;
+    if (currentBookingId === bookingId.toString()) {
+        // Resume from previous state if clicking the same check-in button
+        modalEl.style.display = 'flex';
+        return;
+    }
+
     checkinMasterCreditLimit = creditLimit ? parseFloat(creditLimit) : 5000000;
     updateCheckinCreditLimitDisplay();
     // Gán bookingId vào form submit hidden input
@@ -263,11 +377,23 @@ function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDi
 
 function closeCheckinModal() {
     document.getElementById('checkinModal').style.display = 'none';
+}
+
+function cancelCheckinModal() {
+    closeCheckinModal();
+    document.getElementById('submitBookingId').value = '';
     pendingFaceEnrollments = {};
     const gallery = document.getElementById('faceGallery');
     if (gallery) {
         gallery.innerHTML = '<div id="faceGalleryEmpty" style="font-size: 13px; color: #94a3b8; text-align: center; padding: 20px 0;">Chưa có ảnh nào được chụp</div>';
     }
+}
+
+function calculateAge(dobStr) {
+    if (!dobStr) return 0;
+    const dob = new Date(dobStr);
+    const diff = Date.now() - dob.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 }
 
 let depIndexCounter = 0;
@@ -279,17 +405,23 @@ function addDependent() {
     const roomId = document.getElementById('depRoom').value;
     const isPrimary = document.getElementById('depIsPrimary').checked;
     if (!name || !dob) {
-        alert('Please fill Name and Date of Birth!');
+        showToast('Please fill Name and Date of Birth!');
         return;
     }
+    const age = calculateAge(dob);
+    if (age >= 14 && !id) {
+        showToast('Người đi kèm từ 14 tuổi trở lên bắt buộc phải cung cấp CCCD/Passport!');
+        return;
+    }
+    
     if (!roomId) {
-        alert('Please assign the guest to a room!');
+        showToast('Please assign the guest to a room!');
         return;
     }
 
     if (isPrimary) {
         if (assignedRooms.length > 0 && roomId === assignedRooms[0].room) {
-            alert(`Phòng ${roomId} đã được chỉ định cho khách chính đứng đầu! Vui lòng không chọn người đi kèm làm người đứng đầu cho phòng này.`);
+            showToast(`Phòng ${roomId} đã được chỉ định cho khách chính đứng đầu! Vui lòng không chọn người đi kèm làm người đứng đầu cho phòng này.`);
             return;
         }
 
@@ -305,7 +437,7 @@ function addDependent() {
             }
         });
         if (conflict) {
-            alert(`Phòng này đã có người đứng đầu! Vui lòng chọn người khác hoặc bỏ chọn người đứng đầu cũ.`);
+            showToast(`Phòng này đã có người đứng đầu! Vui lòng chọn người khác hoặc bỏ chọn người đứng đầu cũ.`);
             return;
         }
     }
@@ -313,11 +445,11 @@ function addDependent() {
     // Kiểm tra ngày sinh không được ở tương lai
     const todayStr = new Date().toISOString().split('T')[0];
     if (dob > todayStr) {
-        alert('Ngày sinh không được vượt quá ngày hiện tại!');
+        showToast('Ngày sinh không được vượt quá ngày hiện tại!');
         return;
     }
     if (dob < '1900-01-01') {
-        alert('Ngày sinh không hợp lệ!');
+        showToast('Ngày sinh không hợp lệ!');
         return;
     }
 
@@ -326,13 +458,13 @@ function addDependent() {
         const isNumericOnly = /^\d+$/.test(id);
         if (isNumericOnly) {
             if (id.length !== 12) {
-                alert('Số CCCD không hợp lệ! Nếu chỉ nhập số, CCCD phải gồm đúng 12 chữ số.');
+                showToast('Số CCCD không hợp lệ! Nếu chỉ nhập số, CCCD phải gồm đúng 12 chữ số.');
                 return;
             }
         } else {
             const isValidPassport = /^[A-Za-z0-9]{6,15}$/.test(id);
             if (!isValidPassport) {
-                alert('Số Passport không hợp lệ! Passport phải từ 6-15 ký tự chữ và số.');
+                showToast('Số Passport không hợp lệ! Passport phải từ 6-15 ký tự chữ và số.');
                 return;
             }
         }
@@ -353,6 +485,11 @@ function addDependent() {
     document.getElementById('depDob').value = '';
     document.getElementById('depRoom').value = '';
     document.getElementById('depIsPrimary').checked = false;
+    
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    if (btnAddDependent) {
+        btnAddDependent.innerHTML = '<i class="fa-solid fa-plus"></i> Add';
+    }
 }
 
 function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumber, isPrimary = false) {
@@ -405,7 +542,7 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
             <input type="hidden" name="dependents[${depIndexCounter}].gender" value="Other" />
         </td>
         <td style="padding: 12px 16px;">
-            <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg})"><i class="fa-solid fa-camera"></i></button>
+            <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg}, '${name}')"><i class="fa-solid fa-camera"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Edit" onclick="editDependentRow(this, '${name}', '${cccd}', '${dob}', ${depIdArg}, ${roomIdArg}, ${isPrimary})"><i class="fa-solid fa-pen"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="Delete" onclick="this.closest('tr').remove()"><i class="fa-solid fa-trash"></i></button>
         </td>
@@ -440,10 +577,14 @@ function editDependentRow(btn, name, cccd, dob, depId, roomId, isPrimary) {
         toggleDependentsList();
     }
 
-    // Thay vì xóa luôn, ta chỉ ẩn nó đi và đánh dấu
     const tr = btn.closest('tr');
     tr.classList.add('editing-row');
     tr.style.display = 'none';
+    
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    if (btnAddDependent) {
+        btnAddDependent.innerHTML = '<i class="fa-solid fa-check"></i> Update';
+    }
 }
 
 function toggleDependentsList() {
@@ -463,7 +604,52 @@ if (_checkinForm) {
     _checkinForm.addEventListener('submit', async function (e) {
         if (assignedRooms.length === 0) {
             e.preventDefault();
-            alert('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
+            showToast('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
+            return;
+        }
+
+        const mainPhone = document.getElementById('modalGuestPhone').value;
+        const mainCccd = document.getElementById('modalGuestCccd').value;
+        if (!mainPhone || !mainCccd) {
+            e.preventDefault();
+            showToast('Khách đứng đầu (chủ đoàn) phải điền đầy đủ số điện thoại và CCCD!');
+            return;
+        }
+
+        // Ràng buộc FaceID cho chủ đoàn
+        // Lấy targetId của CUSTOMER là bookingId
+        const submitBookingId = document.getElementById('submitBookingId').value;
+        if (!pendingFaceEnrollments[submitBookingId]) {
+            e.preventDefault();
+            showToast('Người chủ đoàn bắt buộc phải cập nhật khuôn mặt (FaceID) để hoàn tất đơn!');
+            return;
+        }
+
+        let missingFaceName = null;
+        document.querySelectorAll('.faceid-mapping-id').forEach(input => {
+            const row = input.closest('tr');
+            if (row && row.style.display !== 'none') {
+                const targetId = input.getAttribute('data-target-id');
+                const dobInput = row.querySelector('input[name$=".dateOfBirth"]');
+                const nameInput = row.querySelector('input[name$=".fullName"]');
+                if (dobInput) {
+                    const age = calculateAge(dobInput.value);
+                    // Bắt buộc FaceID nếu đủ 14 tuổi, VÀ khách hàng mới hoặc phụ thuộc mới (có thể check targetId bắt đầu bằng NEW_)
+                    if (age >= 14) {
+                        // Nếu backend có check FaceID rồi thì không nói, ở đây force capture tại UI
+                        // Chỉ force nếu là NEW_ hoặc chưa có vector. 
+                        // Tạm thời nếu user muốn thì force hết. Hoặc nếu nó không nằm trong targetId (tức là targetId bắt đầu bằng NEW_)
+                        if (targetId && targetId.startsWith('NEW_') && !pendingFaceEnrollments[targetId]) {
+                            missingFaceName = nameInput ? nameInput.value : 'Người đi kèm';
+                        }
+                    }
+                }
+            }
+        });
+
+        if (missingFaceName) {
+            e.preventDefault();
+            showToast(`Thành viên ${missingFaceName} từ 14 tuổi trở lên bắt buộc phải cập nhật khuôn mặt (FaceID mới) để hoàn tất đơn!`);
             return;
         }
 
@@ -491,7 +677,7 @@ if (_checkinForm) {
 
         if (missingRooms.length > 0) {
             e.preventDefault();
-            alert('Thieu nguoi dung dau cho phong: ' + missingRooms.join(', '));
+            showToast('Thieu nguoi dung dau cho phong: ' + missingRooms.join(', '));
             return;
         }
 
@@ -502,7 +688,7 @@ if (_checkinForm) {
                 const unassigned = Array.from(hiddenRoomInputs).filter(inp => !inp.value);
                 if (unassigned.length > 0) {
                     e.preventDefault();
-                    alert('Che do Phan bo tung tour: vui long chon phong cho tat ca ' + currentUnallocatedTours.length + ' tour!');
+                    showToast('Che do Phan bo tung tour: vui long chon phong cho tat ca ' + currentUnallocatedTours.length + ' tour!');
                     return;
                 }
             }
@@ -627,13 +813,13 @@ function renderPerTourAllocationRows() {
 
     currentUnallocatedTours.forEach(function (tour, i) {
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;transition:all 0.2s ease;';
+        row.style.cssText = 'display:grid;grid-template-columns:1fr 32px 1fr;align-items:center;padding:12px 16px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;transition:all 0.2s ease;gap:12px;';
 
         const labelInfo = document.createElement('div');
-        labelInfo.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+        labelInfo.style.cssText = 'display:flex;flex-direction:column;gap:4px;min-width:0;';
         
         const labelName = document.createElement('span');
-        labelName.style.cssText = 'font-size:14px;font-weight:600;color:#1e293b';
+        labelName.style.cssText = 'font-size:14px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
         labelName.innerText = tour.tourName;
 
         const labelDate = document.createElement('span');
@@ -643,15 +829,12 @@ function renderPerTourAllocationRows() {
         labelInfo.appendChild(labelName);
         labelInfo.appendChild(labelDate);
 
-        const rightSide = document.createElement('div');
-        rightSide.style.cssText = 'display:flex;align-items:center;gap:16px;flex:0.6;';
-
         const arrow = document.createElement('span');
         arrow.innerHTML = '<i class="fa-solid fa-arrow-right-long"></i>';
-        arrow.style.cssText = 'color:#94a3b8;font-size:14px;';
+        arrow.style.cssText = 'color:#94a3b8;font-size:14px;text-align:center;';
 
         const select = document.createElement('select');
-        select.style.cssText = 'flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:white;font-size:14px;color:#334155;outline:none;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);';
+        select.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;background:white;font-size:14px;color:#334155;outline:none;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);';
         select.innerHTML = '<option value="">-- Chọn phòng --</option>';
         assignedRooms.forEach(function (a) {
             const opt = document.createElement('option');
@@ -674,11 +857,9 @@ function renderPerTourAllocationRows() {
             hiddenRoom.value = select.value;
         });
 
-        rightSide.appendChild(arrow);
-        rightSide.appendChild(select);
-        
         row.appendChild(labelInfo);
-        row.appendChild(rightSide);
+        row.appendChild(arrow);
+        row.appendChild(select);
         container.appendChild(row);
 
         const form = document.getElementById('checkinFormWrapper');
@@ -712,14 +893,14 @@ async function loadFaceApiModels() {
         return true;
     } catch (error) {
         console.error("Lỗi khi tải FaceAPI models:", error);
-        alert("Không thể tải AI Models. Vui lòng kiểm tra kết nối mạng.");
+        showToast("Không thể tải AI Models. Vui lòng kiểm tra kết nối mạng.");
         return false;
     }
 }
 
-async function openEnrollModal(type, targetId) {
+async function openEnrollModal(type, targetId, targetName) {
     if (!targetId || targetId === "undefined" || targetId === "") {
-        alert("Không xác định được ID Khách hàng! Hãy kiểm tra lại.");
+        showToast("Không xác định được ID Khách hàng! Hãy kiểm tra lại.");
         return;
     }
     
@@ -741,7 +922,7 @@ async function openEnrollModal(type, targetId) {
     const overlay = document.getElementById('enrollOverlay');
     const captureBtn = document.getElementById('captureBtn');
     
-    document.getElementById('enrollTargetName').innerText = type === 'CUSTOMER' ? "Đang đăng ký cho Người Đặt Phòng..." : "Đang đăng ký cho Người Đi Kèm...";
+    document.getElementById('enrollTargetName').innerText = type === 'CUSTOMER' ? "Đang đăng ký cho Người Đặt Phòng..." : "Đang đăng ký cho " + (targetName || "Người Đi Kèm...");
     
     modal.style.display = 'flex';
     overlay.style.display = 'flex';
@@ -766,7 +947,7 @@ async function openEnrollModal(type, targetId) {
     } catch (err) {
         console.error("Không có quyền truy cập camera: ", err);
         overlay.innerText = 'Lỗi truy cập Camera';
-        alert("Vui lòng cấp quyền truy cập Camera cho trình duyệt.");
+        showToast("Vui lòng cấp quyền truy cập Camera cho trình duyệt.");
     }
 }
 
@@ -798,13 +979,30 @@ async function captureFace() {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
         
         if (!detection) {
-            alert("Không tìm thấy khuôn mặt rõ ràng. Vui lòng nhìn thẳng vào camera và thử lại.");
+            showToast("Không tìm thấy khuôn mặt rõ ràng. Vui lòng nhìn thẳng vào camera và thử lại.");
             overlay.style.display = 'none';
             captureBtn.disabled = false;
             return;
         }
 
         const descriptor = Array.from(detection.descriptor);
+        
+        // Kiểm tra trùng lặp với các khuôn mặt đã chụp trong cùng session
+        const currentKey = currentEnrollType === 'CUSTOMER' ? 'CUSTOMER' : currentEnrollId;
+        for (const existingKey in pendingFaceEnrollments) {
+            if (existingKey === currentKey.toString()) continue; // Bỏ qua nếu chụp lại cho chính người này
+            
+            const existingVector = JSON.parse(pendingFaceEnrollments[existingKey].vector);
+            const distance = faceapi.euclideanDistance(descriptor, existingVector);
+            
+            // Threshold = 0.5 for faceapi
+            if (distance < 0.5) {
+                showToast("Khuôn mặt này đã được quét cho một người khác trong đoàn! Vui lòng quét khuôn mặt khác.");
+                overlay.style.display = 'none';
+                captureBtn.disabled = false;
+                return;
+            }
+        }
         
         // Capture face image
         const canvas = document.createElement('canvas');
@@ -850,7 +1048,7 @@ async function captureFace() {
         
     } catch (e) {
         console.error("Lỗi quét:", e);
-        alert("Đã xảy ra lỗi khi quét khuôn mặt.");
+        showToast("Đã xảy ra lỗi khi quét khuôn mặt.");
         overlay.style.display = 'none';
         captureBtn.disabled = false;
     }
@@ -892,3 +1090,225 @@ function updateFacePreviewUI(type, targetId, base64Image) {
     `;
 }
 
+
+function handleQrScan(val, target, inputEl) {
+    if (!val) return;
+    
+    // Format expected: 001205015836||Nguyễn Xuân Lưu|14102005|Nam|TDP Ninh Sơn, Chúc Sơn, Chương Mỹ, Hà Nội|31052021
+    const parts = val.split('|');
+    if (parts.length >= 7) {
+        const id = parts[0];
+        const name = parts[2];
+        const dobStr = parts[3]; // DDMMYYYY
+        
+        let dob = '';
+        if (dobStr && dobStr.length === 8) {
+            dob = `${dobStr.substring(4, 8)}-${dobStr.substring(2, 4)}-${dobStr.substring(0, 2)}`;
+        }
+        
+        if (target === 'main') {
+            document.getElementById('modalGuestName').value = name;
+            document.getElementById('modalGuestCccd').value = id;
+            showToast('Đã tự động điền thông tin chủ đoàn từ QR!', 'success');
+        } else if (target === 'dep') {
+            document.getElementById('depName').value = name;
+            document.getElementById('depId').value = id;
+            if (dob) {
+                document.getElementById('depDob').value = dob;
+            }
+            showToast('Đã tự động điền thông tin thành viên từ QR!', 'success');
+        } else if (target === 'auto-dep') {
+            // Check for duplicates
+            const mainCccd = document.getElementById('modalGuestCccd').value.trim();
+            if (mainCccd === id) {
+                showToast(`Thẻ CCCD của ${name} đã được quét cho trưởng đoàn!`, 'warning');
+                if (inputEl) inputEl.value = '';
+                return;
+            }
+            
+            // Check if already in dependents
+            const depCccdInputs = document.querySelectorAll('input[name$=".cccd"]');
+            let isDuplicate = false;
+            depCccdInputs.forEach(inp => {
+                if (inp.value === id) isDuplicate = true;
+            });
+            
+            if (isDuplicate) {
+                showToast(`Thành viên ${name} đã có trong danh sách!`, 'warning');
+                if (inputEl) inputEl.value = '';
+                return;
+            }
+
+            addDependentRow(name, id, dob, null, '');
+            showToast(`Đã tự động thêm thành viên: ${name}`, 'success');
+        }
+        
+        if (inputEl) {
+            inputEl.value = '';
+        }
+    }
+}
+
+let html5QrcodeScanner = null;
+let currentQrTarget = null;
+
+function openQrScannerModal(target) {
+    currentQrTarget = target;
+    document.getElementById('qrScannerModal').style.display = 'flex';
+    
+    // CCCD barcode is a square QR Code, use square box and limit format for speed
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", 
+            { 
+                fps: 20, 
+                qrbox: {width: 300, height: 300},
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+                useBarCodeDetectorIfSupported: true,
+                videoConstraints: {
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
+            }, 
+            /* verbose= */ false
+        );
+    }
+    
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+function closeQrScannerModal() {
+    document.getElementById('qrScannerModal').style.display = 'none';
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch(error => {
+            console.error('Failed to clear html5QrcodeScanner. ', error);
+        });
+    }
+    currentQrTarget = null;
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    console.log("Scan result: " + decodedText);
+    closeQrScannerModal();
+    let mockInput = { value: decodedText, tagName: 'MOCK' };
+    handleQrScan(decodedText, currentQrTarget, mockInput);
+}
+
+function onScanFailure(error) {
+}
+
+async function scanQrFromFile(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    
+    // Stop the camera scanner if it's currently running
+    if (html5QrcodeScanner) {
+        try {
+            await html5QrcodeScanner.clear();
+        } catch(e) {}
+    }
+    
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    try {
+        const decodedText = await html5QrCode.scanFile(file, true);
+        console.log("Scan result from file: " + decodedText);
+        
+        html5QrCode.clear().catch(e => {});
+        closeQrScannerModal();
+        
+        let mockInput = { value: decodedText, tagName: 'MOCK' };
+        handleQrScan(decodedText, currentQrTarget, mockInput);
+    } catch (err) {
+        console.error(err);
+        showToast('Không tìm thấy mã QR hợp lệ trong ảnh!', 'error');
+        html5QrCode.clear().catch(e => {});
+    }
+    input.value = '';
+}
+
+let remoteScanEventSource = null;
+let remoteScanQrCode = null;
+
+// Khởi tạo một Session duy nhất cho máy tính này khi tải trang
+const persistentSessionId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('session-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10));
+
+// Tự động kết nối SSE ngay từ đầu và duy trì mãi mãi
+function initPersistentSse() {
+    remoteScanEventSource = new EventSource('/api/v1/remote-scan/' + persistentSessionId + '/subscribe');
+    
+    remoteScanEventSource.addEventListener('SCAN_RESULT', function(event) {
+        console.log('Received from remote: ' + event.data);
+        
+        let target = currentQrTarget;
+        
+        // Auto-assign logic for smooth continuous scanning
+        if (!target) {
+            const mainNameInput = document.getElementById('modalGuestName');
+            const mainCccdInput = document.getElementById('modalGuestCccd');
+            if (!mainNameInput.value.trim() && !mainCccdInput.value.trim()) {
+                // If main guest is empty, assign to main
+                target = 'main';
+            } else {
+                // If main guest is filled, assign as auto-dependent
+                target = 'auto-dep';
+            }
+        }
+        
+        let mockInput = { value: event.data, tagName: 'MOCK' };
+        handleQrScan(event.data, target, mockInput);
+        
+        if (currentQrTarget) {
+            closeRemoteScanModal();
+        }
+    });
+    
+    remoteScanEventSource.onerror = function() {
+        console.log('SSE Connection lost, reconnecting...');
+        remoteScanEventSource.close();
+        setTimeout(initPersistentSse, 2000); // Auto reconnect
+    };
+}
+// Khởi chạy
+initPersistentSse();
+
+function openRemoteScanModal(target) {
+    currentQrTarget = target;
+    document.getElementById('remoteScanModal').style.display = 'flex';
+    
+    fetch('/api/v1/remote-scan/host-ip')
+        .then(res => res.json())
+        .then(data => {
+            let host = window.location.host;
+            let protocol = window.location.protocol;
+            
+            // If accessing via localhost, replace localhost with the actual IP
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                host = data.ip + (window.location.port ? ':' + window.location.port : '');
+                protocol = 'http:'; // Fallback to http for IP
+            }
+            
+            const scanUrl = protocol + '//' + host + '/receptionist/remote-scan?session=' + persistentSessionId;
+            
+            const qrContainer = document.getElementById('remote-qrcode-container');
+            if (!remoteScanQrCode) {
+                qrContainer.innerHTML = '';
+                remoteScanQrCode = new QRCode(qrContainer, {
+                    text: scanUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark : '#0f172a',
+                    colorLight : '#ffffff',
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } else {
+                remoteScanQrCode.clear();
+                remoteScanQrCode.makeCode(scanUrl);
+            }
+        })
+        .catch(err => console.error("Could not fetch host IP", err));
+}
+
+function closeRemoteScanModal() {
+    document.getElementById('remoteScanModal').style.display = 'none';
+    currentQrTarget = null;
+}
