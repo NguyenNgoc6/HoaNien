@@ -194,10 +194,10 @@
                                 <tr th:each="arr : ${arrivals}">
                                     <td style="cursor: pointer; color: #2563eb; font-weight: 500;"
                                         th:data-id="${arr.id}" th:data-name="${arr.guestName}"
-                                        th:data-phone="${arr.phone}" th:data-cccd="${arr.cccd}"
+                                        th:data-phone="${arr.phone}" th:data-cccd="${arr.cccd}" th:data-dob="${arr.birthDate}"
                                         th:data-room="${arr.roomSummary}" th:data-deps="|deps-arr-${arr.id}|"
                                         th:data-tours="|tours-arr-${arr.id}|" th:data-credit="${arr.creditLimit}"
-                                        onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))"
+                                        onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))"
                                         th:text="${arr.guestName}"></td>
                                     <td th:text="${arr.phone}"></td>
                                     <td th:text="${arr.checkInDate}"></td>
@@ -206,17 +206,18 @@
                                     <td>
                                         <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
                                             th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
-                                            th:data-cccd="${arr.cccd}" th:data-room="${arr.roomSummary}"
+                                            th:data-cccd="${arr.cccd}" th:data-dob="${arr.birthDate}" th:data-room="${arr.roomSummary}"
                                             th:data-deps="|deps-arr-${arr.id}|"
                                             th:data-tours="|tours-arr-${arr.id}|"
                                             th:data-credit="${arr.creditLimit}"
-                                            onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))">Assign
+                                            onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'))">Assign
                                             & Check-in</button>
                                         <!-- Hidden data for dependents -->
                                         <div th:id="'deps-arr-' + ${arr.id}" style="display:none;">
                                             <ul>
                                                 <li th:each="dep : ${arr.dependents}" th:data-name="${dep.fullName}"
-                                                    th:data-dob="${dep.dateOfBirth}" th:data-id="${dep.dependentId}">
+                                                    th:data-dob="${dep.dateOfBirth}" th:data-id="${dep.dependentId}"
+                                                    th:data-cccd="${dep.cccd}" th:data-gender="${dep.gender}">
                                                 </li>
                                             </ul>
                                         </div>
@@ -340,8 +341,16 @@
                                 onfocus="this.style.borderColor='#94a3b8'" onblur="this.style.borderColor='#cbd5e1'"
                                 value="">
                         </div>
+                        <div>
+                            <label
+                                style="display: block; color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Date of Birth</label>
+                            <input type="date" id="modalGuestDob" name="dob"
+                                style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 500; font-family: inherit; color: #1e293b; outline: none; transition: border-color 0.2s;"
+                                onfocus="this.style.borderColor='#94a3b8'" onblur="this.style.borderColor='#cbd5e1'"
+                                value="">
+                        </div>
                         <div
-                            style="display: flex; flex-direction: column; justify-content: center; background: #f8fafc; padding: 10px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            style="display: flex; flex-direction: column; justify-content: center; background: #f8fafc; padding: 10px 12px; border-radius: 6px; border: 1px solid #e2e8f0; grid-column: span 2;">
                             <label
                                 style="color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Booked
                                 Room Types</label>
@@ -457,8 +466,8 @@
                             <i class="fa-solid fa-user-plus" style="color: #64748b;"></i> Add Group Member
                         </h5>
                         <div
-                            style="display: grid; grid-template-columns: 2fr 2fr 2fr 2fr auto auto; gap: 12px; align-items: end;">
-                            <div style="grid-column: span 6; margin-bottom: 4px;">
+                            style="display: grid; grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1.5fr auto auto; gap: 12px; align-items: end;">
+                            <div style="grid-column: span 7; margin-bottom: 4px;">
                                 <label style="display: block; color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
                                     <i class="fa-solid fa-qrcode" style="color: #6366f1; margin-right: 4px;"></i> Quét QR CCCD
                                 </label>
@@ -496,6 +505,16 @@
                                 <select id="depRoom"
                                     style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; outline: none; cursor: pointer;">
                                     <option value=""> Select Room </option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Gender</label>
+                                <select id="depGender"
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; outline: none; cursor: pointer;">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
                                 </select>
                             </div>
                             <div>

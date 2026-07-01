@@ -507,7 +507,29 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
 
         String encryptedCccd = EncryptionUtils.encrypt(req.getCccd());
         return customerRepository.findByCccdPassportEncrypted(encryptedCccd)
-                .map(existing -> new CustomerLookupResult(existing, false))
+                .map(existing -> {
+                    boolean updated = false;
+                    if (req.getDateOfBirth() != null && !req.getDateOfBirth().equals(existing.getBirthDate())) {
+                        existing.setBirthDate(req.getDateOfBirth());
+                        updated = true;
+                    }
+                    if (req.getFullName() != null && !req.getFullName().isBlank() && !req.getFullName().equals(existing.getFullName())) {
+                        existing.setFullName(req.getFullName());
+                        updated = true;
+                    }
+                    if (req.getGender() != null && !req.getGender().isBlank() && !req.getGender().equals(existing.getGender())) {
+                        existing.setGender(req.getGender());
+                        updated = true;
+                    }
+                    if (req.getPhone() != null && !req.getPhone().isBlank() && !req.getPhone().equals(existing.getPhone())) {
+                        existing.setPhone(req.getPhone());
+                        updated = true;
+                    }
+                    if (updated) {
+                        customerRepository.save(existing);
+                    }
+                    return new CustomerLookupResult(existing, false);
+                })
                 .orElseGet(() -> new CustomerLookupResult(createNewCustomer(req, encryptedCccd), true));
     }
 
@@ -536,6 +558,7 @@ public class WalkInCheckInServiceImpl implements WalkInCheckInService {
         customer.setPhone(req.getPhone() != null ? req.getPhone() : "");
         customer.setEmail(req.getEmail() != null ? req.getEmail() : "guest_" + UUID.randomUUID() + "@kawai.auto");
         customer.setGender(req.getGender() != null ? req.getGender() : "Unknown");
+        customer.setBirthDate(req.getDateOfBirth());
         customer.setCccdPassportEncrypted(encryptedCccd);
         customer.setMembershipTier(membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
         return customerRepository.save(customer);

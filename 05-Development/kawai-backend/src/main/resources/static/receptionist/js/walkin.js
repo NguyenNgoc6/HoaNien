@@ -528,6 +528,7 @@ function submitCheckIn() {
         cccd: cccd,
         email: email,
         dateOfBirth: dob,
+        gender: document.getElementById('guestGender').value,
         accompaniedGuests: walkInDependents,
         depositAmount: parseFloat(document.getElementById('depositAmount').value) || 0,
         paymentMethod: document.getElementById('paymentMethod').value || 'Tiền mặt'
@@ -639,7 +640,7 @@ function submitCheckIn() {
 // Hàm đóng modal mặc định (khi onclick trong HTML chưa bị override bởi submitCheckIn)
 function defaultModalClose() {
     document.getElementById('successModal').style.display = 'none';
-    window.location.href = "/receptionist/dashboard";
+    window.location.href = "/receptionist/in-house";
 }
 
 // Hàm trung gian — trích ra từ showPaymentStep() và submitCheckIn() để tránh lặp code
@@ -778,7 +779,7 @@ function toggleWalkInDependents() {
 // --- AUTO SAVE FORM DATA TO PREVENT DATA LOSS ON TAB SWITCH / RELOAD ---
 document.addEventListener('DOMContentLoaded', () => {
     const pageKey = 'kawai_autosave_' + window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_');
-    
+
     // Khôi phục dữ liệu
     const savedDataStr = localStorage.getItem(pageKey);
     if (savedDataStr) {
@@ -790,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
                 // Bỏ qua trường tìm kiếm nếu có
                 if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
-                
+
                 if (savedData[key] !== undefined) {
                     if (el.type === 'checkbox' || el.type === 'radio') {
                         el.checked = savedData[key];
@@ -800,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             console.log('Khôi phục dữ liệu đang nhập dở thành công.');
-        } catch(e) {
+        } catch (e) {
             console.error('Lỗi khi khôi phục dữ liệu autosave:', e);
         }
     }
@@ -812,7 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const key = el.id || el.name;
             if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
             if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
-            
+
             const currentData = JSON.parse(localStorage.getItem(pageKey) || '{}');
             if (el.type === 'checkbox' || el.type === 'radio') {
                 currentData[key] = el.checked;
@@ -832,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gắn đè hàm fetch để xóa dữ liệu khi fetch api checkin thành công
     const originalFetch = window.fetch;
-    window.fetch = async function() {
+    window.fetch = async function () {
         const response = await originalFetch.apply(this, arguments);
         const url = arguments[0];
         if (response.ok && typeof url === 'string' && (url.includes('/walkin/checkin') || url.includes('/checkin/complete'))) {

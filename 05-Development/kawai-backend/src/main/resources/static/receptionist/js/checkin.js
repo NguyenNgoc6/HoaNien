@@ -158,7 +158,13 @@ function assignRoom() {
 let checkinMasterCreditLimit = 5000000;
 
 function handleCheckinCreditInput(input, index) {
-    let val = parseFloat(input.value) || 0;
+    let val = parseFloat(input.value);
+    if (isNaN(val) || val < 0) {
+        val = 0;
+        if (input.value !== '') {
+            input.value = ''; // keep it empty if user clears it or enters negative
+        }
+    }
     assignedRooms[index].allocatedCreditLimit = val;
     let hiddens = document.querySelectorAll('input[name="allocatedCreditLimits"]');
     if (hiddens && hiddens[index]) {
@@ -241,7 +247,7 @@ function renderAssignedRooms() {
         limitInput.className = 'form-control';
         limitInput.style.cssText = 'width: 120px; padding: 4px 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px;';
         limitInput.placeholder = 'Credit Limit';
-        limitInput.value = a.allocatedCreditLimit || 0;
+        limitInput.value = (a.allocatedCreditLimit && a.allocatedCreditLimit > 0) ? a.allocatedCreditLimit : '';
         limitInput.min = "0";
         limitInput.oninput = function () { handleCheckinCreditInput(this, index); };
 
@@ -288,8 +294,8 @@ function renderAssignedRooms() {
 }
 
 
-function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit) {
-    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit });
+function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit) {
+    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit });
     const modalEl = document.getElementById('checkinModal');
     if (!modalEl) {
         console.error('[openCheckinModal] CRITICAL: #checkinModal không tìm thấy trong DOM!');
@@ -319,9 +325,11 @@ function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDi
                 const name = li.getAttribute('data-name');
                 const dob = li.getAttribute('data-dob');
                 const dependentId = li.getAttribute('data-id');
+                const cccd = li.getAttribute('data-cccd');
+                const gender = li.getAttribute('data-gender');
                 // Hiển thị tất cả các khách, bao gồm cả những khách chưa có tên (Stub từ Đặt phòng online)
                 const displayName = name ? name : '(Chưa cập nhật)';
-                addDependentRow(displayName, '', dob || '', dependentId);
+                addDependentRow(displayName, cccd || '', dob || '', gender || 'Nam', dependentId);
             });
         }
     }
@@ -331,9 +339,10 @@ function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDi
     }
 
     document.getElementById('modalGuestName').value = guestName || '';
-    document.getElementById('modalGuestPhone').value = phone || '';
-    document.getElementById('modalGuestCccd').value = cccd || '';
-    document.getElementById('modalRoom').innerText = roomSummary || '';
+    if (document.getElementById('modalGuestPhone')) document.getElementById('modalGuestPhone').value = phone || '';
+    if (document.getElementById('modalGuestCccd')) document.getElementById('modalGuestCccd').value = (cccd && cccd !== 'null') ? cccd : '';
+    if (document.getElementById('modalGuestDob')) document.getElementById('modalGuestDob').value = (dob && dob !== 'null') ? dob : '';
+    if (document.getElementById('modalRoom')) document.getElementById('modalRoom').innerText = (roomSummary && roomSummary !== 'null') ? roomSummary : '';
 
     // reset assignment state
     assignedRooms.length = 0;
@@ -399,17 +408,20 @@ function calculateAge(dobStr) {
 let depIndexCounter = 0;
 
 function addDependent() {
-    const name = document.getElementById('depName').value;
-    const id = document.getElementById('depId').value;
+    const name = document.getElementById('depName').value.trim();
+    const cccd = document.getElementById('depId').value.trim();
+    const depId = document.getElementById('depId').getAttribute('data-dependent-id');
     const dob = document.getElementById('depDob').value;
+    const gender = document.getElementById('depGender').value;
     const roomId = document.getElementById('depRoom').value;
     const isPrimary = document.getElementById('depIsPrimary').checked;
+
     if (!name || !dob) {
         showToast('Please fill Name and Date of Birth!');
         return;
     }
     const age = calculateAge(dob);
-    if (age >= 14 && !id) {
+    if (age >= 14 && !cccd) {
         showToast('Người đi kèm từ 14 tuổi trở lên bắt buộc phải cung cấp CCCD/Passport!');
         return;
     }
@@ -454,15 +466,15 @@ function addDependent() {
     }
 
     // Kiểm tra CCCD/Passport nếu có nhập
-    if (id) {
-        const isNumericOnly = /^\d+$/.test(id);
+    if (cccd) {
+        const isNumericOnly = /^\d+$/.test(cccd);
         if (isNumericOnly) {
-            if (id.length !== 12) {
+            if (cccd.length !== 12) {
                 showToast('Số CCCD không hợp lệ! Nếu chỉ nhập số, CCCD phải gồm đúng 12 chữ số.');
                 return;
             }
         } else {
-            const isValidPassport = /^[A-Za-z0-9]{6,15}$/.test(id);
+            const isValidPassport = /^[A-Za-z0-9]{6,15}$/.test(cccd);
             if (!isValidPassport) {
                 showToast('Số Passport không hợp lệ! Passport phải từ 6-15 ký tự chữ và số.');
                 return;
@@ -470,19 +482,18 @@ function addDependent() {
         }
     }
 
-    const depId = document.getElementById('depId').getAttribute('data-dependent-id');
-    const parsedDepId = (depId && depId !== 'null' && depId !== '') ? depId : null;
     const editingRow = document.querySelector('.editing-row');
     if (editingRow) {
         editingRow.remove();
     }
 
-    addDependentRow(name, id, dob, parsedDepId, roomId, isPrimary);
+    addDependentRow(name, cccd, dob, gender, depId, roomId, isPrimary);
 
     document.getElementById('depName').value = '';
     document.getElementById('depId').value = '';
     document.getElementById('depId').removeAttribute('data-dependent-id');
     document.getElementById('depDob').value = '';
+    document.getElementById('depGender').value = 'Nam';
     document.getElementById('depRoom').value = '';
     document.getElementById('depIsPrimary').checked = false;
     
@@ -492,7 +503,7 @@ function addDependent() {
     }
 }
 
-function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumber, isPrimary = false) {
+function addDependentRow(name, cccd, dob, gender, dependentId, assignedPhysicalRoomNumber, isPrimary = false) {
     const tbody = document.getElementById('dependentsList');
     // remove empty message if present
     if (tbody.children.length === 1 && tbody.children[0].innerText.includes('No group members')) {
@@ -539,11 +550,11 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
         <td style="padding: 12px 16px; font-size: 14px; color: #475569;">
             ${dob}
             <input type="hidden" name="dependents[${depIndexCounter}].dateOfBirth" value="${dob}" />
-            <input type="hidden" name="dependents[${depIndexCounter}].gender" value="Other" />
+            <input type="hidden" name="dependents[${depIndexCounter}].gender" value="${gender}" />
         </td>
         <td style="padding: 12px 16px;">
             <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg}, '${name}')"><i class="fa-solid fa-camera"></i></button>
-            <button type="button" class="btn btn-outline btn-sm" style="color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Edit" onclick="editDependentRow(this, '${name}', '${cccd}', '${dob}', ${depIdArg}, ${roomIdArg}, ${isPrimary})"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="btn btn-outline btn-sm" style="color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Edit" onclick="editDependentRow(this, '${name}', '${cccd}', '${dob}', '${gender}', ${depIdArg}, ${roomIdArg}, ${isPrimary})"><i class="fa-solid fa-pen"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="Delete" onclick="this.closest('tr').remove()"><i class="fa-solid fa-trash"></i></button>
         </td>
     `;
@@ -552,7 +563,7 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
     depIndexCounter++;
 }
 
-function editDependentRow(btn, name, cccd, dob, depId, roomId, isPrimary) {
+function editDependentRow(btn, name, cccd, dob, gender, depId, roomId, isPrimary) {
     // Phục hồi dòng đang edit dang dở (nếu khách click sửa liên tục mà quên bấm Add)
     const editingRow = document.querySelector('.editing-row');
     if (editingRow) {
@@ -568,6 +579,7 @@ function editDependentRow(btn, name, cccd, dob, depId, roomId, isPrimary) {
         document.getElementById('depId').removeAttribute('data-dependent-id');
     }
     document.getElementById('depDob').value = dob !== 'null' ? dob : '';
+    document.getElementById('depGender').value = gender !== 'null' ? gender : 'Nam';
     document.getElementById('depRoom').value = roomId !== 'null' ? roomId : '';
     document.getElementById('depIsPrimary').checked = isPrimary;
 
@@ -1204,7 +1216,7 @@ function handleQrScan(val, target, inputEl) {
                 return;
             }
 
-            addDependentRow(name, id, dob, null, '');
+            addDependentRow(name, id, dob, 'Nam', null, '');
             showToast(`Đã tự động thêm thành viên: ${name}`, 'success');
         }
         
