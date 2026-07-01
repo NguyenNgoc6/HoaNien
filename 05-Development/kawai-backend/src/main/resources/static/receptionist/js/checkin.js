@@ -1,11 +1,9 @@
-
-
 function showToast(msg, type = 'error') {
     let container = document.getElementById('custom-toast-container');
     if (!container) {
         container = document.createElement('div');
         container.id = 'custom-toast-container';
-        
+
         const style = document.createElement('style');
         style.innerHTML = `
             #custom-toast-container {
@@ -75,13 +73,13 @@ function showToast(msg, type = 'error') {
         document.head.appendChild(style);
         document.body.appendChild(container);
     }
-    
+
     const toast = document.createElement('div');
     toast.className = `custom-toast ${type}`;
-    
+
     const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
     const title = type === 'error' ? 'LỖI' : 'THÀNH CÔNG';
-    
+
     toast.innerHTML = `
         <i class="fa-solid ${icon} custom-toast-icon"></i>
         <div class="custom-toast-content">
@@ -89,14 +87,14 @@ function showToast(msg, type = 'error') {
             <p class="custom-toast-message">${msg}</p>
         </div>
     `;
-    
+
     container.appendChild(toast);
-    
+
     // trigger animation
     requestAnimationFrame(() => {
         setTimeout(() => toast.classList.add('show'), 10);
     });
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
@@ -113,19 +111,124 @@ function updateAvailableRooms() {
     if (!selectedType) return;
 
     const inventoryForType = roomInventory[selectedType] || [];
-    const available = inventoryForType.filter(r => !assignedRooms.some(a => a.room === r));
+    const available = inventoryForType.filter(r => !assignedRooms.some(a => a.room === r.number));
 
     if (available.length === 0) {
-        return; // Giữ lại dropdown mặc định "-- Select Room --" mà không hiện lỗi
+        return;
     }
 
     available.forEach(r => {
         const opt = document.createElement('option');
-        opt.value = r;
-        opt.innerText = r;
+        opt.value = r.number;
+        opt.innerText = r.number + (r.status === 'Vacant_Dirty' ? ' (Chưa dọn)' : '');
+        opt.setAttribute('data-status', r.status);
         roomSelect.appendChild(opt);
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const roomSelect = document.getElementById('physicalRoomSelect');
+    if (roomSelect) {
+        roomSelect.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (!opt) return;
+            const status = opt.getAttribute('data-status');
+            const gridContainer = this.closest('div[style*="display: grid"]');
+            if (!gridContainer) return;
+
+            const existingWarning = document.getElementById('dirtyRoomWarningInline');
+            if (existingWarning) existingWarning.remove();
+
+            const assignBtn = gridContainer.querySelector('button[onclick="assignRoom()"]');
+
+            if (status === 'Vacant_Dirty') {
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'dirtyRoomWarningInline';
+                warningDiv.style.gridColumn = '1 / -1';
+                warningDiv.style.marginTop = '12px';
+                warningDiv.style.padding = '12px 16px';
+                warningDiv.style.background = '#fef2f2';
+                warningDiv.style.border = '1px solid #fca5a5';
+                warningDiv.style.borderRadius = '6px';
+                warningDiv.style.display = 'flex';
+                warningDiv.style.flexDirection = 'column';
+                warningDiv.style.gap = '8px';
+                warningDiv.innerHTML = `
+                    <div style="color: #dc2626; font-size: 13px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <strong>Cảnh báo:</strong> Phòng <b>${this.value}</b> chưa dọn dẹp. Vui lòng chọn hành động:
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" style="background:#3b82f6; color:white; border:none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;" onclick="escalateDirtyRoom('${this.value}', false)">
+                            <i class="fa-solid fa-broom"></i> Chỉ yêu cầu dọn (Chưa gán)
+                        </button>
+                        <button type="button" style="background:#ef4444; color:white; border:none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;" onclick="escalateDirtyRoom('${this.value}', true)">
+                            <i class="fa-solid fa-bolt"></i> Yêu cầu dọn & Phân phòng (Treo)
+                        </button>
+                    </div>
+                `;
+                gridContainer.appendChild(warningDiv);
+
+                if (assignBtn) {
+                    assignBtn.disabled = true;
+                    assignBtn.style.opacity = '0.5';
+                    assignBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                if (assignBtn) {
+                    assignBtn.disabled = false;
+                    assignBtn.style.opacity = '1';
+                    assignBtn.style.cursor = 'pointer';
+                }
+            }
+        });
+    }
+});
+
+window.escalateDirtyRoom = function (roomNumber, assignAfter) {
+    fetch(`/receptionist/operations/escalate-room?roomNumber=${roomNumber}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]') ? document.querySelector('meta[name="_csrf"]').getAttribute('content') : ''
+        }
+    }).then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Đã gửi yêu cầu dọn khẩn cấp cho buồng phòng.', 'success');
+
+                const typeSelect = document.getElementById('bookTypeSelect');
+                const roomSelect = document.getElementById('physicalRoomSelect');
+
+                // Always remove the warning banner when a choice is made
+                const existingWarning = document.getElementById('dirtyRoomWarningInline');
+                if (existingWarning) existingWarning.remove();
+
+                // Always re-enable the assign button
+                const gridContainer = roomSelect.closest('div[style*="display: grid"]');
+                if (gridContainer) {
+                    const assignBtn = gridContainer.querySelector('button[onclick="assignRoom()"]');
+                    if (assignBtn) {
+                        assignBtn.disabled = false;
+                        assignBtn.style.opacity = '1';
+                        assignBtn.style.cursor = 'pointer';
+                    }
+                }
+
+                if (assignAfter) {
+                    const selectedType = typeSelect.value;
+                    const selectedRoomOpt = roomSelect.options[roomSelect.selectedIndex];
+                    proceedAssignRoom(typeSelect, selectedType, roomNumber, selectedRoomOpt);
+                } else {
+                    // If they only requested cleaning, reset the dropdown to force them to select a different room
+                    roomSelect.value = "";
+                }
+            } else {
+                showToast('Lỗi khi gửi yêu cầu: ' + data.message, 'error');
+            }
+        }).catch(err => {
+            console.error(err);
+            showToast('Lỗi kết nối khi gửi yêu cầu khẩn cấp.', 'error');
+        });
+};
 
 function assignRoom() {
     const typeSelect = document.getElementById('bookTypeSelect');
@@ -134,6 +237,12 @@ function assignRoom() {
     const selectedRoom = roomSelect.value;
 
     if (!selectedType || !selectedRoom) return;
+
+    const selectedRoomOpt = roomSelect.options[roomSelect.selectedIndex];
+    proceedAssignRoom(typeSelect, selectedType, selectedRoom, selectedRoomOpt);
+}
+
+function proceedAssignRoom(typeSelect, selectedType, selectedRoom, selectedRoomOpt) {
 
     const selectedOption = typeSelect.options[typeSelect.selectedIndex];
     let pending = parseInt(selectedOption.getAttribute('data-pending'));
@@ -156,6 +265,9 @@ function assignRoom() {
 }
 
 let checkinMasterCreditLimit = 5000000;
+let expectedTotalGuests = 0;
+let expectedTotalAdults = 0;
+let expectedTotalChildren = 0;
 
 function handleCheckinCreditInput(input, index) {
     let val = parseFloat(input.value);
@@ -292,16 +404,14 @@ function renderAssignedRooms() {
 
     updateCheckinCreditLimitDisplay();
 }
-
-
 function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit) {
     console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit });
+
     const modalEl = document.getElementById('checkinModal');
     if (!modalEl) {
         console.error('[openCheckinModal] CRITICAL: #checkinModal không tìm thấy trong DOM!');
         return;
     }
-
     const currentBookingId = document.getElementById('submitBookingId').value;
     if (currentBookingId === bookingId.toString()) {
         // Resume from previous state if clicking the same check-in button
@@ -310,6 +420,16 @@ function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, d
     }
 
     checkinMasterCreditLimit = creditLimit ? parseFloat(creditLimit) : 5000000;
+    expectedTotalGuests = expectedGuests ? parseInt(expectedGuests) : 1;
+    expectedTotalAdults = expectedAdults ? parseInt(expectedAdults) : 1;
+    expectedTotalChildren = expectedChildren ? parseInt(expectedChildren) : 0;
+
+    const capacitySpan = document.getElementById('modalExpectedCapacity');
+    if (capacitySpan) {
+        capacitySpan.innerHTML = `<i class="fa-solid fa-users" style="margin-right: 4px;"></i> Tiêu chuẩn: ${expectedTotalAdults} Người Lớn, ${expectedTotalChildren} Trẻ Em`;
+        capacitySpan.style.display = 'inline-block';
+    }
+
     updateCheckinCreditLimitDisplay();
     // Gán bookingId vào form submit hidden input
     document.getElementById('submitBookingId').value = bookingId;
@@ -420,12 +540,43 @@ function addDependent() {
         showToast('Please fill Name and Date of Birth!');
         return;
     }
+
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    const isUpdate = btnAddDependent && btnAddDependent.innerHTML.includes('Update');
+
+    if (!isUpdate) {
+        let actualAdultCount = 1; // Main Guest counts as 1 Adult
+        let actualChildCount = 0;
+
+        document.querySelectorAll('#dependentsList tr').forEach(tr => {
+            if (tr.querySelector('input')) {
+                const trDob = tr.getAttribute('data-dob');
+                const trAge = calculateAge(trDob);
+                if (trAge >= 12) actualAdultCount++;
+                else actualChildCount++;
+            }
+        });
+
+        const newAge = calculateAge(dob);
+        if (newAge >= 12) {
+            if (actualAdultCount >= expectedTotalAdults) {
+                showToast(`Số lượng Người Lớn đã đạt giới hạn (${expectedTotalAdults}) của đơn phòng!`, 'warning');
+                return;
+            }
+        } else {
+            if (actualChildCount >= expectedTotalChildren) {
+                showToast(`Số lượng Trẻ Em đã đạt giới hạn (${expectedTotalChildren}) của đơn phòng!`, 'warning');
+                return;
+            }
+        }
+    }
+
     const age = calculateAge(dob);
     if (age >= 14 && !cccd) {
         showToast('Người đi kèm từ 14 tuổi trở lên bắt buộc phải cung cấp CCCD/Passport!');
         return;
     }
-    
+
     if (!roomId) {
         showToast('Please assign the guest to a room!');
         return;
@@ -496,8 +647,7 @@ function addDependent() {
     document.getElementById('depGender').value = 'Nam';
     document.getElementById('depRoom').value = '';
     document.getElementById('depIsPrimary').checked = false;
-    
-    const btnAddDependent = document.getElementById('btnAddDependent');
+
     if (btnAddDependent) {
         btnAddDependent.innerHTML = '<i class="fa-solid fa-plus"></i> Add';
     }
@@ -511,6 +661,7 @@ function addDependentRow(name, cccd, dob, gender, dependentId, assignedPhysicalR
     }
 
     const tr = document.createElement('tr');
+    tr.setAttribute('data-dob', dob || '');
     tr.style.borderBottom = '1px solid #f1f5f9';
     tr.style.transition = 'background-color 0.2s ease';
     tr.onmouseover = () => tr.style.backgroundColor = '#f8fafc';
@@ -522,7 +673,7 @@ function addDependentRow(name, cccd, dob, gender, dependentId, assignedPhysicalR
 
     let effectiveDepId = dependentId || ('NEW_' + depIndexCounter);
     let depIdArg = `'${effectiveDepId}'`;
-    
+
     // Thêm div ẩn chứa ID mapping để submit form dễ tìm
     let hiddenMapping = `<input type="hidden" class="faceid-mapping-id" data-target-id="${effectiveDepId}" data-index="${depIndexCounter}" />`;
 
@@ -592,7 +743,7 @@ function editDependentRow(btn, name, cccd, dob, gender, depId, roomId, isPrimary
     const tr = btn.closest('tr');
     tr.classList.add('editing-row');
     tr.style.display = 'none';
-    
+
     const btnAddDependent = document.getElementById('btnAddDependent');
     if (btnAddDependent) {
         btnAddDependent.innerHTML = '<i class="fa-solid fa-check"></i> Update';
@@ -614,6 +765,30 @@ function toggleDependentsList() {
 const _checkinForm = document.getElementById('checkinFormWrapper');
 if (_checkinForm) {
     _checkinForm.addEventListener('submit', async function (e) {
+
+        let actualAdultCount = 1; // Main Guest
+        let actualChildCount = 0;
+
+        document.querySelectorAll('#dependentsList tr').forEach(tr => {
+            if (tr.querySelector('input')) {
+                const trDob = tr.getAttribute('data-dob');
+                const trAge = calculateAge(trDob);
+                if (trAge >= 12) actualAdultCount++;
+                else actualChildCount++;
+            }
+        });
+
+        if (actualAdultCount > expectedTotalAdults) {
+            e.preventDefault();
+            showToast(`Không thể hoàn tất! Tổng số Người Lớn (${actualAdultCount}) vượt quá tiêu chuẩn (${expectedTotalAdults}). Vui lòng xóa bớt hoặc điều chỉnh hạng phòng.`, 'error');
+            return;
+        }
+        if (actualChildCount > expectedTotalChildren) {
+            e.preventDefault();
+            showToast(`Không thể hoàn tất! Tổng số Trẻ Em (${actualChildCount}) vượt quá tiêu chuẩn (${expectedTotalChildren}). Vui lòng xóa bớt hoặc điều chỉnh hạng phòng.`, 'error');
+            return;
+        }
+
         if (assignedRooms.length === 0) {
             e.preventDefault();
             showToast('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
@@ -693,6 +868,30 @@ if (_checkinForm) {
             return;
         }
 
+        // Validate that all dependents have been assigned a physical room
+        const dependentRows = document.querySelectorAll('#dependentsList tr:not(.editing-row)');
+        let unassignedDependentCount = 0;
+        let missingDependentName = null;
+        dependentRows.forEach(row => {
+            if (row.style.display !== 'none') {
+                const roomInput = row.querySelector('input[name$=".assignedPhysicalRoomNumber"]');
+                // N?u l thnh vin dnh sch bnh thu?ng c th? roomInput (hidden field)
+                if (roomInput !== null && (!roomInput.value || roomInput.value.trim() === '')) {
+                    unassignedDependentCount++;
+                    if (!missingDependentName) {
+                        const nameTd = row.querySelector('td:first-child');
+                        if (nameTd) missingDependentName = nameTd.innerText.trim().split('\n')[0];
+                    }
+                }
+            }
+        });
+
+        if (unassignedDependentCount > 0) {
+            e.preventDefault();
+            showToast(`Vui lòng chọn phòng cho khách "${missingDependentName || 'ẩn danh'}" và các khách chưa được phân phòng khác!`, 'error');
+            return;
+        }
+
         if (currentUnallocatedTours.length > 0) {
             const allocationMode = document.querySelector('input[name="tourAllocationMode"]:checked');
             if (allocationMode && allocationMode.value === 'PER_TOUR') {
@@ -705,17 +904,17 @@ if (_checkinForm) {
                 }
             }
         }
-        
+
         // Prevent default submission to process FaceIDs first
         e.preventDefault();
-        
+
         // Show loading state
         const submitBtn = _checkinForm.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý FaceID...';
         }
-        
+
         // Inject pending FaceIDs into the form
         for (const key in pendingFaceEnrollments) {
             const data = pendingFaceEnrollments[key];
@@ -725,7 +924,7 @@ if (_checkinForm) {
                 input1.name = 'faceVectorData';
                 input1.value = data.vector;
                 _checkinForm.appendChild(input1);
-                
+
                 const input2 = document.createElement('input');
                 input2.type = 'hidden';
                 input2.name = 'faceImageBase64';
@@ -741,7 +940,7 @@ if (_checkinForm) {
                     input1.name = `dependents[${idx}].faceVectorData`;
                     input1.value = data.vector;
                     _checkinForm.appendChild(input1);
-                    
+
                     const input2 = document.createElement('input');
                     input2.type = 'hidden';
                     input2.name = `dependents[${idx}].faceImageBase64`;
@@ -750,7 +949,7 @@ if (_checkinForm) {
                 }
             }
         }
-        
+
         // Sau khi upload xong, submit form gốc
         _checkinForm.submit();
     });
@@ -829,7 +1028,7 @@ function renderPerTourAllocationRows() {
 
         const labelInfo = document.createElement('div');
         labelInfo.style.cssText = 'display:flex;flex-direction:column;gap:4px;min-width:0;';
-        
+
         const labelName = document.createElement('span');
         labelName.style.cssText = 'font-size:14px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
         labelName.innerText = tour.tourName;
@@ -837,7 +1036,7 @@ function renderPerTourAllocationRows() {
         const labelDate = document.createElement('span');
         labelDate.style.cssText = 'font-size:12px;color:#64748b;font-weight:500;';
         labelDate.innerText = tour.date + ' • ' + tour.time;
-        
+
         labelInfo.appendChild(labelName);
         labelInfo.appendChild(labelDate);
 
@@ -915,9 +1114,9 @@ async function openEnrollModal(type, targetId, targetName) {
         showToast("Không xác định được ID Khách hàng! Hãy kiểm tra lại.");
         return;
     }
-    
+
     currentEnrollType = type;
-    
+
     // Convert bookingId to customerId via UI element if it's CUSTOMER type
     // Since check-in uses bookingId, we will use bookingId and the backend can resolve customer or we just pass customerId from the backend.
     // In our case, the button passes bookingId, but backend needs customerId. We should have passed customer_id.
@@ -927,15 +1126,15 @@ async function openEnrollModal(type, targetId, targetName) {
     // To keep it simple, we assume targetId is customerId for CUSTOMER, and dependentId for DEPENDENT.
     // Actually in check-in.html `openEnrollModal('CUSTOMER', document.getElementById('submitBookingId').value)`
     // This is wrong, it sends bookingId. Let's fix that. I'll send it as `bookingId` for CUSTOMER and backend will find customer from booking.
-    
-    currentEnrollId = targetId; 
-    
+
+    currentEnrollId = targetId;
+
     const modal = document.getElementById('enrollFaceModal');
     const overlay = document.getElementById('enrollOverlay');
     const captureBtn = document.getElementById('captureBtn');
-    
+
     document.getElementById('enrollTargetName').innerText = type === 'CUSTOMER' ? "Đang đăng ký cho Người Đặt Phòng..." : "Đang đăng ký cho " + (targetName || "Người Đi Kèm...");
-    
+
     modal.style.display = 'flex';
     overlay.style.display = 'flex';
     overlay.innerText = 'Đang tải AI Model...';
@@ -951,7 +1150,7 @@ async function openEnrollModal(type, targetId, targetName) {
         videoStream = await navigator.mediaDevices.getUserMedia({ video: {} });
         const video = document.getElementById('enrollVideo');
         video.srcObject = videoStream;
-        
+
         video.onloadedmetadata = () => {
             overlay.style.display = 'none';
             captureBtn.disabled = false;
@@ -975,21 +1174,21 @@ async function captureFace() {
     const video = document.getElementById('enrollVideo');
     const overlay = document.getElementById('enrollOverlay');
     const captureBtn = document.getElementById('captureBtn');
-    
+
     captureBtn.disabled = true;
     overlay.style.display = 'flex';
-    
+
     // Countdown 3 seconds
     for (let i = 3; i > 0; i--) {
         overlay.innerHTML = `<span style="font-size: 24px; font-weight: bold;">Chụp trong: ${i}s<br><span style="font-size: 14px; font-weight: normal; color: #cbd5e1;">(Vui lòng mở mắt to và nhìn thẳng)</span></span>`;
         await new Promise(r => setTimeout(r, 1000));
     }
-    
+
     overlay.innerText = 'Đang trích xuất khuôn mặt...';
 
     try {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-        
+
         if (!detection) {
             showToast("Không tìm thấy khuôn mặt rõ ràng. Vui lòng nhìn thẳng vào camera và thử lại.");
             overlay.style.display = 'none';
@@ -998,15 +1197,15 @@ async function captureFace() {
         }
 
         const descriptor = Array.from(detection.descriptor);
-        
+
         // Kiểm tra trùng lặp với các khuôn mặt đã chụp trong cùng session
         const currentKey = currentEnrollType === 'CUSTOMER' ? 'CUSTOMER' : currentEnrollId;
         for (const existingKey in pendingFaceEnrollments) {
             if (existingKey === currentKey.toString()) continue; // Bỏ qua nếu chụp lại cho chính người này
-            
+
             const existingVector = JSON.parse(pendingFaceEnrollments[existingKey].vector);
             const distance = faceapi.euclideanDistance(descriptor, existingVector);
-            
+
             // Threshold = 0.5 for faceapi
             if (distance < 0.5) {
                 showToast("Khuôn mặt này đã được quét cho một người khác trong đoàn! Vui lòng quét khuôn mặt khác.");
@@ -1015,17 +1214,17 @@ async function captureFace() {
                 return;
             }
         }
-        
+
         // Capture face image
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
+
         const box = detection.detection.box;
         const faceCanvas = document.createElement('canvas');
-        
+
         // Add padding around the face for better visibility
         const padX = box.width * 0.2;
         const padY = box.height * 0.2;
@@ -1033,15 +1232,15 @@ async function captureFace() {
         const startY = Math.max(0, box.y - padY);
         const drawWidth = Math.min(canvas.width - startX, box.width + padX * 2);
         const drawHeight = Math.min(canvas.height - startY, box.height + padY * 2);
-        
+
         faceCanvas.width = drawWidth;
         faceCanvas.height = drawHeight;
         faceCanvas.getContext('2d').drawImage(
-            canvas, 
-            startX, startY, drawWidth, drawHeight, 
+            canvas,
+            startX, startY, drawWidth, drawHeight,
             0, 0, drawWidth, drawHeight
         );
-        
+
         const base64Image = faceCanvas.toDataURL('image/jpeg', 0.85);
 
         // Lưu tạm vào bộ nhớ JS
@@ -1052,12 +1251,12 @@ async function captureFace() {
             vector: JSON.stringify(descriptor),
             image: base64Image
         };
-        
+
         // Hiển thị ảnh xem trước trên giao diện checkin
         updateFacePreviewUI(currentEnrollType, currentEnrollId, base64Image);
-        
+
         closeEnrollModal();
-        
+
     } catch (e) {
         console.error("Lỗi quét:", e);
         showToast("Đã xảy ra lỗi khi quét khuôn mặt.");
@@ -1087,14 +1286,14 @@ function updateFacePreviewUI(type, targetId, base64Image) {
 
     const keyId = type === 'CUSTOMER' ? 'CUSTOMER' : targetId;
     let card = document.getElementById('face-card-' + keyId);
-    
+
     if (!card) {
         card = document.createElement('div');
         card.id = 'face-card-' + keyId;
         card.style.cssText = 'display: flex; flex-direction: column; align-items: center; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; gap: 8px; position: relative;';
         gallery.appendChild(card);
     }
-    
+
     card.innerHTML = `
         <img src="${base64Image}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <span style="font-size: 13px; font-weight: 600; color: #334155; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${guestName}</span>
@@ -1105,7 +1304,7 @@ function updateFacePreviewUI(type, targetId, base64Image) {
 // --- AUTO SAVE FORM DATA TO PREVENT DATA LOSS ON TAB SWITCH / RELOAD ---
 document.addEventListener('DOMContentLoaded', () => {
     const pageKey = 'kawai_autosave_' + window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_');
-    
+
     // Khôi phục dữ liệu
     const savedDataStr = localStorage.getItem(pageKey);
     if (savedDataStr) {
@@ -1117,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
                 // Bỏ qua trường tìm kiếm nếu có
                 if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
-                
+
                 if (savedData[key] !== undefined) {
                     if (el.type === 'checkbox' || el.type === 'radio') {
                         el.checked = savedData[key];
@@ -1127,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             console.log('Khôi phục dữ liệu đang nhập dở thành công.');
-        } catch(e) {
+        } catch (e) {
             console.error('Lỗi khi khôi phục dữ liệu autosave:', e);
         }
     }
@@ -1139,7 +1338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const key = el.id || el.name;
             if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
             if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
-            
+
             const currentData = JSON.parse(localStorage.getItem(pageKey) || '{}');
             if (el.type === 'checkbox' || el.type === 'radio') {
                 currentData[key] = el.checked;
@@ -1159,7 +1358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gắn đè hàm fetch để xóa dữ liệu khi fetch api checkin thành công
     const originalFetch = window.fetch;
-    window.fetch = async function() {
+    window.fetch = async function () {
         const response = await originalFetch.apply(this, arguments);
         const url = arguments[0];
         if (response.ok && typeof url === 'string' && (url.includes('/walkin/checkin') || url.includes('/checkin/complete'))) {
@@ -1170,19 +1369,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 function handleQrScan(val, target, inputEl) {
     if (!val) return;
-    
+
     // Format expected: 001205015836||Nguyễn Xuân Lưu|14102005|Nam|TDP Ninh Sơn, Chúc Sơn, Chương Mỹ, Hà Nội|31052021
     const parts = val.split('|');
     if (parts.length >= 7) {
         const id = parts[0];
         const name = parts[2];
         const dobStr = parts[3]; // DDMMYYYY
-        
+
         let dob = '';
         if (dobStr && dobStr.length === 8) {
             dob = `${dobStr.substring(4, 8)}-${dobStr.substring(2, 4)}-${dobStr.substring(0, 2)}`;
         }
-        
+
+        // GLOBAL DUPLICATE CHECK
+        const mainCccd = document.getElementById('modalGuestCccd').value.trim();
+        let isDuplicateDep = false;
+        document.querySelectorAll('input[name$=".cccd"]').forEach(inp => {
+            if (inp.value === id) isDuplicateDep = true;
+        });
+
+        // 1. If scanned ID belongs to Main Guest, block if target is not 'main' (prevent auto-assigning or dep-assigning the main guest)
+        if (mainCccd === id && target !== 'main') {
+            showToast(`Thẻ CCCD của ${name} đã được quét cho trưởng đoàn!`, 'warning');
+            if (inputEl) inputEl.value = '';
+            return;
+        }
+
+        // 2. If scanned ID belongs to a Dependent, block unconditionally
+        if (isDuplicateDep) {
+            showToast(`Thành viên ${name} đã có trong danh sách!`, 'warning');
+            if (inputEl) inputEl.value = '';
+            return;
+        }
+
         if (target === 'main') {
             document.getElementById('modalGuestName').value = name;
             document.getElementById('modalGuestCccd').value = id;
@@ -1195,31 +1415,38 @@ function handleQrScan(val, target, inputEl) {
             }
             showToast('Đã tự động điền thông tin thành viên từ QR!', 'success');
         } else if (target === 'auto-dep') {
-            // Check for duplicates
-            const mainCccd = document.getElementById('modalGuestCccd').value.trim();
-            if (mainCccd === id) {
-                showToast(`Thẻ CCCD của ${name} đã được quét cho trưởng đoàn!`, 'warning');
-                if (inputEl) inputEl.value = '';
-                return;
-            }
-            
-            // Check if already in dependents
-            const depCccdInputs = document.querySelectorAll('input[name$=".cccd"]');
-            let isDuplicate = false;
-            depCccdInputs.forEach(inp => {
-                if (inp.value === id) isDuplicate = true;
+            let actualAdultCount = 1; // Main Guest
+            let actualChildCount = 0;
+
+            document.querySelectorAll('#dependentsList tr').forEach(tr => {
+                if (tr.querySelector('input')) {
+                    const trDob = tr.getAttribute('data-dob');
+                    const trAge = calculateAge(trDob);
+                    if (trAge >= 12) actualAdultCount++;
+                    else actualChildCount++;
+                }
             });
-            
-            if (isDuplicate) {
-                showToast(`Thành viên ${name} đã có trong danh sách!`, 'warning');
-                if (inputEl) inputEl.value = '';
-                return;
+
+            const newAge = calculateAge(dob);
+            if (newAge >= 12) {
+                if (actualAdultCount >= expectedTotalAdults) {
+                    showToast(`Số lượng Người Lớn đã đạt giới hạn (${expectedTotalAdults}) của đơn phòng!`, 'warning');
+                    if (inputEl) inputEl.value = '';
+                    return;
+                }
+            } else {
+                if (actualChildCount >= expectedTotalChildren) {
+                    showToast(`Số lượng Trẻ Em đã đạt giới hạn (${expectedTotalChildren}) của đơn phòng!`, 'warning');
+                    if (inputEl) inputEl.value = '';
+                    return;
+                }
             }
+
 
             addDependentRow(name, id, dob, 'Nam', null, '');
             showToast(`Đã tự động thêm thành viên: ${name}`, 'success');
         }
-        
+
         if (inputEl) {
             inputEl.value = '';
         }
@@ -1232,25 +1459,25 @@ let currentQrTarget = null;
 function openQrScannerModal(target) {
     currentQrTarget = target;
     document.getElementById('qrScannerModal').style.display = 'flex';
-    
+
     // CCCD barcode is a square QR Code, use square box and limit format for speed
     if (!html5QrcodeScanner) {
         html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader", 
-            { 
-                fps: 20, 
-                qrbox: {width: 300, height: 300},
-                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+            "qr-reader",
+            {
+                fps: 20,
+                qrbox: { width: 300, height: 300 },
+                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 useBarCodeDetectorIfSupported: true,
                 videoConstraints: {
                     width: { ideal: 1920 },
                     height: { ideal: 1080 }
                 }
-            }, 
+            },
             /* verbose= */ false
         );
     }
-    
+
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 }
 
@@ -1277,28 +1504,28 @@ function onScanFailure(error) {
 async function scanQrFromFile(input) {
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
-    
+
     // Stop the camera scanner if it's currently running
     if (html5QrcodeScanner) {
         try {
             await html5QrcodeScanner.clear();
-        } catch(e) {}
+        } catch (e) { }
     }
-    
+
     const html5QrCode = new Html5Qrcode("qr-reader");
     try {
         const decodedText = await html5QrCode.scanFile(file, true);
         console.log("Scan result from file: " + decodedText);
-        
-        html5QrCode.clear().catch(e => {});
+
+        html5QrCode.clear().catch(e => { });
         closeQrScannerModal();
-        
+
         let mockInput = { value: decodedText, tagName: 'MOCK' };
         handleQrScan(decodedText, currentQrTarget, mockInput);
     } catch (err) {
         console.error(err);
         showToast('Không tìm thấy mã QR hợp lệ trong ảnh!', 'error');
-        html5QrCode.clear().catch(e => {});
+        html5QrCode.clear().catch(e => { });
     }
     input.value = '';
 }
@@ -1312,12 +1539,12 @@ const persistentSessionId = (window.crypto && crypto.randomUUID) ? crypto.random
 // Tự động kết nối SSE ngay từ đầu và duy trì mãi mãi
 function initPersistentSse() {
     remoteScanEventSource = new EventSource('/api/v1/remote-scan/' + persistentSessionId + '/subscribe');
-    
-    remoteScanEventSource.addEventListener('SCAN_RESULT', function(event) {
+
+    remoteScanEventSource.addEventListener('SCAN_RESULT', function (event) {
         console.log('Received from remote: ' + event.data);
-        
+
         let target = currentQrTarget;
-        
+
         // Auto-assign logic for smooth continuous scanning
         if (!target) {
             const mainNameInput = document.getElementById('modalGuestName');
@@ -1330,16 +1557,16 @@ function initPersistentSse() {
                 target = 'auto-dep';
             }
         }
-        
+
         let mockInput = { value: event.data, tagName: 'MOCK' };
         handleQrScan(event.data, target, mockInput);
-        
+
         if (currentQrTarget) {
             closeRemoteScanModal();
         }
     });
-    
-    remoteScanEventSource.onerror = function() {
+
+    remoteScanEventSource.onerror = function () {
         console.log('SSE Connection lost, reconnecting...');
         remoteScanEventSource.close();
         setTimeout(initPersistentSse, 2000); // Auto reconnect
@@ -1351,21 +1578,21 @@ initPersistentSse();
 function openRemoteScanModal(target) {
     currentQrTarget = target;
     document.getElementById('remoteScanModal').style.display = 'flex';
-    
+
     fetch('/api/v1/remote-scan/host-ip')
         .then(res => res.json())
         .then(data => {
             let host = window.location.host;
             let protocol = window.location.protocol;
-            
+
             // If accessing via localhost, replace localhost with the actual IP
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                 host = data.ip + (window.location.port ? ':' + window.location.port : '');
                 protocol = 'http:'; // Fallback to http for IP
             }
-            
+
             const scanUrl = protocol + '//' + host + '/receptionist/remote-scan?session=' + persistentSessionId;
-            
+
             const qrContainer = document.getElementById('remote-qrcode-container');
             if (!remoteScanQrCode) {
                 qrContainer.innerHTML = '';
@@ -1373,9 +1600,9 @@ function openRemoteScanModal(target) {
                     text: scanUrl,
                     width: 200,
                     height: 200,
-                    colorDark : '#0f172a',
-                    colorLight : '#ffffff',
-                    correctLevel : QRCode.CorrectLevel.H
+                    colorDark: '#0f172a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
                 });
             } else {
                 remoteScanQrCode.clear();

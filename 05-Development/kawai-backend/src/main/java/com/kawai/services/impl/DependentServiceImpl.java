@@ -207,7 +207,8 @@ public class DependentServiceImpl implements DependentService {
      * đây.
      */
     private String encryptCccd(String cccd) {
-        if (cccd == null || cccd.isBlank()) return null;
+        if (cccd == null || cccd.isBlank())
+            return null;
         try {
             return com.kawai.utils.EncryptionUtils.encrypt(cccd);
         } catch (Exception e) {
@@ -437,7 +438,6 @@ public class DependentServiceImpl implements DependentService {
             dto.setDependentId(guest.getDependent().getId());
             dto.setFullName(guest.getDependent().getDependentName());
             dto.setDateOfBirth(guest.getDependent().getBirthDate());
-            
             String cccdEnc = guest.getDependent().getCccdPassportEncrypted();
             if (cccdEnc != null && !cccdEnc.isBlank()) {
                 try {
@@ -446,6 +446,7 @@ public class DependentServiceImpl implements DependentService {
                     dto.setCccd(cccdEnc);
                 }
             }
+
         }
         dto.setIsPrimaryContact(guest.getIsPrimaryContact());
         if (detail.getRoom() != null) {

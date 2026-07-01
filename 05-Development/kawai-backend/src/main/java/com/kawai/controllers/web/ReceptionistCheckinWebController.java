@@ -23,7 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  */
 @Controller
 @RequestMapping("/receptionist/checkin")
-@PreAuthorize("hasAnyAuthority('OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN')")
 public class ReceptionistCheckinWebController {
 
     private static final Logger log = LoggerFactory.getLogger(ReceptionistCheckinWebController.class);
@@ -92,11 +92,9 @@ public class ReceptionistCheckinWebController {
                         customer.setCccdPassportEncrypted(form.getCccd().trim());
                     }
                 }
-
                 if (form.getDob() != null) {
                     customer.setBirthDate(form.getDob());
                 }
-
                 // Save customer FaceID if provided in form
                 if (form.getFaceVectorData() != null && !form.getFaceVectorData().isEmpty()) {
                     customer.setFaceVectorData(form.getFaceVectorData());
@@ -126,7 +124,8 @@ public class ReceptionistCheckinWebController {
                 customerRepo.save(customer);
             }
 
-            // Chuyển toàn bộ logic xử lý phòng, dependent, hạn mức, TourBooking sang Service
+            // Chuyển toàn bộ logic xử lý phòng, dependent, hạn mức, TourBooking sang
+            // Service
             checkinService.processBulkCheckin(form, customer, booking);
 
             // Thành công: Gửi flash message và redirect
@@ -176,7 +175,8 @@ public class ReceptionistCheckinWebController {
 
             return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
                     "success", true,
-                    "message", "Nâng cấp thành công Khách hàng: " + customer.getFullName() + roomInfo + ". Tài khoản: " + username + " - Mật khẩu: " + password));
+                    "message", "Nâng cấp thành công Khách hàng: " + customer.getFullName() + roomInfo + ". Tài khoản: "
+                            + username + " - Mật khẩu: " + password));
         } catch (Exception e) {
             log.error("Error upgrading dependent", e);
             return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of(

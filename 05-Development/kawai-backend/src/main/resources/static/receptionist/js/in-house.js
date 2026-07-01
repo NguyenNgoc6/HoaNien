@@ -5,12 +5,12 @@ function switchTab(tabId) {
     if (tabId === 'inhouse') {
         document.getElementById('tabContentInHouse').style.display = 'block';
         document.getElementById('tabContentCancelled').style.display = 'none';
-        
+
         document.getElementById('btnTabInHouse').className = 'btn btn-primary';
         document.getElementById('btnTabInHouse').style.background = '';
         document.getElementById('btnTabInHouse').style.color = '';
         document.getElementById('btnTabInHouse').style.border = '';
-        
+
         document.getElementById('btnTabCancelled').className = 'btn btn-outline';
         document.getElementById('btnTabCancelled').style.background = 'white';
         document.getElementById('btnTabCancelled').style.color = '#475569';
@@ -18,12 +18,12 @@ function switchTab(tabId) {
     } else {
         document.getElementById('tabContentInHouse').style.display = 'none';
         document.getElementById('tabContentCancelled').style.display = 'block';
-        
+
         document.getElementById('btnTabCancelled').className = 'btn btn-primary';
         document.getElementById('btnTabCancelled').style.background = '#3b82f6';
         document.getElementById('btnTabCancelled').style.color = 'white';
         document.getElementById('btnTabCancelled').style.border = 'none';
-        
+
         document.getElementById('btnTabInHouse').className = 'btn btn-outline';
         document.getElementById('btnTabInHouse').style.background = 'white';
         document.getElementById('btnTabInHouse').style.color = '#475569';
@@ -35,6 +35,7 @@ function switchTab(tabId) {
 // IN-HOUSE MODAL — Xem chi tiết đơn lưu trú
 // ============================================================
 function openInHouseModal(bookingId) {
+
     document.getElementById('modalInHouseDependents').innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin text-primary" style="font-size: 24px;"></i></div>';
     document.getElementById('inHouseModal').style.display = 'flex';
 
@@ -47,11 +48,10 @@ function openInHouseModal(bookingId) {
             let html = '<ul style="list-style: none; padding: 0; margin: 0; color: #475569; font-size: 15px;">';
             if (data.guests && data.guests.length > 0) {
                 let hasDependent = false;
-                
                 // Filter only primary contacts and exclude Main Guest
                 const primaryContacts = data.guests.filter(dep => dep.isPrimaryContact && dep.type !== 'Main Guest');
-                
                 primaryContacts.forEach((dep, idx) => {
+
                     hasDependent = true;
                     let borderBottom = idx < primaryContacts.length - 1 ? 'border-bottom: 1px dashed #cbd5e1;' : '';
                     html += `<li style="padding: 16px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; ${borderBottom}">`;
@@ -65,7 +65,7 @@ function openInHouseModal(bookingId) {
                     html += `  </div>`;
 
                     let subInfo = [];
-                    if (dep.dob)  subInfo.push(`Sinh: <span style="color: #334155; font-weight: 500;">${dep.dob}</span>`);
+                    if (dep.dob) subInfo.push(`Sinh: <span style="color: #334155; font-weight: 500;">${dep.dob}</span>`);
                     if (dep.cccd) subInfo.push(`CCCD/Passport: <span style="color: #334155; font-weight: 500;">${dep.cccd}</span>`);
                     if (subInfo.length > 0) {
                         html += `<div style="font-size: 14px; color: #64748b; display: flex; gap: 8px; align-items: center;"><span style="color: #cbd5e1;">|</span>${subInfo.join(' <span style="color: #cbd5e1;">|</span> ')}</div>`;
@@ -76,6 +76,7 @@ function openInHouseModal(bookingId) {
                     html += ` <span style="background-color: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đứng đầu phòng ${dep.roomNumber || ''}</span>`;
                     if (dep.dependentId != null) {
                         html += ` <button onclick="upgradeDependent(${dep.dependentId}, this)" style="background-color: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">Nâng cấp Customer</button>`;
+
                     }
                     html += `</div>`;
                     html += `</li>`;
@@ -184,7 +185,7 @@ function transferStep1Next() {
     fetch('/receptionist/in-house/categories-available?excludeDetailId=' + detailId)
         .then(res => res.json())
         .then(cats => {
-                let html = '';
+            let html = '';
             cats.forEach(cat => {
                 const hasVacant = cat.vacantCount > 0;
                 const diff = cat.priceDiff;
@@ -285,15 +286,15 @@ function transferStep1Next() {
 function transferSelectCategory(categoryName, priceDiff) {
     _transferSelectedCategoryName = categoryName;
 
-    const priceInfo  = document.getElementById('transferPriceInfo');
-    const roomSel    = document.getElementById('transferNewRoomSelect');
+    const priceInfo = document.getElementById('transferPriceInfo');
+    const roomSel = document.getElementById('transferNewRoomSelect');
     const detailInput = document.getElementById('transferDetailIdInput');
     detailInput.value = _transferSelectedDetailId;
 
     let diffText = '';
-    if (priceDiff > 0)      diffText = `Phụ phí nâng hạng: <b>+${Number(priceDiff).toLocaleString('vi-VN')}₫/đêm</b> (tính trên số đêm còn lại)`;
+    if (priceDiff > 0) diffText = `Phụ phí nâng hạng: <b>+${Number(priceDiff).toLocaleString('vi-VN')}₫/đêm</b> (tính trên số đêm còn lại)`;
     else if (priceDiff < 0) diffText = `Giảm phí: <b>${Number(priceDiff).toLocaleString('vi-VN')}₫/đêm</b>`;
-    else                    diffText = `Cùng mức giá, không phát sinh phụ phí.`;
+    else diffText = `Cùng mức giá, không phát sinh phụ phí.`;
     priceInfo.innerHTML = `Hạng đã chọn: <b>${categoryName}</b> &nbsp;|&nbsp; ${diffText}`;
 
     roomSel.innerHTML = '<option value="">-- Đang tải phòng... --</option>';
@@ -354,28 +355,28 @@ function submitTransferRoom(event) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
     })
-    .then(async res => {
-        let data = {};
-        try {
-            data = await res.json();
-        } catch (e) {
-            throw new Error('Lỗi phản hồi từ server (không phải JSON)');
-        }
+        .then(async res => {
+            let data = {};
+            try {
+                data = await res.json();
+            } catch (e) {
+                throw new Error('Lỗi phản hồi từ server (không phải JSON)');
+            }
 
-        if (res.ok && data.success) {
-            closeTransferRoomModal();
-            showToast(data.message || '✔ Đổi phòng thành công!', 'success');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            throw new Error(data.message || 'Lỗi xử lý đổi phòng');
-        }
-    })
-    .catch(err => {
-        console.error('Transfer room error:', err);
-        showToast('✘ Đổi phòng thất bại: ' + (err.message || 'Lỗi hệ thống'), 'error');
-        submitBtn.disabled = false;
-        submitBtn.innerText = originalText;
-    });
+            if (res.ok && data.success) {
+                closeTransferRoomModal();
+                showToast(data.message || '✔ Đổi phòng thành công!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                throw new Error(data.message || 'Lỗi xử lý đổi phòng');
+            }
+        })
+        .catch(err => {
+            console.error('Transfer room error:', err);
+            showToast('✘ Đổi phòng thất bại: ' + (err.message || 'Lỗi hệ thống'), 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        });
 }
 
 function showToast(message, type = 'success') {
