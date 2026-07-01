@@ -267,6 +267,9 @@ function proceedAssignRoom(typeSelect, selectedType, selectedRoom, selectedRoomO
 }
 
 let checkinMasterCreditLimit = 5000000;
+let expectedTotalGuests = 0;
+let expectedTotalAdults = 0;
+let expectedTotalChildren = 0;
 
 function handleCheckinCreditInput(input, index) {
     let val = parseFloat(input.value) || 0;
@@ -399,8 +402,8 @@ function renderAssignedRooms() {
 }
 
 
-function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit) {
-    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit });
+function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren) {
+    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren });
     const modalEl = document.getElementById('checkinModal');
     if (!modalEl) {
         console.error('[openCheckinModal] CRITICAL: #checkinModal không tìm thấy trong DOM!');
@@ -415,6 +418,16 @@ function openCheckinModal(bookingId, guestName, phone, cccd, roomSummary, depsDi
     }
 
     checkinMasterCreditLimit = creditLimit ? parseFloat(creditLimit) : 5000000;
+    expectedTotalGuests = expectedGuests ? parseInt(expectedGuests) : 1;
+    expectedTotalAdults = expectedAdults ? parseInt(expectedAdults) : 1;
+    expectedTotalChildren = expectedChildren ? parseInt(expectedChildren) : 0;
+    
+    const capacitySpan = document.getElementById('modalExpectedCapacity');
+    if (capacitySpan) {
+        capacitySpan.innerHTML = `<i class="fa-solid fa-users" style="margin-right: 4px;"></i> Tiêu chuẩn: ${expectedTotalAdults} Người Lớn, ${expectedTotalChildren} Trẻ Em`;
+        capacitySpan.style.display = 'inline-block';
+    }
+    
     updateCheckinCreditLimitDisplay();
     // Gán bookingId vào form submit hidden input
     document.getElementById('submitBookingId').value = bookingId;
@@ -519,6 +532,37 @@ function addDependent() {
         showToast('Please fill Name and Date of Birth!');
         return;
     }
+
+    const btnAddDependent = document.getElementById('btnAddDependent');
+    const isUpdate = btnAddDependent && btnAddDependent.innerHTML.includes('Update');
+
+    if (!isUpdate) {
+        let actualAdultCount = 1; // Main Guest counts as 1 Adult
+        let actualChildCount = 0;
+        
+        document.querySelectorAll('#dependentsList tr').forEach(tr => {
+            if (tr.querySelector('input')) {
+                const trDob = tr.getAttribute('data-dob');
+                const trAge = calculateAge(trDob);
+                if (trAge >= 12) actualAdultCount++;
+                else actualChildCount++;
+            }
+        });
+
+        const newAge = calculateAge(dob);
+        if (newAge >= 12) {
+            if (actualAdultCount >= expectedTotalAdults) {
+                showToast(`Số lượng Người Lớn đã đạt giới hạn (${expectedTotalAdults}) của đơn phòng!`, 'warning');
+                return;
+            }
+        } else {
+            if (actualChildCount >= expectedTotalChildren) {
+                showToast(`Số lượng Trẻ Em đã đạt giới hạn (${expectedTotalChildren}) của đơn phòng!`, 'warning');
+                return;
+            }
+        }
+    }
+
     const age = calculateAge(dob);
     if (age >= 14 && !id) {
         showToast('Người đi kèm từ 14 tuổi trở lên bắt buộc phải cung cấp CCCD/Passport!');
@@ -597,7 +641,6 @@ function addDependent() {
     document.getElementById('depRoom').value = '';
     document.getElementById('depIsPrimary').checked = false;
     
-    const btnAddDependent = document.getElementById('btnAddDependent');
     if (btnAddDependent) {
         btnAddDependent.innerHTML = '<i class="fa-solid fa-plus"></i> Add';
     }
@@ -611,6 +654,7 @@ function addDependentRow(name, cccd, dob, dependentId, assignedPhysicalRoomNumbe
     }
 
     const tr = document.createElement('tr');
+    tr.setAttribute('data-dob', dob || '');
     tr.style.borderBottom = '1px solid #f1f5f9';
     tr.style.transition = 'background-color 0.2s ease';
     tr.onmouseover = () => tr.style.backgroundColor = '#f8fafc';
@@ -713,6 +757,30 @@ function toggleDependentsList() {
 const _checkinForm = document.getElementById('checkinFormWrapper');
 if (_checkinForm) {
     _checkinForm.addEventListener('submit', async function (e) {
+        
+        let actualAdultCount = 1; // Main Guest
+        let actualChildCount = 0;
+        
+        document.querySelectorAll('#dependentsList tr').forEach(tr => {
+            if (tr.querySelector('input')) {
+                const trDob = tr.getAttribute('data-dob');
+                const trAge = calculateAge(trDob);
+                if (trAge >= 12) actualAdultCount++;
+                else actualChildCount++;
+            }
+        });
+
+        if (actualAdultCount > expectedTotalAdults) {
+            e.preventDefault();
+            showToast(`Không thể hoàn tất! Tổng số Người Lớn (${actualAdultCount}) vượt quá tiêu chuẩn (${expectedTotalAdults}). Vui lòng xóa bớt hoặc điều chỉnh hạng phòng.`, 'error');
+            return;
+        }
+        if (actualChildCount > expectedTotalChildren) {
+            e.preventDefault();
+            showToast(`Không thể hoàn tất! Tổng số Trẻ Em (${actualChildCount}) vượt quá tiêu chuẩn (${expectedTotalChildren}). Vui lòng xóa bớt hoặc điều chỉnh hạng phòng.`, 'error');
+            return;
+        }
+
         if (assignedRooms.length === 0) {
             e.preventDefault();
             showToast('Vui long phan it nhat 1 phong truoc khi hoan tat Check-in!');
@@ -1217,6 +1285,27 @@ function handleQrScan(val, target, inputEl) {
             dob = `${dobStr.substring(4, 8)}-${dobStr.substring(2, 4)}-${dobStr.substring(0, 2)}`;
         }
         
+        // GLOBAL DUPLICATE CHECK
+        const mainCccd = document.getElementById('modalGuestCccd').value.trim();
+        let isDuplicateDep = false;
+        document.querySelectorAll('input[name$=".cccd"]').forEach(inp => {
+            if (inp.value === id) isDuplicateDep = true;
+        });
+
+        // 1. If scanned ID belongs to Main Guest, block if target is not 'main' (prevent auto-assigning or dep-assigning the main guest)
+        if (mainCccd === id && target !== 'main') {
+            showToast(`Thẻ CCCD của ${name} đã được quét cho trưởng đoàn!`, 'warning');
+            if (inputEl) inputEl.value = '';
+            return;
+        }
+
+        // 2. If scanned ID belongs to a Dependent, block unconditionally
+        if (isDuplicateDep) {
+            showToast(`Thành viên ${name} đã có trong danh sách!`, 'warning');
+            if (inputEl) inputEl.value = '';
+            return;
+        }
+
         if (target === 'main') {
             document.getElementById('modalGuestName').value = name;
             document.getElementById('modalGuestCccd').value = id;
@@ -1229,29 +1318,41 @@ function handleQrScan(val, target, inputEl) {
             }
             showToast('Đã tự động điền thông tin thành viên từ QR!', 'success');
         } else if (target === 'auto-dep') {
-            // Check for duplicates
-            const mainCccd = document.getElementById('modalGuestCccd').value.trim();
-            if (mainCccd === id) {
-                showToast(`Thẻ CCCD của ${name} đã được quét cho trưởng đoàn!`, 'warning');
-                if (inputEl) inputEl.value = '';
-                return;
-            }
+            let actualAdultCount = 1; // Main Guest
+            let actualChildCount = 0;
             
-            // Check if already in dependents
-            const depCccdInputs = document.querySelectorAll('input[name$=".cccd"]');
-            let isDuplicate = false;
-            depCccdInputs.forEach(inp => {
-                if (inp.value === id) isDuplicate = true;
+            document.querySelectorAll('#dependentsList tr').forEach(tr => {
+                if (tr.querySelector('input')) {
+                    const trDob = tr.getAttribute('data-dob');
+                    const trAge = calculateAge(trDob);
+                    if (trAge >= 12) actualAdultCount++;
+                    else actualChildCount++;
+                }
             });
-            
-            if (isDuplicate) {
-                showToast(`Thành viên ${name} đã có trong danh sách!`, 'warning');
-                if (inputEl) inputEl.value = '';
-                return;
+
+            const newAge = calculateAge(dob);
+            if (newAge >= 12) {
+                if (actualAdultCount >= expectedTotalAdults) {
+                    showToast(`Số lượng Người Lớn đã đạt giới hạn (${expectedTotalAdults}) của đơn phòng!`, 'warning');
+                    if (inputEl) inputEl.value = '';
+                    return;
+                }
+            } else {
+                if (actualChildCount >= expectedTotalChildren) {
+                    showToast(`Số lượng Trẻ Em đã đạt giới hạn (${expectedTotalChildren}) của đơn phòng!`, 'warning');
+                    if (inputEl) inputEl.value = '';
+                    return;
+                }
             }
 
-            addDependentRow(name, id, dob, null, '');
-            showToast(`Đã tự động thêm thành viên: ${name}`, 'success');
+            if (assignedRooms.length === 0) {
+                showToast('Vui lòng phân phòng trước khi quét tự động người đi kèm!', 'warning');
+                if (inputEl) inputEl.value = '';
+                return;
+            }
+            const autoRoom = assignedRooms[0].room;
+            addDependentRow(name, id, dob, null, autoRoom);
+            showToast(`Đã tự động thêm thành viên: ${name} vào phòng ${autoRoom}`, 'success');
         }
         
         if (inputEl) {
