@@ -298,10 +298,7 @@ public class ReceptionistController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("vacantRooms", roomRepository.findVacant().stream()
-                .filter(r -> "Vacant_Clean".equalsIgnoreCase(r.getRoomStatus())
-                        || "Available".equalsIgnoreCase(r.getRoomStatus()))
-                .collect(Collectors.toList()));
+        model.addAttribute("vacantRooms", roomRepository.findVacant());
         if (dateFilter != null) {
             model.addAttribute("dateFilter", dateFilter.toString());
         }
@@ -380,7 +377,7 @@ public class ReceptionistController {
                     } else {
                         continue;
                     }
-                    
+
                     String cccd = "";
                     if (cccdEnc != null && !cccdEnc.isBlank()) {
                         try {
@@ -502,12 +499,40 @@ public class ReceptionistController {
             for (RoomBookingDetail d : details) {
                 guestCount += roomGuestRepository.findByRoomBookingDetailId(d.getId()).size();
             }
+            List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
             if (guestCount == 0) {
-                List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
                 guestCount = 1 + deps.size();
             }
             String bookingScale = roomCount + " Phòng, " + guestCount + " Khách";
             map.put("bookingScale", bookingScale);
+
+            // Add missing fields for the new UI
+            map.put("phone", b.getCustomer() != null ? b.getCustomer().getPhone() : "");
+
+            // Generate room summary
+            Map<String, Long> categoryCount = details.stream()
+                    .filter(d -> d.getCategory() != null)
+                    .collect(Collectors.groupingBy(d -> d.getCategory().getCategoryName(), Collectors.counting()));
+            String roomSummary = categoryCount.entrySet().stream()
+                    .map(entry -> entry.getValue() + "x " + entry.getKey())
+                    .collect(Collectors.joining(", "));
+            if (roomSummary.isEmpty())
+                roomSummary = "N/A";
+            map.put("roomSummary", roomSummary);
+
+            // Active details for room transfer
+            map.put("activeDetails", details.stream()
+                    .filter(d -> d.getRoom() != null && "CHECKED_IN".equalsIgnoreCase(d.getDetailStatus()))
+                    .map(d -> {
+                        Map<String, Object> detailMap = new HashMap<>();
+                        detailMap.put("id", d.getId());
+                        detailMap.put("label", d.getRoom().getRoomNumber() + " - "
+                                + (d.getCategory() != null ? d.getCategory().getCategoryName() : "Room"));
+                        return detailMap;
+                    })
+                    .collect(Collectors.toList()));
+
+            map.put("dependents", deps);
 
             pagedInHouse.add(map);
         }
@@ -517,6 +542,10 @@ public class ReceptionistController {
         model.addAttribute("currentInHousePage", inHousePage);
         model.addAttribute("totalInHousePages", totalInHousePages);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("vacantRooms", roomRepository.findVacant().stream()
+                .filter(r -> "Vacant_Clean".equalsIgnoreCase(r.getRoomStatus())
+                        || "Available".equalsIgnoreCase(r.getRoomStatus()))
+                .collect(Collectors.toList()));
 
         // Fetch cancelled bookings
         List<Booking> allCancelledRaw = bookingRepository.findCancelledBookings();
@@ -631,7 +660,6 @@ public class ReceptionistController {
         }
         return "redirect:/receptionist/operations";
     }
-
 
     @org.springframework.web.bind.annotation.PostMapping("/check-in/cancel-no-show/{id}")
     public String cancelNoShow(@org.springframework.web.bind.annotation.PathVariable Long id,
