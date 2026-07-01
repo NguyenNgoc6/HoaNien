@@ -1,22 +1,25 @@
 package com.kawai.controllers.api;
 
 import com.kawai.models.Review;
+import com.kawai.repositories.EmployeeRepository;
 import com.kawai.services.interfaces.ReviewService;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import lombok.AllArgsConstructor;
 
 /**
  * REST Controller cho tính năng Đánh giá dịch vụ (UC22, UC23).
  */
 @RestController
 @RequestMapping("/api/v1/reviews")
+@AllArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class ReviewRestController {
 
     private final ReviewService reviewService;
-
-    public ReviewRestController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
+    private final EmployeeRepository employeeRepository;
 
     /**
      * API Khách hàng gửi đánh giá Tour.
@@ -54,14 +57,35 @@ public class ReviewRestController {
     @PutMapping("/{reviewId}/moderate")
     public ResponseEntity<?> moderateReview(
             @PathVariable Long reviewId,
-            @RequestParam Long adminId,
+            @RequestParam(required = false) Long adminId,
             @RequestParam String newStatus,
-            @RequestParam String reason) {
+            @RequestParam String reason,
+            Authentication authentication) {
         try {
-            Review moderatedReview = reviewService.moderateReview(reviewId, adminId, newStatus, reason);
+            Long moderatorId = resolveModeratorId(adminId, authentication);
+            Review moderatedReview = reviewService.moderateReview(reviewId, moderatorId, newStatus, reason);
             return ResponseEntity.ok(moderatedReview);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
+    }
+
+    private Long resolveModeratorId(Long adminId, Authentication authentication) {
+        if (adminId != null) {
+            return adminId;
+        }
+        if (authentication != null && authentication.getName() != null) {
+            return employeeRepository.findByAccountUsername(authentication.getName())
+                    .map(com.kawai.models.Employee::getId)
+                    .orElseGet(this::firstEmployeeId);
+        }
+        return firstEmployeeId();
+    }
+
+    private Long firstEmployeeId() {
+        return employeeRepository.findAll().stream()
+                .findFirst()
+                .map(com.kawai.models.Employee::getId)
+                .orElseThrow(() -> new IllegalArgumentException("No employee account available for moderation"));
     }
 }

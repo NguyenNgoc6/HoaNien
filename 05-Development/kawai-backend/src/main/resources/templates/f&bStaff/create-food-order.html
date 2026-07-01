@@ -179,8 +179,11 @@
           <div class="info-forms" id="fields-room-svc" style="display: none;">
             <div class="form-group">
               <label class="form-label">Tìm theo số phòng</label>
-              <input type="text" class="form-control" id="roomInput" placeholder="Nhập số phòng (VD: 204)"
-                autocomplete="off" />
+              <div style="display: flex; gap: 10px;">
+                <input type="text" class="form-control" id="roomInput" placeholder="Nhập số phòng" autocomplete="off" style="flex: 1;" />
+                <input type="text" class="form-control" id="last4DigitsInput" placeholder="4 số cuối CCCD" maxlength="4" style="flex: 1;" />
+                <button type="button" class="btn btn-outline" id="btnVerifyGuest" style="padding: 0 15px;">Xác nhận</button>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">&nbsp;</label>
@@ -244,7 +247,7 @@
             <span id="summary-subtotal">0₫</span>
           </div>
           <div class="summary-row">
-            <span>VAT (10%)</span>
+            <span id="fee-label-text">VAT (10%)</span>
             <span id="summary-vat">0₫</span>
           </div>
           <div class="summary-row total">
@@ -296,3 +299,4 @@
 </body>
 
 </html>
+

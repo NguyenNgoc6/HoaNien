@@ -29,6 +29,8 @@ public class PosServiceImpl implements PosService {
     private final CustomerRepository customerRepository;
     private final RoomBookingRepository roomBookingRepository;
     private final TableReservationRepository tableReservationRepository;
+    private final com.kawai.services.interfaces.EmailService emailService;
+    private final RefundRequestRepository refundRequestRepository;
 
     public PosServiceImpl(RoomRepository roomRepository,
             RoomBookingDetailRepository roomBookingDetailRepository,
@@ -41,7 +43,9 @@ public class PosServiceImpl implements PosService {
             AccountRepository accountRepository,
             CustomerRepository customerRepository,
             RoomBookingRepository roomBookingRepository,
-            TableReservationRepository tableReservationRepository) {
+            TableReservationRepository tableReservationRepository,
+            com.kawai.services.interfaces.EmailService emailService,
+            RefundRequestRepository refundRequestRepository) {
         this.roomRepository = roomRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
         this.folioItemRepository = folioItemRepository;
@@ -54,6 +58,28 @@ public class PosServiceImpl implements PosService {
         this.customerRepository = customerRepository;
         this.roomBookingRepository = roomBookingRepository;
         this.tableReservationRepository = tableReservationRepository;
+        this.emailService = emailService;
+        this.refundRequestRepository = refundRequestRepository;
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void cleanupOrphanedFolios() {
+        System.out.println("--- CLEANING UP ORPHANED FOLIO ITEMS FOR CANCELLED FOOD ORDERS ---");
+        List<com.kawai.models.FolioItem> folios = folioItemRepository.findAll();
+        for (com.kawai.models.FolioItem folio : folios) {
+            if (folio.getDescription() != null && folio.getDescription().startsWith("Ký bill đồ ăn F&B (Order #")) {
+                String desc = folio.getDescription();
+                try {
+                    String idStr = desc.substring(desc.indexOf("#") + 1, desc.indexOf(")"));
+                    Long orderId = Long.parseLong(idStr);
+                    FoodOrder order = foodOrderRepository.findById(orderId).orElse(null);
+                    if (order != null && "Cancelled".equalsIgnoreCase(order.getOrderStatus())) {
+                        System.out.println("Deleting orphaned FolioItem ID " + folio.getId() + " for cancelled order " + orderId);
+                        folioItemRepository.delete(folio);
+                    }
+                } catch (Exception e) {}
+            }
+        }
     }
 
     @Override
@@ -207,6 +233,17 @@ public class PosServiceImpl implements PosService {
                 MenuItem menuItem = foodItemRepository.findById(itemDto.getId())
                         .orElseThrow(() -> new BusinessException("POS-004", "Món ăn không tồn tại!"));
                 
+                // =========================================================
+                // CHỐT CHẶN BẢO MẬT: KIỂM TRA MÓN ĂN THEO NGÀY
+                // Ngăn chặn trường hợp user dùng Postman hack gửi id món ăn của ngày mai vào giỏ hàng hôm nay.
+                // Nếu món này KHÔNG phải món cố định (isAlwaysAvailable = false) 
+                // VÀ ngày hiện tại không nằm trong danh sách được bán -> Văng lỗi!
+                // =========================================================
+                if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) && 
+                    (menuItem.getAvailableDays() == null || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
+                    throw new BusinessException("POS-010", "Món ăn '" + menuItem.getItemName() + "' không được phục vụ vào hôm nay. Vui lòng làm mới giỏ hàng.");
+                }
+
                 FoodOrderDetail detail = new FoodOrderDetail();
                 detail.setFoodOrder(savedOrder);
                 detail.setMenuItem(menuItem);
@@ -247,15 +284,29 @@ public class PosServiceImpl implements PosService {
                     folioItem.setSourceDepartment("F&B");
                     folioItem.setAmount(totalAmount);
                     folioItem.setDescription("Ký bill đồ ăn F&B (Order #" + savedOrder.getId() + ")");
-                    if (userAccount != null) {
-                        folioItem.setPayerCustomer(customerRepository.findByAccount_Username(userAccount.getUsername()).orElse(null));
+                    Customer payer = null;
+                    if (detailToCharge.getCustomer() != null) {
+                        payer = detailToCharge.getCustomer();
+                    } else if (activeBooking.getCustomer() != null) {
+                        payer = activeBooking.getCustomer();
                     }
+                    folioItem.setPayerCustomer(payer);
                     folioItemRepository.save(folioItem);
                 } else {
                     throw new BusinessException("POS-005", "Hạn mức tín dụng của phòng không đủ để thanh toán!");
                 }
             } else {
                 throw new BusinessException("POS-009", "Không tìm thấy phòng để ký bill!");
+            }
+        }
+
+        if ("Room Service".equalsIgnoreCase(savedOrder.getOrderType()) && !"AWAITING_PAYMENT".equalsIgnoreCase(savedOrder.getOrderStatus())) {
+            if (activeBooking != null && activeBooking.getCustomer() != null) {
+                String roomNum = request.getRoomNumber();
+                if (roomNum == null && savedOrder.getRoomBookingDetail() != null && savedOrder.getRoomBookingDetail().getRoom() != null) {
+                    roomNum = savedOrder.getRoomBookingDetail().getRoom().getRoomNumber();
+                }
+                emailService.sendRoomServiceConfirmation(savedOrder, activeBooking.getCustomer(), roomNum);
             }
         }
 
@@ -365,6 +416,12 @@ public class PosServiceImpl implements PosService {
                 throw new com.kawai.exceptions.BusinessException("POS-004", "Món đã hết — không thể order: " + menuItem.getItemName());
             }
 
+            // CHỐT CHẶN BẢO MẬT: Áp dụng tương tự cho tính năng "Gọi thêm món" khi đang ăn tại bàn
+            if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) && 
+                (menuItem.getAvailableDays() == null || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
+                throw new com.kawai.exceptions.BusinessException("POS-010", "Món ăn '" + menuItem.getItemName() + "' không được phục vụ vào hôm nay.");
+            }
+
             FoodOrderDetail detail = new FoodOrderDetail();
             detail.setFoodOrder(order);
             detail.setMenuItem(menuItem);
@@ -413,6 +470,53 @@ public class PosServiceImpl implements PosService {
                     detail.setKotStatus("Served");
                 }
             }
+        }
+
+        foodOrderRepository.save(order);
+    }
+
+    public void cancelOrder(Long orderId, com.kawai.dtos.CancelOrderRequestDTO dto) {
+        FoodOrder order = foodOrderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
+
+        if (!"Pending".equalsIgnoreCase(order.getOrderStatus())) {
+            throw new BusinessException("POS-007", "Chỉ có thể hủy đơn hàng ở trạng thái Pending");
+        }
+
+        order.setOrderStatus("Cancelled");
+
+        // Set kotStatus to Cancelled for all details
+        for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+            detail.setKotStatus("Cancelled");
+        }
+
+        // Handle refund logic based on payment method
+        String pType = order.getPaymentType();
+        if ("Post to Room".equalsIgnoreCase(pType) || "CHARGE_TO_ROOM".equalsIgnoreCase(pType) || "Post_To_Room".equalsIgnoreCase(pType)) {
+            java.util.List<com.kawai.models.FolioItem> folios = null;
+            if (order.getRoomBookingDetail() != null) {
+                folios = folioItemRepository.findByRoomBookingDetailId(order.getRoomBookingDetail().getId());
+            } else if (order.getBooking() != null) {
+                folios = folioItemRepository.findByBookingId(order.getBooking().getId());
+            }
+            if (folios != null) {
+                for (com.kawai.models.FolioItem folio : folios) {
+                    if (folio.getDescription() != null && folio.getDescription().contains("Order #" + order.getId() + ")")) {
+                        folioItemRepository.delete(folio);
+                    }
+                }
+            }
+        } else if (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isEmpty()) {
+            // Online/Card payment: Save refund request
+            com.kawai.models.RefundRequest refund = new com.kawai.models.RefundRequest();
+            refund.setOrder(order);
+            refund.setBankName(dto.getBankName());
+            refund.setAccountNumber(dto.getAccountNumber());
+            refund.setAccountName(dto.getAccountName());
+            refund.setPhoneNumber(dto.getPhoneNumber());
+            refund.setAmount(order.getTotalAmount());
+            refund.setStatus("Pending");
+            refundRequestRepository.save(refund);
         }
 
         foodOrderRepository.save(order);

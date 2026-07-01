@@ -2,8 +2,10 @@ package com.kawai.controllers.web;
 
 import com.kawai.dto.CheckinSubmitFormDTO;
 import com.kawai.dto.DependentRegistrationDTO;
+import com.kawai.dto.TourRoomAllocationDTO;
 import com.kawai.exceptions.BusinessException;
 import com.kawai.models.RoomBookingDetail;
+import com.kawai.models.TourBooking;
 import com.kawai.services.interfaces.CheckinService;
 import com.kawai.services.interfaces.DependentService;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Controller xử lý Form Submit Web MVC cho Lễ tân Check-in (Không dùng fetch
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @RequestMapping("/receptionist/checkin")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN')")
 public class ReceptionistCheckinWebController {
 
     private static final Logger log = LoggerFactory.getLogger(ReceptionistCheckinWebController.class);
@@ -31,6 +35,7 @@ public class ReceptionistCheckinWebController {
     private final com.kawai.repositories.CustomerRepository customerRepo;
     private final com.kawai.repositories.BookingRepository bookingRepo;
     private final com.kawai.repositories.RoomGuestRepository roomGuestRepo;
+    private final com.kawai.repositories.TourBookingRepository tourBookingRepo;
 
     public ReceptionistCheckinWebController(CheckinService checkinService,
             DependentService dependentService,
@@ -38,7 +43,8 @@ public class ReceptionistCheckinWebController {
             com.kawai.repositories.RoomRepository roomRepo,
             com.kawai.repositories.CustomerRepository customerRepo,
             com.kawai.repositories.BookingRepository bookingRepo,
-            com.kawai.repositories.RoomGuestRepository roomGuestRepo) {
+            com.kawai.repositories.RoomGuestRepository roomGuestRepo,
+            com.kawai.repositories.TourBookingRepository tourBookingRepo) {
         this.checkinService = checkinService;
         this.dependentService = dependentService;
         this.roomBookingDetailRepo = roomBookingDetailRepo;
@@ -46,6 +52,7 @@ public class ReceptionistCheckinWebController {
         this.customerRepo = customerRepo;
         this.bookingRepo = bookingRepo;
         this.roomGuestRepo = roomGuestRepo;
+        this.tourBookingRepo = tourBookingRepo;
     }
 
     @PostMapping("/complete")
@@ -85,6 +92,32 @@ public class ReceptionistCheckinWebController {
                         customer.setCccdPassportEncrypted(form.getCccd().trim());
                     }
                 }
+                
+                // Save customer FaceID if provided in form
+                if (form.getFaceVectorData() != null && !form.getFaceVectorData().isEmpty()) {
+                    customer.setFaceVectorData(form.getFaceVectorData());
+                }
+                if (form.getFaceImageBase64() != null && !form.getFaceImageBase64().isEmpty()) {
+                    try {
+                        String[] parts = form.getFaceImageBase64().split(",");
+                        String imageString = parts.length > 1 ? parts[1] : parts[0];
+                        byte[] imageBytes = java.util.Base64.getDecoder().decode(imageString);
+                        
+                        String fileName = "cust_" + customer.getId() + "_" + System.currentTimeMillis() + ".jpg";
+                        java.nio.file.Path uploadPath = java.nio.file.Paths.get("src/main/resources/static/uploads/faces");
+                        if (!java.nio.file.Files.exists(uploadPath)) {
+                            java.nio.file.Files.createDirectories(uploadPath);
+                        }
+                        java.nio.file.Path filePath = uploadPath.resolve(fileName);
+                        java.nio.file.Files.write(filePath, imageBytes);
+                        String publicUrl = "/uploads/faces/" + fileName;
+                        
+                        customer.setFaceImgUrl(publicUrl);
+                    } catch (Exception e) {
+                        log.error("Failed to save FaceID image for customer {}", customer.getId(), e);
+                    }
+                }
+                
                 customerRepo.save(customer);
             }
 
@@ -112,6 +145,31 @@ public class ReceptionistCheckinWebController {
                 form.setAssignedRoomNumbers(new java.util.ArrayList<>());
             }
             form.getAssignedRoomNumbers().removeIf(String::isEmpty);
+
+            java.math.BigDecimal totalRequested = java.math.BigDecimal.ZERO;
+            if (form.getAllocatedCreditLimits() != null) {
+                for (java.math.BigDecimal limit : form.getAllocatedCreditLimits()) {
+                    if (limit != null)
+                        totalRequested = totalRequested.add(limit);
+                }
+            }
+            java.math.BigDecimal existingUsed = java.math.BigDecimal.ZERO;
+            for (com.kawai.models.RoomBookingDetail d : details) {
+                if (!pendingDetails.contains(d) && d.getSubCreditLimit() != null) {
+                    existingUsed = existingUsed.add(d.getSubCreditLimit());
+                }
+            }
+            // RoomBooking extends Booking — cast an toàn vì bookingRepo dùng JOINED
+            // inheritance
+            com.kawai.models.RoomBooking roomBooking = (com.kawai.models.RoomBooking) booking;
+            java.math.BigDecimal masterCreditLimit = roomBooking.getCreditLimit() != null
+                    ? roomBooking.getCreditLimit()
+                    : new java.math.BigDecimal("5000000.00");
+            if (existingUsed.add(totalRequested).compareTo(masterCreditLimit) > 0) {
+                throw new com.kawai.exceptions.BusinessException("CHECKIN-007",
+                        "Tổng hạn mức cấp cho các phòng vượt quá hạn mức của tài khoản (Master: " + masterCreditLimit
+                                + ")");
+            }
 
             if (form.getAssignedRoomNumbers().size() != pendingDetails.size()) {
                 throw new com.kawai.exceptions.BusinessException("CHECKIN-005",
@@ -145,7 +203,12 @@ public class ReceptionistCheckinWebController {
                 pendingDetails.remove(matchedDetail);
 
                 // Gọi service lõi để Check-in 1 phòng bằng roomId thực sự
-                checkinService.checkIn(matchedDetail.getId(), room.getId());
+                java.math.BigDecimal allocatedLimit = null;
+                int roomIdx = form.getAssignedRoomNumbers().indexOf(roomNumber);
+                if (form.getAllocatedCreditLimits() != null && roomIdx < form.getAllocatedCreditLimits().size()) {
+                    allocatedLimit = form.getAllocatedCreditLimits().get(roomIdx);
+                }
+                checkinService.checkIn(matchedDetail.getId(), room.getId(), allocatedLimit);
                 roomNumberToDetailIdMap.put(roomNumber, matchedDetail.getId());
             }
             if (form.getAssignedRoomNumbers() != null && !form.getAssignedRoomNumbers().isEmpty()) {
@@ -224,6 +287,40 @@ public class ReceptionistCheckinWebController {
                 }
             }
 
+            // Bước 4: Phân bổ TourBookings vào phòng vật lý (nếu có)
+            // Chỉ xử lý các TourBooking có roomBookingDetail == null (chưa phân bổ)
+            String tourAllocationMode = form.getTourAllocationMode();
+            if ("PER_TOUR".equalsIgnoreCase(tourAllocationMode)
+                    && form.getTourAllocations() != null
+                    && !form.getTourAllocations().isEmpty()) {
+                for (TourRoomAllocationDTO allocation : form.getTourAllocations()) {
+                    if (allocation.getTourBookingId() == null || allocation.getRoomNumber() == null
+                            || allocation.getRoomNumber().isEmpty()) {
+                        continue;
+                    }
+                    TourBooking tourBooking = tourBookingRepo.findById(allocation.getTourBookingId())
+                            .orElse(null);
+                    if (tourBooking == null)
+                        continue;
+
+                    Long detailId = roomNumberToDetailIdMap.get(allocation.getRoomNumber());
+                    if (detailId == null) {
+                        log.warn("Không tìm thấy detail cho phòng {} khi phân bổ tour {}",
+                                allocation.getRoomNumber(), allocation.getTourBookingId());
+                        continue;
+                    }
+                    RoomBookingDetail detail = roomBookingDetailRepo.findById(detailId).orElse(null);
+                    if (detail != null) {
+                        // tourBooking.setRoomBookingDetail(detail);
+                        tourBookingRepo.save(tourBooking);
+                        log.info("Phân bổ TourBooking {} vào phòng {} (detail {})",
+                                tourBooking.getId(), allocation.getRoomNumber(), detailId);
+                    }
+                }
+            }
+            // Nếu ALL → giữ roomBookingDetail = null (gộp chung toàn booking, không gán
+            // phòng cụ thể)
+
             // Thành công: Gửi flash message và redirect
             redirectAttributes.addFlashAttribute("successMessage", "Check-in thành công !");
             return "redirect:/receptionist/check-in"; // Redirect về trang danh sách check-in
@@ -244,10 +341,39 @@ public class ReceptionistCheckinWebController {
             return "redirect:/receptionist/check-in";
         }
     }
-}
 
-//
-//
-//
-//
-//
+    @PostMapping("/upgrade-dependent/{dependentId}")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<?> upgradeDependentToCustomer(
+            @org.springframework.web.bind.annotation.PathVariable Long dependentId) {
+        try {
+            java.util.Map<String, Object> result = checkinService.upgradeDependentToCustomer(dependentId);
+            com.kawai.models.Customer customer = (com.kawai.models.Customer) result.get("customer");
+            String username = (String) result.get("username");
+            String password = (String) result.get("password");
+
+            // Lấy thông tin phòng để trả về UI (Logic unlink RoomGuest đã được làm trong
+            // Service)
+            com.kawai.models.RoomGuest rg = roomGuestRepo.findByCustomerIdAndGuestType(customer.getId(), "ADULT")
+                    .orElse(null);
+
+            String roomInfo = "";
+            if (rg != null && rg.getRoomBookingDetail() != null) {
+                com.kawai.models.RoomBookingDetail detail = rg.getRoomBookingDetail();
+                String categoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName()
+                        : "Không xác định";
+                String roomNumber = detail.getRoom() != null ? detail.getRoom().getRoomNumber() : "Chưa xếp phòng";
+                roomInfo = " (Hạng phòng: " + categoryName + " - Số phòng: " + roomNumber + ")";
+            }
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Nâng cấp thành công Khách hàng: " + customer.getFullName() + roomInfo + ". Tài khoản: " + username + " - Mật khẩu: " + password));
+        } catch (Exception e) {
+            log.error("Error upgrading dependent", e);
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of(
+                    "success", false,
+                    "message", e.getMessage()));
+        }
+    }
+}

@@ -72,6 +72,8 @@ public class SecurityConfig {
                                 "/auth/google-login", "/auth/forgot-password", "/auth/reset-password", "/auth/manual-logout",
                                 "/api/v1/auth/**",
                                 "/h2-console/**", "/css/**", "/js/**", "/guest/**", "/uploads/**", "/api/v1/upload",
+                                "/receptionist/css/**", "/receptionist/js/**", "/receptionist/images/**",
+                                "/admin/css/**", "/admin/js/**", "/admin/img/**", "/admin/images/**",
                                 "/living", "/wellbeing", "/dining",
                                 "/experiences", "/tours", "/tours/**", "/profile", "/order-food", "/AnhTour/**",
                                 "/fbStaff/**", "/f&bStaff/**", "/kitchenStaff/**", "/api/menu-items/**", "/api/rooms/**",
@@ -79,13 +81,46 @@ public class SecurityConfig {
                                 "/api/bookings", "/api/bookings/**",
                                 "/api/tour-bookings", "/api/tour-bookings/**", "/api/faceid/**", "/error",
                                 "/api/v1/payments/vnpay-return", "/api/v1/payments/vnpay-ipn",
-                                "/api/v1/payments/food-order/**", "/book-table")
+                                "/api/v1/payments/food-order/**", "/book-table", "/receptionist/remote-scan", "/api/v1/remote-scan/**")
                         .permitAll()
 
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers("/manager/**").hasRole("MANAGER")
-                        .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
-                        .requestMatchers("/tourguide/**").hasRole("TOURGUIDE")
+                        .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "OP_MASTER_DATA", "OP_AUDIT_LOG", "OP_WORKFLOW")
+                        .requestMatchers("/manager/**").hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
+                        // Receptionist root & dashboard
+                        .requestMatchers("/receptionist/dashboard").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_DASHBOARD",
+                                "OP_RECEPTION_WALKIN", "OP_RECEPTION_CHECKIN", "OP_RECEPTION_CHECKOUT", "OP_RECEPTION_INHOUSE")
+                        // Walk-in
+                        .requestMatchers("/receptionist/walk-in", "/receptionist/walk-in/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_RECEPTION_WALKIN")
+                        // Check-in
+                        .requestMatchers("/receptionist/check-in", "/receptionist/check-in/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_RECEPTION_CHECKIN")
+                        // Folio / Check-out
+                        .requestMatchers("/receptionist/folio", "/receptionist/folio/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_RECEPTION_CHECKOUT")
+                        // In-house
+                        .requestMatchers("/receptionist/in-house", "/receptionist/in-house/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_RECEPTION_INHOUSE")
+                        // Night-audit
+                        .requestMatchers("/receptionist/night-audit", "/receptionist/night-audit/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_NIGHT_AUDIT")
+                        // Housekeeping ops (via receptionist portal)
+                        .requestMatchers("/receptionist/operations", "/receptionist/operations/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER", "OP_HOUSEKEEPING")
+                        // Catch-all for any other /receptionist/** paths
+                        .requestMatchers("/receptionist/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_MANAGER",
+                                "OP_RECEPTION_WALKIN", "OP_RECEPTION_CHECKIN", "OP_RECEPTION_CHECKOUT", "OP_RECEPTION_INHOUSE")
+                        .requestMatchers("/staff/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_STAFF")
+                        .requestMatchers("/housekeeping/**").hasAnyAuthority("ROLE_HOUSEKEEPING", "ROLE_ADMIN", "OP_HOUSEKEEPING")
+                        .requestMatchers("/maintenance/**").hasAnyAuthority("ROLE_MAINTENANCE", "ROLE_MAINTAINER", "ROLE_ADMIN", "OP_MAINTENANCE")
+                        .requestMatchers("/tourguide/**").hasAnyAuthority("ROLE_TOURGUIDE", "ROLE_ADMIN", "OP_TOUR")
+                        // F&B: sub-permissions govern each operation type
+                        .requestMatchers("/fbStaff/**", "/f&bStaff/**").hasAnyAuthority(
+                                "ROLE_FB_STAFF", "ROLE_ADMIN", "ROLE_MANAGER", "OP_FNB", "OP_FNB_ORDER", "OP_FNB_TABLE", "OP_FNB_ROOM_SERVICE", "OP_FNB_REPORT")
+                        .requestMatchers("/kitchenStaff/**").hasAnyAuthority(
+                                "ROLE_FB_STAFF", "ROLE_ADMIN", "ROLE_MANAGER", "OP_FNB", "OP_FNB_ORDER")
                         .requestMatchers("/profile/**").authenticated()
                         .anyRequest().authenticated())
 
@@ -118,7 +153,9 @@ public class SecurityConfig {
         return (request, response, exception) -> {
             String referer = request.getHeader("Referer");
             String errorType = "invalid";
-            if (exception instanceof org.springframework.security.authentication.DisabledException || exception instanceof org.springframework.security.authentication.LockedException) {
+            if (exception instanceof org.springframework.security.authentication.DisabledException) {
+                errorType = "disabled";
+            } else if (exception instanceof org.springframework.security.authentication.LockedException) {
                 errorType = "locked";
             }
             if (referer != null && !referer.trim().isEmpty() && !referer.contains("/ops-login")) {
@@ -163,9 +200,9 @@ public class SecurityConfig {
                     String role = authz.getAuthority();
                     if (role.equals("ROLE_ADMIN") || role.equals("ROLE_MANAGER") ||
                             role.equals("ROLE_RECEPTIONIST") || role.equals("ROLE_STAFF") ||
-                            role.equals("ROLE_FB_STAFF") || role.equals("ROLE_TOURGUIDE")) {
+                            role.equals("ROLE_FB_STAFF") || role.equals("ROLE_TOURGUIDE") ||
+                            role.equals("ROLE_HOUSEKEEPING") || role.equals("ROLE_MAINTENANCE") || role.equals("ROLE_MAINTAINER")) {
                         isOpsUser = true;
-                        break;
                     }
                 }
 
@@ -225,7 +262,24 @@ public class SecurityConfig {
                         } else if (role.equals("ROLE_TOURGUIDE")) {
                             redirect = "/tourguide/dashboard";
                             break;
+                        } else if (role.equals("ROLE_HOUSEKEEPING")) {
+                            redirect = "/housekeeping/dashboard";
+                            break;
+                        } else if (role.equals("ROLE_MAINTENANCE") || role.equals("ROLE_MAINTAINER")) {
+                            redirect = "/maintenance/dashboard";
+                            break;
                         }
+                    }
+
+                    if (redirect.equals("/")) {
+                        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+                        response.sendRedirect("/ops-login?error=true");
+                        return;
+                    }
+
+                    Account account = accountRepository.findByUsername(authentication.getName()).orElse(null);
+                    if (account != null) {
+                        request.getSession().setAttribute("user", account);
                     }
                     response.sendRedirect(redirect);
                 } else {

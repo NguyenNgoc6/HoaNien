@@ -38,12 +38,14 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) != 'pending'")
+                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
        long countOverlappingBookings(@Param("roomNumber") String roomNumber,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
 
-       List<RoomBooking> findByBookingStatusAndHoldExpiresAtBefore(String status, LocalDateTime time);
+       List<RoomBooking> findByBookingStatusInAndHoldExpiresAtBefore(List<String> statuses, LocalDateTime time);
+
+       List<RoomBooking> findByBookingStatusAndCheckInDateBefore(String status, LocalDate date);
 
        @Query(value = "SELECT DATE(rb.check_in_date) FROM Room_Bookings rb GROUP BY DATE(rb.check_in_date) ORDER BY COUNT(rb.room_booking_id) DESC LIMIT 1", nativeQuery = true)
        java.sql.Date findPeakOccupancyDate();
@@ -68,7 +70,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT IN ('pending')")
+                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
        long countOverlappingBookingsByCategoryWithoutExclude(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
@@ -79,10 +81,16 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT IN ('pending') " +
+                     "AND rbd.roomBooking.bookingStatus != 'Pending' " +
                      "AND rbd.roomBooking.bookingStatus != 'Checked_In'")
        long countOverlappingNotCheckedIn(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
+
+       @Query(value = "SELECT c.category_name, SUM(c.capacity) FROM room_booking_details d JOIN room_categories c ON d.category_id = c.category_id JOIN room_bookings b ON d.room_booking_id = b.room_booking_id WHERE b.booking_status IN ('Confirmed', 'Checked_In', 'Checked_Out') GROUP BY c.category_name", nativeQuery = true)
+       List<Object[]> getGuestCapacityByCategory();
+
+       @Query(value = "SELECT c.category_name, COALESCE(AVG(DATEDIFF(b.check_out_date, b.check_in_date)), 0) FROM room_booking_details d JOIN room_bookings b ON d.room_booking_id = b.room_booking_id JOIN room_categories c ON d.category_id = c.category_id WHERE b.booking_status IN ('Confirmed', 'Checked_In', 'Checked_Out') GROUP BY c.category_name", nativeQuery = true)
+       List<Object[]> getAverageStayDurationByCategory();
 }

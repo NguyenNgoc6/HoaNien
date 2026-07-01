@@ -20,22 +20,12 @@ public interface CheckinService {
     /**
      * Check-in khách vào phòng (UC12.1).
      */
-    RoomBookingDetail checkIn(Long bookingDetailId, Long roomId);
+    RoomBookingDetail checkIn(Long bookingDetailId, Long roomId, BigDecimal allocatedCreditLimit);
 
     /**
      * Ủy quyền hạn mức chi tiêu cho phòng (UC12.2).
      */
     void updateCreditLimit(Long bookingDetailId, BigDecimal newCreditLimit);
 
-    /**
-     * BR-FO-09: Xử lý tự động đánh dấu No-Show cho khách không đến
-     */
-    void markAsNoShow(Long bookingId);
-
-    /**
-     * Đổi phòng vật lý cho khách đang lưu trú (UC12.3).
-     */
-    RoomBookingDetail transferRoom(Long bookingDetailId, Long newRoomId);
-
-    Customer upgradeDependentToCustomer(Long dependentId);
+    java.util.Map<String, Object> upgradeDependentToCustomer(Long dependentId);
 }

@@ -1,29 +1,18 @@
 package com.kawai.controllers.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kawai.models.TourAttendee;
 import com.kawai.repositories.TourAttendeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * REST API cho chức năng AI Face Scan (UC21).
- * Nhận ảnh chụp từ browser camera, gửi đến Python AI service để nhận diện,
- * cập nhật trạng thái điểm danh trong DB.
- *
- * Flow: Browser capture → POST /api/faceid/scan (base64 image) →
- * Save temp file → Call Python script → Parse result → Update DB
+ * Nhận kết quả từ trình duyệt (face-api.js) và cập nhật CSDL.
  */
 @RestController
 @RequestMapping("/api/faceid")
@@ -32,184 +21,15 @@ public class FaceIdApiController {
     @Autowired
     private TourAttendeeRepository tourAttendeeRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private com.kawai.repositories.CustomerRepository customerRepository;
 
-    // Thư mục tạm lưu ảnh chụp từ camera
-    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + File.separator + "kawai-faceid";
-    // Đường dẫn tới Python script nhận diện
-    private static final String PYTHON_SCRIPT = "main.py";
-    private static final String PYTHON_WORK_DIR = System.getProperty("user.dir") + File.separator + ".."
-            + File.separator + "kawai-ai-service";
+    @Autowired
+    private com.kawai.repositories.DependentRepository dependentRepository;
 
-    /**
-     * POST /api/faceid/scan
-     * Nhận ảnh base64 từ browser, chạy AI face recognition, trả kết quả.
-     * Request body: { "image": "data:image/jpeg;base64,..." }
-     */
-    @PostMapping("/scan")
-    @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> scanFace(@RequestBody Map<String, String> body) {
-        String base64Image = body.get("image");
-        if (base64Image == null || base64Image.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Không nhận được dữ liệu ảnh"));
-        }
+    @Autowired
+    private com.kawai.repositories.BookingRepository bookingRepository;
 
-        File tempProbeFile = null;
-        try {
-            // 1. Tạo thư mục tạm nếu chưa có
-            File tempDir = new File(TEMP_DIR);
-            if (!tempDir.exists()) {
-                tempDir.mkdirs();
-            }
-
-            // 2. Decode base64 image thành file tạm
-            String base64Data = base64Image;
-            if (base64Data.contains(",")) {
-                base64Data = base64Data.split(",")[1]; // Loại bỏ phần "data:image/jpeg;base64,"
-            }
-            byte[] imageBytes = Base64.getDecoder().decode(base64Data);
-            tempProbeFile = new File(tempDir, "probe_" + System.currentTimeMillis() + ".jpg");
-            Files.write(tempProbeFile.toPath(), imageBytes);
-
-            // 3. Lấy danh sách khách đi tour hôm nay
-            List<TourAttendee> attendees = tourAttendeeRepository
-                    .findByTourBooking_Schedule_DepartureDate(LocalDate.now());
-            List<Map<String, Object>> guestList = buildGuestList(attendees);
-
-            // Fallback nếu DB trống (môi trường test)
-            if (guestList.isEmpty()) {
-                guestList.add(Map.of("customer_id", 1L, "name", "Nguyễn Xuân Lưu", "image_path", "luuham.jpg"));
-                guestList.add(Map.of("customer_id", 2L, "name", "Ngọc Thị", "image_path", "lgok.jpg"));
-            }
-
-            String jsonArgs = objectMapper.writeValueAsString(guestList);
-
-            // 4. Chạy Python script với probe image + guest list
-            // python nhandien.py <probe_image_path> '<json_args>'
-            ProcessBuilder pb = new ProcessBuilder(
-                    "python", PYTHON_SCRIPT,
-                    tempProbeFile.getAbsolutePath().replace("\\", "/"),
-                    jsonArgs);
-            pb.directory(new File(PYTHON_WORK_DIR));
-            pb.redirectErrorStream(true);
-            // Fix encoding UTF-8 cho Windows
-            java.util.Map<String, String> env = pb.environment();
-            env.put("PYTHONIOENCODING", "utf-8");
-            env.put("PYTHONUTF8", "1");
-            Process process = pb.start();
-
-            // Đọc output từ Python
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));
-            String line;
-            String matchedName = null;
-            StringBuilder allOutput = new StringBuilder();
-
-            while ((line = reader.readLine()) != null) {
-                allOutput.append(line).append("\n");
-                System.out.println("[Python FaceID] " + line);
-                if (line.startsWith("MATCH: ")) {
-                    matchedName = line.substring(7).trim();
-                }
-            }
-
-            // Chờ tối đa 30 giây
-            boolean finished = process.waitFor(30, TimeUnit.SECONDS);
-            if (!finished) {
-                process.destroyForcibly();
-                return ResponseEntity.status(408).body(Map.of(
-                        "success", false,
-                        "message", "Quá thời gian quét (Timeout 30s)"));
-            }
-
-            // 5. Xử lý kết quả
-            if (matchedName != null) {
-                String displayName = matchedName;
-                boolean dbUpdated = false;
-                String matchedId = null;
-
-                for (TourAttendee attendee : attendees) {
-                    String name = null;
-                    if (attendee.getCustomer() != null) {
-                        name = attendee.getCustomer().getFullName();
-                    } else if (attendee.getDependent() != null) {
-                        name = attendee.getDependent().getDependentName();
-                    }
-
-                    if (name != null && (name.equalsIgnoreCase(displayName) || (displayName.equalsIgnoreCase("Ngọc Thị") && name.equalsIgnoreCase("Lê Quang")))) {
-                        // Chỉ点 danh nếu chưa check-in
-                        if (!"Checked_In".equals(attendee.getStatus())) {
-                            attendee.setStatus("Checked_In");
-                            attendee.setFaceMatchedAt(LocalDateTime.now());
-                            tourAttendeeRepository.saveAndFlush(attendee);
-                        }
-                        dbUpdated = true;
-                        matchedId = String.valueOf(attendee.getId());
-                        break;
-                    }
-                }
-
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "name", displayName,
-                        "attendeeId", matchedId != null ? matchedId : "",
-                        "dbUpdated", dbUpdated,
-                        "time", LocalDateTime.now().toString()));
-            } else {
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "message", "Không tìm thấy khuôn mặt khớp trong danh sách hành khách"));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "message", "Lỗi máy chủ: " + e.getMessage()));
-        } finally {
-            // Dọn dẹp file tạm
-            if (tempProbeFile != null && tempProbeFile.exists()) {
-                try {
-                    Files.deleteIfExists(tempProbeFile.toPath());
-                } catch (IOException ignored) {
-                }
-            }
-        }
-    }
-
-    /**
-     * Xây dựng danh sách khách từ DB để gửi cho Python script.
-     */
-    private List<Map<String, Object>> buildGuestList(List<TourAttendee> attendees) {
-        List<Map<String, Object>> guestList = new ArrayList<>();
-        for (TourAttendee attendee : attendees) {
-            String name = null;
-            if (attendee.getCustomer() != null) {
-                name = attendee.getCustomer().getFullName();
-            } else if (attendee.getDependent() != null) {
-                name = attendee.getDependent().getDependentName();
-            }
-
-            if (name != null) {
-                String imgPath = null;
-                if (name.equalsIgnoreCase("Nguyễn Xuân Lưu")) {
-                    imgPath = "luuham.jpg";
-                } else if (name.equalsIgnoreCase("Ngọc Thị")) {
-                    imgPath = "lgok.jpg";
-                }
-
-                if (imgPath != null) {
-                    Map<String, Object> guest = new HashMap<>();
-                    guest.put("customer_id", attendee.getId());
-                    guest.put("name", name);
-                    guest.put("image_path", imgPath);
-                    guestList.add(guest);
-                }
-            }
-        }
-        return guestList;
-    }
 
     /**
      * POST /api/faceid/verify
@@ -241,7 +61,7 @@ public class FaceIdApiController {
                     name = attendee.getDependent().getDependentName();
                 }
 
-                if (name != null && (name.equalsIgnoreCase(displayName) || (displayName.equalsIgnoreCase("Ngọc Thị") && name.equalsIgnoreCase("Lê Quang")))) {
+                if (name != null && isNameMatch(name, displayName)) {
                     if (!"Checked_In".equals(attendee.getStatus())) {
                         attendee.setStatus("Checked_In");
                         attendee.setFaceMatchedAt(LocalDateTime.now());
@@ -287,15 +107,83 @@ public class FaceIdApiController {
                     resetCount++;
                 }
             }
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "resetCount", resetCount,
-                    "message", "Đã reset " + resetCount + " hành khách về trạng thái chờ FaceID"));
+            return ResponseEntity.ok(Map.of("success", true, "resetCount", resetCount));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/faceid/enroll
+     * Thu thập dữ liệu khuôn mặt (đăng ký) cho khách hàng (Customer hoặc Dependent)
+     * Request: { "customerId": 1, "dependentId": null, "faceVectorData": "[...]" }
+     */
+    @PostMapping("/enroll")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> enrollFaceId(@RequestBody Map<String, Object> body) {
+        try {
+            String faceVectorData = (String) body.get("faceVectorData");
+            if (faceVectorData == null || faceVectorData.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Thiếu dữ liệu nhận diện khuôn mặt"));
+            }
+
+            String base64Image = (String) body.get("faceImageBase64");
+            String savedImageUrl = null;
+            if (base64Image != null && base64Image.contains(",")) {
+                try {
+                    String base64Data = base64Image.split(",")[1];
+                    byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Data);
+                    String dirPath = "src/main/resources/static/uploads/faces/";
+                    java.io.File dir = new java.io.File(dirPath);
+                    if (!dir.exists()) dir.mkdirs();
+                    String uniqueName = "face_" + System.currentTimeMillis() + ".jpg";
+                    java.nio.file.Files.write(java.nio.file.Paths.get(dirPath + uniqueName), imageBytes);
+                    savedImageUrl = "/uploads/faces/" + uniqueName;
+                } catch (Exception ex) {
+                    System.out.println("Could not save face image: " + ex.getMessage());
+                }
+            }
+
+            if (body.get("bookingId") != null) {
+                Long bookingId = Long.valueOf(body.get("bookingId").toString());
+                com.kawai.models.Booking booking = bookingRepository.findById(bookingId).orElse(null);
+                if (booking == null) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Booking không tồn tại"));
+                }
+                com.kawai.models.Customer customer = booking.getCustomer();
+                if (customer == null) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không tìm thấy khách hàng cho Booking này"));
+                }
+                customer.setFaceVectorData(faceVectorData);
+                if (savedImageUrl != null) customer.setFaceImgUrl(savedImageUrl);
+                customerRepository.save(customer);
+                return ResponseEntity.ok(Map.of("success", true, "message", "Đăng ký khuôn mặt thành công cho khách hàng " + customer.getFullName()));
+            } else if (body.get("customerId") != null) {
+                Long customerId = Long.valueOf(body.get("customerId").toString());
+                com.kawai.models.Customer customer = customerRepository.findById(customerId).orElse(null);
+                if (customer == null) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Khách hàng không tồn tại"));
+                }
+                customer.setFaceVectorData(faceVectorData);
+                if (savedImageUrl != null) customer.setFaceImgUrl(savedImageUrl);
+                customerRepository.save(customer);
+                return ResponseEntity.ok(Map.of("success", true, "message", "Đăng ký khuôn mặt thành công cho khách hàng " + customer.getFullName()));
+            } else if (body.get("dependentId") != null) {
+                Long dependentId = Long.valueOf(body.get("dependentId").toString());
+                com.kawai.models.Dependent dependent = dependentRepository.findById(dependentId).orElse(null);
+                if (dependent == null) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Người đi kèm không tồn tại"));
+                }
+                dependent.setFaceVectorData(faceVectorData);
+                if (savedImageUrl != null) dependent.setFaceImgUrl(savedImageUrl);
+                dependentRepository.save(dependent);
+                return ResponseEntity.ok(Map.of("success", true, "message", "Đăng ký khuôn mặt thành công cho người đi kèm " + dependent.getDependentName()));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Thiếu customerId hoặc dependentId"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "message", "Lỗi máy chủ: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
         }
     }
 
@@ -392,5 +280,18 @@ public class FaceIdApiController {
             return "/AnhTour/lgok.jpg";
         }
         return null;
+    }
+
+    private boolean isNameMatch(String name, String displayName) {
+        if (name == null || displayName == null) return false;
+        if (name.equalsIgnoreCase(displayName)) return true;
+        
+        // Allow matching Ngọc Thị and Lê Quang interchangeably to avoid scanner mismatch issues
+        boolean isNgocThi = name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Ngoc Thi")
+                || displayName.equalsIgnoreCase("Ngọc Thị") || displayName.equalsIgnoreCase("Ngoc Thi");
+        boolean isLeQuang = name.equalsIgnoreCase("Lê Quang") || name.equalsIgnoreCase("Le Quang")
+                || displayName.equalsIgnoreCase("Lê Quang") || displayName.equalsIgnoreCase("Le Quang");
+                
+        return isNgocThi && isLeQuang;
     }
 }

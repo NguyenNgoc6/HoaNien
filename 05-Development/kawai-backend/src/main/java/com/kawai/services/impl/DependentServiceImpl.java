@@ -56,19 +56,22 @@ public class DependentServiceImpl implements DependentService {
     private final RoomBookingDetailRepository roomBookingDetailRepository;
     private final RoomGuestRepository roomGuestRepository;
     private final RoomSurchargeRepository roomSurchargeRepository;
+    private final com.kawai.services.interfaces.CheckinService checkinService;
 
     public DependentServiceImpl(DependentRepository dependentRepository,
             RoomBookingRepository bookingRepository,
             EncryptionService encryptionService,
             RoomBookingDetailRepository roomBookingDetailRepository,
             RoomGuestRepository roomGuestRepository,
-            RoomSurchargeRepository roomSurchargeRepository) {
+            RoomSurchargeRepository roomSurchargeRepository,
+            @org.springframework.context.annotation.Lazy com.kawai.services.interfaces.CheckinService checkinService) {
         this.dependentRepository = dependentRepository;
         this.bookingRepository = bookingRepository;
         this.encryptionService = encryptionService;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
         this.roomGuestRepository = roomGuestRepository;
         this.roomSurchargeRepository = roomSurchargeRepository;
+        this.checkinService = checkinService;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -134,12 +137,39 @@ public class DependentServiceImpl implements DependentService {
             dependent.setCustomer(booking.getCustomer());
         }
 
-        dependent.setDependentName(dto.getFullName());
-        dependent.setBirthDate(dto.getDateOfBirth());
+        dependent.setDependentName(dto.getFullName() != null && !dto.getFullName().isBlank() ? dto.getFullName().trim() : "Khách đi kèm");
+        dependent.setBirthDate(dto.getDateOfBirth() != null ? dto.getDateOfBirth() : java.time.LocalDate.now().minusYears(18).withDayOfYear(1));
         dependent.setGender(dto.getGender() != null ? dto.getGender() : "Khác");
         dependent.setCccdPassportEncrypted(cccdEncrypted); // Lưu đã mã hoá, không phải plaintext
+        
+        if (dto.getFaceVectorData() != null && !dto.getFaceVectorData().isEmpty()) {
+            dependent.setFaceVectorData(dto.getFaceVectorData());
+        }
 
         Dependent saved = dependentRepository.save(dependent);
+        
+        // Handle image saving after dependent has an ID
+        if (dto.getFaceImageBase64() != null && !dto.getFaceImageBase64().isEmpty()) {
+            try {
+                String[] parts = dto.getFaceImageBase64().split(",");
+                String imageString = parts.length > 1 ? parts[1] : parts[0];
+                byte[] imageBytes = java.util.Base64.getDecoder().decode(imageString);
+                
+                String fileName = "dep_" + saved.getId() + "_" + System.currentTimeMillis() + ".jpg";
+                java.nio.file.Path uploadPath = java.nio.file.Paths.get("src/main/resources/static/uploads/faces");
+                if (!java.nio.file.Files.exists(uploadPath)) {
+                    java.nio.file.Files.createDirectories(uploadPath);
+                }
+                java.nio.file.Path filePath = uploadPath.resolve(fileName);
+                java.nio.file.Files.write(filePath, imageBytes);
+                String publicUrl = "/uploads/faces/" + fileName;
+                
+                saved.setFaceImgUrl(publicUrl);
+                saved = dependentRepository.save(saved);
+            } catch (Exception e) {
+                log.error("Failed to save FaceID image for dependent {}", saved.getId(), e);
+            }
+        }
 
         // 6.5. Nếu là Khách mới thêm tại lễ tân -> Liên kết vào RoomBookingDetail và
         // Tính phụ thu
@@ -228,9 +258,12 @@ public class DependentServiceImpl implements DependentService {
                 rg = new RoomGuest();
             }
             rg.setRoomBookingDetail(detail);
+
             rg.setDependent(saved);
+            rg.setCustomer(null);
+            rg.setIsPrimaryContact(Boolean.TRUE.equals(dto.getIsPrimaryContact()));
+
             rg.setGuestType(age < 12 ? "CHILD" : "ADULT");
-            rg.setIsPrimaryContact(dto.getIsPrimaryContact() != null ? dto.getIsPrimaryContact() : false);
             roomGuestRepository.saveAndFlush(rg);
         }
 

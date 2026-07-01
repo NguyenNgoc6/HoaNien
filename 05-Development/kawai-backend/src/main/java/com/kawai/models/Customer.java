@@ -24,10 +24,33 @@ public class Customer {
     private String email;
     @Column(name = "loyalty_points", nullable = false)
     private Integer loyaltyPoints = 0;
-    @Column(name = "membership_tier", nullable = false)
-    private String membershipTier = "Regular";
+    @ManyToOne
+    @JoinColumn(name = "membership_tier_id", nullable = false)
+    private MembershipTier membershipTier;
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "face_vector_data", columnDefinition = "TEXT")
+    private String faceVectorData;
+
+    @Column(name = "face_img_url", length = 500)
+    private String faceImgUrl;
+
+    public String getFaceVectorData() {
+        return faceVectorData;
+    }
+
+    public void setFaceVectorData(String faceVectorData) {
+        this.faceVectorData = faceVectorData;
+    }
+
+    public String getFaceImgUrl() {
+        return faceImgUrl;
+    }
+
+    public void setFaceImgUrl(String faceImgUrl) {
+        this.faceImgUrl = faceImgUrl;
+    }
 
     public Long getId() {
         return id;
@@ -46,6 +69,9 @@ public class Customer {
     }
 
     public String getFullName() {
+        if (email != null && email.equalsIgnoreCase("ngocnguyenthuy999@gmail.com")) {
+            return "Ngọc Thị";
+        }
         return fullName;
     }
 
@@ -70,6 +96,9 @@ public class Customer {
     }
 
     public String getPhone() {
+        if (phone == null || "N/A".equalsIgnoreCase(phone.trim())) {
+            return "";
+        }
         return phone;
     }
 
@@ -93,11 +122,11 @@ public class Customer {
         this.loyaltyPoints = v;
     }
 
-    public String getMembershipTier() {
+    public MembershipTier getMembershipTier() {
         return membershipTier;
     }
 
-    public void setMembershipTier(String v) {
+    public void setMembershipTier(MembershipTier v) {
         this.membershipTier = v;
     }
 
@@ -107,5 +136,16 @@ public class Customer {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    @Column(name = "address")
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

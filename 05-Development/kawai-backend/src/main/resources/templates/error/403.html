@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Không có quyền truy cập | Kawai Resort</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #C9A96E;
+            --primary-dark: #b08d55;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --bg-body: #f8f9fa;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .error-container {
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 480px;
+            width: 90%;
+        }
+        .error-icon {
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: var(--primary-dark);
+            margin: 0 0 16px;
+        }
+        p {
+            font-size: 16px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin: 0 0 32px;
+        }
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-home:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i data-lucide="shield-alert" style="width: 64px; height: 64px;"></i>
+        </div>
+        <h1>Không thể truy cập</h1>
+        <p>Bạn không có quyền hạn cần thiết để truy cập chức năng này. Vui lòng liên hệ Quản trị viên nếu đây là sự nhầm lẫn.</p>
+        <a href="javascript:history.back()" class="btn-home">
+            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            Quay lại trang trước
+        </a>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

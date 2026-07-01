@@ -34,12 +34,14 @@
             transition: all 0.22s ease;
             white-space: nowrap;
         }
+
         .btn-folio-detail:hover {
             background: #634636;
             color: #fff;
             box-shadow: 0 6px 20px rgba(99, 70, 54, 0.45), 0 2px 6px rgba(99, 70, 54, 0.25);
             transform: translateY(-1px);
         }
+
         .btn-folio-detail:active {
             transform: scale(0.97) translateY(0);
             box-shadow: 0 2px 8px rgba(99, 70, 54, 0.3);
@@ -62,7 +64,7 @@
             <div class="sidebar-section-title">RECEPTIONIST</div>
 
             <nav class="sidebar-nav">
-                <a href="/receptionist/dashboard" class="nav-item">
+                <a href="/receptionist/dashboard" class="nav-item" sec:authorize="hasAnyAuthority('OP_DASHBOARD', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-border-all"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Room Matrix</span>
@@ -71,14 +73,14 @@
                     <i class="fa-solid fa-chevron-right nav-arrow"></i>
                 </a>
 
-                <a href="/receptionist/walk-in" class="nav-item">
+                <a href="/receptionist/walk-in" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_WALKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-person-walking-luggage"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Walk-In</span>
                         <span class="nav-sub-text">Khách vãng lai</span>
                     </div>
                 </a>
-                <a href="/receptionist/check-in" class="nav-item">
+                <a href="/receptionist/check-in" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_CHECKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Check-in</span>
@@ -92,7 +94,7 @@
                         <span class="nav-sub-text">Trả phòng & Hóa đơn</span>
                     </div>
                 </a>
-                <a href="/receptionist/in-house" class="nav-item">
+                <a href="/receptionist/in-house" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_INHOUSE', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-bed"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Khách lưu trú</span>
@@ -142,7 +144,7 @@
                         <i class="fa-solid fa-user"></i>
                         <span>Receptionist</span>
                     </button>
-                    <button class="logout-btn">
+                    <button class="logout-btn" onclick="window.location.href='/logout'">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                         <span>Logout</span>
                     </button>
@@ -159,8 +161,10 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Representative / Booker</th>
-                                <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Expected Check-out Date</th>
+                                <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Representative / Booker
+                                </th>
+                                <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Expected Check-out Date
+                                </th>
                                 <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Total Payments</th>
                                 <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Phone Number</th>
                                 <th style="font-weight: 700; color: #000; font-size: 0.9rem;">Status</th>
@@ -181,12 +185,12 @@
     <script>
         let allFolios = [];
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             fetchActiveFolios();
 
             const searchInput = document.getElementById('folioSearchInput');
             if (searchInput) {
-                searchInput.addEventListener('input', function(e) {
+                searchInput.addEventListener('input', function (e) {
                     const term = e.target.value.toLowerCase().trim();
                     if (!term) {
                         renderFolios(allFolios);
@@ -221,7 +225,7 @@
         function renderFolios(folios) {
             const tbody = document.getElementById('folioTableBody');
             tbody.innerHTML = '';
-            
+
             if (!folios || folios.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No active folios found.</td></tr>';
                 return;
@@ -230,7 +234,7 @@
             folios.forEach(folio => {
                 const tr = document.createElement('tr');
                 const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
-                
+
                 const statusClass = folio.status.toLowerCase() === 'checked_out' ? 'status-confirmed' : 'status-pending';
                 tr.innerHTML = `
                     <td>

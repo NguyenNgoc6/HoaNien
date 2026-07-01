@@ -20,6 +20,10 @@ public class MasterDataServiceImpl implements MasterDataService {
     private final PromotionRepository promotionRepository;
     private final BookingRepository bookingRepository;
     private final RoleRepository roleRepository;
+    private final DailyRateRepository dailyRateRepository;
+    private final DynamicPricingRepository dynamicPricingRepository;
+    private final AccountRepository accountRepository;
+    private final AuditLogRepository auditLogRepository;
 
     @Override
     @Transactional
@@ -112,16 +116,38 @@ public class MasterDataServiceImpl implements MasterDataService {
                 Promotion promo = new Promotion();
                 promo.setPromoCode((String) payload.get("code"));
                 promo.setDescription((String) payload.get("description"));
-                String dStr = (String) payload.get("discount");
+                if (payload.get("comboConfig") != null)
+                    promo.setComboConfig((String) payload.get("comboConfig"));
+                if (payload.get("discountType") != null)
+                    promo.setDiscountType((String) payload.get("discountType"));
+                else
+                    promo.setDiscountType("Phần trăm");
+
+                String dStr = (String) payload.get("rawValue");
                 if (dStr != null) {
-                    promo.setDiscountValue(new java.math.BigDecimal(dStr.replaceAll("[^\\d.]", "")));
+                    String c = dStr.replaceAll("[^\\d]", "");
+                    if (!c.isEmpty())
+                        promo.setDiscountValue(new java.math.BigDecimal(c));
+                    else
+                        promo.setDiscountValue(java.math.BigDecimal.ZERO);
                 } else {
                     promo.setDiscountValue(java.math.BigDecimal.ZERO);
                 }
-                promo.setDiscountType("PERCENTAGE");
-                promo.setValidFrom(java.time.LocalDateTime.now());
-                promo.setValidTo(java.time.LocalDate.now().plusYears(1));
-                promo.setMaxUses(100);
+                
+                if (payload.get("validFrom") != null && !payload.get("validFrom").toString().isEmpty())
+                    promo.setValidFrom(java.time.LocalDateTime.parse(payload.get("validFrom").toString()));
+                else
+                    promo.setValidFrom(java.time.LocalDateTime.now());
+                
+                if (payload.get("validTo") != null && !payload.get("validTo").toString().isEmpty())
+                    promo.setValidTo(java.time.LocalDate.parse(payload.get("validTo").toString()));
+                else
+                    promo.setValidTo(java.time.LocalDate.now().plusYears(1));
+                
+                if (payload.get("maxUses") != null && !payload.get("maxUses").toString().isEmpty())
+                    promo.setMaxUses(Integer.parseInt(payload.get("maxUses").toString()));
+                else
+                    promo.setMaxUses(100);
                 
                 if (payload.get("maxDiscountValueVnd") != null && !payload.get("maxDiscountValueVnd").toString().isEmpty()) {
                     promo.setMaxDiscountValueVnd(new java.math.BigDecimal(payload.get("maxDiscountValueVnd").toString().replaceAll("[^\\d.]", "")));
@@ -144,6 +170,39 @@ public class MasterDataServiceImpl implements MasterDataService {
                     : com.kawai.security.RolePermissionConstants.getDefaultPermissionsFor((String) payload.get("name"));
                 newRole.setPermissions(permStr);
                 roleRepository.save(newRole);
+                break;
+            case "pricing":
+                DailyRate newRate = new DailyRate();
+                if (payload.get("roomCategory") != null) {
+                    String categoryName = payload.get("roomCategory").toString();
+                    roomCategoryRepository.findAll().stream()
+                        .filter(c -> c.getCategoryName().equals(categoryName))
+                        .findFirst().ifPresent(newRate::setCategory);
+                }
+                if (payload.get("price") != null) {
+                    String p = payload.get("price").toString().replaceAll("[^\\d]", "");
+                    if (!p.isEmpty()) {
+                        newRate.setComputedPrice(new java.math.BigDecimal(p));
+                    }
+                }
+                if (payload.get("isWeekend") != null) {
+                    newRate.setIsWeekend(Boolean.parseBoolean(payload.get("isWeekend").toString()));
+                } else {
+                    newRate.setIsWeekend(false);
+                }
+                if (payload.get("isHoliday") != null) {
+                    newRate.setIsHoliday(Boolean.parseBoolean(payload.get("isHoliday").toString()));
+                } else {
+                    newRate.setIsHoliday(false);
+                }
+                if (payload.get("date") != null && !payload.get("date").toString().isEmpty()) {
+                    newRate.setRateDate(java.time.LocalDate.parse(payload.get("date").toString()));
+                } else {
+                    newRate.setRateDate(java.time.LocalDate.now());
+                }
+                if (newRate.getCategory() != null) {
+                    dailyRateRepository.save(newRate);
+                }
                 break;
         }
         return payload;
@@ -283,7 +342,7 @@ public class MasterDataServiceImpl implements MasterDataService {
                         promo.setComboConfig((String) payload.get("comboConfig"));
                     if (payload.get("discountType") != null)
                         promo.setDiscountType((String) payload.get("discountType"));
-                    String dStr = (String) payload.get("value");
+                    String dStr = (String) payload.get("rawValue");
                     if (dStr != null) {
                         String c = dStr.replaceAll("[^\\d]", "");
                         if (!c.isEmpty())
@@ -328,11 +387,53 @@ public class MasterDataServiceImpl implements MasterDataService {
                     if ("Admin".equalsIgnoreCase(role.getRoleName())) {
                         throw new IllegalArgumentException("Không thể sửa vai trò Admin");
                     }
+                    String oldPermissions = role.getPermissions();
+                    String oldName = role.getRoleName();
                     role.setRoleName((String) payload.get("name"));
                     if (payload.get("permissions") != null) {
                         role.setPermissions(payload.get("permissions").toString());
                     }
                     roleRepository.save(role);
+
+                    try {
+                        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                        Account currentAccount = null;
+                        if (auth != null && auth.isAuthenticated()) {
+                            currentAccount = accountRepository.findByUsername(auth.getName()).orElse(null);
+                        }
+                        AuditLog audit = new AuditLog();
+                        audit.setAccount(currentAccount);
+                        audit.setAction("UPDATE_ROLE");
+                        audit.setTableName("Roles");
+                        audit.setRecordId(role.getId());
+                        audit.setOldValue("Name: " + oldName + ", Permissions: " + oldPermissions);
+                        audit.setNewValue("Name: " + role.getRoleName() + ", Permissions: " + role.getPermissions());
+                        audit.setIpAddress("127.0.0.1");
+                        auditLogRepository.save(audit);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                break;
+            case "pricing":
+                DailyRate rate = dailyRateRepository.findById(entityId).orElse(null);
+                if (rate != null) {
+                    if (payload.get("price") != null) {
+                        String p = payload.get("price").toString().replaceAll("[^\\d]", "");
+                        if (!p.isEmpty()) {
+                            rate.setComputedPrice(new java.math.BigDecimal(p));
+                        }
+                    }
+                    if (payload.get("isWeekend") != null) {
+                        rate.setIsWeekend(Boolean.parseBoolean(payload.get("isWeekend").toString()));
+                    }
+                    if (payload.get("isHoliday") != null) {
+                        rate.setIsHoliday(Boolean.parseBoolean(payload.get("isHoliday").toString()));
+                    }
+                    if (payload.get("date") != null && !payload.get("date").toString().isEmpty()) {
+                        rate.setRateDate(java.time.LocalDate.parse(payload.get("date").toString()));
+                    }
+                    dailyRateRepository.save(rate);
                 }
                 break;
         }
@@ -357,7 +458,7 @@ public class MasterDataServiceImpl implements MasterDataService {
                 break;
             case "rooms":
                 roomRepository.findById(entityId).ifPresent(room -> {
-                    room.setRoomStatus("OutOfOrder");
+                    room.setRoomStatus("Maintenance");
                     roomRepository.save(room);
                 });
                 break;
@@ -387,6 +488,9 @@ public class MasterDataServiceImpl implements MasterDataService {
                     roleRepository.delete(r);
                 });
                 break;
+            case "pricing":
+                dynamicPricingRepository.findById(entityId).ifPresent(dynamicPricingRepository::delete);
+                break;
         }
     }
 
@@ -410,20 +514,13 @@ public class MasterDataServiceImpl implements MasterDataService {
                     roomCategoryRepository.findById(entityId).ifPresent(rc -> {
                         rc.setIsActive(newStatus);
                         roomCategoryRepository.save(rc);
-                        // Cascade
-                        roomRepository.findAll().stream()
-                            .filter(r -> r.getCategory() != null && r.getCategory().getId().equals(rc.getId()))
-                            .forEach(r -> {
-                                r.setRoomStatus(newStatus ? "Vacant_Clean" : "OutOfOrder");
-                                roomRepository.save(r);
-                            });
                     });
                 }
                 break;
             case "rooms":
                 if (entityId != null) {
                     roomRepository.findById(entityId).ifPresent(room -> {
-                        room.setRoomStatus(newStatus ? "Occupied" : "OutOfOrder");
+                        room.setRoomStatus(newStatus ? "Vacant_Clean" : "Maintenance");
                         roomRepository.save(room);
                     });
                 }
