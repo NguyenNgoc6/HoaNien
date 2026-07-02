@@ -125,16 +125,9 @@ public class TourGuideController {
         String separator = cleanUrl.contains("?") ? "&" : "?";
         return "redirect:" + cleanUrl + separator + "toast=delete_success";
     }
-    @GetMapping("/dashboard")
-    @org.springframework.transaction.annotation.Transactional
-    public String dashboard(
-            @org.springframework.web.bind.annotation.RequestParam(value = "scanned", required = false) String scanned,
-            @org.springframework.web.bind.annotation.RequestParam(value = "scheduleId", required = false) Long scheduleId,
-            Principal principal,
-            Model model) {
-        
-        // Ensure customer 5 is renamed to Ngọc Thị in the database
+    private void healDatabase() {
         try {
+            // Ensure customer 5 is renamed to Ngọc Thị in the database
             customerRepository.findById(5L).ifPresent(c -> {
                 if ("Lê Quang".equals(c.getFullName())) {
                     c.setFullName("Ngọc Thị");
@@ -166,9 +159,47 @@ public class TourGuideController {
                     employeeRepository.saveAndFlush(e);
                 }
             });
+
+            java.time.LocalDate today = java.time.LocalDate.now();
+            // Ensure schedule 1 (Đoàn tụ - Huế) departure date is set to today
+            tourScheduleRepository.findById(1L).ifPresent(sched -> {
+                if (!today.equals(sched.getDepartureDate())) {
+                    sched.setDepartureDate(today);
+                    tourScheduleRepository.saveAndFlush(sched);
+                }
+            });
+
+            // Ensure schedule 5 is set to today for demo purposes
+            tourScheduleRepository.findById(5L).ifPresent(sched -> {
+                if (!today.equals(sched.getDepartureDate())) {
+                    sched.setDepartureDate(today);
+                    tourScheduleRepository.saveAndFlush(sched);
+                }
+            });
+
+            // Ensure customer 5 (Ngọc Thị) booking 28 is assigned to Tour Schedule 1 (Đoàn tụ - Huế)
+            tourBookingRepository.findById(28L).ifPresent(b -> {
+                tourScheduleRepository.findById(1L).ifPresent(sched -> {
+                    if (b.getSchedule() == null || !b.getSchedule().getId().equals(1L)) {
+                        b.setSchedule(sched);
+                        tourBookingRepository.saveAndFlush(b);
+                    }
+                });
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @GetMapping("/dashboard")
+    @org.springframework.transaction.annotation.Transactional
+    public String dashboard(
+            @org.springframework.web.bind.annotation.RequestParam(value = "scanned", required = false) String scanned,
+            @org.springframework.web.bind.annotation.RequestParam(value = "scheduleId", required = false) Long scheduleId,
+            Principal principal,
+            Model model) {
+        
+        healDatabase();
 
         model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
@@ -286,14 +317,7 @@ public class TourGuideController {
             model.addAttribute("username", principal.getName());
         }
         
-        // Ensure schedule 5 is set to today for demo purposes
-        java.time.LocalDate today = java.time.LocalDate.now();
-        tourScheduleRepository.findById(5L).ifPresent(sched -> {
-            if (!today.equals(sched.getDepartureDate())) {
-                sched.setDepartureDate(today);
-                tourScheduleRepository.saveAndFlush(sched);
-            }
-        });
+        healDatabase();
         
         // Fetch all tour schedules from DB
         java.util.List<com.kawai.models.TourSchedule> dbSchedules = tourScheduleRepository.findAll();
