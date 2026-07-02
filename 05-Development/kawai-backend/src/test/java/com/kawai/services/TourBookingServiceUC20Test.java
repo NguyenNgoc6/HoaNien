@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("UC20.1 — Đặt tour du lịch (TourBookingService)")
-class TourBookingServiceUC20Test {
+public class TourBookingServiceUC20Test {
 
     @Mock
     private TourScheduleRepository tourScheduleRepository;
