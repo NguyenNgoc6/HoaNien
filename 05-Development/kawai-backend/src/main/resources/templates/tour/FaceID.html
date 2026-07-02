@@ -398,30 +398,6 @@
                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/70">Theo dõi trạng thái và
                     thực hiện điểm danh tự động qua FaceID.</p>
             </div>
-            <!-- Tour Lifecycle Control Banner -->
-            <div id="tour-lifecycle-banner"
-                th:attr="data-schedule-id=${scheduleId != null ? scheduleId : ''},data-schedule-status=${scheduleStatus != null ? scheduleStatus : 'Open'}"
-                class="glass-panel p-6 rounded-lg border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div id="tour-status-dot" class="w-3 h-3 rounded-full bg-secondary-container/80 ring-4 ring-secondary-container/20 transition-all duration-500"></div>
-                    <div>
-                        <p class="font-label-md text-[11px] text-on-surface-variant/60 uppercase tracking-widest mb-0.5">Trạng thái hành trình</p>
-                        <p id="tour-status-label" class="font-headline-md text-[18px] text-on-surface font-semibold">Chưa bắt đầu</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button id="btn-start-tour" onclick="startTour()"
-                        class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 text-white font-label-md text-[13px] shadow-lg shadow-emerald-600/25 hover:scale-[1.02] hover:bg-emerald-700 transition-all">
-                        <span class="material-symbols-outlined text-[18px]">play_circle</span>
-                        Bắt đầu hành trình
-                    </button>
-                    <button id="btn-end-tour" onclick="endTour()" disabled
-                        class="flex items-center gap-2 px-6 py-2.5 rounded-full border border-red-700/40 text-red-700 font-label-md text-[13px] hover:bg-red-700 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                        <span class="material-symbols-outlined text-[18px]">stop_circle</span>
-                        Kết thúc hành trình
-                    </button>
-                </div>
-            </div>
             <!-- Grid Layout -->
             <div class="grid grid-cols-12 gap-8 items-start">
                 <!-- Left Column: Customer List -->
@@ -517,8 +493,7 @@
                                             </span>
                                             <button th:if="${attendee.status == 'Not_Show'}"
                                                 th:onclick="'checkinManual(' + ${attendee.id} + ')'"
-                                                id="manual-checkin-btn"
-                                                class="manual-checkin-btn ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner disabled:opacity-30 disabled:cursor-not-allowed">
+                                                class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner">
                                                 <span class="material-symbols-outlined text-[18px]">check</span>
                                             </button>
                                         </td>
@@ -841,34 +816,6 @@
         </div>
     </div>
 
-    <!-- ===== CUSTOM CONFIRM MODAL ===== -->
-    <div id="confirm-modal-backdrop"
-        class="fixed inset-0 z-[9999] flex items-center justify-center hidden"
-        style="backdrop-filter: blur(12px); background: rgba(15,10,8,0.55);">
-        <div id="confirm-modal-card"
-            class="relative w-[420px] max-w-[92vw] glass-panel rounded-2xl p-8 shadow-2xl border border-white/20"
-            style="transform: translateY(24px) scale(0.96); opacity: 0; transition: transform 0.28s cubic-bezier(.22,1,.36,1), opacity 0.22s ease;">
-            <!-- Icon -->
-            <div id="confirm-modal-icon-wrap" class="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-5"></div>
-            <!-- Title -->
-            <h3 id="confirm-modal-title" class="font-display-md text-[22px] text-center text-[#1a0f08] font-bold mb-2"></h3>
-            <!-- Message -->
-            <p id="confirm-modal-message" class="font-body-md text-[14px] text-center text-[#3d2b1f] leading-relaxed mb-8"></p>
-            <!-- Buttons -->
-            <div class="flex gap-3">
-                <button id="confirm-modal-cancel"
-                    class="flex-1 py-3 rounded-full border border-primary/20 text-on-surface-variant font-label-md text-[13px] hover:bg-primary/5 transition-all">
-                    Huỷ bỏ
-                </button>
-                <button id="confirm-modal-ok"
-                    class="flex-1 py-3 rounded-full font-label-md text-[13px] text-white transition-all hover:scale-[1.02] shadow-lg">
-                    Xác nhận
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- ===== END CONFIRM MODAL ===== -->
-
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-24 right-8 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
@@ -885,7 +832,6 @@
         let referenceDescriptors = [];
         let scanInterval = null;
         const recentlyScanned = new Set();
-        const recentlyUnknown = new Set();
 
         async function loadModels() {
             const statusText = document.getElementById('scan-status-label');
@@ -1013,15 +959,6 @@
             const scanLine = document.getElementById('scan-line');
 
             try {
-                // Guard: chỉ điểm danh khi tour đang diễn ra
-                if (typeof _tourStatus !== 'undefined' && _tourStatus !== 'In_Progress') {
-                    const msg = _tourStatus === 'Completed'
-                        ? 'Hành trình đã kết thúc, không thể điểm danh.'
-                        : 'Vui lòng bấm "Bắt đầu hành trình" trước khi điểm danh!';
-                    showToast(msg, 'error');
-                    isScanning = false;
-                    return;
-                }
                 // Sử dụng detectAllFaces để quét đám đông
                 const detections = await faceapi
                     .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
@@ -1075,43 +1012,62 @@
                                 recentlyScanned.add(bestName);
                                 showToast(`Đã điểm danh thành công: ${bestName}`, 'success');
 
-                                // Cập nhật bằng API, lấy attendeeId để redirect chính xác
-                                let checkedAttendeeId = '';
+                                // Cập nhật ngầm bằng API
                                 try {
-                                    const verifyResp = await fetch('/api/faceid/verify', {
+                                    await fetch('/api/faceid/verify', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ name: bestName })
                                     });
-                                    const verifyData = await verifyResp.json();
-                                    if (verifyData && verifyData.attendeeId) {
-                                        checkedAttendeeId = verifyData.attendeeId;
-                                    }
+
+                                    // Update UI List bên tay trái ngay lập tức (không cần reload)
+                                    const rows = document.querySelectorAll('tbody tr');
+                                    rows.forEach(row => {
+                                        const nameCol = row.querySelector('td:nth-child(2)');
+                                        if (nameCol && nameCol.textContent.includes(bestName)) {
+                                            const statusCol = row.querySelector('td:nth-child(3)');
+                                            if (statusCol && !statusCol.innerHTML.includes('Đã điểm danh')) {
+                                                statusCol.innerHTML = `
+                                                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-label-sm text-label-sm border border-emerald-500/30 flex items-center">
+                                                        <span class="material-symbols-outlined text-[14px] mr-1">check</span>Đã điểm danh
+                                                    </span>
+                                                    <button class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary/40 cursor-default bg-primary/5" disabled>
+                                                        <span class="material-symbols-outlined text-[16px]">check</span>
+                                                    </button>
+                                                `;
+                                                
+                                                // Cập nhật thanh tiến độ
+                                                const countSpan = document.querySelector('.font-headline-md.text-2xl span:first-child');
+                                                const totalSpan = document.querySelector('.font-headline-md.text-2xl span:last-child');
+                                                const pctSpan = document.querySelector('.text-xs.text-on-surface-variant\\/60.font-semibold');
+                                                const barDiv = document.querySelector('.bg-primary.h-full.rounded-full');
+                                                
+                                                if (countSpan && totalSpan) {
+                                                    let c = parseInt(countSpan.textContent) + 1;
+                                                    let t = parseInt(totalSpan.textContent);
+                                                    countSpan.textContent = c;
+                                                    if (t > 0) {
+                                                        let pct = Math.round((c / t) * 100);
+                                                        if(pctSpan) pctSpan.textContent = pct + '%';
+                                                        if(barDiv) barDiv.style.width = pct + '%';
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
                                 } catch (e) { console.warn(e); }
 
                                 // Xóa khỏi danh sách spam sau 10s
                                 setTimeout(() => recentlyScanned.delete(bestName), 10000);
 
-                                // Tự động tải lại trang — truyền attendeeId để highlight đúng dòng
+                                // Tự động tải lại trang sau khi điểm danh thành công
                                 setTimeout(() => {
-                                    const params = checkedAttendeeId
-                                        ? `?scanned=true&attendeeId=${checkedAttendeeId}`
-                                        : '?scanned=true';
-                                    window.location.href = '/tourguide/dashboard' + params;
+                                    window.location.href = '/tourguide/dashboard?scanned=true';
                                 }, 1500);
                             }
                         } else {
                             // NOT MATCHED
-                            frameDiv.className = 'face-frame failed';
-                            frameDiv.innerHTML = `<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-red-600/90 text-white px-2 py-1 rounded text-[10px] whitespace-nowrap font-bold shadow-md">Không tồn tại</div>`;
-
-                            // Anti-spam warning for unknown faces
-                            const unknownKey = 'unknown_face_detected';
-                            if (!recentlyUnknown.has(unknownKey)) {
-                                recentlyUnknown.add(unknownKey);
-                                showToast('Khuôn mặt chưa được đăng ký trong hệ thống!', 'error');
-                                setTimeout(() => recentlyUnknown.delete(unknownKey), 8000);
-                            }
+                            frameDiv.className = 'face-frame scanning';
                         }
                         // Thêm khung vào video
                         facesContainer.appendChild(frameDiv);
@@ -1204,31 +1160,21 @@
                 statusIcon.textContent = 'check_circle';
                 showScanResult(true, matchResult.name, `Xác thực thành công (${matchResult.confidence.toFixed(1)}%)`);
 
-                let checkedAttendeeId2 = '';
                 try {
-                    const verifyResp2 = await fetch('/api/faceid/verify', {
+                    await fetch('/api/faceid/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: matchResult.name })
                     });
-                    const verifyData2 = await verifyResp2.json();
-                    if (verifyData2 && verifyData2.attendeeId) {
-                        checkedAttendeeId2 = verifyData2.attendeeId;
-                    }
                 } catch (e) {
                     console.warn(e);
                 }
-                setTimeout(() => {
-                    const params2 = checkedAttendeeId2
-                        ? `?scanned=true&attendeeId=${checkedAttendeeId2}`
-                        : '?scanned=true';
-                    window.location.href = '/tourguide/dashboard' + params2;
-                }, 2000);
+                setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true'; }, 2000);
             } else {
                 faceFrame.className = 'face-frame failed';
-                statusLabel.textContent = 'KHÔNG TỒN TẠI';
+                statusLabel.textContent = 'KHÔNG KHỚP';
                 statusIcon.textContent = 'error';
-                showScanResult(false, 'Không tồn tại', 'Khuôn mặt khách hàng chưa được đăng ký trong hệ thống.');
+                showScanResult(false, 'Không nhận diện được', 'Thử lại hoặc check-in thủ công.');
             }
 
             isScanning = false;
@@ -1258,11 +1204,7 @@
                 const data = await resp.json();
                 if (data.success) {
                     showToast(data.name + ' đã được điểm danh thành công!', 'success');
-                    setTimeout(() => {
-                        window.location.href = `/tourguide/dashboard?scanned=true&attendeeId=${attendeeId}`;
-                    }, 800);
-                } else {
-                    showToast(data.message || 'Điểm danh thất bại', 'error');
+                    window.location.href = '/tourguide/dashboard?scanned=true';
                 }
             } catch (e) {
                 console.error(e);
@@ -1333,172 +1275,6 @@
             document.getElementById('incident-description').value = '';
         }
 
-        // ===== TOUR LIFECYCLE =====
-        let _tourScheduleId = null;
-        let _tourStatus = 'Open'; // Open | In_Progress | Completed
-
-        /**
-         * showConfirm({ icon, iconBg, title, message, confirmText, confirmBg }) → Promise<boolean>
-         * Replaces native confirm() with a beautiful modal.
-         */
-        function showConfirm({ icon = 'help', iconBg = 'bg-primary/15', iconColor = 'text-primary',
-                               title = 'Xác nhận', message = '', confirmText = 'Xác nhận',
-                               confirmBg = 'bg-primary' } = {}) {
-            return new Promise(resolve => {
-                const backdrop = document.getElementById('confirm-modal-backdrop');
-                const card     = document.getElementById('confirm-modal-card');
-                const iconWrap = document.getElementById('confirm-modal-icon-wrap');
-                const titleEl  = document.getElementById('confirm-modal-title');
-                const msgEl    = document.getElementById('confirm-modal-message');
-                const okBtn    = document.getElementById('confirm-modal-ok');
-                const cancelBtn= document.getElementById('confirm-modal-cancel');
-
-                // Populate
-                iconWrap.className = `flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-5 ${iconBg}`;
-                iconWrap.innerHTML = `<span class="material-symbols-outlined text-[32px] ${iconColor}" style="font-variation-settings:'FILL' 1">${icon}</span>`;
-                titleEl.textContent = title;
-                msgEl.textContent   = message;
-                okBtn.textContent   = confirmText;
-                okBtn.className     = `flex-1 py-3 rounded-full font-label-md text-[13px] text-white transition-all hover:scale-[1.02] shadow-lg ${confirmBg}`;
-
-                // Show
-                backdrop.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    card.style.transform = 'translateY(0) scale(1)';
-                    card.style.opacity   = '1';
-                });
-
-                function close(result) {
-                    card.style.transform = 'translateY(20px) scale(0.96)';
-                    card.style.opacity   = '0';
-                    setTimeout(() => backdrop.classList.add('hidden'), 250);
-                    okBtn.removeEventListener('click', onOk);
-                    cancelBtn.removeEventListener('click', onCancel);
-                    backdrop.removeEventListener('click', onBackdrop);
-                    resolve(result);
-                }
-                const onOk       = () => close(true);
-                const onCancel   = () => close(false);
-                const onBackdrop = (e) => { if (e.target === backdrop) close(false); };
-                okBtn.addEventListener('click', onOk);
-                cancelBtn.addEventListener('click', onCancel);
-                backdrop.addEventListener('click', onBackdrop);
-            });
-        }
-
-        function initTourLifecycle() {
-            const banner = document.getElementById('tour-lifecycle-banner');
-            if (!banner) return;
-            _tourScheduleId = banner.getAttribute('data-schedule-id') || null;
-            _tourStatus = banner.getAttribute('data-schedule-status') || 'Open';
-            applyTourStatus(_tourStatus, false);
-        }
-
-        function applyTourStatus(status, animate) {
-            _tourStatus = status;
-            const dot = document.getElementById('tour-status-dot');
-            const label = document.getElementById('tour-status-label');
-            const btnStart = document.getElementById('btn-start-tour');
-            const btnEnd = document.getElementById('btn-end-tour');
-            const manualBtns = document.querySelectorAll('.manual-checkin-btn');
-
-            if (status === 'In_Progress') {
-                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-400/30 transition-all duration-500'; }
-                if (label) label.textContent = '🟢 Đang diễn ra — Điểm danh mở';
-                if (btnStart) btnStart.disabled = true;
-                if (btnEnd) btnEnd.disabled = false;
-                manualBtns.forEach(b => b.disabled = false);
-                if (animate) showToast('Hành trình đã bắt đầu! Điểm danh được mở.', 'success');
-            } else if (status === 'Completed') {
-                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-gray-400 ring-4 ring-gray-300/30 transition-all duration-500'; }
-                if (label) label.textContent = '⛳ Đã kết thúc';
-                if (btnStart) btnStart.disabled = false;
-                if (btnEnd) btnEnd.disabled = true;
-                manualBtns.forEach(b => b.disabled = true);
-                if (animate) showToast('Hành trình đã kết thúc. Điểm danh đã khóa.', 'info');
-            } else {
-                // Open / default
-                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-amber-400 ring-4 ring-amber-300/30 transition-all duration-500'; }
-                if (label) label.textContent = '⏳ Chưa bắt đầu — Chờ khởi hành';
-                if (btnStart) btnStart.disabled = false;
-                if (btnEnd) btnEnd.disabled = true;
-                manualBtns.forEach(b => b.disabled = true);
-            }
-        }
-
-        async function startTour() {
-            if (!_tourScheduleId) {
-                showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
-            }
-            const ok = await showConfirm({
-                icon: 'play_circle',
-                iconBg: 'bg-emerald-500/15',
-                iconColor: 'text-emerald-600',
-                title: 'Bắt đầu hành trình?',
-                message: 'Điểm danh sẽ được mở cho tất cả khách hàng trong tour này. Hành động này có thể hoàn tác.',
-                confirmText: 'Bắt đầu ngay',
-                confirmBg: 'bg-emerald-600 hover:bg-emerald-700'
-            });
-            if (!ok) return;
-            try {
-                const resp = await fetch('/api/faceid/tour-start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ scheduleId: parseInt(_tourScheduleId) })
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    applyTourStatus('In_Progress', true);
-                } else {
-                    showToast(data.message || 'Không thể bắt đầu hành trình', 'error');
-                }
-            } catch (e) {
-                showToast('Lỗi kết nối máy chủ', 'error');
-            }
-        }
-
-        async function endTour() {
-            if (!_tourScheduleId) {
-                showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
-            }
-            const ok = await showConfirm({
-                icon: 'stop_circle',
-                iconBg: 'bg-red-700/10',
-                iconColor: 'text-red-700',
-                title: 'Kết thúc hành trình?',
-                message: 'Sau khi kết thúc, điểm danh sẽ bị khoá. Bạn vẫn có thể bắt đầu lại nếu cần.',
-                confirmText: 'Kết thúc tour',
-                confirmBg: 'bg-red-700 hover:bg-red-800'
-            });
-            if (!ok) return;
-            try {
-                const resp = await fetch('/api/faceid/tour-end', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ scheduleId: parseInt(_tourScheduleId) })
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    applyTourStatus('Completed', true);
-                } else {
-                    showToast(data.message || 'Không thể kết thúc hành trình', 'error');
-                }
-            } catch (e) {
-                showToast('Lỗi kết nối máy chủ', 'error');
-            }
-        }
-
-        // Override checkinManual to guard tour status
-        const _originalCheckinManual = window.checkinManual;
-        async function checkinManualGuarded(attendeeId) {
-            if (_tourStatus !== 'In_Progress') {
-                showToast('Hành trình chưa bắt đầu. Vui lòng bấm "Bắt đầu hành trình" trước!', 'error');
-                return;
-            }
-            await checkinManual(attendeeId);
-        }
-        // ===== END TOUR LIFECYCLE =====
-
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1550,7 +1326,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadModels();
-            initTourLifecycle();
+
             // Check for toast redirects
             const urlParams = new URLSearchParams(window.location.search);
             const toastParam = urlParams.get('toast');
@@ -1568,34 +1344,8 @@
             }
 
             const scannedParam = urlParams.get('scanned');
-            const highlightAttendeeId = urlParams.get('attendeeId');
             if (scannedParam === 'true') {
                 showToast('Điểm danh khách hàng thành công!', 'success');
-
-                // Highlight & scroll to the newly checked-in attendee row
-                if (highlightAttendeeId) {
-                    const allRows = document.querySelectorAll('tbody tr');
-                    allRows.forEach(row => {
-                        const btn = row.querySelector('button[onclick*="' + highlightAttendeeId + '"]');
-                        const dataAttr = row.getAttribute('data-attendee-id');
-                        const rowText = row.innerHTML;
-                        const isTarget = (btn != null) || (dataAttr === highlightAttendeeId)
-                            || rowText.includes('checkinManual(' + highlightAttendeeId + ')');
-                        if (isTarget) {
-                            row.style.transition = 'background-color 0.4s ease';
-                            row.style.backgroundColor = 'rgba(16, 185, 129, 0.18)';
-                            row.style.outline = '2px solid rgba(16, 185, 129, 0.6)';
-                            row.style.borderRadius = '8px';
-                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            setTimeout(() => {
-                                row.style.transition = 'background-color 1.2s ease, outline 1.2s ease';
-                                row.style.backgroundColor = '';
-                                row.style.outline = '';
-                            }, 2500);
-                        }
-                    });
-                }
-
                 // Clean url parameters
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
