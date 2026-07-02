@@ -175,6 +175,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                 booking.setBookingSource("Direct_Web");
                 booking.setTotalPrice(totalPrice);
                 booking.setTourCharge(totalPrice);
+                booking.setIsWalkInTour(request.isWalkInTour());
                 if (appliedPromotion != null) {
                         booking.setAppliedPromotion(appliedPromotion);
                 }
