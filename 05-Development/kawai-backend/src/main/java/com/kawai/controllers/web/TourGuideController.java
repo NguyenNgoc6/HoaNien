@@ -129,7 +129,7 @@ public class TourGuideController {
         try {
             // Ensure customer 5 is renamed to Ngọc Thị in the database
             customerRepository.findById(5L).ifPresent(c -> {
-                if ("Lê Quang".equals(c.getFullName())) {
+                if (!"Ngọc Thị".equals(c.getFullName())) {
                     c.setFullName("Ngọc Thị");
                     c.setGender("Nữ");
                     customerRepository.saveAndFlush(c);

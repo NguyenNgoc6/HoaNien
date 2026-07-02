@@ -60,18 +60,16 @@ INSERT INTO membership_tiers (tier_id, tier_name, points_from, points_to, credit
 (3, 'Gold', 5000, 9999, 20000000.00, 'H廕》g V�ng'),
 (4, 'Platinum', 10000, 99999, 50000000.00, 'H廕》g B廕︷h kim');
 
--- ���� 4. Customers (15 rows) ����������������������������������������������������������������������
+--  4. Customers (15 rows) 
 INSERT INTO Customers (customer_id, account_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier_id) VALUES 
-(1, 5, 'Nguy廙� Xu璽n L⑹u', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 1),
-(2, 6, 'Ng廙㷼 Th廙�', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 2),
+(1, 5, 'Nguy廙 Xu璽n L⑹u', 'Nam', 'CCCD_101', '090101', 'nam101@test.com', 100, 1),
+(2, 6, 'Ng廙㷼 Th廙', 'Nam', 'CCCD_204', '090204', 'an204@test.com', 200, 2),
 (3, 7, 'Ph廕《 Tu廕叩', 'Nam', 'CCCD_308', '090308', 'tuan308@test.com', 500, 3),
-(4, 8, 'Tr廕吵 Th廙� B穩ch', 'N廙�', 'CCCD_104', '090104', 'bich104@test.com', 50, 1),
-(5, 9, 'Ng廙㷼 Th廙�', 'N廙�', 'CCCD_106', '090106', 'quang106@test.com', 0, 1),
-(6, 10, '�廙� M廙� Linh', 'N廙�', 'CCCD_207', '090207', 'linh207@test.com', 150, 2),
-(7, 11, 'Ho�ng Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 3),
+(4, 8, 'Tr廕吵 Th廙 B穩ch', 'N廙', 'CCCD_104', '090104', 'bich104@test.com', 50, 1),
+(5, 9, 'Ngọc Thị', 'Nữ', 'CCCD_106', '090106', 'quang106@test.com', 0, 1),
+(6, 10, '廙 M廙 Linh', 'N廙', 'CCCD_207', '090207', 'linh207@test.com', 150, 2),
+(7, 11, 'Hong Anh', 'Nam', 'CCCD_210', '090210', 'anh210@test.com', 300, 3),
 (8, 12, 'V觼 H羅ng', 'Nam', 'CCCD_311', '090311', 'hung311@test.com', 800, 4),
-(9, NULL, 'L⑹u �穫nh �廙妾', 'Nam', 'CCCD_DEMO1', '0909990001', 'duc@test.com', 0, 1),
-(10, NULL, 'Nguy廙� Minh �廙妾', 'Nam', 'CCCD_DEMO2', '0909990002', 'duc2@test.com', 0, 1),
 (11, NULL, 'Tr廕吵 Th廙� Mai', 'N廙�', 'CCCD_DEMO3', '0909990003', 'mai@test.com', 0, 1),
 (12, NULL, 'Ph廕《 H羅ng Anh', 'Nam', 'CCCD_DEMO4', '0909990004', 'phanh@test.com', 0, 1),
 (13, NULL, 'Nguy廙� Thanh S①n', 'Nam', 'CCCD_DEMO5', '0909990005', 'ntson@test.com', 0, 1),

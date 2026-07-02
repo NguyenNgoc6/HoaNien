@@ -1059,6 +1059,11 @@
 
                                 // Xóa khỏi danh sách spam sau 10s
                                 setTimeout(() => recentlyScanned.delete(bestName), 10000);
+
+                                // Tự động tải lại trang sau khi điểm danh thành công
+                                setTimeout(() => {
+                                    window.location.href = '/tourguide/dashboard?scanned=true';
+                                }, 1500);
                             }
                         } else {
                             // NOT MATCHED
