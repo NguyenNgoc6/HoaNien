@@ -1,40 +1,44 @@
 # KẾ HOẠCH THỰC THI CODE LUỒNG ĐẶT TOUR VÀ ĐIỂM DANH AI FACEID (MODULE 4)
+
 ## CHUẨN FULLSTACK MVC & TDD SPECIFICATION
 
-| Field          | Value                                                  |
-| -------------- | ------------------------------------------------------ |
-| Document ID    | KAWAI-MOD4-IMP-001                                     |
-| Version        | 1.0                                                    |
-| Date           | 2026-06-29                                             |
-| Status         | **APPROVED**                                           |
-| Deciders       | Nhóm Phát Triển SWP391 - G2, Antigravity (Architect Review) |
-| Standard       | ISO/IEC/IEEE 29119-3:2021 & Standard EDS v2.0          |
-| Target Folder  | `04-Implement`                                         |
+| Field         | Value                                                          |
+| ------------- | -------------------------------------------------------------- |
+| Document ID   | KAWAI-MOD4-IMP-001                                             |
+| Version       | 1.0                                                            |
+| Date          | 2026-06-29                                                     |
+| Status        | **APPROVED**                                             |
+| Deciders      | Nhóm Phát Triển SWP391 - G2, Antigravity (Architect Review) |
+| Standard      | ISO/IEC/IEEE 29119-3:2021 & Standard EDS v2.0                  |
+| Target Folder | `04-Implement`                                               |
 
 ---
 
 ## CHANGELOG
 
-| Ngày      | Người thực hiện | Nội dung thay đổi                                                    |
-| ---------- | ------------------- | ----------------------------------------------------------------------- |
+| Ngày      | Người thực hiện | Nội dung thay đổi                                                                                              |
+| ---------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | 2026-06-29 | Antigravity         | Thiết lập tài liệu kế hoạch thực thi tích hợp Module 4 (Tour & FaceID) theo tiêu chuẩn MVC, EDS & TDD. |
 
 ---
 
 ## MỤC LỤC
+
 1. [Tổng quan Luồng Nghiệp vụ (System Overview)](#1-tong-quan)
 2. [Ma trận Truy vết Yêu cầu (Traceability Matrix)](#2-traceability)
 3. [Thiết kế Kiến trúc MVC (MVC Architecture Spec)](#3-mvc)
-4. [Đặc tả API Chi tiết & Database Trigger (Engineering Spec)](#4-engineering)
+4. [Đặc tả API Chi tiết &amp; Database Trigger (Engineering Spec)](#4-engineering)
 5. [Đặc tả Kịch bản Kiểm thử TDD (TDD Test Specification)](#5-tdd)
 6. [Kế hoạch Triển khai Chi tiết (Implementation Roadmap)](#6-roadmap)
 
 ---
 
 <a id="1-tong-quan"></a>
+
 ## 1. Tổng quan Luồng Nghiệp vụ (System Overview)
 
 Module 4 (Quản lý Lữ hành & Đánh giá) đảm nhận vai trò quản lý vòng đời dịch vụ du lịch gia tăng của khách lưu trú hoặc khách lẻ vãng lai tại resort. Luồng nghiệp vụ cốt lõi gồm:
+
 - **Tìm kiếm & Đặt Tour:** Khách hàng tìm kiếm lịch trình chuyến xe tour, xem dự báo thời tiết real-time (tích hợp Weather API), thực hiện đặt chỗ với số lượng ghế mong muốn và thực hiện thanh toán trực tuyến (VNPay) hoặc ký nợ phòng (Post-to-Room).
 - **Điểm danh hành khách bằng AI Face Scan:** Khi xe tour xuất phát, Hướng dẫn viên sử dụng thiết bị Ops để quét ảnh chân dung khách hàng, hệ thống gửi ảnh đến Microservice Python để so khớp đặc trưng khuôn mặt (128-dim embedding) qua khoảng cách Cosine Similarity.
 - **Điểm danh thủ công Fallback:** Cho phép Hướng dẫn viên xác thực và điểm danh thủ công nếu cơ chế quét AI gặp sự cố kỹ thuật hoặc ảnh chụp có độ tin cậy < 85%.
@@ -43,29 +47,33 @@ Module 4 (Quản lý Lữ hành & Đánh giá) đảm nhận vai trò quản lý
 ---
 
 <a id="2-traceability"></a>
+
 ## 2. Ma trận Truy vết Yêu cầu (Traceability Matrix)
 
-| Requirement ID | UC ID | Business Rule | Code Component (JPA Entity / Service) | View Template | Trạng thái |
-|---|---|---|---|---|---|
-| FR-TOUR-01 | UC20 | — | `TourScheduleRepository.findByDepartureDate` / `WeatherApiClient` | `guest/tours.html` | ✅ Code có sẵn |
-| FR-TOUR-02 | UC20 | — | `WeatherApiClient.getWeatherForecast()` | `tour/tour-detail.html` | ✅ Code có sẵn |
-| FR-TOUR-03 | UC21 | BR-TR-01 | `TourBookingServiceImpl.bookTour()` | `guest/booking.html` | ✅ Code có sẵn |
-| FR-TOUR-04 | UC21 | BR-TR-01 | Trigger `TRG_Tour_Capacity_Validator` | — | ✅ Code có sẵn |
-| FR-TOUR-05 | UC21 | BR-FB-01 | `PosServiceImpl.chargeToRoom()` / `VnPayServiceImpl` | `guest/booking.html` | ✅ Code có sẵn |
-| FR-TOUR-09 | UC22 | BR-TR-05 | `@Scheduled` job `minimum_pax_check` T-24h | — | ⚠️ Chưa đồng bộ |
-| FR-AI-01   | UC22 | BR-TR-02 | `FaceIdApiController.scanFace()` | `tour/FaceID.html` | ⚠️ Demo mock data |
-| FR-AI-02   | UC22 | BR-TR-02 | `PythonAiServiceClient.compareFaces()` | `tour/FaceID.html` | ⚠️ Chưa nối API thật |
-| FR-AI-04   | UC22 | BR-TR-02 | `TourAttendanceRestController.manualCheckIn()` | `tour/Tour.html` | ✅ Code có sẵn |
+| Requirement ID | UC ID | Business Rule | Code Component (JPA Entity / Service)                                 | View Template             | Trạng thái              |
+| -------------- | ----- | ------------- | --------------------------------------------------------------------- | ------------------------- | ------------------------- |
+| FR-TOUR-01     | UC20  | —            | `TourScheduleRepository.findByDepartureDate` / `WeatherApiClient` | `guest/tours.html`      | ✅ Code có sẵn          |
+| FR-TOUR-02     | UC20  | —            | `WeatherApiClient.getWeatherForecast()`                             | `tour/tour-detail.html` | ✅ Code có sẵn          |
+| FR-TOUR-03     | UC21  | BR-TR-01      | `TourBookingServiceImpl.bookTour()`                                 | `guest/booking.html`    | ✅ Code có sẵn          |
+| FR-TOUR-04     | UC21  | BR-TR-01      | Trigger`TRG_Tour_Capacity_Validator`                                | —                        | ✅ Code có sẵn          |
+| FR-TOUR-05     | UC21  | BR-FB-01      | `PosServiceImpl.chargeToRoom()` / `VnPayServiceImpl`              | `guest/booking.html`    | ✅ Code có sẵn          |
+| FR-TOUR-09     | UC22  | BR-TR-05      | `@Scheduled` job `minimum_pax_check` T-24h                        | —                        | ⚠️ Chưa đồng bộ     |
+| FR-AI-01       | UC22  | BR-TR-02      | `FaceIdApiController.scanFace()`                                    | `tour/FaceID.html`      | ⚠️ Demo mock data       |
+| FR-AI-02       | UC22  | BR-TR-02      | `PythonAiServiceClient.compareFaces()`                              | `tour/FaceID.html`      | ⚠️ Chưa nối API thật |
+| FR-AI-04       | UC22  | BR-TR-02      | `TourAttendanceRestController.manualCheckIn()`                      | `tour/Tour.html`        | ✅ Code có sẵn          |
 
 ---
 
 <a id="3-mvc"></a>
+
 ## 3. Thiết kế Kiến trúc MVC (MVC Architecture Spec)
 
 ### 3.1 Tầng Model (M)
 
 #### A. Các JPA Entities & Ánh xạ CSDL
+
 Mọi thực thể của Module 4 được lưu tại package `com.kawai.models` và ánh xạ trực tiếp đến bảng cơ sở dữ liệu MySQL tương ứng:
+
 - **`Tour` (@Entity):** Chứa thông tin gốc của tour (tên, giá cơ sở, độ khó, mô tả).
 - **`TourSchedule` (@Entity):** Lưu lịch khởi hành cụ thể (ngày đi, giờ đi, số chỗ tối đa `maxCapacity`, số chỗ tối thiểu `minimumPax`, số chỗ đã bán `bookedSeats`, trạng thái `status`).
 - **`TourBooking` (@Entity):** Kế thừa lớp `Booking` tổng thể, lưu trữ liên kết với `TourSchedule`, số khách tham gia (`participantCount`) và tổng tiền đặt tour (`tourCharge`).
@@ -73,6 +81,7 @@ Mọi thực thể của Module 4 được lưu tại package `com.kawai.models`
 - **`CheckpointAttendance` (@Entity):** Điểm danh chi tiết tại từng điểm dừng chân của lịch trình.
 
 #### B. Cơ chế Concurrency Lock tại Repository
+
 Để ngăn chặn tình trạng đặt vé tour vượt quá sức chứa tối đa của chuyến xe (`maxCapacity`) dưới áp lực nhiều request đồng thời, ta định nghĩa cơ chế **Lock bi quan (Pessimistic Write Lock)** tại `TourScheduleRepository.java`:
 
 ```java
@@ -87,7 +96,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface TourScheduleRepository extends JpaRepository<TourSchedule, Long> {
-    
+  
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT ts FROM TourSchedule ts WHERE ts.id = :id")
     Optional<TourSchedule> findByIdWithLock(@Param("id") Long id);
@@ -101,7 +110,8 @@ public interface TourScheduleRepository extends JpaRepository<TourSchedule, Long
 Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các tác vụ của Hướng dẫn viên và xử lý các API RESTful bất đồng bộ.
 
 #### A. Web Controllers (`com.kawai.controllers.web`)
-- **`TourGuideController.java`:** 
+
+- **`TourGuideController.java`:**
   - `GET /tourguide/dashboard`: Trả về giao diện dashboard của HDV (`tour/Tour.html`).
   - `GET /tourguide/face-scan?scheduleId={id}`: Trả về giao diện quét camera FaceID (`tour/FaceID.html`).
 - **`TourController.java`:**
@@ -109,6 +119,7 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
   - `GET /tours/detail?id={id}`: Hiển thị trang chi tiết tour và dự báo thời tiết (`tour/tour-detail.html`).
 
 #### B. REST API Controllers (`com.kawai.controllers.api`)
+
 - **`TourBookingApiController.java`:**
   - `POST /api/tour-bookings`: Tạo mới đơn đặt tour, kiểm tra dung lượng ghế trống, tính toán phụ phí.
 - **`FaceIdApiController.java`:**
@@ -130,13 +141,16 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
 ---
 
 <a id="4-engineering"></a>
+
 ## 4. Đặc tả API Chi tiết & Database Trigger (Engineering Spec)
 
 ### 4.1. API Specification
 
 #### A. Endpoint: POST `/api/tour-bookings`
+
 - **Mô tả:** Đăng ký đặt tour cho nhóm khách lưu trú.
 - **Request Body:**
+
 ```json
 {
   "scheduleId": 105,
@@ -151,7 +165,9 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
   "personalPin": "8888"
 }
 ```
+
 - **Response — 200 OK (Happy Path):**
+
 ```json
 {
   "status": "SUCCESS",
@@ -160,7 +176,9 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
   "message": "Đã đặt tour thành công và ký nợ vào phòng."
 }
 ```
+
 - **Response — 409 Conflict (Overbooking / Hết chỗ):**
+
 ```json
 {
   "errorCode": "TOUR-001",
@@ -169,11 +187,13 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
 ```
 
 #### B. Endpoint: POST `/api/faceid/scan`
+
 - **Mô tả:** Chụp ảnh hành khách tại cửa xe và kiểm tra tính hợp lệ bằng AI.
 - **Request Parameters (Multipart Form-Data):**
   - `image`: File ảnh chụp (Binary)
   - `attendeeId`: Long (Mã hành khách cần so khớp)
 - **Response — 200 OK (Khớp khuôn mặt >= 85%):**
+
 ```json
 {
   "match": true,
@@ -183,7 +203,9 @@ Tầng Controller chịu trách nhiệm định tuyến view Thymeleaf cho các 
   "message": "Điểm danh FaceID thành công."
 }
 ```
+
 - **Response — 200 OK (Không khớp khuôn mặt / < 85%):**
+
 ```json
 {
   "match": false,
@@ -209,13 +231,13 @@ FOR EACH ROW
 BEGIN
     DECLARE v_max_capacity INT;
     DECLARE v_booked_seats INT;
-    
+  
     -- Lấy thông tin số chỗ từ bảng Tour_Schedules
     SELECT max_capacity, booked_seats 
     INTO v_max_capacity, v_booked_seats
     FROM Tour_Schedules
     WHERE schedule_id = NEW.schedule_id;
-    
+  
     -- Kiểm tra nếu số chỗ đặt mới vượt quá chỗ còn trống
     IF (v_booked_seats + NEW.participant_count) > v_max_capacity THEN
         SIGNAL SQLSTATE '45000'
@@ -280,20 +302,22 @@ public class TourMinimumPaxJob {
 ---
 
 <a id="5-tang-tdd"></a>
+
 ## 5. Đặc tả Kịch bản Kiểm thử TDD (TDD Test Specification)
 
 ### 5.1. Logic Issues Resolved
 
-| #  | Vấn đề nghiệp vụ (Spec gốc thiếu)                            | Hướng giải quyết thực tế                                          | Cách thức cài đặt trong kiểm thử (Test fix)                                                     |
-|---|---|---|---|
-| L1 | Chưa mô tả cụ thể cơ chế khóa khi tranh chấp mua vé tour | Bắt buộc dùng `Pessimistic Write Lock` trong DB Transaction.   | Dùng `ExecutorService` đẩy đồng thời 5 luồng đặt tour cùng 1 chuyến xe chỉ còn 2 chỗ. Xác nhận chỉ 1 luồng thành công. |
-| L2 | Điểm danh FaceID thất bại do ngoại cảnh (nắng, góc mờ) | Cho phép HDV override ghi nhận thủ công có đối chiếu nhân viên | Ghi nhận ID của Tour Guide thực hiện ghi đè, cập nhật `attendance_status = 'Boarded_Manual'`. |
+| #  | Vấn đề nghiệp vụ (Spec gốc thiếu)                           | Hướng giải quyết thực tế                                           | Cách thức cài đặt trong kiểm thử (Test fix)                                                                                          |
+| -- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1 | Chưa mô tả cụ thể cơ chế khóa khi tranh chấp mua vé tour | Bắt buộc dùng`Pessimistic Write Lock` trong DB Transaction.         | Dùng`ExecutorService` đẩy đồng thời 5 luồng đặt tour cùng 1 chuyến xe chỉ còn 2 chỗ. Xác nhận chỉ 1 luồng thành công. |
+| L2 | Điểm danh FaceID thất bại do ngoại cảnh (nắng, góc mờ)    | Cho phép HDV override ghi nhận thủ công có đối chiếu nhân viên | Ghi nhận ID của Tour Guide thực hiện ghi đè, cập nhật`attendance_status = 'Boarded_Manual'`.                                      |
 
 ---
 
 ### 5.2. Test Cases Specification
 
 #### MOD4-TC-001 — Tranh chấp mua vé Tour đồng thời (Pessimistic Lock)
+
 - **Severity:** **CRITICAL**
 - **CWE:** CWE-362 — Concurrent Execution using Shared Resource with Improper Synchronization
 - **Feature Under Test:** `TourBookingServiceImpl.bookTour()`
@@ -313,6 +337,7 @@ public class TourMinimumPaxJob {
   - Cả 2 luồng đều thành công, `bookedSeats` tăng lên thành 11 (vượt quá dung lượng xe 10 chỗ).
 
 #### MOD4-TC-002 — Xác thực AI Face Scan khớp tự động (>= 85%)
+
 - **Severity:** HIGH
 - **Feature Under Test:** `FaceIdServiceImpl.scanFace()`
 - **Preconditions:**
@@ -325,6 +350,7 @@ public class TourMinimumPaxJob {
   - Trạng thái hành khách chuyển sang `Boarded`, lưu vết mốc thời gian nhận diện thành công.
 
 #### MOD4-TC-003 — Điểm danh thủ công Fallback khi AI thất bại (< 85%)
+
 - **Severity:** HIGH
 - **Feature Under Test:** `FaceIdServiceImpl.manualCheckIn()`
 - **Test Steps:**
@@ -336,6 +362,7 @@ public class TourMinimumPaxJob {
   - Hệ thống cập nhật trạng thái `attendance_status = 'Boarded_Manual'` và lưu mã định danh nhân viên thực hiện thao tác.
 
 #### MOD4-TC-004 — Tự động hủy tour khi không đủ khách khởi hành (T-24h)
+
 - **Severity:** HIGH
 - **Feature Under Test:** `TourMinimumPaxJob`
 - **Preconditions:**
@@ -351,23 +378,27 @@ public class TourMinimumPaxJob {
 ---
 
 <a id="6-roadmap"></a>
+
 ## 6. Kế hoạch Triển khai Chi tiết (Implementation Roadmap)
 
 Để hoàn thiện luồng nghiệp vụ Module 4 theo chuẩn fullstack MVC, đội ngũ phát triển cần triển khai qua 6 bước cụ thể:
 
 ### Bước 1: Khai báo Cơ sở Dữ liệu & Thực thể JPA
+
 - **Công việc:**
   - Khai báo các cột và ánh xạ `@Entity` cho `TourSchedule`, `TourBooking`, `TourAttendee`, `CheckpointAttendance` trong package `com.kawai.models`.
   - Đăng ký khóa ngoại và ràng buộc kiểm tra logic dữ liệu.
 - **File tác động:** `TourSchedule.java`, `TourBooking.java`, `TourAttendee.java`.
 
 ### Bước 2: Thiết lập Tầng Repository & Khóa Bi quan (Pessimistic Lock)
+
 - **Công việc:**
   - Viết truy vấn `@Lock(LockModeType.PESSIMISTIC_WRITE)` trong `TourScheduleRepository.java`.
   - Viết SQL Script tạo Database Trigger `TRG_Tour_Capacity_Validator` vào file `schema.sql` để CSDL tự động chạy mỗi khi khởi chạy ứng dụng.
 - **File tác động:** `TourScheduleRepository.java`, `schema.sql`.
 
 ### Bước 3: Cài đặt Tầng Nghiệp vụ (Service Layer Implementation)
+
 - **Công việc:**
   - Cài đặt hàm `bookTour` trong `TourBookingServiceImpl.java`, đóng gói trong annotation `@Transactional`.
   - Thiết lập REST client `PythonAiServiceClient.java` sử dụng `WebClient` hoặc `RestTemplate` để kết nối trực tiếp đến microservice Python AI xử lý ảnh.
@@ -375,12 +406,14 @@ public class TourMinimumPaxJob {
 - **File tác động:** `TourBookingServiceImpl.java`, `FaceIdServiceImpl.java`, `TourMinimumPaxJob.java`.
 
 ### Bước 4: Xây dựng các Controllers (MVC Controllers)
+
 - **Công việc:**
   - Viết Web Controller trong `TourGuideController.java` để phân quyền và trả về view Thymeleaf (`tour/Tour.html`, `tour/FaceID.html`).
   - Viết REST API Controllers trong `FaceIdApiController.java` tiếp nhận file ảnh từ client gửi lên để gửi đi so khớp AI.
 - **File tác động:** `TourGuideController.java`, `FaceIdApiController.java`, `TourAttendanceRestController.java`.
 
 ### Bước 5: Hoàn thiện Giao diện & Gọi API AJAX (View Layer)
+
 - **Công việc:**
   - Nhúng thư viện JavaScript điều khiển camera, lấy frame ảnh tĩnh từ thẻ `<video>` chuyển thành dạng file Blob.
   - Viết script gửi request AJAX `POST /api/faceid/scan` kèm dữ liệu ảnh dạng `multipart/form-data`.
@@ -388,11 +421,13 @@ public class TourMinimumPaxJob {
 - **File tác động:** `FaceID.html`, `Tour.html`, `tour-faceid-app.js`.
 
 ### Bước 6: Kiểm thử TDD & Đo đạc Chỉ số
+
 - **Công việc:**
   - Viết các test case trong package `com.kawai.services.mod4` sử dụng Mockito và Spring Security Test.
   - Chạy `mvn clean test` đo lường mức độ phủ sóng code (mục tiêu Coverage >= 85%).
 - **File tác động:** `TourBookingServiceTest.java`, `FaceIdServiceTest.java`.
 
 ---
+
 *Tài liệu kế hoạch thực thi kỹ thuật được thiết lập bởi Antigravity — ngày 2026-06-29.*
 *Tuân thủ kiến trúc MVC Spring Boot và cấu trúc kiểm thử hướng TDD.*
