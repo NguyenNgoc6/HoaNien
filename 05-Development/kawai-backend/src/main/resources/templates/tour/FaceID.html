@@ -841,6 +841,34 @@
         </div>
     </div>
 
+    <!-- ===== CUSTOM CONFIRM MODAL ===== -->
+    <div id="confirm-modal-backdrop"
+        class="fixed inset-0 z-[9999] flex items-center justify-center hidden"
+        style="backdrop-filter: blur(12px); background: rgba(15,10,8,0.55);">
+        <div id="confirm-modal-card"
+            class="relative w-[420px] max-w-[92vw] glass-panel rounded-2xl p-8 shadow-2xl border border-white/20"
+            style="transform: translateY(24px) scale(0.96); opacity: 0; transition: transform 0.28s cubic-bezier(.22,1,.36,1), opacity 0.22s ease;">
+            <!-- Icon -->
+            <div id="confirm-modal-icon-wrap" class="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-5"></div>
+            <!-- Title -->
+            <h3 id="confirm-modal-title" class="font-display-md text-[22px] text-center text-on-surface font-bold mb-2"></h3>
+            <!-- Message -->
+            <p id="confirm-modal-message" class="font-body-md text-[14px] text-center text-on-surface-variant/70 leading-relaxed mb-8"></p>
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button id="confirm-modal-cancel"
+                    class="flex-1 py-3 rounded-full border border-primary/20 text-on-surface-variant font-label-md text-[13px] hover:bg-primary/5 transition-all">
+                    Huỷ bỏ
+                </button>
+                <button id="confirm-modal-ok"
+                    class="flex-1 py-3 rounded-full font-label-md text-[13px] text-white transition-all hover:scale-[1.02] shadow-lg">
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END CONFIRM MODAL ===== -->
+
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-24 right-8 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
@@ -1309,6 +1337,55 @@
         let _tourScheduleId = null;
         let _tourStatus = 'Open'; // Open | In_Progress | Completed
 
+        /**
+         * showConfirm({ icon, iconBg, title, message, confirmText, confirmBg }) → Promise<boolean>
+         * Replaces native confirm() with a beautiful modal.
+         */
+        function showConfirm({ icon = 'help', iconBg = 'bg-primary/15', iconColor = 'text-primary',
+                               title = 'Xác nhận', message = '', confirmText = 'Xác nhận',
+                               confirmBg = 'bg-primary' } = {}) {
+            return new Promise(resolve => {
+                const backdrop = document.getElementById('confirm-modal-backdrop');
+                const card     = document.getElementById('confirm-modal-card');
+                const iconWrap = document.getElementById('confirm-modal-icon-wrap');
+                const titleEl  = document.getElementById('confirm-modal-title');
+                const msgEl    = document.getElementById('confirm-modal-message');
+                const okBtn    = document.getElementById('confirm-modal-ok');
+                const cancelBtn= document.getElementById('confirm-modal-cancel');
+
+                // Populate
+                iconWrap.className = `flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-5 ${iconBg}`;
+                iconWrap.innerHTML = `<span class="material-symbols-outlined text-[32px] ${iconColor}" style="font-variation-settings:'FILL' 1">${icon}</span>`;
+                titleEl.textContent = title;
+                msgEl.textContent   = message;
+                okBtn.textContent   = confirmText;
+                okBtn.className     = `flex-1 py-3 rounded-full font-label-md text-[13px] text-white transition-all hover:scale-[1.02] shadow-lg ${confirmBg}`;
+
+                // Show
+                backdrop.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.opacity   = '1';
+                });
+
+                function close(result) {
+                    card.style.transform = 'translateY(20px) scale(0.96)';
+                    card.style.opacity   = '0';
+                    setTimeout(() => backdrop.classList.add('hidden'), 250);
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    backdrop.removeEventListener('click', onBackdrop);
+                    resolve(result);
+                }
+                const onOk       = () => close(true);
+                const onCancel   = () => close(false);
+                const onBackdrop = (e) => { if (e.target === backdrop) close(false); };
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+                backdrop.addEventListener('click', onBackdrop);
+            });
+        }
+
         function initTourLifecycle() {
             const banner = document.getElementById('tour-lifecycle-banner');
             if (!banner) return;
@@ -1353,7 +1430,16 @@
             if (!_tourScheduleId) {
                 showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
             }
-            if (!confirm('Bạn có chắc muốn bắt đầu hành trình? Điểm danh sẽ được mở cho tất cả khách hàng.')) return;
+            const ok = await showConfirm({
+                icon: 'play_circle',
+                iconBg: 'bg-emerald-500/15',
+                iconColor: 'text-emerald-600',
+                title: 'Bắt đầu hành trình?',
+                message: 'Điểm danh sẽ được mở cho tất cả khách hàng trong tour này. Hành động này có thể hoàn tác.',
+                confirmText: 'Bắt đầu ngay',
+                confirmBg: 'bg-emerald-600 hover:bg-emerald-700'
+            });
+            if (!ok) return;
             try {
                 const resp = await fetch('/api/faceid/tour-start', {
                     method: 'POST',
@@ -1375,7 +1461,16 @@
             if (!_tourScheduleId) {
                 showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
             }
-            if (!confirm('Bạn có chắc muốn kết thúc hành trình? Sau khi kết thúc sẽ không điểm danh được nữa.')) return;
+            const ok = await showConfirm({
+                icon: 'stop_circle',
+                iconBg: 'bg-red-700/10',
+                iconColor: 'text-red-700',
+                title: 'Kết thúc hành trình?',
+                message: 'Sau khi kết thúc, điểm danh sẽ bị khoá. Bạn vẫn có thể bắt đầu lại nếu cần.',
+                confirmText: 'Kết thúc tour',
+                confirmBg: 'bg-red-700 hover:bg-red-800'
+            });
+            if (!ok) return;
             try {
                 const resp = await fetch('/api/faceid/tour-end', {
                     method: 'POST',
