@@ -283,6 +283,7 @@ public class TourGuideController {
             model.addAttribute("departureDate",
                     targetSchedule.getDepartureDate() != null ? targetSchedule.getDepartureDate().toString() : today.toString());
             model.addAttribute("scheduleStatus", targetSchedule.getScheduleStatus());
+            model.addAttribute("scheduleId", targetSchedule.getId());
             model.addAttribute("maxCapacity", targetSchedule.getTour() != null ? targetSchedule.getTour().getMaxCapacity() : 0);
         } else if (!attendees.isEmpty()) {
             com.kawai.models.TourBooking tb = attendees.get(0).getTourBooking();
@@ -296,6 +297,7 @@ public class TourGuideController {
                 model.addAttribute("departureDate",
                         sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : today.toString());
                 model.addAttribute("scheduleStatus", sched.getScheduleStatus());
+                model.addAttribute("scheduleId", sched.getId());
                 model.addAttribute("maxCapacity", sched.getTour() != null ? sched.getTour().getMaxCapacity() : 0);
             }
         }

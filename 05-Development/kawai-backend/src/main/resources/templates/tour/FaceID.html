@@ -398,6 +398,30 @@
                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/70">Theo dõi trạng thái và
                     thực hiện điểm danh tự động qua FaceID.</p>
             </div>
+            <!-- Tour Lifecycle Control Banner -->
+            <div id="tour-lifecycle-banner"
+                th:attr="data-schedule-id=${scheduleId != null ? scheduleId : ''},data-schedule-status=${scheduleStatus != null ? scheduleStatus : 'Open'}"
+                class="glass-panel p-6 rounded-lg border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div id="tour-status-dot" class="w-3 h-3 rounded-full bg-secondary-container/80 ring-4 ring-secondary-container/20 transition-all duration-500"></div>
+                    <div>
+                        <p class="font-label-md text-[11px] text-on-surface-variant/60 uppercase tracking-widest mb-0.5">Trạng thái hành trình</p>
+                        <p id="tour-status-label" class="font-headline-md text-[18px] text-on-surface font-semibold">Chưa bắt đầu</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-start-tour" onclick="startTour()"
+                        class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 text-white font-label-md text-[13px] shadow-lg shadow-emerald-600/25 hover:scale-[1.02] hover:bg-emerald-700 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">play_circle</span>
+                        Bắt đầu hành trình
+                    </button>
+                    <button id="btn-end-tour" onclick="endTour()" disabled
+                        class="flex items-center gap-2 px-6 py-2.5 rounded-full border border-red-700/40 text-red-700 font-label-md text-[13px] hover:bg-red-700 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        <span class="material-symbols-outlined text-[18px]">stop_circle</span>
+                        Kết thúc hành trình
+                    </button>
+                </div>
+            </div>
             <!-- Grid Layout -->
             <div class="grid grid-cols-12 gap-8 items-start">
                 <!-- Left Column: Customer List -->
@@ -493,7 +517,8 @@
                                             </span>
                                             <button th:if="${attendee.status == 'Not_Show'}"
                                                 th:onclick="'checkinManual(' + ${attendee.id} + ')'"
-                                                class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner">
+                                                id="manual-checkin-btn"
+                                                class="manual-checkin-btn ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner disabled:opacity-30 disabled:cursor-not-allowed">
                                                 <span class="material-symbols-outlined text-[18px]">check</span>
                                             </button>
                                         </td>
@@ -960,6 +985,15 @@
             const scanLine = document.getElementById('scan-line');
 
             try {
+                // Guard: chỉ điểm danh khi tour đang diễn ra
+                if (typeof _tourStatus !== 'undefined' && _tourStatus !== 'In_Progress') {
+                    const msg = _tourStatus === 'Completed'
+                        ? 'Hành trình đã kết thúc, không thể điểm danh.'
+                        : 'Vui lòng bấm "Bắt đầu hành trình" trước khi điểm danh!';
+                    showToast(msg, 'error');
+                    isScanning = false;
+                    return;
+                }
                 // Sử dụng detectAllFaces để quét đám đông
                 const detections = await faceapi
                     .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
@@ -1271,6 +1305,105 @@
             document.getElementById('incident-description').value = '';
         }
 
+        // ===== TOUR LIFECYCLE =====
+        let _tourScheduleId = null;
+        let _tourStatus = 'Open'; // Open | In_Progress | Completed
+
+        function initTourLifecycle() {
+            const banner = document.getElementById('tour-lifecycle-banner');
+            if (!banner) return;
+            _tourScheduleId = banner.getAttribute('data-schedule-id') || null;
+            _tourStatus = banner.getAttribute('data-schedule-status') || 'Open';
+            applyTourStatus(_tourStatus, false);
+        }
+
+        function applyTourStatus(status, animate) {
+            _tourStatus = status;
+            const dot = document.getElementById('tour-status-dot');
+            const label = document.getElementById('tour-status-label');
+            const btnStart = document.getElementById('btn-start-tour');
+            const btnEnd = document.getElementById('btn-end-tour');
+            const manualBtns = document.querySelectorAll('.manual-checkin-btn');
+
+            if (status === 'In_Progress') {
+                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-400/30 transition-all duration-500'; }
+                if (label) label.textContent = '🟢 Đang diễn ra — Điểm danh mở';
+                if (btnStart) btnStart.disabled = true;
+                if (btnEnd) btnEnd.disabled = false;
+                manualBtns.forEach(b => b.disabled = false);
+                if (animate) showToast('Hành trình đã bắt đầu! Điểm danh được mở.', 'success');
+            } else if (status === 'Completed') {
+                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-gray-400 ring-4 ring-gray-300/30 transition-all duration-500'; }
+                if (label) label.textContent = '⛳ Đã kết thúc';
+                if (btnStart) btnStart.disabled = true;
+                if (btnEnd) btnEnd.disabled = true;
+                manualBtns.forEach(b => b.disabled = true);
+                if (animate) showToast('Hành trình đã kết thúc. Điểm danh đã khóa.', 'info');
+            } else {
+                // Open / default
+                if (dot) { dot.className = 'w-3 h-3 rounded-full bg-amber-400 ring-4 ring-amber-300/30 transition-all duration-500'; }
+                if (label) label.textContent = '⏳ Chưa bắt đầu — Chờ khởi hành';
+                if (btnStart) btnStart.disabled = false;
+                if (btnEnd) btnEnd.disabled = true;
+                manualBtns.forEach(b => b.disabled = true);
+            }
+        }
+
+        async function startTour() {
+            if (!_tourScheduleId) {
+                showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
+            }
+            if (!confirm('Bạn có chắc muốn bắt đầu hành trình? Điểm danh sẽ được mở cho tất cả khách hàng.')) return;
+            try {
+                const resp = await fetch('/api/faceid/tour-start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scheduleId: parseInt(_tourScheduleId) })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    applyTourStatus('In_Progress', true);
+                } else {
+                    showToast(data.message || 'Không thể bắt đầu hành trình', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi kết nối máy chủ', 'error');
+            }
+        }
+
+        async function endTour() {
+            if (!_tourScheduleId) {
+                showToast('Không tìm thấy ID lịch trình tour', 'error'); return;
+            }
+            if (!confirm('Bạn có chắc muốn kết thúc hành trình? Sau khi kết thúc sẽ không điểm danh được nữa.')) return;
+            try {
+                const resp = await fetch('/api/faceid/tour-end', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scheduleId: parseInt(_tourScheduleId) })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    applyTourStatus('Completed', true);
+                } else {
+                    showToast(data.message || 'Không thể kết thúc hành trình', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi kết nối máy chủ', 'error');
+            }
+        }
+
+        // Override checkinManual to guard tour status
+        const _originalCheckinManual = window.checkinManual;
+        async function checkinManualGuarded(attendeeId) {
+            if (_tourStatus !== 'In_Progress') {
+                showToast('Hành trình chưa bắt đầu. Vui lòng bấm "Bắt đầu hành trình" trước!', 'error');
+                return;
+            }
+            await checkinManual(attendeeId);
+        }
+        // ===== END TOUR LIFECYCLE =====
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1322,7 +1455,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadModels();
-
+            initTourLifecycle();
             // Check for toast redirects
             const urlParams = new URLSearchParams(window.location.search);
             const toastParam = urlParams.get('toast');
