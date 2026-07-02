@@ -1335,7 +1335,7 @@
             } else if (status === 'Completed') {
                 if (dot) { dot.className = 'w-3 h-3 rounded-full bg-gray-400 ring-4 ring-gray-300/30 transition-all duration-500'; }
                 if (label) label.textContent = '⛳ Đã kết thúc';
-                if (btnStart) btnStart.disabled = true;
+                if (btnStart) btnStart.disabled = false;
                 if (btnEnd) btnEnd.disabled = true;
                 manualBtns.forEach(b => b.disabled = true);
                 if (animate) showToast('Hành trình đã kết thúc. Điểm danh đã khóa.', 'info');
