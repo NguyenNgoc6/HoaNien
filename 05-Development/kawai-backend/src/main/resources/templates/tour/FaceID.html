@@ -832,6 +832,7 @@
         let referenceDescriptors = [];
         let scanInterval = null;
         const recentlyScanned = new Set();
+        const recentlyUnknown = new Set();
 
         async function loadModels() {
             const statusText = document.getElementById('scan-status-label');
@@ -1012,57 +1013,43 @@
                                 recentlyScanned.add(bestName);
                                 showToast(`Đã điểm danh thành công: ${bestName}`, 'success');
 
-                                // Cập nhật ngầm bằng API
+                                // Cập nhật bằng API, lấy attendeeId để redirect chính xác
+                                let checkedAttendeeId = '';
                                 try {
-                                    await fetch('/api/faceid/verify', {
+                                    const verifyResp = await fetch('/api/faceid/verify', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ name: bestName })
                                     });
-
-                                    // Update UI List bên tay trái ngay lập tức (không cần reload)
-                                    const rows = document.querySelectorAll('tbody tr');
-                                    rows.forEach(row => {
-                                        const nameCol = row.querySelector('td:nth-child(2)');
-                                        if (nameCol && nameCol.textContent.includes(bestName)) {
-                                            const statusCol = row.querySelector('td:nth-child(3)');
-                                            if (statusCol && !statusCol.innerHTML.includes('Đã điểm danh')) {
-                                                statusCol.innerHTML = `
-                                                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-label-sm text-label-sm border border-emerald-500/30 flex items-center">
-                                                        <span class="material-symbols-outlined text-[14px] mr-1">check</span>Đã điểm danh
-                                                    </span>
-                                                    <button class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary/40 cursor-default bg-primary/5" disabled>
-                                                        <span class="material-symbols-outlined text-[16px]">check</span>
-                                                    </button>
-                                                `;
-                                                
-                                                // Cập nhật thanh tiến độ
-                                                const countSpan = document.querySelector('.font-headline-md.text-2xl span:first-child');
-                                                const totalSpan = document.querySelector('.font-headline-md.text-2xl span:last-child');
-                                                const pctSpan = document.querySelector('.text-xs.text-on-surface-variant\\/60.font-semibold');
-                                                const barDiv = document.querySelector('.bg-primary.h-full.rounded-full');
-                                                
-                                                if (countSpan && totalSpan) {
-                                                    let c = parseInt(countSpan.textContent) + 1;
-                                                    let t = parseInt(totalSpan.textContent);
-                                                    countSpan.textContent = c;
-                                                    if (t > 0) {
-                                                        let pct = Math.round((c / t) * 100);
-                                                        if(pctSpan) pctSpan.textContent = pct + '%';
-                                                        if(barDiv) barDiv.style.width = pct + '%';
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
+                                    const verifyData = await verifyResp.json();
+                                    if (verifyData && verifyData.attendeeId) {
+                                        checkedAttendeeId = verifyData.attendeeId;
+                                    }
                                 } catch (e) { console.warn(e); }
 
                                 // Xóa khỏi danh sách spam sau 10s
                                 setTimeout(() => recentlyScanned.delete(bestName), 10000);
+
+                                // Tự động tải lại trang — truyền attendeeId để highlight đúng dòng
+                                setTimeout(() => {
+                                    const params = checkedAttendeeId
+                                        ? `?scanned=true&attendeeId=${checkedAttendeeId}`
+                                        : '?scanned=true';
+                                    window.location.href = '/tourguide/dashboard' + params;
+                                }, 1500);
                             }
                         } else {
                             // NOT MATCHED
-                            frameDiv.className = 'face-frame scanning';
+                            frameDiv.className = 'face-frame failed';
+                            frameDiv.innerHTML = `<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-red-600/90 text-white px-2 py-1 rounded text-[10px] whitespace-nowrap font-bold shadow-md">Không tồn tại</div>`;
+
+                            // Anti-spam warning for unknown faces
+                            const unknownKey = 'unknown_face_detected';
+                            if (!recentlyUnknown.has(unknownKey)) {
+                                recentlyUnknown.add(unknownKey);
+                                showToast('Khuôn mặt chưa được đăng ký trong hệ thống!', 'error');
+                                setTimeout(() => recentlyUnknown.delete(unknownKey), 8000);
+                            }
                         }
                         // Thêm khung vào video
                         facesContainer.appendChild(frameDiv);
@@ -1155,21 +1142,31 @@
                 statusIcon.textContent = 'check_circle';
                 showScanResult(true, matchResult.name, `Xác thực thành công (${matchResult.confidence.toFixed(1)}%)`);
 
+                let checkedAttendeeId2 = '';
                 try {
-                    await fetch('/api/faceid/verify', {
+                    const verifyResp2 = await fetch('/api/faceid/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: matchResult.name })
                     });
+                    const verifyData2 = await verifyResp2.json();
+                    if (verifyData2 && verifyData2.attendeeId) {
+                        checkedAttendeeId2 = verifyData2.attendeeId;
+                    }
                 } catch (e) {
                     console.warn(e);
                 }
-                setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true'; }, 2000);
+                setTimeout(() => {
+                    const params2 = checkedAttendeeId2
+                        ? `?scanned=true&attendeeId=${checkedAttendeeId2}`
+                        : '?scanned=true';
+                    window.location.href = '/tourguide/dashboard' + params2;
+                }, 2000);
             } else {
                 faceFrame.className = 'face-frame failed';
-                statusLabel.textContent = 'KHÔNG KHỚP';
+                statusLabel.textContent = 'KHÔNG TỒN TẠI';
                 statusIcon.textContent = 'error';
-                showScanResult(false, 'Không nhận diện được', 'Thử lại hoặc check-in thủ công.');
+                showScanResult(false, 'Không tồn tại', 'Khuôn mặt khách hàng chưa được đăng ký trong hệ thống.');
             }
 
             isScanning = false;
@@ -1199,7 +1196,11 @@
                 const data = await resp.json();
                 if (data.success) {
                     showToast(data.name + ' đã được điểm danh thành công!', 'success');
-                    window.location.href = '/tourguide/dashboard?scanned=true';
+                    setTimeout(() => {
+                        window.location.href = `/tourguide/dashboard?scanned=true&attendeeId=${attendeeId}`;
+                    }, 800);
+                } else {
+                    showToast(data.message || 'Điểm danh thất bại', 'error');
                 }
             } catch (e) {
                 console.error(e);
@@ -1339,8 +1340,34 @@
             }
 
             const scannedParam = urlParams.get('scanned');
+            const highlightAttendeeId = urlParams.get('attendeeId');
             if (scannedParam === 'true') {
                 showToast('Điểm danh khách hàng thành công!', 'success');
+
+                // Highlight & scroll to the newly checked-in attendee row
+                if (highlightAttendeeId) {
+                    const allRows = document.querySelectorAll('tbody tr');
+                    allRows.forEach(row => {
+                        const btn = row.querySelector('button[onclick*="' + highlightAttendeeId + '"]');
+                        const dataAttr = row.getAttribute('data-attendee-id');
+                        const rowText = row.innerHTML;
+                        const isTarget = (btn != null) || (dataAttr === highlightAttendeeId)
+                            || rowText.includes('checkinManual(' + highlightAttendeeId + ')');
+                        if (isTarget) {
+                            row.style.transition = 'background-color 0.4s ease';
+                            row.style.backgroundColor = 'rgba(16, 185, 129, 0.18)';
+                            row.style.outline = '2px solid rgba(16, 185, 129, 0.6)';
+                            row.style.borderRadius = '8px';
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            setTimeout(() => {
+                                row.style.transition = 'background-color 1.2s ease, outline 1.2s ease';
+                                row.style.backgroundColor = '';
+                                row.style.outline = '';
+                            }, 2500);
+                        }
+                    });
+                }
+
                 // Clean url parameters
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
