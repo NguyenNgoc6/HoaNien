@@ -422,6 +422,7 @@ function renderAssignedRooms() {
 
     updateCheckinCreditLimitDisplay();
 }
+
 function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender) {
     console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender });
 

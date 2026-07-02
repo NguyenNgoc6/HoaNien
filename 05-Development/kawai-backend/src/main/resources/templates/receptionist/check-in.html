@@ -209,8 +209,7 @@
                                         th:data-expected-guests="${arr.expectedGuests}"
                                         th:data-expected-adults="${arr.expectedAdults}"
                                         th:data-expected-children="${arr.expectedChildren}"
-                                        th:data-max-adults="${arr.maxAdults}"
-                                        th:data-max-children="${arr.maxChildren}"
+                                        th:data-max-adults="${arr.maxAdults}" th:data-max-children="${arr.maxChildren}"
                                         onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'))"
                                         th:text="${arr.guestName}"></td>
                                     <td th:text="${arr.phone}"></td>
@@ -229,8 +228,7 @@
                                             th:data-expected-adults="${arr.expectedAdults}"
                                             th:data-expected-children="${arr.expectedChildren}"
                                             th:data-max-adults="${arr.maxAdults}"
-                                            th:data-max-children="${arr.maxChildren}"
-                                            th:data-gender="${arr.gender}"
+                                            th:data-max-children="${arr.maxChildren}" th:data-gender="${arr.gender}"
                                             onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'), this.getAttribute('data-gender'))">Assign
                                             & Check-in</button>
                                         <!-- Hidden data for dependents -->
@@ -238,7 +236,7 @@
                                             <ul>
                                                 <li th:each="dep : ${arr.dependents}" th:data-name="${dep.fullName}"
                                                     th:data-dob="${dep.dateOfBirth}" th:data-id="${dep.dependentId}"
-                                                    th:data-cccd="${dep.cccd}" th:data-gender="${dep.gender}">
+                                                    th:data-cccd="${dep.cccd}">
                                                 </li>
                                             </ul>
                                         </div>
@@ -392,8 +390,12 @@
                                     value="">
                             </div>
                             <div>
-                                <label style="display: block; color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Gender</label>
-                                <select id="modalGuestGender" name="gender" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 500; font-family: inherit; color: #1e293b; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#94a3b8'" onblur="this.style.borderColor='#cbd5e1'">
+                                <label
+                                    style="display: block; color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Gender</label>
+                                <select id="modalGuestGender" name="gender"
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 500; font-family: inherit; color: #1e293b; outline: none; transition: border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#94a3b8'"
+                                    onblur="this.style.borderColor='#cbd5e1'">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                     <option value="Khác">Khác</option>
