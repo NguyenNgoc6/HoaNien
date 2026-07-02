@@ -424,6 +424,7 @@ public class DependentServiceImpl implements DependentService {
         response.setDependentId(saved.getId());
         response.setFullName(dto.getFullName());
         response.setDateOfBirth(dto.getDateOfBirth());
+        response.setGender(saved.getGender());
         response.setStatus(STATUS_REGISTERED);
         return response;
     }
@@ -438,6 +439,7 @@ public class DependentServiceImpl implements DependentService {
             dto.setDependentId(guest.getDependent().getId());
             dto.setFullName(guest.getDependent().getDependentName());
             dto.setDateOfBirth(guest.getDependent().getBirthDate());
+            dto.setGender(guest.getDependent().getGender());
             String cccdEnc = guest.getDependent().getCccdPassportEncrypted();
             if (cccdEnc != null && !cccdEnc.isBlank()) {
                 try {

@@ -206,8 +206,8 @@ public class ReceptionistController {
         List<Map<String, Object>> pagedArrivals = new ArrayList<>();
         for (Booking b : pagedPendingList) {
             List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(b.getId());
-            if (details == null || details.isEmpty()) {
-                continue;
+            if (details == null) {
+                details = new ArrayList<>();
             }
 
             String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách";
@@ -590,8 +590,9 @@ public class ReceptionistController {
         List<Map<String, Object>> pagedInHouse = new ArrayList<>();
         for (Booking b : pagedInHouseBookings) {
             List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(b.getId());
-            if (details == null || details.isEmpty())
-                continue;
+            if (details == null) {
+                details = new ArrayList<>();
+            }
 
             String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Unknown";
 
@@ -681,8 +682,9 @@ public class ReceptionistController {
         List<Map<String, Object>> mappedCancelled = new ArrayList<>();
         for (Booking b : allCancelled) {
             List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(b.getId());
-            if (details == null || details.isEmpty())
-                continue;
+            if (details == null) {
+                details = new ArrayList<>();
+            }
             String guestName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Unknown";
 
             Map<String, Object> map = new HashMap<>();

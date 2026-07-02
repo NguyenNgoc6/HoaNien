@@ -481,7 +481,7 @@ public class CheckinServiceImpl implements CheckinService {
                     }
                     com.kawai.models.RoomBookingDetail detail = roomBookingDetailRepo.findById(detailId).orElse(null);
                     if (detail != null) {
-                        // tourBooking.setRoomBookingDetail(detail);
+                        tourBooking.setRoomBookingDetail(detail);
                         tourBookingRepo.save(tourBooking);
                     }
                 }
