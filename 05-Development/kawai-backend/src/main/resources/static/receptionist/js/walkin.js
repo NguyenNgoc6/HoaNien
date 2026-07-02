@@ -51,6 +51,114 @@ document.addEventListener('DOMContentLoaded', () => {
     if (depDobInput) depDobInput.max = todayStrGlobal;
 });
 
+function escalateDirtyRoomWalkIn(roomNum, assignAfter) {
+    fetch(`/receptionist/operations/escalate-room?roomNumber=${roomNum}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]') ? document.querySelector('meta[name="_csrf"]').getAttribute('content') : ''
+        }
+    }).then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Đã gửi yêu cầu dọn khẩn cấp cho buồng phòng.', 'success');
+
+                const select = document.getElementById('walkInPhysicalRoomSelect');
+
+                // Always remove the warning banner when a choice is made
+                const existingWarning = document.getElementById('dirtyRoomWarningInlineWalkIn');
+                if (existingWarning) existingWarning.remove();
+
+                // Always re-enable the assign button
+                const gridContainer = select.closest('div[style*="display: grid"]');
+                if (gridContainer) {
+                    const addBtn = gridContainer.querySelector('button[onclick="addRoomToCart()"]');
+                    if (addBtn) {
+                        addBtn.disabled = false;
+                        addBtn.style.opacity = '1';
+                        addBtn.style.cursor = 'pointer';
+                    }
+                }
+
+                if (assignAfter) {
+                    const roomId = select.value;
+                    const selectedOpt = select.options[select.selectedIndex];
+                    if (!selectedOpt) return;
+                    const category = selectedOpt.dataset.category;
+                    const price = selectedOpt.dataset.price;
+
+                    proceedAddRoomToCart(roomId, roomNum, category, price);
+                } else {
+                    // Reset the dropdown if they only escalated
+                    select.value = "";
+                }
+            } else {
+                showToast('Lỗi khi gửi yêu cầu: ' + data.message, 'error');
+            }
+        }).catch(err => {
+            console.error(err);
+            showToast('Lỗi kết nối khi gửi yêu cầu khẩn cấp.', 'error');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const roomSelect = document.getElementById('walkInPhysicalRoomSelect');
+    if (roomSelect) {
+        roomSelect.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (!opt) return;
+            const status = opt.getAttribute('data-status');
+            const roomNum = opt.getAttribute('data-roomNum');
+            const gridContainer = this.closest('div[style*="display: grid"]');
+            if (!gridContainer) return;
+
+            const existingWarning = document.getElementById('dirtyRoomWarningInlineWalkIn');
+            if (existingWarning) existingWarning.remove();
+
+            const addBtn = gridContainer.querySelector('button[onclick="addRoomToCart()"]');
+
+            if (status === 'Vacant_Dirty') {
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'dirtyRoomWarningInlineWalkIn';
+                warningDiv.style.gridColumn = '1 / -1';
+                warningDiv.style.marginTop = '12px';
+                warningDiv.style.padding = '12px 16px';
+                warningDiv.style.background = '#fef2f2';
+                warningDiv.style.border = '1px solid #fca5a5';
+                warningDiv.style.borderRadius = '6px';
+                warningDiv.style.display = 'flex';
+                warningDiv.style.flexDirection = 'column';
+                warningDiv.style.gap = '8px';
+                warningDiv.innerHTML = `
+                    <div style="color: #dc2626; font-size: 13px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <strong>Cảnh báo:</strong> Phòng <b>${roomNum}</b> chưa dọn dẹp. Vui lòng chọn hành động:
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" style="background:#3b82f6; color:white; border:none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;" onclick="escalateDirtyRoomWalkIn('${roomNum}', false)">
+                            <i class="fa-solid fa-broom"></i> Chỉ yêu cầu dọn (Chưa gán)
+                        </button>
+                        <button type="button" style="background:#ef4444; color:white; border:none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;" onclick="escalateDirtyRoomWalkIn('${roomNum}', true)">
+                            <i class="fa-solid fa-bolt"></i> Yêu cầu dọn & Phân phòng (Treo)
+                        </button>
+                    </div>
+                `;
+                gridContainer.appendChild(warningDiv);
+
+                if (addBtn) {
+                    addBtn.disabled = true;
+                    addBtn.style.opacity = '0.5';
+                    addBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                if (addBtn) {
+                    addBtn.disabled = false;
+                    addBtn.style.opacity = '1';
+                    addBtn.style.cursor = 'pointer';
+                }
+            }
+        });
+    }
+});
+
 function updateWalkInAvailableRooms() {
     const typeSelect = document.getElementById('walkInTypeSelect');
     const roomSelect = document.getElementById('walkInPhysicalRoomSelect');
@@ -88,9 +196,10 @@ function updateWalkInAvailableRooms() {
         const roomId = r.id !== undefined ? r.id : r;
         const roomNum = r.number !== undefined ? r.number : r;
         opt.value = roomId;
-        opt.innerText = 'Phòng ' + roomNum;
+        opt.innerText = 'Phòng ' + roomNum + (r.status === 'Vacant_Dirty' ? ' (Chưa dọn)' : '');
 
         opt.dataset.roomNum = roomNum;
+        opt.dataset.status = r.status;
 
         const catParts = selectedType.split(' - ');
         opt.dataset.category = catParts[0];
@@ -164,6 +273,10 @@ function addRoomToCart() {
         return;
     }
 
+    proceedAddRoomToCart(roomId, roomNum, category, price);
+}
+
+function proceedAddRoomToCart(roomId, roomNum, category, price) {
     walkInCart.push({ roomId: parseInt(roomId), roomNum, category, price });
     renderRoomCart();
     unlockStep2();
@@ -528,6 +641,7 @@ function submitCheckIn() {
         cccd: cccd,
         email: email,
         dateOfBirth: dob,
+        gender: document.getElementById('guestGender').value,
         accompaniedGuests: walkInDependents,
         depositAmount: parseFloat(document.getElementById('depositAmount').value) || 0,
         paymentMethod: document.getElementById('paymentMethod').value || 'Tiền mặt'
@@ -639,7 +753,7 @@ function submitCheckIn() {
 // Hàm đóng modal mặc định (khi onclick trong HTML chưa bị override bởi submitCheckIn)
 function defaultModalClose() {
     document.getElementById('successModal').style.display = 'none';
-    window.location.href = "/receptionist/dashboard";
+    window.location.href = "/receptionist/in-house";
 }
 
 // Hàm trung gian — trích ra từ showPaymentStep() và submitCheckIn() để tránh lặp code
@@ -774,3 +888,68 @@ function toggleWalkInDependents() {
         btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Hiện hết';
     }
 }
+
+// --- AUTO SAVE FORM DATA TO PREVENT DATA LOSS ON TAB SWITCH / RELOAD ---
+document.addEventListener('DOMContentLoaded', () => {
+    const pageKey = 'kawai_autosave_' + window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_');
+    // Khôi phục dữ liệu
+    const savedDataStr = localStorage.getItem(pageKey);
+    if (savedDataStr) {
+        try {
+            const savedData = JSON.parse(savedDataStr);
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                const key = el.id || el.name;
+                // Bỏ qua các trường nhạy cảm hoặc không cần lưu
+                if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
+                // Bỏ qua trường tìm kiếm nếu có
+                if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
+
+                if (savedData[key] !== undefined) {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = savedData[key];
+                    } else {
+                        el.value = savedData[key];
+                    }
+                }
+            });
+            console.log('Khôi phục dữ liệu đang nhập dở thành công.');
+        } catch (e) {
+            console.error('Lỗi khi khôi phục dữ liệu autosave:', e);
+        }
+    }
+
+    // Lắng nghe sự kiện để lưu dữ liệu (dùng event delegation)
+    document.body.addEventListener('input', (e) => {
+        const el = e.target;
+        if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+            const key = el.id || el.name;
+            if (!key || el.type === 'password' || el.type === 'file' || el.type === 'hidden') return;
+            if (key.toLowerCase().includes('search') || key.toLowerCase().includes('keyword')) return;
+            const currentData = JSON.parse(localStorage.getItem(pageKey) || '{}');
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                currentData[key] = el.checked;
+            } else {
+                currentData[key] = el.value;
+            }
+            localStorage.setItem(pageKey, JSON.stringify(currentData));
+        }
+    });
+
+    // Xóa dữ liệu khi submit thành công bằng form truyền thống
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', () => {
+            localStorage.removeItem(pageKey);
+        });
+    });
+
+    // Gắn đè hàm fetch để xóa dữ liệu khi fetch api checkin thành công
+    const originalFetch = window.fetch;
+    window.fetch = async function () {
+        const response = await originalFetch.apply(this, arguments);
+        const url = arguments[0];
+        if (response.ok && typeof url === 'string' && (url.includes('/walkin/checkin') || url.includes('/checkin/complete'))) {
+            localStorage.removeItem(pageKey);
+        }
+        return response;
+    };
+});
