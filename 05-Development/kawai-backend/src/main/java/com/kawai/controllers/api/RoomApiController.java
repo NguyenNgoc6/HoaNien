@@ -175,6 +175,9 @@ public class RoomApiController {
             if (rbd == null) continue;
             java.util.Map<String, Object> rMap = new java.util.HashMap<>();
             Room r = rbd.getRoom();
+            // Common fields from the booking detail
+            rMap.put("numberOfAdults", rbd.getNumberOfAdults() != null ? rbd.getNumberOfAdults() : 1);
+            rMap.put("numberOfChildren", rbd.getNumberOfChildren() != null ? rbd.getNumberOfChildren() : 0);
             if (r != null) {
                 rMap.put("id", r.getRoomNumber());
                 rMap.put("roomNumber", r.getRoomNumber());

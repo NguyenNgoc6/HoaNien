@@ -1507,37 +1507,65 @@
 
                         if (activeRooms.length === 1) {
                             console.log("Exactly 1 active room. Auto-selecting.");
-                            // 1 room: auto-select and skip modal
                             const singleRoom = activeRooms[0];
-                            selectedRooms = [{ id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType }];
+                            const adults = singleRoom.numberOfAdults || 1;
+                            const children = singleRoom.numberOfChildren || 0;
+                            selectedRooms = [{ id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType, adults, children }];
                             confirmRoomSelection();
                         } else {
-                            console.log("Multiple active rooms. Opening modal.");
                             // Reset selection
                             selectedRooms = [];
-                            // 2: display checkbox list of rooms
+                            // 2: display checkbox list with per-room participant inputs
                             const container = document.getElementById('active-rooms-list');
                             if (container) {
-                                container.innerHTML = activeRooms.map((r) => {
+                                container.innerHTML = activeRooms.map((r, idx) => {
                                     const safeId = r.id.replace(/'/g, "\\'");
-                                    const safeName = r.roomNumber.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                                    const safeType = (r.roomType || '').replace(/'/g, "\\'");
+                                    const roomIdx = idx;
+                                    const defaultAdults = r.numberOfAdults || 1;
+                                    const defaultChildren = r.numberOfChildren || 0;
                                     return `
-                                    <label class="room-item flex items-center justify-between border border-brand-border p-4 cursor-pointer transition-all hover:bg-gray-50/50 has-[:checked]:border-brand-dark has-[:checked]:bg-[#FBF9F6]">
-                                        <div class="flex items-center space-x-4">
-                                            <input type="checkbox" class="room-checkbox w-4 h-4 accent-[#2D2926]"
+                                    <div class="room-item border border-brand-border p-4 transition-all" id="room-item-${roomIdx}">
+                                        <label class="flex items-start space-x-3 cursor-pointer">
+                                            <input type="checkbox" class="room-checkbox mt-0.5 w-4 h-4 accent-[#2D2926] shrink-0"
                                                 value="${safeId}"
-                                                data-number="${safeName}"
-                                                data-type="${safeType}"
+                                                data-number="${r.roomNumber.replace(/"/g, '&quot;')}"
+                                                data-type="${(r.roomType || '').replace(/"/g, '&quot;')}"
+                                                data-default-adults="${defaultAdults}"
+                                                data-default-children="${defaultChildren}"
+                                                data-idx="${roomIdx}"
                                                 onchange="toggleRoomSelection(this)">
-                                            <span class="material-symbols-outlined text-gray-400">door_front</span>
-                                            <div>
-                                                <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
-                                                <p class="text-[10px] text-gray-400 uppercase">${r.roomType || ''}</p>
+                                            <div class="flex-1">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
+                                                        <p class="text-[10px] text-gray-400 uppercase">${r.roomType || ''}</p>
+                                                    </div>
+                                                    <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${r.roomStatus === 'Confirmed' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200'}">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</span>
+                                                </div>
+                                                <!-- Per-room participant inputs (hidden until checked) -->
+                                                <div class="room-participant-inputs mt-3 hidden" id="participants-${roomIdx}">
+                                                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-brand-border">
+                                                        <div>
+                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Người lớn</label>
+                                                            <input type="number" min="0" max="10"
+                                                                class="room-adults-input w-full border-b border-brand-border text-xs py-1 bg-transparent text-center"
+                                                                value="${defaultAdults}"
+                                                                data-idx="${roomIdx}"
+                                                                onchange="updateRoomParticipants(${roomIdx})">
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Trẻ em</label>
+                                                            <input type="number" min="0" max="10"
+                                                                class="room-children-input w-full border-b border-brand-border text-xs py-1 bg-transparent text-center"
+                                                                value="${defaultChildren}"
+                                                                data-idx="${roomIdx}"
+                                                                onchange="updateRoomParticipants(${roomIdx})">
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${r.roomStatus === 'Confirmed' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200'}">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</div>
-                                    </label>`;
+                                        </label>
+                                    </div>`;
                                 }).join('');
                             }
 
@@ -1570,23 +1598,56 @@
                 const id = checkbox.value;
                 const roomNumber = checkbox.dataset.number;
                 const type = checkbox.dataset.type;
+                const idx = parseInt(checkbox.dataset.idx);
+                const participantDiv = document.getElementById('participants-' + idx);
+                const roomItem = document.getElementById('room-item-' + idx);
+
                 if (checkbox.checked) {
-                    // Add to selection if not already present
+                    // Show per-room participant inputs
+                    if (participantDiv) participantDiv.classList.remove('hidden');
+                    if (roomItem) {
+                        roomItem.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
+                        roomItem.classList.remove('border-brand-border');
+                    }
+                    const adults = parseInt(checkbox.dataset.defaultAdults) || 1;
+                    const children = parseInt(checkbox.dataset.defaultChildren) || 0;
                     if (!selectedRooms.find(r => r.id === id)) {
-                        selectedRooms.push({ id, roomNumber, type });
+                        selectedRooms.push({ id, roomNumber, type, adults, children, idx });
                     }
                 } else {
-                    // Remove from selection
+                    // Hide per-room participant inputs
+                    if (participantDiv) participantDiv.classList.add('hidden');
+                    if (roomItem) {
+                        roomItem.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
+                        roomItem.classList.add('border-brand-border');
+                    }
                     selectedRooms = selectedRooms.filter(r => r.id !== id);
                 }
-                console.log("selectedRooms:", selectedRooms);
+                console.log('selectedRooms:', selectedRooms);
             } catch (err) {
-                console.error("Error in toggleRoomSelection:", err);
+                console.error('Error in toggleRoomSelection:', err);
+            }
+        }
+
+        function updateRoomParticipants(idx) {
+            try {
+                const adultsInput = document.querySelector(`.room-adults-input[data-idx="${idx}"]`);
+                const childrenInput = document.querySelector(`.room-children-input[data-idx="${idx}"]`);
+                const adults = parseInt(adultsInput?.value) || 0;
+                const children = parseInt(childrenInput?.value) || 0;
+                const room = selectedRooms.find(r => r.idx === idx);
+                if (room) {
+                    room.adults = adults;
+                    room.children = children;
+                }
+                console.log('Updated room participants:', selectedRooms);
+            } catch (err) {
+                console.error('Error in updateRoomParticipants:', err);
             }
         }
 
         function confirmRoomSelection() {
-            console.log("confirmRoomSelection called, selectedRooms:", selectedRooms);
+            console.log('confirmRoomSelection called, selectedRooms:', selectedRooms);
             try {
                 if (!selectedRooms || selectedRooms.length === 0) {
                     alert('Vui lòng chọn ít nhất 1 phòng để gán tour.');
@@ -1599,13 +1660,14 @@
                         const isVirtual = room.id.startsWith('Virtual_');
                         const statusText = isVirtual ? 'Đã đặt' : 'Đang ở';
                         const statusClass = isVirtual ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200';
+                        const paxText = `${room.adults || 0} người lớn${(room.children || 0) > 0 ? ', ' + room.children + ' trẻ em' : ''}`;
                         return `
                           <div class="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
                             <div class="flex items-center space-x-3">
                               <span class="material-symbols-outlined text-brand-dark text-base">door_front</span>
                               <div>
                                 <p class="font-bold text-xs">${room.roomNumber}</p>
-                                <p class="text-[10px] text-gray-400">${room.type}</p>
+                                <p class="text-[10px] text-gray-400">${room.type} &mdash; ${paxText}</p>
                               </div>
                             </div>
                             <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
@@ -1620,7 +1682,7 @@
                               </div>
                               <div>
                                 <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Tính vào phòng</p>
-                                <p class="text-xs font-bold">${selectedRooms.length} phòng được chọn</p>
+                                <p class="text-xs font-bold">${selectedRooms.length} phòng &mdash; ${selectedRooms.reduce((s,r)=>s+(r.adults||0)+(r.children||0),0)} người</p>
                               </div>
                             </div>
                             <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
@@ -1629,11 +1691,11 @@
                         </div>
                     `;
                 } else {
-                    console.error("room-charge-container element not found in DOM");
+                    console.error('room-charge-container element not found in DOM');
                 }
                 closeModal();
             } catch (err) {
-                console.error("Error in confirmRoomSelection:", err);
+                console.error('Error in confirmRoomSelection:', err);
             }
         }
 
@@ -1891,7 +1953,9 @@
             const phone = document.getElementById('phone').value.trim();
             const departureDate = document.getElementById('departureDate').value;
             const participantCount = parseInt(document.getElementById('participantCount').value) || 1;
-            const roomNumbers = selectedRooms.length > 0 ? selectedRooms.map(r => r.id) : null;
+            const roomSelections = selectedRooms.length > 0
+                ? selectedRooms.map(r => ({ roomId: r.id, adults: r.adults || 1, children: r.children || 0 }))
+                : null;
 
             // Determine if this is a VNPay flow
             const isVnpay = (currentPaymentMethod === 'vnpay');
@@ -1917,7 +1981,7 @@
                 phone: phone,
                 participantCount: participantCount,
                 paymentMethod: isVnpay ? 'vnpay' : selectedPaymentType,
-                roomNumbers: roomNumbers,
+                roomSelections: roomSelections,
                 vnpPaymentType: vnpPaymentType,
                 childAges: childAges,
                 promoCode: appliedPromoState ? appliedPromoState.code : null,

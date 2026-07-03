@@ -61,15 +61,25 @@ public class TourBookingApiController {
             String phone = (String) payload.get("phone");
             int participantCount = Integer.parseInt(payload.get("participantCount").toString());
             String paymentMethod = (String) payload.get("paymentMethod");
-            // Support both multi-room (roomNumbers[]) and legacy single-room (roomNumber)
-            List<String> roomNumbers;
-            Object roomNumbersRaw = payload.get("roomNumbers");
-            if (roomNumbersRaw instanceof List) {
-                roomNumbers = (List<String>) roomNumbersRaw;
-            } else {
-                // Legacy fallback: single roomNumber string
-                String singleRoom = payload.get("roomNumber") != null ? payload.get("roomNumber").toString() : null;
-                roomNumbers = singleRoom != null ? java.util.Collections.singletonList(singleRoom) : java.util.Collections.emptyList();
+
+            // Parse roomSelections: [{roomId, adults, children}] — per-room participant counts
+            // Also support legacy roomNumbers[] (array of strings) and roomNumber (single string)
+            List<java.util.Map<String, Object>> roomSelections = null;
+            Object roomSelectionsRaw = payload.get("roomSelections");
+            if (roomSelectionsRaw instanceof List) {
+                roomSelections = (List<java.util.Map<String, Object>>) roomSelectionsRaw;
+            }
+
+            // Legacy fallbacks
+            List<String> legacyRoomNumbers = null;
+            if (roomSelections == null) {
+                Object roomNumbersRaw = payload.get("roomNumbers");
+                if (roomNumbersRaw instanceof List) {
+                    legacyRoomNumbers = (List<String>) roomNumbersRaw;
+                } else {
+                    String singleRoom = payload.get("roomNumber") != null ? payload.get("roomNumber").toString() : null;
+                    if (singleRoom != null) legacyRoomNumbers = java.util.Collections.singletonList(singleRoom);
+                }
             }
 
             // 1. Find or create Customer
@@ -161,7 +171,29 @@ public class TourBookingApiController {
             List<Long> createdBookingIds = new java.util.ArrayList<>();
             List<String> resolvedRooms = new java.util.ArrayList<>();
 
-            if (roomNumbers == null || roomNumbers.isEmpty()) {
+            if (roomSelections != null && !roomSelections.isEmpty()) {
+                // New flow: per-room participant counts
+                for (java.util.Map<String, Object> sel : roomSelections) {
+                    String roomId = sel.get("roomId") != null ? sel.get("roomId").toString() : null;
+                    int roomAdults = sel.get("adults") != null ? Integer.parseInt(sel.get("adults").toString()) : 1;
+                    int roomChildren = sel.get("children") != null ? Integer.parseInt(sel.get("children").toString()) : 0;
+                    int roomParticipantCount = roomAdults + roomChildren;
+
+                    RoomBookingDetail detail = resolveRoomDetail(roomId, customer, departureDate);
+                    TourBookingRequest req = buildRequest(request, detail);
+                    req.setParticipantCount(roomParticipantCount); // override with per-room count
+                    createdBookingIds.add(tourBookingService.createTourBooking(req));
+                    resolvedRooms.add(roomId);
+                }
+            } else if (legacyRoomNumbers != null && !legacyRoomNumbers.isEmpty()) {
+                // Legacy: roomNumbers[] with shared participantCount
+                for (String roomNum : legacyRoomNumbers) {
+                    RoomBookingDetail detail = resolveRoomDetail(roomNum, customer, departureDate);
+                    TourBookingRequest req = buildRequest(request, detail);
+                    createdBookingIds.add(tourBookingService.createTourBooking(req));
+                    resolvedRooms.add(roomNum);
+                }
+            } else {
                 // No room selected: auto-find an active booking detail for this customer
                 RoomBookingDetail autoDetail = null;
                 List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
@@ -182,13 +214,6 @@ public class TourBookingApiController {
                 TourBookingRequest req = buildRequest(request, autoDetail);
                 createdBookingIds.add(tourBookingService.createTourBooking(req));
                 resolvedRooms.add(autoDetail.getCategory() != null ? autoDetail.getCategory().getCategoryName() : "Phòng");
-            } else {
-                for (String roomNum : roomNumbers) {
-                    RoomBookingDetail detail = resolveRoomDetail(roomNum, customer, departureDate);
-                    TourBookingRequest req = buildRequest(request, detail);
-                    createdBookingIds.add(tourBookingService.createTourBooking(req));
-                    resolvedRooms.add(roomNum);
-                }
             }
 
             Long bookingId = createdBookingIds.get(0); // primary booking for VNPay / response
