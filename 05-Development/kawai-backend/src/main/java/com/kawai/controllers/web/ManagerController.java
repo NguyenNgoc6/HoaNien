@@ -38,6 +38,7 @@ public class ManagerController {
     private final ExportHistoryRepository exportHistoryRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final RefundRequestRepository refundRequestRepository;
+    private final HousekeepingTaskRepository housekeepingTaskRepository;
 
     private static String todayLabel() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d 'tháng' M, yyyy", new Locale("vi")));
@@ -64,6 +65,103 @@ public class ManagerController {
         model.addAttribute("pendingRefunds", refundRequestRepository.findByStatusOrderByCreatedAtDesc("Pending"));
         model.addAttribute("completedRefunds", refundRequestRepository.findByStatusOrderByCreatedAtDesc("COMPLETED"));
         return "manager/refund-management";
+    }
+
+    @GetMapping("/approvals")
+    public String approvals(Model model) {
+        model.addAttribute("todayLabel", todayLabel());
+        
+        List<String> types = java.util.Arrays.asList("Manager_Approval", "Late_Checkout_Waiver", "Cancellation_Fee_Waiver", "Room_Downgrade_Refund");
+        List<HotelOperation> pendingOps = housekeepingTaskRepository.findByOperationalTypesAndStatusSorted(types, "Pending");
+        List<HotelOperation> completedOps = housekeepingTaskRepository.findByOperationalTypesAndStatusSorted(types, "Completed");
+        List<HotelOperation> rejectedOps = housekeepingTaskRepository.findByOperationalTypesAndStatusSorted(types, "Rejected");
+        
+        List<ApprovalDTO> pending = convertToApprovalDTOs(pendingOps);
+        List<ApprovalDTO> completed = convertToApprovalDTOs(completedOps);
+        List<ApprovalDTO> rejected = convertToApprovalDTOs(rejectedOps);
+        
+        model.addAttribute("pendingApprovals", pending);
+        model.addAttribute("completedApprovals", completed);
+        model.addAttribute("rejectedApprovals", rejected);
+        
+        return "manager/approvals";
+    }
+
+    private List<ApprovalDTO> convertToApprovalDTOs(List<HotelOperation> ops) {
+        List<ApprovalDTO> dtos = new ArrayList<>();
+        for (HotelOperation op : ops) {
+            Long bookingId = parseBookingIdFromNotes(op.getNotes());
+            String customerName = "N/A";
+            String totalPriceStr = "N/A";
+            String bookingDetails = "N/A";
+            String promoCode = "N/A";
+            
+            if (bookingId != null) {
+                Booking booking = bookingRepository.findById(bookingId).orElse(null);
+                if (booking != null) {
+                    customerName = booking.getCustomer() != null ? booking.getCustomer().getFullName() : "N/A";
+                    totalPriceStr = fmt(booking.getTotalPrice()) + " VNĐ";
+                    promoCode = booking.getAppliedPromotion() != null ? booking.getAppliedPromotion().getPromoCode() : "N/A";
+                    if ("N/A".equals(promoCode) && op.getNotes() != null) {
+                        java.util.regex.Matcher m = java.util.regex.Pattern.compile("Mã giảm giá (\\S+) áp dụng").matcher(op.getNotes());
+                        if (m.find()) {
+                            promoCode = m.group(1);
+                        }
+                    }
+                    
+                    if (booking instanceof RoomBooking rb) {
+                        bookingDetails = "Đặt phòng (" + rb.getCheckInDate() + " -> " + rb.getCheckOutDate() + ")";
+                    } else if (booking instanceof TourBooking tb) {
+                        bookingDetails = "Đặt Tour: " + (tb.getSchedule() != null && tb.getSchedule().getTour() != null ? tb.getSchedule().getTour().getTourName() : "N/A");
+                    }
+                }
+            }
+            
+            dtos.add(new ApprovalDTO(
+                op.getId(),
+                bookingId,
+                customerName,
+                promoCode,
+                op.getNotes(),
+                op.getStatus(),
+                op.getCreatedAt() != null ? op.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A",
+                bookingDetails,
+                totalPriceStr,
+                op.getOperationalType()
+            ));
+        }
+        return dtos;
+    }
+
+    private Long parseBookingIdFromNotes(String notes) {
+        if (notes == null) return null;
+        int idx = notes.lastIndexOf("booking ID: ");
+        if (idx == -1) {
+            idx = notes.lastIndexOf("ID: ");
+        }
+        if (idx != -1) {
+            try {
+                String sub = notes.substring(idx + 12).trim();
+                if (sub.isEmpty() || !Character.isDigit(sub.charAt(0))) {
+                    sub = notes.substring(idx + 4).trim();
+                }
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < sub.length(); i++) {
+                    char c = sub.charAt(i);
+                    if (Character.isDigit(c)) {
+                        sb.append(c);
+                    } else {
+                        break;
+                    }
+                }
+                if (sb.length() > 0) {
+                    return Long.parseLong(sb.toString());
+                }
+            } catch (Exception e) {
+                // fallback
+            }
+        }
+        return null;
     }
 
     @GetMapping({ "/dashboard", "/" })
@@ -884,5 +982,20 @@ public class ManagerController {
         private String exportedAt;
         private String exportedBy;
         private String fileSize;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ApprovalDTO {
+        private Long taskId;
+        private Long bookingId;
+        private String customerName;
+        private String promoCode;
+        private String notes;
+        private String status;
+        private String createdAt;
+        private String bookingDetails;
+        private String totalPrice;
+        private String operationalType;
     }
 }
