@@ -26,6 +26,9 @@
 | WF-11 | [Đánh giá & Kiểm duyệt](#wf-11--đánh-giá-dịch-vụ--kiểm-duyệt) | Review | MEDIUM |
 | WF-12 | [Quản lý Nhân viên & Phân quyền](#wf-12--quản-lý-nhân-viên--phân-quyền) | Admin | HIGH |
 | WF-13 | [Master Flow — Vận hành Tổng thể](#wf-13--master-flow--vận-hành-tổng-thể) | All | — |
+| WF-23 | [Đặt Bàn Trực Tuyến](#wf-23--đặt-bàn-trực-tuyến) | F&B | HIGH |
+| WF-24 | [Hủy Đơn Hàng F&B & Hoàn Tiền](#wf-24--hủy-đơn-hàng-fb--hoàn-tiền) | F&B | HIGH |
+| WF-25 | [Chốt Ca & Báo Cáo F&B](#wf-25--chốt-ca--báo-cáo-fb) | F&B | HIGH |
 
 ---
 
@@ -58,6 +61,13 @@ flowchart TD
     %% ---------- LOGIN PATH ----------
     Q1 -->|Đã có| LOGIN_FORM[Màn hình Đăng nhập]
     LOGIN_FORM --> L1[Nhập email + password]
+    LOGIN_FORM --> L_OAUTH[Đăng nhập qua Google OAuth2]
+    
+    L_OAUTH --> L_OAUTH_CHK{Tài khoản\ntồn tại?}
+    L_OAUTH_CHK -->|Chưa| L_OAUTH_REG[Tự động tạo Customer mới\nPassword: OAUTH2_GOOGLE_PLACEHOLDER\nisActive = true]
+    L_OAUTH_REG --> JWT
+    L_OAUTH_CHK -->|Rồi| L4
+    
     L1 --> L2{Validate format}
     L2 -->|Lỗi| L1
     L2 -->|OK| L3{Email tồn\ntại trong DB?}
@@ -100,9 +110,10 @@ flowchart TD
 
 > **Business Rules áp dụng:**
 > - `BR-SYS-01` — BCrypt hash password; AES-256 mã hóa CCCD
-> - `BR-SYS-02` — Khóa 15 phút sau 5 lần sai; OTP TTL 3 phút
+> - `BR-SYS-02` — Khóa 15 phút sau 5 lần sai; OTP TTL 3 phút; Google OAuth2 bỏ qua OTP
 > - `BR-SYS-06` — Mật khẩu ≥ 8 ký tự, có Hoa + Thường + Số
 > - `BR-SYS-07` — Routing theo RBAC role sau login
+
 
 ---
 
@@ -139,18 +150,18 @@ flowchart TD
 
     TOTAL --> CONFIRM[Khách xác nhận\nthông tin booking]
     CONFIRM --> INS[INSERT Bookings status=Pending\n+ Room_Booking_Details]
-    INS --> LOCK[Kích hoạt Cart Lock 15 phút\nBR-FO-02: TTL 15 phút]
+    INS --> LOCK[Kích hoạt Cart Lock 2 phút\nBR-FO-02: TTL 2 phút]
     LOCK --> VNP[Tạo VNPay Payment URL\n+ HMAC Signature]
     VNP --> PAY_PAGE[Chuyển sang VNPay\nPayment Page]
 
-    PAY_PAGE --> TIMEOUT{Khách thanh toán\ntrong 15 phút?}
-    TIMEOUT -->|Quá 15 phút| SCHED[Scheduler phát hiện\nBooking Pending > 15 phút]
+    PAY_PAGE --> TIMEOUT{Khách thanh toán\ntrong 2 phút?}
+    TIMEOUT -->|Quá 2 phút| SCHED[Scheduler phát hiện\nBooking Pending > 2 phút]
     SCHED --> CANCEL[UPDATE Bookings\nstatus = Cancelled]
     CANCEL --> FREE[Giải phóng Cart Lock]
     FREE --> NOTIFY_CANCEL[Thông báo: Booking hết hạn\ndo chưa thanh toán]
     NOTIFY_CANCEL --> DONE_TIMEOUT([Kết thúc - Hủy tự động])
 
-    TIMEOUT -->|Trong 15 phút| VNPAY_PROC[VNPay xử lý giao dịch]
+    TIMEOUT -->|Trong 2 phút| VNPAY_PROC[VNPay xử lý giao dịch]
     VNPAY_PROC --> WEBHOOK{VNPay Webhook\nCallback}
     WEBHOOK -->|Thất bại| PAY_FAIL[Hiển thị lỗi thanh toán]
     PAY_FAIL --> PAY_PAGE
@@ -169,8 +180,9 @@ flowchart TD
 
 > **Business Rules áp dụng:**
 > - `BR-FO-01` — SELECT...FOR UPDATE; @Version Optimistic Lock chống overbooking
-> - `BR-FO-02` — Cart Lock 15 phút; Scheduler tự động hủy Booking Pending quá hạn
+> - `BR-FO-02` — Cart Lock 2 phút; Scheduler tự động hủy Booking Pending quá hạn
 > - `BR-FIN-06` — 1 voucher/booking; kiểm tra is_active, valid_to, max_uses
+
 
 ---
 
@@ -1030,6 +1042,162 @@ flowchart TD
 
 ---
 
+## WF-23 — Đặt Bàn Trực Tuyến
+
+**Use Cases:** UC21, UC16  
+**Business Rules:** TABLE-002, TABLE-003, TABLE-005, TABLE-008  
+**Actors:** Customer, F&B Staff, System
+
+```mermaid
+flowchart TD
+    START([Khách tìm bàn ăn]) --> B1[Nhập số khách\nvà ngày giờ mong muốn]
+    B1 --> B2[Hiển thị danh sách bàn\ntrạng thái Available]
+    B2 --> B3[Khách chọn bàn và xác nhận]
+    B3 --> V1{Số khách vượt\nCapacity bàn?\nTABLE-002}
+    V1 -->|Vượt quá| E1[Lỗi: Số khách vượt\nsức chứa của bàn]
+    E1 --> B2
+    V1 -->|OK| V2{Thời gian bị\ntrùng lịch Overlap?\nTABLE-003}
+    V2 -->|Trùng lịch| E2[Lỗi: Thời gian đặt bàn\nbị trùng lặp với lịch đã có]
+    E2 --> B2
+    V2 -->|OK| SAVE[INSERT Table_Reservations\nstatus = Confirmed]
+    SAVE --> MAIL[Gửi Email xác nhận đặt bàn\nTABLE-008]
+    MAIL --> DONE_OK([Đặt bàn thành công])
+
+    subgraph ARRIVE["Khi khách đến nhà hàng"]
+        A1([F&B Staff kiểm tra mã đặt bàn]) --> A2[UPDATE Table_Reservations\nstatus = Seated]
+        A2 --> A3[UPDATE Restaurant_Tables\nstatus = Occupied]
+        A3 --> A4([Check-in bàn hoàn tất])
+    end
+
+    style V1 fill:#ff9900,color:#fff
+    style V2 fill:#ff4444,color:#fff
+    style SAVE fill:#00aa44,color:#fff
+    style MAIL fill:#0066cc,color:#fff
+```
+
+> **Business Rules áp dụng:**
+> - `TABLE-002` — Không cho phép đặt bàn nếu số khách vượt quá sức chứa (capacity).
+> - `TABLE-003` — Chặn đặt bàn nếu thời gian bị trùng lặp (Overlap) với lịch đã có.
+> - `TABLE-008` — Gửi email xác nhận tự động sau khi đặt bàn thành công.
+
+---
+
+## WF-24 — Hủy Đơn Hàng F&B & Hoàn Tiền
+
+**Use Cases:** UC19  
+**Business Rules:** POS-004, POS-006  
+**Actors:** Customer, F&B Staff, System
+
+```mermaid
+flowchart TD
+    START([Yêu cầu Hủy Đơn Hàng]) --> Q1[Lấy thông tin Order từ hệ thống]
+    Q1 --> Q2{Order đang\nPREPARING?\nPOS-004}
+    Q2 -->|Có - Bếp đang nấu| ERR1[Lỗi 403: Không thể hủy\nđơn đang được chế biến]
+    ERR1 --> DONE_FAIL([Kết thúc - Từ chối Hủy])
+
+    Q2 -->|Không| Q3{Phương thức\nthanh toán?}
+
+    Q3 -->|CHARGE_TO_ROOM| R1[Lấy Folio_Items\nliên kết với đơn hàng]
+    R1 --> R2[DELETE Folio_Items\nhoàn lại Credit Limit cho phòng]
+    R2 --> R3[Cập nhật sub_credit_limit\ncộng lại số tiền đã ghi nợ]
+    R3 --> CANCEL
+
+    Q3 -->|VNPay| V1[Tính số tiền đã thanh toán]
+    V1 --> V2[Gọi VNPay Refund API\ntạo RefundRequest]
+    V2 --> V3{Refund\nthành công?}
+    V3 -->|Thất bại| ERR2[Ghi lỗi Refund\nAdmin xử lý thủ công]
+    ERR2 --> DONE_FAIL
+    V3 -->|Thành công| CANCEL
+
+    Q3 -->|Chưa thanh toán| CANCEL
+
+    CANCEL[UPDATE Food_Orders\norder_status = Cancelled] --> KOT[UPDATE Food_Order_Details\nkot_status = Cancelled]
+    KOT --> WS[WebSocket broadcast\nHủy KOT xuống bếp - BR-FB-02]
+    WS --> DONE_OK([Hủy đơn thành công])
+
+    style Q2 fill:#ff4444,color:#fff
+    style R2 fill:#0066cc,color:#fff
+    style V2 fill:#0066cc,color:#fff
+    style CANCEL fill:#ff9900,color:#fff
+    style WS fill:#9933ff,color:#fff
+```
+
+> **Business Rules áp dụng:**
+> - `POS-004` — Không được hủy đơn nếu trạng thái đang là `PREPARING` (bếp đang nấu).
+> - `POS-006` — Đảm bảo tính nhất quán hoàn tiền: Charge-to-Room xóa Folio; VNPay gọi Refund API.
+
+---
+
+## WF-25 — Chốt Ca & Báo Cáo F&B
+
+**Use Cases:** UC18  
+**Business Rules:** BR-FIN-15, BR-SYS-04  
+**Actors:** F&B Manager
+
+```mermaid
+flowchart TD
+    START([F&B Manager bấm Chốt Ca]) --> S1[Nhập ngày cần chốt\nMặc định: hôm nay]
+    S1 --> S2{Ngày này đã\nchốt trước đó?\nIdempotent Guard}
+    S2 -->|Đã chốt rồi| ERR1[Lỗi: Báo cáo ngày\nhôm nay đã được chốt]
+    ERR1 --> DONE_FAIL([Kết thúc - Bị chặn])
+
+    S2 -->|Chưa chốt| S3[Query toàn bộ Food_Orders\ncủa ngày được chọn]
+    S3 --> S4[Lọc đơn hàng\nis_paid_in_pos = true\nBR-FIN-15]
+    S4 --> S5[Tính tổng doanh thu\ntotal_revenue = SUM đơn đã lọc]
+    S5 --> S6[INSERT FnB_Daily_Reports\nLưu Snapshot cố định]
+    S6 --> AUDIT[INSERT Audit_Logs\nghi nhận hành động chốt ca\nBR-SYS-04]
+    AUDIT --> DONE_OK([Chốt ca thành công])
+
+    style S2 fill:#ff9900,color:#fff
+    style S4 fill:#ff9900,color:#fff
+    style S6 fill:#00aa44,color:#fff
+    style AUDIT fill:#9933ff,color:#fff
+```
+
+## WF-26 — Phê duyệt Thiết bị Vận hành (Ops Device Authorization)
+
+**Use Cases:** UC05.4  
+**Business Rules:** BR-SYS-02, BR-SYS-04  
+**Actors:** Admin, Toàn bộ nhân viên Ops, System
+
+```mermaid
+flowchart TD
+    START([Nhân viên đăng nhập /ops-login]) --> S1[Nhập username + password\n+ gửi device_id tự động]
+    S1 --> S2{Tài khoản thuộc\nnhóm Ops/Nhân viên?\nROLE_ADMIN, ROLE_RECEPTIONIST...}
+    S2 -->|Không - Là Khách| S3[Bỏ qua check thiết bị\nĐăng nhập theo luồng thường]
+    S3 --> DONE_FAIL([Đăng nhập OK])
+    
+    S2 -->|Có - Là Ops| S4{Thiết bị device_id\nđã được đăng ký?}
+    S4 -->|Chưa đăng ký| S5[Hệ thống tự động đăng ký thiết bị\nisApproved = true - Chạy Dev]
+    S5 --> DONE_OK([Đăng nhập thành công])
+    
+    S4 -->|Đã đăng ký| S6{Được duyệt?\nisApproved = true}
+    S6 -->|Đã duyệt| DONE_OK
+    S6 -->|Chưa duyệt/Bị khóa| S7["Hủy Session và Logout ngay lập tức\nrequest.getSession().invalidate()"]
+    S7 --> S8[Redirect về /ops-login\nHiển thị lỗi thiết bị không được cấp phép]
+    S8 --> DONE_FAIL
+
+    subgraph ADMIN_CONTROL["Quản lý Thiết bị - Admin"]
+        A1([Admin vào Device Management]) --> A2[Xem danh sách thiết bị Ops]
+        A2 --> ACT{Hành động}
+        ACT -->|Duyệt/Khóa| A3[UPDATE AuthorizedDevice\nisApproved = !isApproved]
+        ACT -->|Xóa| A4[DELETE AuthorizedDevice]
+        A3 & A4 --> AUDIT[INSERT Audit_Logs\nBR-SYS-04]
+    end
+
+    style S6 fill:#ff9900,color:#fff
+    style S7 fill:#ff4444,color:#fff
+    style S5 fill:#00aa44,color:#fff
+    style A3 fill:#ff9900,color:#fff
+    style A4 fill:#ff4444,color:#fff
+```
+
+> **Business Rules áp dụng:**
+> - `BR-SYS-02` — Chỉ thiết bị Ops được phê duyệt (Approved) mới có quyền duy trì Session làm việc.
+> - `BR-SYS-04` — Ghi log mọi hành động thay đổi quyền phê duyệt thiết bị của Admin.
+
+---
+
 ## Bảng Tóm tắt — Tất cả Workflows
 
 | Workflow | UC Liên quan | Business Rules chính | Actors | Mức độ |
@@ -1056,6 +1224,10 @@ flowchart TD
 | WF-20 Add-On Services | UC23 | BR-FB-05 | Customer | MEDIUM |
 | WF-21 Staff Scheduling | UC22.2 | BR-STAFF-01 | Admin, Manager | MEDIUM |
 | WF-22 Workflow Engine | UC09.8 | BR-WF-01,02 | System, Admin | HIGH |
+| WF-23 Đặt bàn trực tuyến | UC21, UC16 | TABLE-002, TABLE-003, TABLE-008 | Customer, F&B Staff | HIGH |
+| WF-24 Hủy đơn F&B & Hoàn tiền | UC19 | POS-004, POS-006 | Customer, F&B Staff | HIGH |
+| WF-25 Chốt ca & Báo cáo F&B | UC18 | BR-FIN-15, BR-SYS-04 | F&B Manager | HIGH |
+| WF-26 Phê duyệt Thiết bị Vận hành | UC05.4 | BR-SYS-02, BR-SYS-04 | Admin | MEDIUM |
 
 ---
 
