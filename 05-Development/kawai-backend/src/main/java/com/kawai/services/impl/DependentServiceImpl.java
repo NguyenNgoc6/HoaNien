@@ -232,7 +232,7 @@ public class DependentServiceImpl implements DependentService {
     private void assertNoDuplicateCccd(Long bookingId, String cccdEncrypted) {
         if (cccdEncrypted != null && dependentRepository.countDuplicateInBooking(bookingId, cccdEncrypted) > 0) {
             throw new BusinessException("MOD2-016",
-                    "Guest already registered under this reservation [MOD2-016]");
+                    "Căn cước bị trùng với người khác trong cùng một đơn đặt phòng [MOD2-016]");
         }
     }
 

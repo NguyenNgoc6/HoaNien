@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.escalateDirtyRoom = function (roomNumber, assignAfter) {
-    fetch(`/receptionist/operations/escalate-room?roomNumber=${roomNumber}`, {
+    fetch(`/receptionist/rooms/escalate-dirty?roomNumber=${roomNumber}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]') ? document.querySelector('meta[name="_csrf"]').getAttribute('content') : ''
