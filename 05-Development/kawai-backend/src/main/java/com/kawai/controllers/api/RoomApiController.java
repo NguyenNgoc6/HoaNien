@@ -182,7 +182,11 @@ public class RoomApiController {
                 rMap.put("roomType", r.getCategory() != null ? r.getCategory().getCategoryName() : "Standard");
             } else {
                 rMap.put("id", "Virtual_" + rbd.getId());
-                rMap.put("roomNumber", "Đang chờ nhận phòng (" + rbd.getCategory().getCategoryName() + ")");
+                String bookingLabel = "";
+                if (rbd.getRoomBooking() != null) {
+                    bookingLabel = " (Đơn #" + rbd.getRoomBooking().getId() + ")";
+                }
+                rMap.put("roomNumber", "Đang chờ nhận phòng " + rbd.getCategory().getCategoryName() + bookingLabel);
                 rMap.put("roomStatus", "Confirmed");
                 rMap.put("roomType", rbd.getCategory().getCategoryName());
             }
