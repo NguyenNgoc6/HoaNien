@@ -87,20 +87,28 @@
 
         #overlay,
         #payment-modal,
-        #room-selection-modal,
         .age-picker-popup,
         #activity-modal,
         #map-detail-popup {
             display: none;
         }
 
+        /* room-selection-modal is a child of #overlay, hide it by default */
+        #room-selection-modal {
+            display: none;
+        }
+
         #overlay.active,
         #payment-modal.active,
-        #room-selection-modal.active,
         .age-picker-popup.active,
         #activity-modal.active,
         #map-detail-popup.active {
             display: flex;
+        }
+
+        /* When room-selection-modal is active inside the overlay, show as block card */
+        #room-selection-modal.active {
+            display: block;
         }
 
         .collapsible-content {
@@ -745,23 +753,23 @@
                 </div>
             </div>
         </div>
-    </div>
-    </div>
-    <!-- Room Selection Modal -->
-    <div class="bg-white w-full max-w-lg p-10 shadow-2xl relative flex flex-col" id="room-selection-modal">
-        <h3 class="text-2xl font-serif mb-8 text-center">Chọn phòng để gán</h3>
-        <div id="active-rooms-list" class="space-y-3 mb-10">
-            <!-- Will be dynamically populated -->
+        <!-- Room Selection Modal -->
+        <div class="bg-white w-full max-w-lg p-10 shadow-2xl relative" id="room-selection-modal">
+            <button class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-brand-dark transition-colors" onclick="closeModal()">×</button>
+            <h3 class="text-2xl font-serif mb-2 text-center">Chọn phòng để gán tour</h3>
+            <p class="text-xs text-gray-400 text-center mb-8">Tour sẽ được liên kết với đơn đặt phòng bạn chọn bên dưới</p>
+            <div id="active-rooms-list" class="space-y-3 mb-8">
+                <!-- Will be dynamically populated -->
+            </div>
+            <div class="flex space-x-4">
+                <button
+                    class="flex-1 border border-brand-dark py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition"
+                    onclick="closeModal()">Hủy</button>
+                <button
+                    class="flex-1 bg-brand-dark text-white py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-gold transition"
+                    onclick="confirmRoomSelection()">Gán phòng</button>
+            </div>
         </div>
-        <div class="flex space-x-4">
-            <button
-                class="flex-1 border border-brand-dark py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition"
-                onclick="closeModal()">Hủy</button>
-            <button
-                class="flex-1 bg-brand-dark text-white py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-gold transition"
-                onclick="confirmRoomSelection()">Gán phòng</button>
-        </div>
-    </div>
     </div>
     <!-- END: Modals -->
 
