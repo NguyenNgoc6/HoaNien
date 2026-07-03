@@ -23,14 +23,14 @@ public interface CheckinService {
     RoomBookingDetail checkIn(Long bookingDetailId, Long roomId, BigDecimal allocatedCreditLimit);
 
     /**
+     * Bulk Check-in từ form (gán nhiều phòng và tạo dependent)
+     */
+    void processBulkCheckin(com.kawai.dto.CheckinSubmitFormDTO form, Customer customer, com.kawai.models.Booking booking);
+
+    /**
      * Ủy quyền hạn mức chi tiêu cho phòng (UC12.2).
      */
     void updateCreditLimit(Long bookingDetailId, BigDecimal newCreditLimit);
 
-    /**
-     * Đổi phòng vật lý cho khách đang lưu trú (UC12.3).
-     */
-    RoomBookingDetail transferRoom(Long bookingDetailId, Long newRoomId);
-
-    Customer upgradeDependentToCustomer(Long dependentId);
+    java.util.Map<String, Object> upgradeDependentToCustomer(Long dependentId);
 }

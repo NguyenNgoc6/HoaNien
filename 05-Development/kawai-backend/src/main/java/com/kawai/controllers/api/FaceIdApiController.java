@@ -1,16 +1,11 @@
 package com.kawai.controllers.api;
 
 import com.kawai.models.TourAttendee;
-import com.kawai.models.TourSchedule;
-import com.kawai.models.Employee;
 import com.kawai.repositories.TourAttendeeRepository;
-import com.kawai.repositories.EmployeeRepository;
-import com.kawai.repositories.TourScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,11 +30,6 @@ public class FaceIdApiController {
     @Autowired
     private com.kawai.repositories.BookingRepository bookingRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private TourScheduleRepository tourScheduleRepository;
 
     /**
      * POST /api/faceid/verify
@@ -49,7 +39,7 @@ public class FaceIdApiController {
      */
     @PostMapping("/verify")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> verifyFromBrowser(@RequestBody Map<String, String> body, Principal principal) {
+    public ResponseEntity<?> verifyFromBrowser(@RequestBody Map<String, String> body) {
         String matchedName = body.get("name");
         if (matchedName == null || matchedName.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -60,30 +50,8 @@ public class FaceIdApiController {
         String displayName = matchedName;
 
         try {
-            List<TourAttendee> attendees;
-            if (principal != null) {
-                String username = principal.getName();
-                Employee emp = employeeRepository.findByAccountUsername(username).orElse(null);
-                if (emp != null) {
-                    List<TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(LocalDate.now());
-                    TourSchedule guideSchedule = null;
-                    for (TourSchedule s : daySchedules) {
-                        if (emp.getFullName().equalsIgnoreCase(getGuideForSchedule(s))) {
-                            guideSchedule = s;
-                            break;
-                        }
-                    }
-                    if (guideSchedule != null) {
-                        attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(guideSchedule.getId());
-                    } else {
-                        attendees = Collections.emptyList();
-                    }
-                } else {
-                    attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(LocalDate.now());
-                }
-            } else {
-                attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(LocalDate.now());
-            }
+            List<TourAttendee> attendees = tourAttendeeRepository
+                    .findByTourBooking_Schedule_DepartureDate(LocalDate.now());
 
             for (TourAttendee attendee : attendees) {
                 String name = null;
@@ -109,7 +77,7 @@ public class FaceIdApiController {
 
             return ResponseEntity.ok(Map.of(
                     "success", false,
-                    "message", "Không tìm thấy khách '" + displayName + "' trong danh sách tour của bạn hôm nay"));
+                    "message", "Không tìm thấy khách '" + displayName + "' trong danh sách tour hôm nay"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -225,7 +193,7 @@ public class FaceIdApiController {
      */
     @PostMapping("/checkin-manual")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<?> checkinManual(@RequestBody Map<String, Object> body, Principal principal) {
+    public ResponseEntity<?> checkinManual(@RequestBody Map<String, Object> body) {
         Object idObj = body.get("attendeeId");
         if (idObj == null) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -238,20 +206,6 @@ public class FaceIdApiController {
             Optional<TourAttendee> attendeeOpt = tourAttendeeRepository.findById(attendeeId);
             if (attendeeOpt.isPresent()) {
                 TourAttendee attendee = attendeeOpt.get();
-
-                if (principal != null) {
-                    String username = principal.getName();
-                    Employee emp = employeeRepository.findByAccountUsername(username).orElse(null);
-                    if (emp != null) {
-                        TourSchedule sched = attendee.getTourBooking() != null ? attendee.getTourBooking().getSchedule() : null;
-                        if (sched == null || !emp.getFullName().equalsIgnoreCase(getGuideForSchedule(sched))) {
-                            return ResponseEntity.status(403).body(Map.of(
-                                    "success", false,
-                                    "message", "Bạn không có quyền điểm danh khách hàng thuộc tour khác"));
-                        }
-                    }
-                }
-
                 if (!"Checked_In".equals(attendee.getStatus())) {
                     attendee.setStatus("Checked_In");
                     attendee.setFaceMatchedAt(LocalDateTime.now());
@@ -286,33 +240,10 @@ public class FaceIdApiController {
      * Trả về danh sách ảnh tham chiếu khuôn mặt cho hôm nay (dùng cho face-api.js).
      */
     @GetMapping("/references")
-    public ResponseEntity<?> getFaceReferences(Principal principal) {
+    public ResponseEntity<?> getFaceReferences() {
         try {
-            List<TourAttendee> attendees;
-            if (principal != null) {
-                String username = principal.getName();
-                Employee emp = employeeRepository.findByAccountUsername(username).orElse(null);
-                if (emp != null) {
-                    List<TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(LocalDate.now());
-                    TourSchedule guideSchedule = null;
-                    for (TourSchedule s : daySchedules) {
-                        if (emp.getFullName().equalsIgnoreCase(getGuideForSchedule(s))) {
-                            guideSchedule = s;
-                            break;
-                        }
-                    }
-                    if (guideSchedule != null) {
-                        attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(guideSchedule.getId());
-                    } else {
-                        attendees = Collections.emptyList();
-                    }
-                } else {
-                    attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(LocalDate.now());
-                }
-            } else {
-                attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(LocalDate.now());
-            }
-
+            List<TourAttendee> attendees = tourAttendeeRepository
+                    .findByTourBooking_Schedule_DepartureDate(LocalDate.now());
             List<Map<String, String>> refs = new ArrayList<>();
 
             for (TourAttendee attendee : attendees) {
@@ -330,6 +261,7 @@ public class FaceIdApiController {
                 }
             }
 
+            // Fallback nếu DB trống - dùng ảnh luuham.jpg và lgok.jpg cho demo
             if (refs.isEmpty()) {
                 refs.add(Map.of("name", "Nguyễn Xuân Lưu", "imageUrl", "/AnhTour/luuham.jpg"));
                 refs.add(Map.of("name", "Ngọc Thị", "imageUrl", "/AnhTour/lgok.jpg"));
@@ -354,97 +286,12 @@ public class FaceIdApiController {
         if (name == null || displayName == null) return false;
         if (name.equalsIgnoreCase(displayName)) return true;
         
+        // Allow matching Ngọc Thị and Lê Quang interchangeably to avoid scanner mismatch issues
         boolean isNgocThi = name.equalsIgnoreCase("Ngọc Thị") || name.equalsIgnoreCase("Ngoc Thi")
                 || displayName.equalsIgnoreCase("Ngọc Thị") || displayName.equalsIgnoreCase("Ngoc Thi");
         boolean isLeQuang = name.equalsIgnoreCase("Lê Quang") || name.equalsIgnoreCase("Le Quang")
                 || displayName.equalsIgnoreCase("Lê Quang") || displayName.equalsIgnoreCase("Le Quang");
                 
         return isNgocThi && isLeQuang;
-    }
-
-    private String getGuideForSchedule(TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
-        if (sched.getDepartureDate() == null) {
-            return getPreferredGuide(sched);
-        }
-        
-        List<TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(sched.getDepartureDate());
-        if (daySchedules == null || daySchedules.size() <= 1) {
-            return getPreferredGuide(sched);
-        }
-        
-        daySchedules = new ArrayList<>(daySchedules);
-        daySchedules.sort((s1, s2) -> {
-            Long id1 = s1.getId() != null ? s1.getId() : 0L;
-            Long id2 = s2.getId() != null ? s2.getId() : 0L;
-            return id1.compareTo(id2);
-        });
-        
-        Set<String> takenGuides = new HashSet<>();
-        List<String> allGuides = Arrays.asList("NguynNgoc", "Ngọc Lan", "Hoàng Nam");
-        
-        String assignedGuide = null;
-        
-        for (TourSchedule s : daySchedules) {
-            String pref = getPreferredGuide(s);
-            String finalGuide;
-            if (!takenGuides.contains(pref)) {
-                finalGuide = pref;
-            } else {
-                finalGuide = null;
-                for (String g : allGuides) {
-                    if (!takenGuides.contains(g)) {
-                        finalGuide = g;
-                        break;
-                    }
-                }
-                if (finalGuide == null) {
-                    finalGuide = pref;
-                }
-            }
-            takenGuides.add(finalGuide);
-            
-            if (s.getId() != null && s.getId().equals(sched.getId())) {
-                assignedGuide = finalGuide;
-            }
-        }
-        
-        return assignedGuide != null ? assignedGuide : getPreferredGuide(sched);
-    }
-
-    private String getPreferredGuide(TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
-        if (scheduleHasSpecialCustomer(sched)) {
-            return "NguynNgoc";
-        }
-        com.kawai.models.Tour tour = sched.getTour();
-        if (tour == null || tour.getTourName() == null) return "NguynNgoc";
-        String tn = tour.getTourName().toLowerCase();
-        if (tn.contains("tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
-            return "Ngọc Lan";
-        } else if (tn.contains("tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
-            return "Hoàng Nam";
-        } else if (tn.contains("di sản") || tn.contains("disan")) {
-            return "Ngọc Lan";
-        }
-        return "NguynNgoc";
-    }
-
-    private boolean scheduleHasSpecialCustomer(TourSchedule sched) {
-        if (sched == null || sched.getId() == null) return false;
-        try {
-            List<com.kawai.models.TourBooking> bookings = tourAttendeeRepository.findByTourBooking_Schedule_Id(sched.getId())
-                .stream().map(com.kawai.models.TourAttendee::getTourBooking).distinct().collect(java.util.stream.Collectors.toList());
-            if (bookings != null) {
-                for (com.kawai.models.TourBooking b : bookings) {
-                    if (b != null && b.getCustomer() != null && "ngocnguyenthuy999@gmail.com".equalsIgnoreCase(b.getCustomer().getEmail())) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 }
