@@ -832,7 +832,7 @@
 
     <script data-purpose="ui-interactions">
         let currentTour = initialTourType || 'doantu';
-        let selectedRoomData = null;
+        let selectedRooms = []; // Array of {id, roomNumber, type} — supports multi-room
         let selectedPaymentType = 'deposit'; // 'deposit' or 'full' or 'post-room'
         let currentPaymentMethod = 'counter'; // 'counter' or 'vnpay'
 
@@ -1507,32 +1507,39 @@
 
                         if (activeRooms.length === 1) {
                             console.log("Exactly 1 active room. Auto-selecting.");
-                            // 1: automatically select room (if customer only has 1 room)
+                            // 1 room: auto-select and skip modal
                             const singleRoom = activeRooms[0];
-                            selectedRoomData = { id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType };
+                            selectedRooms = [{ id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType }];
                             confirmRoomSelection();
                         } else {
                             console.log("Multiple active rooms. Opening modal.");
-                            // 2: display choice of rooms to assign (if customer has multiple rooms)
+                            // Reset selection
+                            selectedRooms = [];
+                            // 2: display checkbox list of rooms
                             const container = document.getElementById('active-rooms-list');
                             if (container) {
-                                container.innerHTML = activeRooms.map((r, idx) => `
-                                    <div class="room-item selectable border ${idx === 0 ? 'border-brand-dark bg-[#FBF9F6]' : 'border-brand-border'} p-4 flex justify-between items-center cursor-pointer transition-all hover:bg-gray-50/50"
-                                         onclick="selectRoomUI(this, '${r.id}', '${r.roomNumber.replace(/'/g, "\\'")}', '${r.roomType}')">
+                                container.innerHTML = activeRooms.map((r) => {
+                                    const safeId = r.id.replace(/'/g, "\\'");
+                                    const safeName = r.roomNumber.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                                    const safeType = (r.roomType || '').replace(/'/g, "\\'");
+                                    return `
+                                    <label class="room-item flex items-center justify-between border border-brand-border p-4 cursor-pointer transition-all hover:bg-gray-50/50 has-[:checked]:border-brand-dark has-[:checked]:bg-[#FBF9F6]">
                                         <div class="flex items-center space-x-4">
+                                            <input type="checkbox" class="room-checkbox w-4 h-4 accent-[#2D2926]"
+                                                value="${safeId}"
+                                                data-number="${safeName}"
+                                                data-type="${safeType}"
+                                                onchange="toggleRoomSelection(this)">
                                             <span class="material-symbols-outlined text-gray-400">door_front</span>
                                             <div>
                                                 <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
-                                                <p class="text-[10px] text-gray-400 uppercase">${r.roomType}</p>
+                                                <p class="text-[10px] text-gray-400 uppercase">${r.roomType || ''}</p>
                                             </div>
                                         </div>
-                                        <div class="text-[9px] font-bold text-green-700 uppercase tracking-widest bg-green-50 px-2 py-0.5 border border-green-200">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</div>
-                                    </div>
-                                `).join('');
+                                        <div class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${r.roomStatus === 'Confirmed' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200'}">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</div>
+                                    </label>`;
+                                }).join('');
                             }
-
-                            // Auto-select the first room by default to avoid empty clicks!
-                            selectedRoomData = { id: activeRooms[0].id, roomNumber: activeRooms[0].roomNumber, type: activeRooms[0].roomType };
 
                             const overlay = document.getElementById('overlay');
                             const roomModal = document.getElementById('room-selection-modal');
@@ -1558,51 +1565,67 @@
             }
         }
 
-        function selectRoomUI(element, id, roomNumber, type) {
+        function toggleRoomSelection(checkbox) {
             try {
-                console.log("selectRoomUI clicked for room:", id, roomNumber);
-                document.querySelectorAll('.room-item').forEach(el => {
-                    el.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
-                    el.classList.add('border-brand-border');
-                });
-                if (element) {
-                    element.classList.remove('border-brand-border');
-                    element.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
+                const id = checkbox.value;
+                const roomNumber = checkbox.dataset.number;
+                const type = checkbox.dataset.type;
+                if (checkbox.checked) {
+                    // Add to selection if not already present
+                    if (!selectedRooms.find(r => r.id === id)) {
+                        selectedRooms.push({ id, roomNumber, type });
+                    }
+                } else {
+                    // Remove from selection
+                    selectedRooms = selectedRooms.filter(r => r.id !== id);
                 }
-                selectedRoomData = { id, roomNumber, type };
+                console.log("selectedRooms:", selectedRooms);
             } catch (err) {
-                console.error("Error in selectRoomUI:", err);
+                console.error("Error in toggleRoomSelection:", err);
             }
         }
 
         function confirmRoomSelection() {
-            console.log("confirmRoomSelection called, selectedRoomData:", selectedRoomData);
+            console.log("confirmRoomSelection called, selectedRooms:", selectedRooms);
             try {
-                if (!selectedRoomData) {
-                    console.warn("confirmRoomSelection called but selectedRoomData is null");
+                if (!selectedRooms || selectedRooms.length === 0) {
+                    alert('Vui lòng chọn ít nhất 1 phòng để gán tour.');
                     return;
                 }
                 selectedPaymentType = 'post-room';
                 const container = document.getElementById('room-charge-container');
                 if (container) {
-                    const isVirtual = selectedRoomData.id.startsWith("Virtual_");
-                    const statusText = isVirtual ? "Đã đặt" : "Đang ở";
-                    const statusClass = isVirtual ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-green-50 text-green-700 border-green-200";
-                    container.innerHTML = `
-                        <div class="border border-brand-dark p-6 flex justify-between items-center bg-white animate-in fade-in duration-500">
-                          <div class="flex items-center space-x-6">
-                            <div class="w-12 h-12 bg-brand-bg flex items-center justify-center border border-brand-border">
-                              <span class="material-symbols-outlined text-brand-dark">key</span>
-                            </div>
-                            <div>
-                              <div class="flex items-center space-x-3 mb-1">
-                                <h4 class="font-bold text-sm">Phòng: ${selectedRoomData.roomNumber}</h4>
-                                <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
+                    const roomsHtml = selectedRooms.map(room => {
+                        const isVirtual = room.id.startsWith('Virtual_');
+                        const statusText = isVirtual ? 'Đã đặt' : 'Đang ở';
+                        const statusClass = isVirtual ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200';
+                        return `
+                          <div class="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
+                            <div class="flex items-center space-x-3">
+                              <span class="material-symbols-outlined text-brand-dark text-base">door_front</span>
+                              <div>
+                                <p class="font-bold text-xs">${room.roomNumber}</p>
+                                <p class="text-[10px] text-gray-400">${room.type}</p>
                               </div>
-                              <p class="text-xs text-gray-500">Loại: ${selectedRoomData.type}</p>
                             </div>
+                            <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
+                          </div>`;
+                    }).join('');
+                    container.innerHTML = `
+                        <div class="border border-brand-dark p-5 bg-white animate-in fade-in duration-500">
+                          <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                              <div class="w-9 h-9 bg-brand-bg flex items-center justify-center border border-brand-border">
+                                <span class="material-symbols-outlined text-brand-dark text-sm">key</span>
+                              </div>
+                              <div>
+                                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Tính vào phòng</p>
+                                <p class="text-xs font-bold">${selectedRooms.length} phòng được chọn</p>
+                              </div>
+                            </div>
+                            <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
                           </div>
-                          <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
+                          <div class="pl-12">${roomsHtml}</div>
                         </div>
                     `;
                 } else {
@@ -1632,7 +1655,7 @@
                         </div>
                     `;
                 }
-                selectedRoomData = null;
+                selectedRooms = [];
             } catch (err) {
                 console.error("Error in resetToScreen1:", err);
             }
@@ -1868,7 +1891,7 @@
             const phone = document.getElementById('phone').value.trim();
             const departureDate = document.getElementById('departureDate').value;
             const participantCount = parseInt(document.getElementById('participantCount').value) || 1;
-            const roomNumber = selectedRoomData ? selectedRoomData.id : null;
+            const roomNumbers = selectedRooms.length > 0 ? selectedRooms.map(r => r.id) : null;
 
             // Determine if this is a VNPay flow
             const isVnpay = (currentPaymentMethod === 'vnpay');
@@ -1894,7 +1917,7 @@
                 phone: phone,
                 participantCount: participantCount,
                 paymentMethod: isVnpay ? 'vnpay' : selectedPaymentType,
-                roomNumber: roomNumber,
+                roomNumbers: roomNumbers,
                 vnpPaymentType: vnpPaymentType,
                 childAges: childAges,
                 promoCode: appliedPromoState ? appliedPromoState.code : null,
