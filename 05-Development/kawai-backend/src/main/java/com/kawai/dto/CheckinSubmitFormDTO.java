@@ -14,6 +14,9 @@ public class CheckinSubmitFormDTO {
     private String guestName;
     private String phone;
     private String cccd;
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+    private java.time.LocalDate dob;
+    private String gender;
     private List<String> assignedRoomNumbers = new ArrayList<>();
     private List<java.math.BigDecimal> allocatedCreditLimits = new ArrayList<>();
 
@@ -24,6 +27,26 @@ public class CheckinSubmitFormDTO {
     // (không tạo mới TourBooking, chỉ ghi nhận roomBookingDetail cho từng tour)
     private String tourAllocationMode;
     private List<TourRoomAllocationDTO> tourAllocations = new ArrayList<>();
+
+    // FaceID data for the main Customer
+    private String faceVectorData;
+    private String faceImageBase64;
+
+    public String getFaceVectorData() {
+        return faceVectorData;
+    }
+
+    public void setFaceVectorData(String faceVectorData) {
+        this.faceVectorData = faceVectorData;
+    }
+
+    public String getFaceImageBase64() {
+        return faceImageBase64;
+    }
+
+    public void setFaceImageBase64(String faceImageBase64) {
+        this.faceImageBase64 = faceImageBase64;
+    }
 
     public CheckinSubmitFormDTO() {
     }
@@ -58,6 +81,22 @@ public class CheckinSubmitFormDTO {
 
     public void setCccd(String cccd) {
         this.cccd = cccd;
+    }
+
+    public java.time.LocalDate getDob() {
+        return dob;
+    }
+
+    public void setDob(java.time.LocalDate dob) {
+        this.dob = dob;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public List<java.math.BigDecimal> getAllocatedCreditLimits() {
