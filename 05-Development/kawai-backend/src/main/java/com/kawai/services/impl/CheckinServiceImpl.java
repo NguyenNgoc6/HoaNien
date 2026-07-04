@@ -451,30 +451,6 @@ public class CheckinServiceImpl implements CheckinService {
                 }
             }
 
-            String tourAllocationMode = form.getTourAllocationMode();
-            if ("PER_TOUR".equalsIgnoreCase(tourAllocationMode)
-                    && form.getTourAllocations() != null
-                    && !form.getTourAllocations().isEmpty()) {
-                for (com.kawai.dto.TourRoomAllocationDTO allocation : form.getTourAllocations()) {
-                    if (allocation.getTourBookingId() == null || allocation.getRoomNumber() == null
-                            || allocation.getRoomNumber().isEmpty()) {
-                        continue;
-                    }
-                    com.kawai.models.TourBooking tourBooking = tourBookingRepo.findById(allocation.getTourBookingId())
-                            .orElse(null);
-                    if (tourBooking == null)
-                        continue;
 
-                    Long detailId = roomNumberToDetailIdMap.get(allocation.getRoomNumber());
-                    if (detailId == null) {
-                        continue;
-                    }
-                    com.kawai.models.RoomBookingDetail detail = roomBookingDetailRepo.findById(detailId).orElse(null);
-                    if (detail != null) {
-                        tourBooking.setRoomBookingDetail(detail);
-                        tourBookingRepo.save(tourBooking);
-                    }
-                }
-            }
         }
 }

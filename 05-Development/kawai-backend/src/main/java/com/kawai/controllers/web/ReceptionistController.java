@@ -297,11 +297,10 @@ public class ReceptionistController {
             List<com.kawai.dto.DependentResponseDTO> deps = dependentService.getGuestListByBooking(b.getId());
             map.put("dependents", deps);
 
-            // Tìm TourBookings chưa được gán phòng cụ thể (roomBookingDetail IS NULL)
-            // → các tour này lễ tân sẽ phân bổ khi check-in
-            List<com.kawai.models.TourBooking> unallocatedTours = tourBookingRepository
-                    .findByRoomBookingIdAndRoomBookingDetailIsNull(b.getId());
-            map.put("tourBookings", unallocatedTours);
+            // Tìm tất cả TourBookings thuộc đơn này để hiển thị Read-only cho lễ tân
+            List<com.kawai.models.TourBooking> allTours = tourBookingRepository
+                    .findByRoomBookingId(b.getId());
+            map.put("tourBookings", allTours);
 
             pagedArrivals.add(map);
         }
