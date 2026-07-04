@@ -216,9 +216,17 @@ window.escalateDirtyRoom = function (roomNumber, assignAfter) {
                 if (assignAfter) {
                     const selectedType = typeSelect.value;
                     const selectedRoomOpt = roomSelect.options[roomSelect.selectedIndex];
+                    // khi housekeeping dọn xong — giống hệt cơ chế của WalkIn
+                    try {
+                        const pendingRaw = sessionStorage.getItem('walkInPendingCleanRooms');
+                        const pendingRooms = pendingRaw ? JSON.parse(pendingRaw) : {};
+                        pendingRooms[roomNumber] = true;
+                        sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
+                    } catch (e) { }
+
                     proceedAssignRoom(typeSelect, selectedType, roomNumber, selectedRoomOpt);
                 } else {
-                    // If they only requested cleaning, reset the dropdown to force them to select a different room
+                    // Chỉ yêu cầu dọn, không treo — reset dropdown cho lễ tân chọn lại
                     roomSelect.value = "";
                 }
             } else {
@@ -1015,7 +1023,7 @@ function renderTourBookingsTable(toursDivId) {
         tr.style.transition = 'background-color 0.2s ease';
         tr.onmouseover = () => tr.style.backgroundColor = '#f8fafc';
         tr.onmouseout = () => tr.style.backgroundColor = 'transparent';
-        
+
         tr.innerHTML =
             '<td style="padding:12px 16px;font-size:14px;font-weight:600;color:#1e293b">' + tourName + '</td>' +
             '<td style="padding:12px 16px;font-size:14px;color:#475569">' + category + '</td>' +

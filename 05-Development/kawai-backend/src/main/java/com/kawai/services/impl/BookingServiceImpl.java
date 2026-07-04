@@ -994,7 +994,8 @@ public class BookingServiceImpl implements BookingService {
             throw new BusinessException("INVALID_STATE", "Chỉ có thể xóa đơn đang ở trạng thái chờ");
         }
 
-        // Thay vì xóa cứng, ta chuyển trạng thái sang Cancelled_Payment để giải phóng phòng
+        // Thay vì xóa cứng, ta chuyển trạng thái sang Cancelled_Payment để giải phóng
+        // phòng
         booking.setBookingStatus("Cancelled_Payment");
         booking.setHoldExpiresAt(null);
 
@@ -1033,5 +1034,4 @@ public class BookingServiceImpl implements BookingService {
         }
 
     }
-
 }
