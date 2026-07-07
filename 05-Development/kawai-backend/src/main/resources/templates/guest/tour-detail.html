@@ -145,30 +145,42 @@
             backdrop-filter: blur(14px) !important;
             -webkit-backdrop-filter: blur(14px) !important;
         }
+
         .guest-nav {
             background: transparent !important;
             border-bottom: none !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
         }
+
         .guest-nav .nav-text {
             color: #e5dfd8;
             transition: color 0.4s ease;
         }
+
         .guest-nav .nav-text-dim {
             color: rgba(229, 223, 216, 0.7);
             transition: color 0.4s ease;
         }
-        .guest-nav .nav-text-dim:hover { color: #ffffff; }
+
+        .guest-nav .nav-text-dim:hover {
+            color: #ffffff;
+        }
+
         .guest-nav .nav-brand {
             color: #c5a059;
             font-family: "EB Garamond", serif;
         }
+
         .guest-nav .nav-btn-book {
             color: rgba(229, 223, 216, 0.7) !important;
             transition: color 0.4s ease, opacity 0.2s ease;
         }
-        .guest-nav .nav-btn-book:hover { color: #ffffff !important; }
+
+        .guest-nav .nav-btn-book:hover {
+            color: #ffffff !important;
+        }
+
         .nav-active {
             border-bottom: 1px solid #c5a059;
             color: #c5a059 !important;
@@ -188,9 +200,11 @@
             border-bottom: 2px solid transparent;
             flex-shrink: 0;
         }
+
         .sub-nav-link:hover {
             color: #c5a059;
         }
+
         .sub-nav-link.active,
         .sub-nav-link.border-b-2 {
             color: #c5a059 !important;
@@ -377,27 +391,31 @@
         <nav class="guest-nav relative w-full font-sans">
             <div class="max-w-[1440px] mx-auto px-6 py-6 flex items-center justify-between">
                 <div class="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.2em] font-semibold">
-                    <a href="/living" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Living</a>
-                    <a href="/dining" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Dining</a>
-                    <a href="/experiences" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Experiences</a>
+                    <a href="/living"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Living</a>
+                    <a href="/dining"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Dining</a>
+                    <a href="/experiences"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Experiences</a>
                     <a href="/tours/search" class="nav-text nav-active pb-0.5">Tours</a>
-                    <a href="/feedback" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Feedback</a>
+                    <a href="/feedback"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Feedback</a>
                 </div>
                 <div class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-headline text-[32px] italic tracking-tighter nav-brand text-center cursor-pointer w-max"
-                     onclick="window.location.href='/'">
+                    onclick="window.location.href='/'">
                     HoaNien
                 </div>
                 <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
                     <a href="/profile" th:if="${session.user != null}"
-                       class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Profile</a>
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Profile</a>
                     <form th:action="@{/auth/logout}" method="post" th:if="${session.user != null}" class="inline">
                         <button type="submit"
-                                class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
+                            class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                     </form>
                     <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}"
-                       class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
                     <a href="/booking"
-                       class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px] uppercase tracking-[0.2em]">
+                        class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px] uppercase tracking-[0.2em]">
                         Book Now
                     </a>
                 </div>
@@ -407,22 +425,31 @@
             </div>
         </nav>
         <!-- sub-nav tour tabs ─ liền mạch ngay dưới nav -->
-        <div class="w-full border-t border-white/10 py-2 flex items-center justify-center gap-10 overflow-x-auto flex-nowrap px-6">
-            <a href="javascript:void(0)" onclick="loadTour('doantu')" class="sub-nav-link" data-tour="doantu">Đoàn Tụ</a>
-            <a href="javascript:void(0)" onclick="loadTour('dongnoi')" class="sub-nav-link" data-tour="dongnoi">Đồng Nội</a>
+        <div
+            class="w-full border-t border-white/10 py-2 flex items-center justify-center gap-10 overflow-x-auto flex-nowrap px-6">
+            <a href="javascript:void(0)" onclick="loadTour('doantu')" class="sub-nav-link" data-tour="doantu">Đoàn
+                Tụ</a>
+            <a href="javascript:void(0)" onclick="loadTour('dongnoi')" class="sub-nav-link" data-tour="dongnoi">Đồng
+                Nội</a>
             <a href="javascript:void(0)" onclick="loadTour('disan')" class="sub-nav-link" data-tour="disan">Di Sản</a>
-            <a href="javascript:void(0)" onclick="loadTour('tinhlang')" class="sub-nav-link" data-tour="tinhlang">Tĩnh Lặng</a>
-            <a href="javascript:void(0)" onclick="loadTour('halong')" class="sub-nav-link" data-tour="halong">Hạ Long</a>
+            <a href="javascript:void(0)" onclick="loadTour('tinhlang')" class="sub-nav-link" data-tour="tinhlang">Tĩnh
+                Lặng</a>
+            <a href="javascript:void(0)" onclick="loadTour('halong')" class="sub-nav-link" data-tour="halong">Hạ
+                Long</a>
             <a href="javascript:void(0)" onclick="loadTour('sapa')" class="sub-nav-link" data-tour="sapa">Sapa</a>
-            <a href="javascript:void(0)" onclick="loadTour('cattien')" class="sub-nav-link" data-tour="cattien">Cát Tiên</a>
+            <a href="javascript:void(0)" onclick="loadTour('cattien')" class="sub-nav-link" data-tour="cattien">Cát
+                Tiên</a>
             <a href="javascript:void(0)" onclick="loadTour('muine')" class="sub-nav-link" data-tour="muine">Mũi Né</a>
-            <a href="javascript:void(0)" onclick="loadTour('phuquoc')" class="sub-nav-link" data-tour="phuquoc">Phú Quốc</a>
-            <a href="javascript:void(0)" onclick="loadTour('cantho')" class="sub-nav-link" data-tour="cantho">Cần Thơ</a>
+            <a href="javascript:void(0)" onclick="loadTour('phuquoc')" class="sub-nav-link" data-tour="phuquoc">Phú
+                Quốc</a>
+            <a href="javascript:void(0)" onclick="loadTour('cantho')" class="sub-nav-link" data-tour="cantho">Cần
+                Thơ</a>
         </div>
     </div>
     <!-- END: MainHeader -->
 
-    <main class="flex min-h-screen bg-brand-bg" style="padding-top: 112px; background-image: url('/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg'); background-size: cover; background-position: center center; background-attachment: fixed;">
+    <main class="flex min-h-screen bg-brand-bg"
+        style="padding-top: 112px; background-image: url('/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg'); background-size: cover; background-position: center center; background-attachment: fixed;">
         <!-- BEGIN: LeftHeroSection -->
         <section id="leftHeroSection" class="w-1/2 px-12 py-16 overflow-y-auto relative"
             style="background-image: url('/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;">
@@ -432,7 +459,9 @@
                     <p class="text-[10px] font-bold tracking-widest uppercase text-white"
                         style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Tóm tắt hành trình</p>
                 </div>
-                <h2 id="tourTitle" class="text-4xl font-serif font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">Đoàn Tụ</h2>
+                <h2 id="tourTitle"
+                    class="text-4xl font-serif font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                    Đoàn Tụ</h2>
             </div>
             <div class="absolute inset-0 bg-black/60 z-0 pointer-events-none"></div>
             <div class="max-w-xl mx-auto space-y-8 relative z-10">
@@ -1827,8 +1856,13 @@
 
             const depositPrice = Math.round(totalPrice * 0.3);
 
-            document.getElementById('displayTotalPrice').textContent = formatVND(totalPrice);
-            document.getElementById('displayDepositPrice').textContent = formatVND(depositPrice);
+            const tourInfo = tourData[currentTour];
+            if (tourInfo) {
+                const basePrice = tourInfo.price || 0;
+                const baseDeposit = Math.round(basePrice * 0.3);
+                document.getElementById('displayTotalPrice').textContent = formatVND(basePrice);
+                document.getElementById('displayDepositPrice').textContent = formatVND(baseDeposit);
+            }
 
             document.getElementById('displayFullPriceDeposit').textContent = formatVND(depositPrice);
             document.getElementById('displayFullPriceValue').textContent = formatVND(totalPrice);
@@ -2054,14 +2088,14 @@
             if (!container) return;
             const num = parseInt(count) || 0;
             container.innerHTML = '';
-            
+
             if (num > 0) {
                 const title = document.createElement('div');
                 title.className = 'text-[10px] font-bold uppercase tracking-widest text-brand-gold mt-6 mb-2';
                 title.textContent = 'Thông tin người lớn đi cùng';
                 container.appendChild(title);
             }
-            
+
             for (let i = 0; i < num; i++) {
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-3 gap-4 adult-companion-row animate-in fade-in slide-in-from-top-1 duration-300 border-b border-brand-border/30 pb-4';
@@ -2591,7 +2625,7 @@
                     const nameEl = row.querySelector('.adult-companion-name');
                     const ageEl = row.querySelector('.adult-companion-age');
                     const phoneEl = row.querySelector('.adult-companion-phone');
-                    
+
                     if (nameEl) {
                         const companionName = nameEl.value.trim();
                         if (companionName === '') {
@@ -2602,7 +2636,7 @@
                             nameEl.focus();
                             return false;
                         }
-                        
+
                         const companionNameRegex = /^[\p{L}]+(?:\s+[\p{L}]+)+$/u;
                         if (!companionNameRegex.test(companionName)) {
                             showWarningAlertPopup(
@@ -2613,7 +2647,7 @@
                             return false;
                         }
                     }
-                    
+
                     if (ageEl) {
                         const companionAge = parseInt(ageEl.value);
                         if (isNaN(companionAge) || companionAge < 12) {
@@ -2625,7 +2659,7 @@
                             return false;
                         }
                     }
-                    
+
                     if (phoneEl && phoneEl.value.trim() !== '') {
                         const companionPhone = phoneEl.value.trim();
                         const companionPhoneRegex = /^(0[35789])[0-9]{8}$/;
