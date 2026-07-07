@@ -21,6 +21,9 @@ public class Tour {
     @Column(name="insurance_price", nullable=false) private BigDecimal insurancePrice = BigDecimal.ZERO;
     @Column(name="image_url", length = 500) private String imageUrl;
     @Column(name="short_quote") private String shortQuote;
+    @Column(name="handbook_spec") private String handbookSpec;
+    @Column(name="handbook_logistics", columnDefinition="TEXT") private String handbookLogistics;
+    @Column(name="handbook_explanations", columnDefinition="TEXT") private String handbookExplanations;
     @Column(name="created_at") private java.time.LocalDateTime createdAt;
     @Column(name="is_active", nullable=false) private Boolean isActive = true;
 }

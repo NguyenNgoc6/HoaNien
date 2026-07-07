@@ -910,6 +910,8 @@
                 insurancePrice: /*[[${insurance_price_cantho != null ? insurance_price_cantho : 0}]]*/ 0
             }
         };
+        const dbTourActivitiesRaw = /*[[${dbTourActivitiesJson}]]*/ '{}';
+        const dbTourActivities = dbTourActivitiesRaw ? JSON.parse(dbTourActivitiesRaw) : null;
         /*]]>*/
     </script>
 
@@ -1088,6 +1090,10 @@
                     if (dbTour.quote) {
                         tourData[key].quoteVi = dbTour.quote;
                         tourData[key].quoteEn = dbTour.quote;
+                    }
+                    if (dbTour.duration) {
+                        tourData[key].durationVi = dbTour.duration;
+                        tourData[key].durationEn = dbTour.duration;
                     }
                 }
             }
@@ -1459,6 +1465,24 @@
                 }
             ]
         };
+
+        // Override tourActivities with database values
+        if (typeof dbTourActivities !== 'undefined' && dbTourActivities) {
+            for (const key in dbTourActivities) {
+                if (dbTourActivities[key] && dbTourActivities[key].length > 0) {
+                    const dbList = dbTourActivities[key];
+                    const originalList = tourActivities[key] || [];
+                    for (let j = 0; j < dbList.length; j++) {
+                        const dbAct = dbList[j];
+                        const originalAct = originalList[j] || {};
+                        dbAct.image = dbAct.image || originalAct.image || "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
+                        dbAct.coords = dbAct.coords || originalAct.coords || { top: '50%', left: '50%' };
+                        dbAct.mapQuery = dbAct.mapQuery || originalAct.mapQuery || dbAct.title;
+                    }
+                    tourActivities[key] = dbList;
+                }
+            }
+        }
 
         function renderActivities() {
             const list = tourActivities[currentTour] || [];

@@ -34,6 +34,9 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourBookingRepository tourBookingRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourItineraryDetailRepository tourItineraryDetailRepository;
+
     @org.springframework.web.bind.annotation.ModelAttribute
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
@@ -308,6 +311,73 @@ public class TourGuideController {
                 .count();
         model.addAttribute("checkedInCount", checkedIn);
         model.addAttribute("totalAttendees", attendees.size());
+
+        // Load detailed activities and handbook for the active tour schedule dynamically
+        com.kawai.models.Tour currentTour = null;
+        if (targetSchedule != null) {
+            currentTour = targetSchedule.getTour();
+        } else if (!attendees.isEmpty()) {
+            com.kawai.models.TourBooking tb = attendees.get(0).getTourBooking();
+            if (tb != null && tb.getSchedule() != null) {
+                currentTour = tb.getSchedule().getTour();
+            }
+        }
+
+        java.util.List<java.util.Map<String, Object>> actList = new java.util.ArrayList<>();
+        java.util.Map<String, Object> hbMap = new java.util.HashMap<>();
+        String tourTypeKey = "doantu";
+
+        if (currentTour != null) {
+            tourTypeKey = currentTour.getTourType();
+            hbMap.put("spec", currentTour.getHandbookSpec());
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Object logisticsObj = null;
+            Object explanationsObj = null;
+            try {
+                if (currentTour.getHandbookLogistics() != null) {
+                    logisticsObj = mapper.readValue(currentTour.getHandbookLogistics(), Object.class);
+                }
+                if (currentTour.getHandbookExplanations() != null) {
+                    explanationsObj = mapper.readValue(currentTour.getHandbookExplanations(), Object.class);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            hbMap.put("logistics", logisticsObj);
+            hbMap.put("explanations", explanationsObj);
+
+            java.util.List<com.kawai.models.TourItineraryDetail> details = tourItineraryDetailRepository.findByItineraryTourId(currentTour.getId());
+            for (com.kawai.models.TourItineraryDetail d : details) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                String timeStr = "";
+                if (d.getStartTime() != null) {
+                    timeStr = d.getStartTime().toString().substring(0, 5);
+                    if (d.getEndTime() != null) {
+                        timeStr += " - " + d.getEndTime().toString().substring(0, 5);
+                    }
+                }
+                map.put("time", timeStr);
+                map.put("title", d.getActivityTitle());
+                map.put("desc", d.getActivityDescription());
+                actList.add(map);
+            }
+        } else {
+            hbMap.put("spec", "");
+            hbMap.put("logistics", new java.util.ArrayList<>());
+            hbMap.put("explanations", new java.util.ArrayList<>());
+        }
+
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            model.addAttribute("tourActivitiesJson", mapper.writeValueAsString(actList));
+            model.addAttribute("tourHandbookJson", mapper.writeValueAsString(hbMap));
+        } catch (Exception e) {
+            model.addAttribute("tourActivitiesJson", "[]");
+            model.addAttribute("tourHandbookJson", "{}");
+            e.printStackTrace();
+        }
+        model.addAttribute("tourType", tourTypeKey);
 
         return "tour/FaceID";
     }

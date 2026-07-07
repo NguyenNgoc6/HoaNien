@@ -1549,7 +1549,13 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const tourTypeDb = /*[[${tourType}]]*/ 'doantu';
+    const tourActivitiesJsonDb = /*[[${tourActivitiesJson}]]*/ '[]';
+    const tourHandbookJsonDb = /*[[${tourHandbookJson}]]*/ '{}';
+    /*]]>*/
+
     const TOUR_ITINERARIES = {
         doantu: {
             subtitle: 'Hành trình Đoàn Tụ – Cố Đô Huế (Khởi hành: 08:00)',
@@ -1789,6 +1795,42 @@
             ]
         }
     };
+
+    // Override TOUR_ITINERARIES and TOUR_HANDBOOKS with DB values
+    try {
+        const dbActivities = (typeof tourActivitiesJsonDb !== 'undefined' && tourActivitiesJsonDb) ? JSON.parse(tourActivitiesJsonDb) : [];
+        const dbHandbook = (typeof tourHandbookJsonDb !== 'undefined' && tourHandbookJsonDb) ? JSON.parse(tourHandbookJsonDb) : {};
+        const activeKey = (typeof tourTypeDb !== 'undefined') ? tourTypeDb : null;
+
+        if (activeKey) {
+            if (dbActivities && dbActivities.length > 0) {
+                if (TOUR_ITINERARIES[activeKey]) {
+                    TOUR_ITINERARIES[activeKey].activities = dbActivities;
+                } else {
+                    TOUR_ITINERARIES[activeKey] = {
+                        subtitle: 'Hành trình ' + activeKey + ' (Khởi hành: 08:00)',
+                        activities: dbActivities
+                    };
+                }
+            }
+            if (dbHandbook && dbHandbook.spec) {
+                if (TOUR_HANDBOOKS[activeKey]) {
+                    TOUR_HANDBOOKS[activeKey].spec = dbHandbook.spec;
+                    if (dbHandbook.logistics) TOUR_HANDBOOKS[activeKey].logistics = dbHandbook.logistics;
+                    if (dbHandbook.explanations) TOUR_HANDBOOKS[activeKey].explanations = dbHandbook.explanations;
+                } else {
+                    TOUR_HANDBOOKS[activeKey] = {
+                        title: 'Cẩm nang dẫn tour',
+                        spec: dbHandbook.spec,
+                        logistics: dbHandbook.logistics || [],
+                        explanations: dbHandbook.explanations || []
+                    };
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Error overriding itineraries or handbooks with DB values:", e);
+    }
 
     function normalizeKey(name) {
         return name.toLowerCase()
