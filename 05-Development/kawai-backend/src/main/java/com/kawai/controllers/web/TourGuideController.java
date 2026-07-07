@@ -456,7 +456,7 @@ public class TourGuideController {
                 }
             }
             map.put("image", image);
-            map.put("type", "Cao cấp");
+            map.put("type", "");
             
             // Count total bookings/attendees dynamically from database
             int count = tourAttendeeRepository.findByTourBooking_Schedule_Id(sched.getId()).size();
