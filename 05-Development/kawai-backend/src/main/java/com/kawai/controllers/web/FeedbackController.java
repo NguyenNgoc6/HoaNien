@@ -21,6 +21,9 @@ public class FeedbackController {
     @Autowired
     private com.kawai.repositories.ReviewRepository reviewRepository;
 
+    @Autowired
+    private com.kawai.repositories.BookingRepository bookingRepository;
+
     @GetMapping
     public String showFeedbackPage(
             Principal principal,
@@ -28,8 +31,33 @@ public class FeedbackController {
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             Model model) {
 
-        model.addAttribute("isLoggedIn", com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal));
+        boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal);
+        model.addAttribute("isLoggedIn", isLoggedIn);
         model.addAttribute("activeTab", type);
+
+        com.kawai.models.Customer customer = null;
+        boolean hasUsedService = false;
+
+        if (isLoggedIn && principal != null) {
+            String username = principal.getName();
+            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
+                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                username = oauthToken.getPrincipal().getAttribute("email");
+            }
+            final String effectiveUsername = username;
+            customer = customerRepository.findByAccount_Username(effectiveUsername)
+                    .or(() -> customerRepository.findByEmail(effectiveUsername))
+                    .orElse(null);
+
+            if (customer != null) {
+                List<com.kawai.models.Booking> completedBookings = 
+                    bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+                hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+            }
+        }
+
+        model.addAttribute("hasUsedService", hasUsedService);
 
         // Mode: submit form (came from email with bookingId)
         com.kawai.models.TourBooking booking = null;
@@ -68,27 +96,31 @@ public class FeedbackController {
             @RequestParam("ratingRoomDining") Integer ratingRoomDining,
             @RequestParam("reviewText") String reviewText) {
 
-        com.kawai.models.Customer customer = null;
-        if (com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)) {
-            String username = principal.getName();
-            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
-                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
-                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
-                username = oauthToken.getPrincipal().getAttribute("email");
-            }
-            final String effectiveUsername = username;
-            customer = customerRepository.findByAccount_Username(effectiveUsername)
-                    .or(() -> customerRepository.findByEmail(effectiveUsername))
-                    .orElse(null);
+        if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)) {
+            return "redirect:/feedback?toast=login_required";
         }
 
-        // Fallback: customer #5 for demo
-        if (customer == null) {
-            customer = customerRepository.findById(5L).orElse(null);
+        com.kawai.models.Customer customer = null;
+        String username = principal.getName();
+        if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+            org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
+                (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+            username = oauthToken.getPrincipal().getAttribute("email");
         }
+        final String effectiveUsername = username;
+        customer = customerRepository.findByAccount_Username(effectiveUsername)
+                .or(() -> customerRepository.findByEmail(effectiveUsername))
+                .orElse(null);
 
         if (customer == null) {
             return "redirect:/feedback?toast=error";
+        }
+
+        // Check if customer has used any services
+        List<com.kawai.models.Booking> completedBookings = 
+            bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+        if (completedBookings == null || completedBookings.isEmpty()) {
+            return "redirect:/feedback?toast=no_service_used";
         }
 
         com.kawai.models.TourBooking booking = null;

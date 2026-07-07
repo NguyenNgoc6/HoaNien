@@ -28,7 +28,7 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@100..900&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; vertical-align: middle; }
         body { font-family: 'Montserrat', sans-serif; background: #f1ebe3; color: #3a3230; }
@@ -138,7 +138,7 @@
                             class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                 </form>
 
-                <a href="/auth/login" th:unless="${session.user != null}"
+                <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}"
                    class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
                 <a href="/booking"
                    class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px] uppercase tracking-[0.2em]">
@@ -146,7 +146,7 @@
                 </a>
             </div>
 
-            <button class="lg:hidden pointer-events-auto">
+            <button class="lg:hidden pointer-events-auto" onclick="openLoginModal(); return false;">
                 <span class="material-symbols-outlined text-3xl nav-menu-icon" style="color: #3a3230;">menu</span>
             </button>
         </div>
@@ -167,7 +167,7 @@
                 <span class="material-symbols-outlined text-sm mr-1.5" style="vertical-align:-2px">spa</span>Dịch Vụ Khác
             </button>
         </div>
-        <button onclick="toggleSubmitForm()"
+        <button onclick="handleFeedbackButtonClick()"
             class="px-5 py-2 text-[11px] font-bold tracking-widest uppercase rounded-sm transition-all flex items-center bg-[#3a3230] text-[#f1ebe3] hover:bg-[#3a3230]/90 flex-shrink-0">
             <span class="material-symbols-outlined text-sm mr-1.5" style="vertical-align:-1px;font-variation-settings:'FILL' 1">edit</span>Gửi Đánh Giá
         </button>
@@ -178,12 +178,28 @@
 <main class="flex-grow" style="padding-top:140px; padding-bottom:80px;">
     <div class="max-w-6xl mx-auto px-6">
 
-        <!-- Toast -->
+        <!-- Toast Notifications -->
         <div id="toast-success" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
              style="background:rgba(6,78,59,0.06);border:1px solid rgba(52,211,153,0.4);color:#065f46;">
             <span class="material-symbols-outlined" style="color:#059669">check_circle</span>
             <p class="text-sm font-semibold">Cảm ơn! Đánh giá của Quý khách đã được ghi nhận thành công.</p>
         </div>
+
+        <div id="toast-login-required" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
+             style="background:rgba(220,38,38,0.06);border:1px solid rgba(248,113,113,0.4);color:#b91c1c;">
+            <span class="material-symbols-outlined" style="color:#dc2626">error</span>
+            <p class="text-sm font-semibold">Vui lòng đăng nhập tài khoản của Quý khách để gửi đánh giá dịch vụ!</p>
+        </div>
+
+        <div id="toast-no-service" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
+             style="background:rgba(217,119,6,0.06);border:1px solid rgba(251,191,36,0.4);color:#b45309;">
+            <span class="material-symbols-outlined" style="color:#d97706">warning</span>
+            <p class="text-sm font-semibold">Đánh giá chỉ dành cho khách hàng đã từng trải nghiệm dịch vụ tại HoaNien Retreat.</p>
+        </div>
+
+        <!-- Hidden input for thymeleaf check in javascript -->
+        <input type="hidden" id="jsIsLoggedIn" th:value="${isLoggedIn}" />
+        <input type="hidden" id="jsHasUsedService" th:value="${hasUsedService}" />
 
         <!-- ═══ MODE A: SUBMIT (from email with bookingId) ═══ -->
         <div th:if="${mode == 'submit'}" class="max-w-2xl mx-auto">
@@ -600,6 +616,9 @@
     </div>
 </footer>
 
+<!-- ══════════ REGISTRATION & LOGIN MODAL ══════════ -->
+<div th:replace="~{guest/fragments/auth :: authModal}"></div>
+
 <script>
     const LABELS = {1:'Tệ', 2:'Không hài lòng', 3:'Bình thường', 4:'Tốt', 5:'Xuất sắc'};
 
@@ -619,6 +638,34 @@
         history.replaceState(null, '', '/feedback?type=' + name);
     }
 
+    function handleFeedbackButtonClick() {
+        const isLoggedInVal = document.getElementById('jsIsLoggedIn').value === 'true';
+        const hasUsedServiceVal = document.getElementById('jsHasUsedService').value === 'true';
+
+        if (!isLoggedInVal) {
+            // Hiển thị toast login_required và tự động mở Login Modal
+            document.getElementById('toast-login-required')?.classList.remove('hidden');
+            document.getElementById('toast-no-service')?.classList.add('hidden');
+            document.getElementById('toast-success')?.classList.add('hidden');
+            if (typeof openLoginModal === 'function') {
+                openLoginModal();
+            }
+            return;
+        }
+
+        if (!hasUsedServiceVal) {
+            // Khách hàng đã đăng nhập nhưng chưa từng book phòng/tour thành công
+            document.getElementById('toast-no-service')?.classList.remove('hidden');
+            document.getElementById('toast-login-required')?.classList.add('hidden');
+            document.getElementById('toast-success')?.classList.add('hidden');
+            alert('Quý khách cần có tối thiểu 1 Booking (Phòng nghỉ hoặc Tour du lịch) đã hoàn thành tại HoaNien Retreat để tham gia gửi đánh giá!');
+            return;
+        }
+
+        // Đạt yêu cầu -> mở Form đánh giá
+        toggleSubmitForm();
+    }
+
     function toggleSubmitForm() {
         const el = document.getElementById('inline-submit-form');
         if (!el) return;
@@ -630,8 +677,17 @@
     document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
         switchTab(params.get('type') || 'tour');
-        if (params.get('toast') === 'success')
+        
+        const toast = params.get('toast');
+        if (toast === 'success') {
             document.getElementById('toast-success')?.classList.remove('hidden');
+        } else if (toast === 'login_required') {
+            document.getElementById('toast-login-required')?.classList.remove('hidden');
+            if (typeof openLoginModal === 'function') openLoginModal();
+        } else if (toast === 'no_service_used') {
+            document.getElementById('toast-no-service')?.classList.remove('hidden');
+        }
+        
         // Init stars
         ['A','B'].forEach(s => { rate('ratingTour'+s,'stars-tour-'+s.toLowerCase(),'lbl-tour-'+s.toLowerCase(),5); rate('ratingRoom'+s,'stars-room-'+s.toLowerCase(),'lbl-room-'+s.toLowerCase(),5); });
     });
