@@ -13,7 +13,7 @@
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
-        
+
     <!-- Flatpickr for consistent 24h Date/Time Pickers -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
@@ -46,8 +46,7 @@
 
     <div class="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden">
         <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            alt="Restaurant Background"
-            class="w-full h-full object-cover scale-105 brightness-[0.2] static-bg-art" />
+            alt="Restaurant Background" class="w-full h-full object-cover scale-105 brightness-[0.2] static-bg-art" />
         <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#1e1a19]"></div>
     </div>
 
@@ -77,7 +76,8 @@
                             class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                     </form>
 
-                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
+                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${session.user != null}"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
                     <a href="/booking"
                         class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px]">
                         Book Now
@@ -94,30 +94,94 @@
     <main class="flex-grow pt-32 pb-24 px-6 md:px-12 relative z-10">
         <section class="max-w-[1440px] mx-auto">
             <div class="text-center mb-10 border-b border-white/10 pb-8">
-                <span class="text-[10px] uppercase tracking-[0.3em] text-emerald-400 block mb-3 font-semibold">Reserve Your Experience</span>
+                <span class="text-[10px] uppercase tracking-[0.3em] text-emerald-400 block mb-3 font-semibold">Reserve
+                    Your Experience</span>
                 <h1 class="font-serif text-5xl md:text-6xl tracking-tight text-white mb-4">Đặt Bàn Thưởng Tiệc</h1>
                 <p class="text-sm text-hoanien-bg/70 max-w-2xl mx-auto font-light leading-relaxed mb-8">
-                    Khám phá không gian ẩm thực sang trọng bên bờ sông Thu Bồn. Chọn bàn yêu thích của bạn và để chúng tôi chuẩn bị một bữa tiệc hoàn hảo.
+                    Khám phá không gian ẩm thực sang trọng bên bờ sông Thu Bồn. Chọn bàn yêu thích của bạn và để chúng
+                    tôi chuẩn bị một bữa tiệc hoàn hảo.
                 </p>
 
+                <!-- Status Block for Table Reservation -->
+                <div
+                    class="bg-[#1e1a19] border border-white/10 p-6 rounded-2xl max-w-4xl mx-auto text-left mb-6 relative">
+
+                    <!-- Logged in, Checked_In / Confirmed -->
+                    <div id="optionInRoom" th:if="${hasValidBooking}" class="text-white/90 leading-relaxed font-medium">
+                        Xin chào <span class="font-bold text-white">Khách hàng</span>, hệ thống ghi nhận bạn đang lưu
+                        trú tại
+                        <select th:if="${roomOptions != null and !roomOptions.isEmpty()}" id="posLocationIdSelect"
+                            class="bg-black/50 text-amber-400 font-bold border border-white/20 rounded px-2 py-1 mx-1 text-sm outline-none cursor-pointer">
+                            <option th:each="r : ${roomOptions}" th:value="${r.roomNumber}"
+                                th:text="'Phòng ' + ${r.roomNumber}"></option>
+                        </select>
+                        <span th:if="${roomOptions == null or roomOptions.isEmpty()}">
+                            <span
+                                class="bg-black/50 text-amber-400 font-bold border border-white/20 rounded px-2 py-1 mx-1 text-sm outline-none"
+                                th:if="${currentRoomNumber != null}" th:text="'Phòng ' + ${currentRoomNumber}"></span>
+                            <span
+                                class="bg-black/50 text-amber-400 font-bold border border-white/20 rounded px-2 py-1 mx-1 text-sm outline-none"
+                                th:unless="${currentRoomNumber != null}">Resort</span>
+                        </span>.
+                        Bạn có thể tiếp tục thực hiện đặt bàn trực tuyến.
+                    </div>
+
+                    <!-- Logged in, NO booking -->
+                    <div id="optionWalkIn" th:if="${session.user != null and !hasValidBooking}"
+                        class="text-amber-400/90 leading-relaxed font-light italic">
+                        Tài khoản chưa liên kết thông tin lưu trú hợp lệ (Confirmed/Checked In) vào ngày hôm nay. Hệ
+                        thống chỉ nhận đơn trực tuyến cho khách có phòng/bàn. Vui lòng liên hệ Lễ tân nếu bạn muốn đặt
+                        bàn.
+                    </div>
+
+                    <!-- Not Logged in -->
+                    <div id="optionNotLoggedIn" th:if="${session.user == null}"
+                        class="text-white/80 leading-relaxed font-light">
+                        Bạn chưa đăng nhập. Vui lòng đăng nhập để hệ thống kiểm tra thông tin lưu trú của bạn.
+                        <button type="button" onclick="openLoginModal()"
+                            class="w-full md:w-auto mt-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-2 rounded-lg text-xs font-semibold block transition-all">
+                            Đăng nhập ngay
+                        </button>
+                    </div>
+                </div>
+
+                <script th:inline="javascript">
+                    const HAS_VALID_BOOKING = /*[[${hasValidBooking}]]*/ false;
+                    const VALID_CHECK_IN = /*[[${validCheckInDate}]]*/ null;
+                    const VALID_CHECK_OUT = /*[[${validCheckOutDate}]]*/ null;
+                </script>
+
                 <!-- Filter Bar -->
-                <div class="bg-white/5 border border-white/10 backdrop-blur-md p-4 rounded-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-end">
+                <div th:if="${debugError != null}"
+                    class="bg-red-500/20 border border-red-500 p-4 rounded-2xl mb-4 max-w-4xl mx-auto text-white">
+                    <strong>Error occurred:</strong> <span th:text="${debugError}"></span>
+                </div>
+
+                <div th:classappend="${session.user == null or !hasValidBooking} ? 'opacity-30 pointer-events-none grayscale select-none' : ''"
+                    class="bg-white/5 border border-white/10 backdrop-blur-md p-4 rounded-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-end transition-all duration-500 relative">
+                    <div th:if="${session.user == null or !hasValidBooking}" class="absolute inset-0 z-10"></div>
                     <div class="flex-1 w-full text-left relative">
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ngày sử dụng</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ngày
+                            sử dụng</label>
                         <input type="text" id="filterDate" placeholder="Chọn ngày"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all color-scheme-dark">
                     </div>
                     <div class="flex-1 w-full text-left relative">
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ bắt đầu</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ
+                            bắt đầu</label>
                         <input type="text" id="filterStart" placeholder="00:00"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all color-scheme-dark">
                     </div>
                     <div class="flex-1 w-full text-left relative">
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ kết thúc</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ
+                            kết thúc</label>
                         <input type="text" id="filterEnd" placeholder="00:00"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all color-scheme-dark">
                     </div>
-                    <div class="w-full md:w-auto">
+                    <div class="w-full md:w-auto relative z-20">
                         <button type="button" onclick="checkAvailability()"
                             class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all whitespace-nowrap">
                             Lọc Bàn Trống
@@ -203,17 +267,23 @@
     </main>
 
     <!-- Booking Form Modal -->
-    <div id="bookingModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" style="display: none;">
-        <div class="bg-[#1e1a19] border border-white/10 w-full max-w-md p-6 rounded-2xl relative shadow-2xl text-left font-sans" onclick="event.stopPropagation()">
-            <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
+    <div id="bookingModal"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        style="display: none;">
+        <div class="bg-[#1e1a19] border border-white/10 w-full max-w-md p-6 rounded-2xl relative shadow-2xl text-left font-sans"
+            onclick="event.stopPropagation()">
+            <button onclick="closeBookingModal()"
+                class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
             <div class="mb-6">
-                <span class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold block mb-1">Xác nhận thông tin</span>
+                <span class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold block mb-1">Xác nhận
+                    thông tin</span>
                 <h2 class="font-serif text-2xl text-white flex items-center gap-2">
                     Đặt <span id="modalTableNumber" class="text-emerald-400">Bàn</span>
                 </h2>
-                <p class="text-xs text-white/50 mt-1">Sức chứa tối đa: <span id="modalTableCapacity" class="font-semibold text-white"></span> khách</p>
+                <p class="text-xs text-white/50 mt-1">Sức chứa tối đa: <span id="modalTableCapacity"
+                        class="font-semibold text-white"></span> khách</p>
             </div>
 
             <form id="bookingForm" class="space-y-4">
@@ -221,19 +291,25 @@
 
 
                 <div>
-                    <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ngày sử dụng *</label>
+                    <label
+                        class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ngày
+                        sử dụng *</label>
                     <input type="text" id="reserveDate" name="reserveDate" required placeholder="Chọn ngày"
                         class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-all color-scheme-dark">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ bắt đầu *</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ
+                            bắt đầu *</label>
                         <input type="text" id="startTime" name="startTime" required placeholder="00:00"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-all color-scheme-dark">
                     </div>
                     <div>
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ kết thúc *</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Giờ
+                            kết thúc *</label>
                         <input type="text" id="endTime" name="endTime" required placeholder="00:00"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-all color-scheme-dark">
                     </div>
@@ -241,20 +317,26 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Số lượng khách *</label>
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Số
+                            lượng khách *</label>
                         <input type="number" id="partySize" name="partySize" required min="1" value="1"
                             class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-all">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ghi chú đặc biệt (Tùy chọn)</label>
-                    <textarea id="specialRequests" name="specialRequests" rows="2" placeholder="Ví dụ: Dị ứng đậu phộng, ăn chay, kỷ niệm..."
+                    <label
+                        class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1.5 text-white">Ghi
+                        chú đặc biệt (Tùy chọn)</label>
+                    <textarea id="specialRequests" name="specialRequests" rows="2"
+                        placeholder="Ví dụ: Dị ứng đậu phộng, ăn chay, kỷ niệm..."
                         class="w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none placeholder:text-white/20 transition-all"></textarea>
                 </div>
 
                 <div class="pt-4 border-t border-white/10 mt-6">
-                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all flex justify-center items-center gap-2">
+                    <button type="submit"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all flex justify-center items-center gap-2">
                         <span class="material-symbols-outlined text-sm">event_available</span>
                         Xác Nhận Đặt Bàn
                     </button>
@@ -264,24 +346,34 @@
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" style="display: none;">
-        <div class="bg-[#1e1a19] border border-white/10 w-full max-w-sm p-8 rounded-2xl text-center shadow-2xl relative">
-            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+    <div id="successModal"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        style="display: none;">
+        <div
+            class="bg-[#1e1a19] border border-white/10 w-full max-w-sm p-8 rounded-2xl text-center shadow-2xl relative">
+            <div
+                class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span class="material-symbols-outlined text-3xl">check_circle</span>
             </div>
             <h3 class="font-serif text-2xl text-white mb-2">Thành Công!</h3>
-            <p class="text-xs text-white/70 leading-relaxed mb-6 font-light">Yêu cầu đặt bàn của bạn đã được ghi nhận. Chúng tôi sẽ sớm liên hệ để xác nhận lại.</p>
-            <button onclick="closeSuccessModal()" class="w-full bg-white text-black hover:bg-white/90 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+            <p class="text-xs text-white/70 leading-relaxed mb-6 font-light">Yêu cầu đặt bàn của bạn đã được ghi nhận.
+                Chúng tôi sẽ sớm liên hệ để xác nhận lại.</p>
+            <button onclick="closeSuccessModal()"
+                class="w-full bg-white text-black hover:bg-white/90 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
                 Đóng
             </button>
         </div>
     </div>
 
     <!-- EndTime Confirm Modal -->
-    <div id="endTimeConfirmModal" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" style="display: none;">
-        <div class="bg-[#1e1a19] border border-amber-400/30 w-full max-w-sm p-8 rounded-2xl text-center shadow-2xl relative font-sans" onclick="event.stopPropagation()">
+    <div id="endTimeConfirmModal"
+        class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        style="display: none;">
+        <div class="bg-[#1e1a19] border border-amber-400/30 w-full max-w-sm p-8 rounded-2xl text-center shadow-2xl relative font-sans"
+            onclick="event.stopPropagation()">
             <!-- Icon -->
-            <div class="w-14 h-14 bg-amber-400/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-5">
+            <div
+                class="w-14 h-14 bg-amber-400/15 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-5">
                 <span class="material-symbols-outlined text-3xl">schedule</span>
             </div>
 
@@ -294,14 +386,12 @@
 
             <div class="flex gap-3">
                 <!-- Từ chối — go back and fill endTime -->
-                <button
-                    onclick="cancelEndTimeAuto()"
+                <button onclick="cancelEndTimeAuto()"
                     class="flex-1 border border-white/20 text-white/80 hover:border-white/50 hover:text-white py-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">
                     Từ chối
                 </button>
                 <!-- OK — accept auto endTime -->
-                <button
-                    onclick="confirmEndTimeAuto()"
+                <button onclick="confirmEndTimeAuto()"
                     class="flex-1 bg-amber-400 hover:bg-amber-300 text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg transition-all">
                     OK
                 </button>
@@ -319,4 +409,5 @@
     <script th:src="@{/guest/js/book-table.js}"></script>
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 </body>
+
 </html>

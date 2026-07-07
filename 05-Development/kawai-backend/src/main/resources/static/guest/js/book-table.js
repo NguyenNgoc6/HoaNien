@@ -5,15 +5,32 @@ let flatpickrStartTime, flatpickrEndTime;
 let flatpickrFilterStart, flatpickrFilterEnd;
 
 document.addEventListener("DOMContentLoaded", () => {
+    let minDateVal = "today";
+    let maxDateVal = null;
+    
+    if (typeof HAS_VALID_BOOKING !== 'undefined' && HAS_VALID_BOOKING) {
+        if (typeof VALID_CHECK_IN !== 'undefined' && VALID_CHECK_IN) {
+            const checkInDate = new Date(VALID_CHECK_IN);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            minDateVal = checkInDate > today ? VALID_CHECK_IN : "today";
+        }
+        if (typeof VALID_CHECK_OUT !== 'undefined' && VALID_CHECK_OUT) {
+            maxDateVal = VALID_CHECK_OUT;
+        }
+    }
+
     // Initialize Flatpickr for dates
     flatpickrFilterDate = flatpickr("#filterDate", {
         dateFormat: "Y-m-d",
-        minDate: "today"
+        minDate: minDateVal,
+        ...(maxDateVal && { maxDate: maxDateVal })
     });
     
     flatpickrReserveDate = flatpickr("#reserveDate", {
         dateFormat: "Y-m-d",
-        minDate: "today"
+        minDate: minDateVal,
+        ...(maxDateVal && { maxDate: maxDateVal })
     });
 
     // Initialize Flatpickr for times (24-hour format)
