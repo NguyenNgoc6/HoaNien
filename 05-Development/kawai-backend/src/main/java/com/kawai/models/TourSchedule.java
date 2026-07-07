@@ -11,4 +11,6 @@ public class TourSchedule {
     @Column(name="departure_time", nullable=false) private LocalTime departureTime;
     @Column(name="booked_seats", nullable=false) private Integer bookedSeats = 0;
     @Column(name="schedule_status", nullable=false) private String scheduleStatus = "Open";
+    @Column(name="is_insurance_processed", nullable=false) private Boolean isInsuranceProcessed = false;
+    @Column(name="insurance_policy_number") private String insurancePolicyNumber;
 }

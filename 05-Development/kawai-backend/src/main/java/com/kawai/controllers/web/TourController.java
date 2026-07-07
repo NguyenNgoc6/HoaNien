@@ -117,6 +117,11 @@ public class TourController {
             }
             if (activeTour != null) {
                 model.addAttribute("dbTour_" + tType, activeTour);
+                // Truyền thông tin bảo hiểm theo từng loại tour để JS đọc
+                model.addAttribute("insurance_required_" + tType,
+                        Boolean.TRUE.equals(activeTour.getIsInsuranceRequired()));
+                model.addAttribute("insurance_price_" + tType,
+                        activeTour.getInsurancePrice() != null ? activeTour.getInsurancePrice() : java.math.BigDecimal.ZERO);
             }
         }
 

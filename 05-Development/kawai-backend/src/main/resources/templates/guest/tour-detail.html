@@ -510,6 +510,27 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Insurance Banner (hiện động qua JS khi tour bắt buộc bảo hiểm) -->
+                    <div id="insurance-banner" class="hidden space-y-3 p-5 border border-amber-300 bg-amber-50/60 rounded-sm">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-amber-600 text-[20px] mt-0.5">shield</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-amber-800 mb-1">Bảo hiểm du lịch bắt buộc</p>
+                                <p class="text-[11px] text-amber-700 leading-relaxed">
+                                    Tour này yêu cầu mua bảo hiểm du lịch theo quy định an toàn.
+                                    Phí bảo hiểm: <strong id="insurance-price-display" class="text-amber-900">0đ</strong>/người.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 pt-1">
+                            <input type="checkbox" id="insuranceConsent"
+                                class="mt-0.5 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
+                                onchange="updateTotalPrice()">
+                            <label for="insuranceConsent" class="text-[10px] leading-relaxed text-amber-800 cursor-pointer">
+                                Tôi đồng ý mua bảo hiểm du lịch với mức phí nêu trên. Phí bảo hiểm sẽ được cộng vào tổng hóa đơn.
+                            </label>
+                        </div>
+                    </div>
                     <!-- Payment Options -->
                     <div class="space-y-4">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block text-black">Phương thức
@@ -645,6 +666,10 @@
                         <tr class="border-b border-brand-border hidden" id="modal-row-promo-discount">
                             <td class="py-4 font-bold text-red-400 uppercase tracking-wider">Mã giảm giá</td>
                             <td class="py-4 text-right text-red-500 font-medium" id="modal-promo-discount-amount">-0 VNĐ</td>
+                        </tr>
+                        <tr class="border-b border-brand-border hidden" id="modal-row-insurance">
+                            <td class="py-4 font-bold text-amber-600 uppercase tracking-wider">Phí bảo hiểm</td>
+                            <td class="py-4 text-right text-amber-700 font-medium" id="modal-insurance-amount">+0 VNĐ</td>
                         </tr>
                         <tr>
                             <td class="py-4 font-bold text-gray-400 uppercase tracking-wider" id="modal-payment-label">Số tiền thanh toán</td>
@@ -803,28 +828,36 @@
                 dest: /*[[${dbTour_doantu != null ? dbTour_doantu.description : null}]]*/ null,
                 duration: /*[[${dbTour_doantu != null ? dbTour_doantu.duration : null}]]*/ null,
                 price: /*[[${dbTour_doantu != null ? dbTour_doantu.basePrice : null}]]*/ null,
-                quote: /*[[${dbTour_doantu != null ? dbTour_doantu.shortQuote : null}]]*/ null
+                quote: /*[[${dbTour_doantu != null ? dbTour_doantu.shortQuote : null}]]*/ null,
+                insuranceRequired: /*[[${insurance_required_doantu != null ? insurance_required_doantu : false}]]*/ false,
+                insurancePrice: /*[[${insurance_price_doantu != null ? insurance_price_doantu : 0}]]*/ 0
             },
             dongnoi: {
                 name: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.tourName : null}]]*/ null,
                 dest: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.description : null}]]*/ null,
                 duration: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.duration : null}]]*/ null,
                 price: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.basePrice : null}]]*/ null,
-                quote: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.shortQuote : null}]]*/ null
+                quote: /*[[${dbTour_dongnoi != null ? dbTour_dongnoi.shortQuote : null}]]*/ null,
+                insuranceRequired: /*[[${insurance_required_dongnoi != null ? insurance_required_dongnoi : false}]]*/ false,
+                insurancePrice: /*[[${insurance_price_dongnoi != null ? insurance_price_dongnoi : 0}]]*/ 0
             },
             disan: {
                 name: /*[[${dbTour_disan != null ? dbTour_disan.tourName : null}]]*/ null,
                 dest: /*[[${dbTour_disan != null ? dbTour_disan.description : null}]]*/ null,
                 duration: /*[[${dbTour_disan != null ? dbTour_disan.duration : null}]]*/ null,
                 price: /*[[${dbTour_disan != null ? dbTour_disan.basePrice : null}]]*/ null,
-                quote: /*[[${dbTour_disan != null ? dbTour_disan.shortQuote : null}]]*/ null
+                quote: /*[[${dbTour_disan != null ? dbTour_disan.shortQuote : null}]]*/ null,
+                insuranceRequired: /*[[${insurance_required_disan != null ? insurance_required_disan : false}]]*/ false,
+                insurancePrice: /*[[${insurance_price_disan != null ? insurance_price_disan : 0}]]*/ 0
             },
             tinhlang: {
                 name: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.tourName : null}]]*/ null,
                 dest: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.description : null}]]*/ null,
                 duration: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.duration : null}]]*/ null,
                 price: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.basePrice : null}]]*/ null,
-                quote: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.shortQuote : null}]]*/ null
+                quote: /*[[${dbTour_tinhlang != null ? dbTour_tinhlang.shortQuote : null}]]*/ null,
+                insuranceRequired: /*[[${insurance_required_tinhlang != null ? insurance_required_tinhlang : false}]]*/ false,
+                insurancePrice: /*[[${insurance_price_tinhlang != null ? insurance_price_tinhlang : 0}]]*/ 0
             }
         };
         /*]]>*/
@@ -1103,8 +1136,37 @@
             return rawTotal;
         }
 
+        // Lấy phí bảo hiểm hiện tại (0 nếu không bắt buộc hoặc chưa đồng ý)
+        function getInsuranceFee() {
+            const dbTour = (typeof dbTours !== 'undefined') ? dbTours[currentTour] : null;
+            if (!dbTour || !dbTour.insuranceRequired) return 0;
+            const consentChk = document.getElementById('insuranceConsent');
+            if (!consentChk || !consentChk.checked) return 0;
+            const qty = parseInt(document.getElementById('participantCount').value) || 1;
+            return (Number(dbTour.insurancePrice) || 0) * qty;
+        }
+
         function updateTotalPrice() {
             let totalPrice = getRawTotalPrice();
+
+            // Cộng phí bảo hiểm (nếu tour bắt buộc và khách đã đồng ý)
+            const insuranceFee = getInsuranceFee();
+            totalPrice += insuranceFee;
+
+            // Hiển thị / ẩn banner bảo hiểm
+            const dbTour = (typeof dbTours !== 'undefined') ? dbTours[currentTour] : null;
+            const insuranceBanner = document.getElementById('insurance-banner');
+            if (insuranceBanner) {
+                if (dbTour && dbTour.insuranceRequired) {
+                    insuranceBanner.classList.remove('hidden');
+                    const priceDisplay = document.getElementById('insurance-price-display');
+                    if (priceDisplay) priceDisplay.textContent = formatVND(Number(dbTour.insurancePrice) || 0);
+                } else {
+                    insuranceBanner.classList.add('hidden');
+                    const consentChk = document.getElementById('insuranceConsent');
+                    if (consentChk) consentChk.checked = false;
+                }
+            }
 
             // Apply promo discount if one is active
             if (appliedPromoState) {
@@ -1456,6 +1518,21 @@
                 promoRow.classList.add('hidden');
             }
 
+            // Display Insurance Fee
+            const insuranceFee = getInsuranceFee();
+            const insuranceRow = document.getElementById('modal-row-insurance');
+            if (insuranceRow) {
+                if (insuranceFee > 0) {
+                    document.getElementById('modal-insurance-amount').innerText = '+' + formatVND(insuranceFee);
+                    insuranceRow.classList.remove('hidden');
+                } else {
+                    insuranceRow.classList.add('hidden');
+                }
+            }
+
+            // Final calculated price (after child discount, promo, + insurance)
+            const finalPriceWithInsurance = finalPrice + insuranceFee;
+
             summaryMembers.innerText = `${qty - numChildren} Người lớn, ${numChildren} Trẻ em`;
             
             // Update title and label based on payment type
@@ -1463,7 +1540,7 @@
             document.getElementById('modal-payment-label').innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
 
             // Display final payment amount based on type
-            const paymentAmount = (type === 'deposit') ? Math.round(finalPrice * 0.3) : finalPrice;
+            const paymentAmount = (type === 'deposit') ? Math.round(finalPriceWithInsurance * 0.3) : finalPriceWithInsurance;
             amountSpan.innerText = formatVND(paymentAmount);
 
             overlay.classList.add('active');
@@ -1985,7 +2062,11 @@
                 vnpPaymentType: vnpPaymentType,
                 childAges: childAges,
                 promoCode: appliedPromoState ? appliedPromoState.code : null,
-                notes: customerNotes
+                notes: customerNotes,
+                acceptInsurance: (function() {
+                    const chk = document.getElementById('insuranceConsent');
+                    return chk ? chk.checked : false;
+                })()
             };
 
 

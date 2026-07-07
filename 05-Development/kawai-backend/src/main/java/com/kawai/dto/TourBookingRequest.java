@@ -145,4 +145,16 @@ public class TourBookingRequest {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+
+    // ─── Bảo hiểm ────────────────────────────────────────────────────────
+    /** Khách đồng ý mua bảo hiểm (bắt buộc với tour có isInsuranceRequired=true) */
+    private boolean acceptInsurance = false;
+
+    public boolean isAcceptInsurance() {
+        return acceptInsurance;
+    }
+
+    public void setAcceptInsurance(boolean acceptInsurance) {
+        this.acceptInsurance = acceptInsurance;
+    }
 }
