@@ -1533,7 +1533,24 @@
      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all duration-300">
     <div class="bg-surface rounded-lg shadow-2xl p-8 w-11/12 max-w-2xl border border-primary/10">
         <div class="flex justify-between items-center mb-6 border-b border-primary/10 pb-4">
-            <h3    const TOUR_ITINERARIES = {
+            <h3 class="text-2xl font-display-md font-bold text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-2xl">auto_stories</span>
+                Cẩm Nang Dẫn Tour
+            </h3>
+            <button class="text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold"
+                onclick="closeHandbook()">✕</button>
+        </div>
+        <div id="handbook-content" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2 scrollbar-custom text-on-surface"></div>
+        <div class="mt-6 pt-4 border-t border-primary/10 flex justify-end">
+            <button
+                class="px-6 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80 font-bold transition-all shadow-md"
+                onclick="closeHandbook()">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TOUR_ITINERARIES = {
         doantu: {
             subtitle: 'Hành trình Đoàn Tụ – Cố Đô Huế (Khởi hành: 08:00)',
             activities: [
