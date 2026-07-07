@@ -4,250 +4,417 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>HoaNien - Đánh Giá Trải Nghiệm</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <!-- Google Fonts -->
+    <title>HoaNien – Đánh Giá & Phản Hồi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Plus+Jakarta+Sans:wght@200..800&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
-    <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; vertical-align: middle; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #1a1714; color: #e5e1da; }
 
-        body {
-            background-color: #2D2926;
-            color: #E5E1DA;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-image:
-                radial-gradient(at 0% 0%, rgba(197, 160, 89, 0.08) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(197, 160, 89, 0.05) 0px, transparent 50%);
-            background-attachment: fixed;
-        }
+        /* ── Main Navbar (matches system style) ── */
+        .guest-nav { background: rgba(26,23,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(197,160,89,0.12); }
+        .nav-text-dim { color: rgba(229,225,218,0.55); transition: all .2s; }
+        .nav-text-dim:hover { color: #e5e1da; opacity:1; }
+        .nav-brand { font-family: 'EB Garamond', serif; color: #c5a059; }
 
-        .glass-panel {
-            background: rgba(45, 41, 38, 0.7);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(197, 160, 89, 0.15);
-        }
+        /* ── Sub-navbar tabs ── */
+        .sub-tab { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; padding: 10px 20px;
+            border-bottom: 2px solid transparent; color: rgba(229,225,218,0.5); transition: all .2s; cursor: pointer; white-space: nowrap; }
+        .sub-tab:hover { color: #c5a059; }
+        .sub-tab.active { color: #c5a059; border-bottom-color: #c5a059; }
 
-        .brand-gold {
-            color: #c5a059;
+        /* ── Review Cards ── */
+        .review-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(197,160,89,0.1);
+            border-radius: 6px;
+            padding: 24px;
+            transition: all .25s;
         }
+        .review-card:hover { border-color: rgba(197,160,89,0.25); background: rgba(255,255,255,0.05); }
+        .star-filled { color: #c5a059; }
+        .star-empty { color: rgba(229,225,218,0.2); }
 
-        .bg-brand-gold {
-            background-color: #c5a059;
-        }
+        /* ── Submit Form ── */
+        .rating-btn { color: rgba(229,225,218,0.2); transition: all .2s ease; }
+        .rating-btn.active, .rating-btn.hovered { color: #c5a059; transform: scale(1.12); }
 
-        .border-brand-gold {
-            border-color: #c5a059;
-        }
+        /* ── Section separator ── */
+        .gold-line { width: 40px; height: 1px; background: #c5a059; margin: 0 auto 16px; }
 
-        .star-rating button {
-            color: rgba(229, 225, 218, 0.2);
-            transition: all 0.2s ease-in-out;
-        }
-
-        .star-rating button.active,
-        .star-rating button.hovered {
-            color: #c5a059;
-            transform: scale(1.15);
-        }
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(229,225,218,0.35); }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col justify-between pt-24">
+<body class="min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="fixed top-0 w-full z-50 bg-[#2D2926]/80 backdrop-blur-md border-b border-[#E5E1DA]/10">
-        <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex space-x-8 text-xs font-semibold tracking-widest uppercase text-[#E5E1DA]">
-                <a class="hover:text-[#c5a059] transition-all no-underline" href="/living">Nghỉ Dưỡng</a>
-                <a class="hover:text-[#c5a059] transition-all no-underline" href="/dining">Ẩm Thực</a>
-                <a class="hover:text-[#c5a059] transition-all no-underline" href="/experiences">Trải Nghiệm</a>
-                <a class="hover:text-[#c5a059] transition-all no-underline" href="/tours/search">Hành Trình</a>
-                <a class="border-b-2 border-[#c5a059] pb-1 text-[#c5a059] no-underline" href="/feedback">Đánh Giá</a>
+    <!-- ══════════════════ MAIN NAVBAR (consistent with system) ══════════════════ -->
+    <header class="fixed top-0 w-full z-50 guest-nav">
+        <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between">
+            <!-- Left links -->
+            <div class="hidden lg:flex items-center gap-8 text-[13px] uppercase tracking-[0.2em] font-semibold">
+                <a href="/living" class="nav-text-dim">Living</a>
+                <a href="/dining" class="nav-text-dim">Dining</a>
+                <a href="/experiences" class="nav-text-dim">Experiences</a>
+                <a href="/tours" class="nav-text-dim">Tours</a>
+                <a href="/feedback" style="color:#c5a059; border-bottom:1px solid #c5a059; padding-bottom:2px;">Feedback</a>
             </div>
-            <div class="absolute left-1/2 -translate-x-1/2">
-                <h1 class="text-3xl font-serif tracking-tighter cursor-pointer text-[#c5a059]" onclick="window.location.href='/'">
-                    HoaNien</h1>
+            <!-- Brand -->
+            <div class="absolute left-1/2 -translate-x-1/2 nav-brand text-[30px] italic tracking-tighter cursor-pointer"
+                onclick="window.location.href='/'">HoaNien</div>
+            <!-- Right -->
+            <div class="hidden lg:flex items-center gap-6 text-[13px] uppercase tracking-[0.2em] font-semibold">
+                <a href="/profile" th:if="${isLoggedIn}" class="nav-text-dim">Hồ Sơ</a>
+                <a href="/auth/login" th:unless="${isLoggedIn}" class="nav-text-dim">Đăng Nhập</a>
             </div>
-            <div class="flex items-center space-x-6">
-                <!-- Profile / Logout if logged in -->
-                <a href="/profile" th:if="${isLoggedIn}"
-                    class="text-[11px] font-bold tracking-widest uppercase hover:text-[#c5a059] text-[#E5E1DA] no-underline">Hồ Sơ</a>
-            </div>
-        </nav>
+        </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-grow flex items-center justify-center px-6 py-12">
-        <div class="w-full max-w-2xl glass-panel rounded-lg p-10 md:p-12 shadow-2xl relative">
-            
-            <!-- Toast Notifications -->
-            <div id="toast-success" class="hidden mb-8 p-4 bg-emerald-950/80 border border-emerald-500/30 rounded flex items-center gap-3 text-emerald-300">
+    <!-- ══════════════════ SUB-NAVBAR (3 tabs) ══════════════════ -->
+    <div class="fixed top-[64px] w-full z-40 bg-[#1a1714]/90 backdrop-blur-md border-b border-[#e5e1da]/8">
+        <div class="max-w-[1440px] mx-auto px-6 flex items-center gap-0 overflow-x-auto">
+            <button class="sub-tab" id="tab-tour" onclick="switchTab('tour')">
+                <span class="material-symbols-outlined text-sm mr-1">hiking</span>Dịch Vụ Tour
+            </button>
+            <button class="sub-tab" id="tab-room" onclick="switchTab('room')">
+                <span class="material-symbols-outlined text-sm mr-1">bed</span>Dịch Vụ Phòng
+            </button>
+            <button class="sub-tab" id="tab-other" onclick="switchTab('other')">
+                <span class="material-symbols-outlined text-sm mr-1">spa</span>Dịch Vụ Khác
+            </button>
+            <!-- Separator -->
+            <div class="flex-1"></div>
+            <!-- CTA button -->
+            <button onclick="toggleSubmitForm()"
+                class="my-2 px-5 py-2 text-[11px] font-bold tracking-widest uppercase bg-[#c5a059] hover:bg-[#b08d4a] text-[#1a1714] rounded-sm transition-all">
+                <span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings:'FILL' 1">edit</span>
+                Gửi Đánh Giá
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-[130px] pb-20 px-6">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- ── Toast Notifications ── -->
+            <div id="toast-success" class="hidden mb-6 p-4 bg-emerald-950/80 border border-emerald-500/30 rounded-lg flex items-center gap-3 text-emerald-300 max-w-xl mx-auto">
                 <span class="material-symbols-outlined text-emerald-400">check_circle</span>
-                <div>
-                    <p class="font-bold text-sm">Gửi nhận xét thành công</p>
-                    <p class="text-xs opacity-85">Chân thành cảm ơn những ý kiến đóng góp quý báu của Quý khách.</p>
-                </div>
+                <p class="text-sm font-semibold">Cảm ơn! Đánh giá của Quý khách đã được ghi nhận thành công.</p>
             </div>
 
-            <!-- Form -->
-            <form id="feedbackForm" th:action="@{/feedback/submit}" method="post" class="space-y-8">
-                <input type="hidden" name="bookingId" th:value="${booking != null ? booking.id : ''}" />
-
-                <div class="text-center space-y-2 border-b border-[#E5E1DA]/10 pb-8">
-                    <span class="text-xs font-bold tracking-[0.2em] uppercase text-[#c5a059]">Ý Kiến Phản Hồi</span>
-                    <h2 class="font-serif text-3xl italic tracking-wide text-white" th:text="${tourName != null ? 'Hành trình ' + tourName : 'Đánh Giá Trải Nghiệm'}">Đánh Giá Trải Nghiệm</h2>
+            <!-- ════════════════════════════════════════
+                 MODE A: SUBMIT FORM (from email/bookingId)
+                 ════════════════════════════════════════ -->
+            <div id="submit-mode" th:if="${mode == 'submit'}" class="max-w-2xl mx-auto">
+                <div class="text-center mb-10 space-y-2">
+                    <div class="gold-line"></div>
+                    <span class="text-xs font-bold tracking-[.2em] uppercase text-[#c5a059]">Ý Kiến Của Quý Khách</span>
+                    <h1 class="text-3xl font-serif italic tracking-wide text-white"
+                        th:text="${tourName != null ? 'Hành trình ' + tourName : 'Đánh Giá Trải Nghiệm'}">
+                        Đánh Giá Trải Nghiệm
+                    </h1>
                     <p class="text-xs font-light text-gray-400 max-w-md mx-auto leading-relaxed">
-                        Sự chia sẻ của Quý khách giúp HoaNien không ngừng nâng tầm chất lượng dịch vụ hướng tới sự tinh tế tuyệt mỹ.
+                        Mỗi phản hồi của Quý khách giúp HoaNien không ngừng hoàn thiện dịch vụ.
+                    </p>
+                </div>
+                <div th:replace="~{guest/feedback :: feedbackForm}"></div>
+            </div>
+
+            <!-- ════════════════════════════════════════
+                 MODE B: BROWSE REVIEWS + optional form
+                 ════════════════════════════════════════ -->
+            <div id="browse-mode" th:if="${mode == 'browse'}">
+
+                <!-- Page Title -->
+                <div class="text-center mb-10 space-y-2">
+                    <div class="gold-line"></div>
+                    <span class="text-xs font-bold tracking-[.2em] uppercase text-[#c5a059]">Tiếng Nói Của Quý Khách</span>
+                    <h1 class="text-3xl font-serif italic tracking-wide text-white">Những Trải Nghiệm Đáng Nhớ</h1>
+                    <p class="text-xs font-light text-gray-400 max-w-md mx-auto leading-relaxed">
+                        Khám phá cảm nhận thực tế từ những vị khách đã trải nghiệm dịch vụ tại HoaNien Retreat.
                     </p>
                 </div>
 
-                <!-- Section 1: Tour Quality -->
-                <div class="space-y-3">
-                    <label class="block text-sm font-semibold tracking-wider text-white">1. Dịch Vụ Hành Trình</label>
-                    <p class="text-xs text-gray-400 leading-snug">Chất lượng hướng dẫn viên (Tourguide), tiến độ hoạt động và sự an toàn tiện nghi suốt chuyến đi.</p>
-                    
-                    <div class="star-rating flex items-center gap-2 mt-2" id="tour-stars">
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="1" onclick="rate('ratingTour', 1)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="2" onclick="rate('ratingTour', 2)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="3" onclick="rate('ratingTour', 3)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="4" onclick="rate('ratingTour', 4)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="5" onclick="rate('ratingTour', 5)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
+                <!-- ── Tour Reviews Tab ── -->
+                <div id="panel-tour" class="tab-panel">
+                    <div th:if="${tourReviews != null and !#lists.isEmpty(tourReviews)}"
+                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div class="review-card" th:each="r : ${tourReviews}">
+                            <div class="flex items-center justify-between mb-3">
+                                <!-- Stars -->
+                                <div class="flex gap-0.5">
+                                    <span th:each="i : ${#numbers.sequence(1,5)}"
+                                          class="material-symbols-outlined text-lg"
+                                          th:classappend="${i <= (r.ratingTour != null ? r.ratingTour : r.ratingService)} ? 'star-filled' : 'star-empty'"
+                                          style="font-variation-settings:'FILL' 1;">star</span>
+                                </div>
+                                <span class="text-[10px] text-gray-500 tracking-wide"
+                                      th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'dd/MM/yyyy') : ''}"></span>
+                            </div>
+                            <!-- Review text -->
+                            <p class="text-sm text-gray-300 leading-relaxed mb-4 line-clamp-4"
+                               th:text="${r.reviewText != null ? r.reviewText : 'Một trải nghiệm tuyệt vời không thể quên.'}">
+                            </p>
+                            <!-- Author -->
+                            <div class="flex items-center gap-3 pt-3 border-t border-white/5">
+                                <div class="w-8 h-8 rounded-full bg-[#c5a059]/20 flex items-center justify-center text-[#c5a059] text-xs font-bold"
+                                     th:text="${r.customer != null ? r.customer.fullName.substring(0,1) : 'K'}">K</div>
+                                <div>
+                                    <p class="text-xs font-semibold text-white"
+                                       th:text="${r.customer != null ? r.customer.fullName : 'Quý khách'}">Quý khách</p>
+                                    <p class="text-[10px] text-gray-500">Hành trình HoaNien</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <input type="hidden" name="ratingTour" id="ratingTour" value="5" required />
-                </div>
-
-                <!-- Section 2: Room & F&B Quality -->
-                <div class="space-y-3">
-                    <label class="block text-sm font-semibold tracking-wider text-white">2. Dịch Vụ Phòng & Ẩm Thực</label>
-                    <p class="text-xs text-gray-400 leading-snug">Độ sạch sẽ và tiện nghi của phòng nghỉ dưỡng, chất lượng các món ăn và thái độ phục vụ tại nhà hàng.</p>
-                    
-                    <div class="star-rating flex items-center gap-2 mt-2" id="room-stars">
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="1" onclick="rate('ratingRoomDining', 1)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="2" onclick="rate('ratingRoomDining', 2)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="3" onclick="rate('ratingRoomDining', 3)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="4" onclick="rate('ratingRoomDining', 4)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
-                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="5" onclick="rate('ratingRoomDining', 5)">
-                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
-                        </button>
+                    <div class="empty-state" th:if="${tourReviews == null or #lists.isEmpty(tourReviews)}">
+                        <span class="material-symbols-outlined text-5xl mb-3 block" style="color:rgba(197,160,89,.25)">hiking</span>
+                        <p class="text-sm">Chưa có đánh giá nào cho dịch vụ Tour.</p>
+                        <button onclick="toggleSubmitForm()" class="mt-4 text-xs text-[#c5a059] underline">Hãy là người đầu tiên đánh giá →</button>
                     </div>
-                    <input type="hidden" name="ratingRoomDining" id="ratingRoomDining" value="5" required />
                 </div>
 
-                <!-- Section 3: Text Opinion -->
-                <div class="space-y-3">
-                    <label for="reviewText" class="block text-sm font-semibold tracking-wider text-white">3. Nhận Xét Khác</label>
-                    <textarea name="reviewText" id="reviewText" rows="4" required
-                        class="w-full bg-[#1F1C1A]/60 border border-[#E5E1DA]/15 rounded p-4 text-sm text-white focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all scrollbar-custom"
-                        placeholder="Hãy chia sẻ thêm trải nghiệm hoặc đóng góp ý kiến riêng của Quý khách..."></textarea>
+                <!-- ── Room Reviews Tab ── -->
+                <div id="panel-room" class="tab-panel hidden">
+                    <div th:if="${roomReviews != null and !#lists.isEmpty(roomReviews)}"
+                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div class="review-card" th:each="r : ${roomReviews}">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex gap-0.5">
+                                    <span th:each="i : ${#numbers.sequence(1,5)}"
+                                          class="material-symbols-outlined text-lg"
+                                          th:classappend="${i <= (r.ratingRoomDining != null ? r.ratingRoomDining : r.ratingService)} ? 'star-filled' : 'star-empty'"
+                                          style="font-variation-settings:'FILL' 1;">star</span>
+                                </div>
+                                <span class="text-[10px] text-gray-500 tracking-wide"
+                                      th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'dd/MM/yyyy') : ''}"></span>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed mb-4 line-clamp-4"
+                               th:text="${r.reviewText != null ? r.reviewText : 'Phòng nghỉ tuyệt vời, dịch vụ chu đáo.'}"></p>
+                            <div class="flex items-center gap-3 pt-3 border-t border-white/5">
+                                <div class="w-8 h-8 rounded-full bg-[#c5a059]/20 flex items-center justify-center text-[#c5a059] text-xs font-bold"
+                                     th:text="${r.customer != null ? r.customer.fullName.substring(0,1) : 'K'}">K</div>
+                                <div>
+                                    <p class="text-xs font-semibold text-white"
+                                       th:text="${r.customer != null ? r.customer.fullName : 'Quý khách'}">Quý khách</p>
+                                    <p class="text-[10px] text-gray-500">Lưu trú tại HoaNien</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="empty-state" th:if="${roomReviews == null or #lists.isEmpty(roomReviews)}">
+                        <span class="material-symbols-outlined text-5xl mb-3 block" style="color:rgba(197,160,89,.25)">bed</span>
+                        <p class="text-sm">Chưa có đánh giá nào cho dịch vụ Phòng & Ẩm thực.</p>
+                        <button onclick="toggleSubmitForm()" class="mt-4 text-xs text-[#c5a059] underline">Hãy là người đầu tiên đánh giá →</button>
+                    </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="pt-4 flex items-center justify-between">
-                    <a href="/" class="text-xs tracking-widest uppercase font-semibold text-gray-400 hover:text-white transition-colors no-underline flex items-center gap-1">
-                        <span class="material-symbols-outlined text-sm">arrow_back</span>
-                        Trở Về
-                    </a>
-                    <button type="submit"
-                        class="px-10 py-4 bg-brand-gold hover:bg-[#b08d4a] text-[#2D2926] font-bold text-xs uppercase tracking-widest rounded-sm transition-all duration-300 shadow-md">
-                        Gửi Đánh Giá
-                    </button>
+                <!-- ── Other Reviews Tab ── -->
+                <div id="panel-other" class="tab-panel hidden">
+                    <div th:if="${generalReviews != null and !#lists.isEmpty(generalReviews)}"
+                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div class="review-card" th:each="r : ${generalReviews}">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex gap-0.5">
+                                    <span th:each="i : ${#numbers.sequence(1,5)}"
+                                          class="material-symbols-outlined text-lg"
+                                          th:classappend="${i <= r.ratingService} ? 'star-filled' : 'star-empty'"
+                                          style="font-variation-settings:'FILL' 1;">star</span>
+                                </div>
+                                <span class="text-[10px] text-gray-500 tracking-wide"
+                                      th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'dd/MM/yyyy') : ''}"></span>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed mb-4 line-clamp-4"
+                               th:text="${r.reviewText != null ? r.reviewText : 'Trải nghiệm HoaNien thực sự đặc biệt.'}"></p>
+                            <div class="flex items-center gap-3 pt-3 border-t border-white/5">
+                                <div class="w-8 h-8 rounded-full bg-[#c5a059]/20 flex items-center justify-center text-[#c5a059] text-xs font-bold"
+                                     th:text="${r.customer != null ? r.customer.fullName.substring(0,1) : 'K'}">K</div>
+                                <div>
+                                    <p class="text-xs font-semibold text-white"
+                                       th:text="${r.customer != null ? r.customer.fullName : 'Quý khách'}">Quý khách</p>
+                                    <p class="text-[10px] text-gray-500">Trải nghiệm HoaNien</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="empty-state" th:if="${generalReviews == null or #lists.isEmpty(generalReviews)}">
+                        <span class="material-symbols-outlined text-5xl mb-3 block" style="color:rgba(197,160,89,.25)">spa</span>
+                        <p class="text-sm">Chưa có đánh giá chung nào.</p>
+                        <button onclick="toggleSubmitForm()" class="mt-4 text-xs text-[#c5a059] underline">Hãy là người đầu tiên đánh giá →</button>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <!-- ── Inline Submit Form (hidden by default, shown on CTA click) ── -->
+                <div id="inline-submit-form" class="hidden max-w-2xl mx-auto mt-14 pt-10 border-t border-white/8">
+                    <div class="text-center mb-8 space-y-1">
+                        <div class="gold-line"></div>
+                        <h2 class="text-2xl font-serif italic text-white">Chia Sẻ Trải Nghiệm Của Bạn</h2>
+                        <p class="text-xs text-gray-400">Đánh giá tổng quan về trải nghiệm tại HoaNien</p>
+                    </div>
+                    <div th:replace="~{guest/feedback :: feedbackForm}"></div>
+                </div>
+
+            </div><!-- /browse-mode -->
+        </div><!-- /max-w-6xl -->
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-[#1f1b18] text-white py-16 px-8 border-t border-[#E5E1DA]/10 mt-auto">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left space-y-2">
-                <h3 class="text-2xl font-serif text-[#c5a059]">HoaNien</h3>
-                <p class="text-[9px] tracking-widest opacity-40 uppercase">© 2026 HOANIEN RETREAT. A QUIET LUXURY RESORT RESIDENCE.</p>
+    <!-- ══════════════════ FOOTER ══════════════════ -->
+    <footer class="bg-[#111] text-white py-12 px-8 border-t border-white/5">
+        <div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1">
+                <h3 class="text-xl font-serif text-[#c5a059]">HoaNien</h3>
+                <p class="text-[9px] tracking-widest opacity-30 uppercase">© 2026 HoaNien Retreat. All Rights Reserved.</p>
             </div>
-            <div class="flex space-x-8 text-[9px] font-bold tracking-widest uppercase opacity-75">
-                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/living">Nghỉ Dưỡng</a>
-                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/dining">Ẩm Thực</a>
-                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/experiences">Trải Nghiệm</a>
-                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/tours/search">Hành Trình</a>
+            <div class="flex space-x-8 text-[9px] font-bold tracking-widest uppercase opacity-60">
+                <a class="hover:text-[#c5a059] transition-colors" href="/living">Nghỉ Dưỡng</a>
+                <a class="hover:text-[#c5a059] transition-colors" href="/dining">Ẩm Thực</a>
+                <a class="hover:text-[#c5a059] transition-colors" href="/experiences">Trải Nghiệm</a>
+                <a class="hover:text-[#c5a059] transition-colors" href="/tours">Hành Trình</a>
             </div>
         </div>
     </footer>
 
+    <!-- ══════════════════ SHARED FORM FRAGMENT ══════════════════ -->
+    <!--/* Thymeleaf fragment - dùng cho cả browse & submit mode */-->
+    <div th:fragment="feedbackForm" style="display:contents">
+        <form th:action="@{/feedback/submit}" method="post" class="space-y-7">
+            <input type="hidden" name="bookingId" th:value="${booking != null ? booking.id : ''}" />
+
+            <!-- Section 1: Tour -->
+            <div class="space-y-3 bg-white/3 border border-white/8 rounded-lg p-6">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#c5a059]">hiking</span>
+                    <label class="text-sm font-bold tracking-wider text-white">Dịch Vụ Hành Trình & Tour</label>
+                </div>
+                <p class="text-xs text-gray-400">Hướng dẫn viên, lịch trình, sự an toàn và tiện nghi trong chuyến đi.</p>
+                <div class="flex items-center gap-1 mt-3 star-rating" id="sf-tour-stars">
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="1" onclick="sfRate('sfRatingTour',1)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="2" onclick="sfRate('sfRatingTour',2)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="3" onclick="sfRate('sfRatingTour',3)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="4" onclick="sfRate('sfRatingTour',4)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="5" onclick="sfRate('sfRatingTour',5)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <span id="sf-tour-label" class="ml-3 text-xs text-[#c5a059] font-semibold">Xuất sắc</span>
+                </div>
+                <input type="hidden" name="ratingTour" id="sfRatingTour" value="5" required />
+            </div>
+
+            <!-- Section 2: Room & Dining -->
+            <div class="space-y-3 bg-white/3 border border-white/8 rounded-lg p-6">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#c5a059]">bed</span>
+                    <label class="text-sm font-bold tracking-wider text-white">Dịch Vụ Phòng & Ẩm Thực</label>
+                </div>
+                <p class="text-xs text-gray-400">Độ sạch sẽ, tiện nghi phòng nghỉ, chất lượng bữa ăn và thái độ phục vụ.</p>
+                <div class="flex items-center gap-1 mt-3 star-rating" id="sf-room-stars">
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="1" onclick="sfRate('sfRatingRoom',1)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="2" onclick="sfRate('sfRatingRoom',2)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="3" onclick="sfRate('sfRatingRoom',3)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="4" onclick="sfRate('sfRatingRoom',4)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <button type="button" class="rating-btn w-9 h-9 flex items-center justify-center" data-val="5" onclick="sfRate('sfRatingRoom',5)">
+                        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
+                    <span id="sf-room-label" class="ml-3 text-xs text-[#c5a059] font-semibold">Xuất sắc</span>
+                </div>
+                <input type="hidden" name="ratingRoomDining" id="sfRatingRoom" value="5" required />
+            </div>
+
+            <!-- Section 3: Comment -->
+            <div class="space-y-2">
+                <label class="text-sm font-bold tracking-wider text-white">Nhận Xét Chi Tiết</label>
+                <textarea name="reviewText" rows="4" required
+                    class="w-full bg-white/4 border border-white/10 rounded p-4 text-sm text-white focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all resize-none"
+                    placeholder="Hãy chia sẻ thêm cảm nhận chân thực của Quý khách..."></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-2">
+                <a href="/feedback" class="text-xs tracking-widest uppercase font-semibold text-gray-500 hover:text-white transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>Quay lại
+                </a>
+                <button type="submit"
+                    class="px-10 py-3.5 bg-[#c5a059] hover:bg-[#b08d4a] text-[#1a1714] font-bold text-xs uppercase tracking-widest rounded-sm transition-all duration-300 shadow-lg">
+                    Gửi Đánh Giá
+                </button>
+            </div>
+        </form>
+    </div>
+
     <script>
-        // Check params for status
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('toast') === 'success') {
-            document.getElementById('toast-success').classList.remove('hidden');
-            // disable fields
-            document.querySelectorAll('input, textarea, button[type="submit"]').forEach(el => {
-                el.disabled = true;
-                el.classList.add('opacity-50', 'pointer-events-none');
+        // ── Tab switching ──
+        const TABS = ['tour', 'room', 'other'];
+        const LABELS = { 1:'Tệ', 2:'Không hài lòng', 3:'Bình thường', 4:'Tốt', 5:'Xuất sắc' };
+
+        function switchTab(name) {
+            TABS.forEach(t => {
+                document.getElementById('tab-' + t)?.classList.toggle('active', t === name);
+                document.getElementById('panel-' + t)?.classList.toggle('hidden', t !== name);
             });
+            // Update URL without reload
+            history.replaceState(null, '', '/feedback?type=' + name);
         }
 
-        // Initialize active ratings
-        rate('ratingTour', 5);
-        rate('ratingRoomDining', 5);
-
-        function rate(fieldName, val) {
-            document.getElementById(fieldName).value = val;
-            const containerId = fieldName === 'ratingTour' ? 'tour-stars' : 'room-stars';
-            const buttons = document.querySelectorAll('#' + containerId + ' button');
-            buttons.forEach(btn => {
-                const btnVal = parseInt(btn.getAttribute('data-value'));
-                if (btnVal <= val) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+        // ── Show/hide inline submit form ──
+        function toggleSubmitForm() {
+            const el = document.getElementById('inline-submit-form');
+            if (el) {
+                el.classList.toggle('hidden');
+                if (!el.classList.contains('hidden')) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
-            });
+            }
         }
 
-        // Hover effect setup
-        document.querySelectorAll('.star-rating').forEach(ratingDiv => {
-            const buttons = ratingDiv.querySelectorAll('button');
-            buttons.forEach(btn => {
+        // ── Star rating for submit form ──
+        function sfRate(fieldId, val) {
+            document.getElementById(fieldId).value = val;
+            const container = fieldId === 'sfRatingTour' ? 'sf-tour-stars' : 'sf-room-stars';
+            const labelId = fieldId === 'sfRatingTour' ? 'sf-tour-label' : 'sf-room-label';
+            const btns = document.querySelectorAll('#' + container + ' button');
+            btns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.val) <= val));
+            const lbl = document.getElementById(labelId);
+            if (lbl) lbl.textContent = LABELS[val] || '';
+        }
+
+        // ── Hover effect ──
+        document.querySelectorAll('.star-rating').forEach(div => {
+            div.querySelectorAll('button').forEach(btn => {
                 btn.addEventListener('mouseenter', () => {
-                    const hoverVal = parseInt(btn.getAttribute('data-value'));
-                    buttons.forEach(b => {
-                        const bVal = parseInt(b.getAttribute('data-value'));
-                        if (bVal <= hoverVal) {
-                            b.classList.add('hovered');
-                        } else {
-                            b.classList.remove('hovered');
-                        }
-                    });
+                    const v = parseInt(btn.dataset.val);
+                    div.querySelectorAll('button').forEach(b => b.classList.toggle('hovered', parseInt(b.dataset.val) <= v));
                 });
                 btn.addEventListener('mouseleave', () => {
-                    buttons.forEach(b => b.classList.remove('hovered'));
+                    div.querySelectorAll('button').forEach(b => b.classList.remove('hovered'));
                 });
             });
         });
+
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', () => {
+            // Active tab from URL
+            const params = new URLSearchParams(window.location.search);
+            const activeTab = params.get('type') || 'tour';
+            switchTab(activeTab);
+
+            // Toast
+            if (params.get('toast') === 'success') {
+                document.getElementById('toast-success')?.classList.remove('hidden');
+            }
+
+            // Default star ratings
+            sfRate('sfRatingTour', 5);
+            sfRate('sfRatingRoom', 5);
+        });
     </script>
 </body>
-
 </html>
