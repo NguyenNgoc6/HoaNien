@@ -1517,26 +1517,97 @@
 </div>
 <script>
     const TOUR_ITINERARIES = {
-        'tinh tuy': {
-            subtitle: 'Tinh túy đồng nội - Quảng Nam (Khởi hành: 08:00)',
+        doantu: {
+            subtitle: 'Hành trình Đoàn Tụ – Cố Đô Huế (Khởi hành: 08:00)',
             activities: [
-                { time: '08:00 - 08:30', title: 'Đón khách & Di chuyển', desc: 'Xe đón khách tại điểm hẹn và khởi hành đi Quảng Nam.' },
-                { time: '08:30 - 10:00', title: 'Làng nghề truyền thống', desc: 'Tham quan làng nghề truyền thống, tìm hiểu các công đoạn chế tác thủ công lâu đời.' },
-                { time: '10:00 - 11:30', title: 'Khu sản xuất đặc sản', desc: 'Ghé thăm khu sản xuất thủ công, thưởng thức nông sản và đặc sản địa phương sạch.' },
-                { time: '11:30 - 13:00', title: 'Trải nghiệm ẩm thực', desc: 'Thưởng thức bữa trưa với các món đặc sản đồng quê mang hương vị chuẩn bản địa.' },
-                { time: '13:00 - 15:00', title: 'Trực tiếp trải nghiệm', desc: 'Khách tự tay làm thử các sản phẩm lưu niệm dưới sự hướng dẫn của nghệ nhân bản địa.' },
-                { time: '15:00 - 16:00', title: 'Hòa nhạc dân gian & Trà chiều', desc: 'Thưởng thức trà thảo mộc organic và nghe hòa nhạc dân gian đặc sắc trước khi kết thúc tour.' }
+                { time: '08:00 - 11:30', title: 'Dấu xưa rêu phong – Khám phá Đại Nội', desc: 'Dạo bước qua những lầu son gác tía, lắng nghe tiếng vọng của thời gian tại Điện Thái Hòa, Thế Miếu – nơi lưu giữ trọn vẹn nét uy nghi một thuở hoàng kim.' },
+                { time: '11:30 - 14:00', title: 'Vị đượm cung đình – Thưởng yến và nếm trà', desc: 'Thưởng thức bữa trưa được tái hiện theo phong cách cung đình. Sau đó, ghé thăm Duyệt Thị Đường để nhấp ngụm trà thảo mộc thanh mát, được pha chế theo công thức tiến vua ngày trước.' },
+                { time: '14:00 - 18:00', title: 'Sông Hương bảng lảng – Thuyền rồng đón hoàng hôn', desc: 'Ngồi trên mạn thuyền rồng, thong dong ngắm dòng sông Hương êm đềm, thả hồn theo điệu hò xứ Huế và đón ánh chiều tà buông chậm xuống những mái ngói cổ kính.' }
             ]
         },
-        'doan tu': {
-            subtitle: 'Hành trình Đoàn Tụ - Huế (Khởi hành: 08:00)',
+        dongnoi: {
+            subtitle: 'Tinh túy đồng nội – Quảng Nam (Khởi hành: 08:30)',
             activities: [
-                { time: '08:00 - 08:30', title: 'Đón khách & Di chuyển', desc: 'Xe đón khách tại khách sạn, khởi hành cùng hướng dẫn viên đến thành phố Huế.' },
-                { time: '08:30 - 10:00', title: 'Kinh Thành Huế', desc: 'Tham quan Kinh Thành Huế — di sản thế giới UNESCO, khám phá các ô phố cổ và đình lăng mẫu.' },
-                { time: '10:00 - 11:30', title: 'Chợ Đông Ba & Phố Cổ', desc: 'Dạo bước chợ Đông Ba, mua sắm đặc sản Huế: đường bao tử, mè xửng, nón bài thơ.' },
-                { time: '11:30 - 13:00', title: 'Bữa trưa cơm Huế', desc: 'Thưởng thức bữa cơm Huế chính thống: bánh bèo, bánh nậm, cơm hến, bún bò Huế tại nhà hàng truyền thống.' },
-                { time: '13:00 - 15:00', title: 'Lăng Tự Đức & Chùa Thiên Mụ', desc: 'Tham quan Lăng Tự Đức và chùa Thiên Mụ — biểu tượng linh thiêng của xứ Huế bên bờ sông Hương.' },
-                { time: '15:00 - 16:00', title: 'Trà chiều & Ngắm hoàng hôn', desc: 'Nghỉ ngơi bên bờ sông Hương, thưởng trà sen Huế, ngắm hoàng hôn rồi lên xe đưa khách về.' }
+                { time: '08:30 - 11:00', title: 'Hồn của đất – Làng gốm Thanh Hà', desc: 'Bên dòng sông Thu Bồn lộng gió, bạn sẽ được ngắm nhìn các nghệ nhân thổi hồn vào đất và tự tay xoay vần, nhào nặn nên một món quà kỷ niệm của riêng mình.' },
+                { time: '11:00 - 13:00', title: 'Hương đồng cỏ nội – Làng rau Trà Quế', desc: 'Hòa mình vào không gian xanh mướt của một trong những vườn rau lâu đời nhất. Trải nghiệm một ngày làm nông nhẹ nhàng, xới đất gieo mầm và thưởng thức ngụm nước hạt sen thanh mát.' },
+                { time: '13:00 - 15:30', title: 'Vị quê đậm đà – Ẩm thực sân vườn', desc: 'Thưởng thức bữa trưa ấm cúng với những món ăn đặc sản xứ Quảng, được chế biến từ chính nguồn nông sản tươi ngon vừa thu hoạch tại vườn.' },
+                { time: '15:30 - 18:30', title: 'Hoài phố rêu phong – Tản bộ và thưởng trà chiều', desc: 'Di chuyển về trung tâm Phố cổ Hội An, thong thả dạo bước qua những nếp nhà vàng cổ kính và dừng chân thưởng thức trà thảo mộc ngắm hoàng hôn buông trên dòng sông Hoài.' }
+            ]
+        },
+        disan: {
+            subtitle: 'Di sản thủ công – Ninh Bình (Khởi hành: 09:00)',
+            activities: [
+                { time: '09:00 - 11:30', title: 'Sợi cói dệt nắng – Làng chiếu Kim Sơn', desc: 'Ngắm nhìn quy trình dệt nên những chiếc chiếu cói tự nhiên đượm hương đồng nội. Bạn sẽ hiểu vì sao những sợi cỏ mềm mại qua tay người thợ lại trở thành những tác phẩm tinh xảo đến vậy.' },
+                { time: '11:30 - 14:00', title: 'Hương vị cố đô – Thưởng thức đặc sản', desc: 'Ghé thăm nhà hàng cao cấp ven sông để thưởng thức bữa trưa đậm đà vị núi rừng với thịt dê truyền thống, cơm cháy giòn rụm và các sản vật địa phương.' },
+                { time: '14:00 - 16:30', title: 'Đốm hoa trên gấm – Làng thêu Văn Lâm', desc: 'Thu mình vào không gian yên ắng của làng thêu cổ, lắng nghe những câu chuyện xưa và học cách đưa thoi, điểm nhụy để tự tay dệt nên những nét hoa văn truyền thống tinh tế.' },
+                { time: '16:30 - 19:00', title: 'Sơn thủy hữu tình – Thuyền nan lướt bóng hoàng hôn', desc: 'Di chuyển đến đầm bảo tồn Vân Long, ngồi trên chiếc thuyền nan mộc mạc rẽ nước qua những hốc đá, ngắm nhìn đàn voọc quý hiếm và đón chiều tà buông xuống lòng thung lũng tĩnh mịch.' }
+            ]
+        },
+        tinhlang: {
+            subtitle: 'Tĩnh lặng liên hoa – Tháp Mười (Khởi hành: 08:00)',
+            activities: [
+                { time: '08:00 - 11:00', title: 'Đón sương sớm – Thả thuyền ngắm sen', desc: 'Ngồi trên chiếc xuồng ba lá lướt nhẹ giữa đầm sương, ngắm nhìn những đóa sen hồng bung nở trong nắng sớm và hít hà hương thơm tinh khôi của đất trời.' },
+                { time: '11:00 - 13:30', title: 'Tâm an giữa đầm – Thiền hành và thưởng trà', desc: 'Thong thả dạo bước trên những cây cầu gỗ nhỏ giữa lòng đầm, rũ bỏ những lo toan. Sau đó, tĩnh lặng thưởng thức ngụm trà sen ủ qua đêm ngọt hậu, thơm dịu.' },
+                { time: '13:30 - 16:00', title: 'Hương sen kết tinh – Mỹ tiệc bách hoa', desc: 'Thưởng thức bữa trưa độc đáo với thực đơn sáng tạo trọn vẹn từ sen: từ cơm hấp lá sen dẻo thơm, súp hạt sen bổ dưỡng cho đến đĩa gỏi ngó sen thanh mát, giòn rụm.' },
+                { time: '16:00 - 18:00', title: 'Sông nước tịch mịch – Nghỉ ngơi tĩnh tại', desc: 'Thư giãn tự do bên hiên nhà tre lộng gió, ngắm hoàng hôn nhuộm đỏ cánh đồng sen và lắng nghe tiếng chim bay về tổ, khép lại ngày bình yên.' }
+            ]
+        },
+        halong: {
+            subtitle: 'Tiếng Vọng Sóng Xanh – Hạ Long (Khởi hành: 08:00)',
+            activities: [
+                { time: '08:00 - 09:30', title: 'Hải trình sóng vỗ – Rẽ nước thưởng ngoạn', desc: 'Du thuyền hạng sang khởi hành đưa bạn hòa mình vào không gian bao la của vịnh Hạ Long, ngắm nhìn những hòn đảo đá vôi mang muôn vàn hình dáng kỳ thú.' },
+                { time: '09:30 - 12:00', title: 'Tuyệt tác giấu kín – Khám phá động Thiên Cung', desc: 'Dạo bước vào lòng động cùng hướng dẫn viên riêng, chiêm ngưỡng những khối thạch nhũ lấp lánh và lắng nghe những câu chuyện huyền thoại cổ xưa.' },
+                { time: '12:00 - 14:30', title: 'Mỹ vị giữa trùng khơi – Thưởng thức tiệc trưa', desc: 'Dùng bữa trưa hải sản cao cấp được chế biến tinh tế bởi đầu bếp trên tàu, trong khi du thuyền chầm chậm lướt qua những vùng vịnh tĩnh lặng, hoang sơ.' },
+                { time: '14:30 - 16:30', title: 'Góc nhỏ tĩnh lặng – Chèo thuyền Kayak & Tắm biển', desc: 'Tàu neo lại tại một bãi biển hoang vắng, bạn tự do chèo thuyền kayak len lỏi qua các hang luồn hoặc ngâm mình trong làn nước xanh mát.' },
+                { time: '16:30 - 18:00', title: 'Khúc ca lộng gió – Tiệc trà ngắm hoàng hôn', desc: 'Thư giãn trên boong tàu đón gió biển mát lành, thưởng thức tiệc trà chiều, bánh ngọt và ngắm ánh chiều tà vàng rực buông chậm xuống vịnh biển ngàn năm.' }
+            ]
+        },
+        sapa: {
+            subtitle: 'Nẻo Đường Sương Phủ – Sapa (Khởi hành: 08:00)',
+            activities: [
+                { time: '08:00 - 11:30', title: 'Nẻo đường mây phủ – Thăm bản Cát Cát', desc: 'Thong thả đi bộ dọc theo những lối mòn dẫn vào bản, ngắm nhìn những chiếc cối xay nước khổng lồ quay đều bên suối và trải nghiệm nghệ thuật nhuộm chàm cùng nghệ nhân bản địa.' },
+                { time: '11:30 - 14:00', title: 'Bếp lửa vùng cao – Ẩm thực Tây Bắc', desc: 'Dừng chân nghỉ ngơi tại không gian nhà hàng cao cấp view toàn cảnh thung lũng, thưởng thức bữa trưa ấm cúng với những món ăn đậm đà hương vị núi rừng.' },
+                { time: '14:00 - 16:30', title: 'Tiếng hát của dòng suối – Thác Tiên Sa', desc: 'Check-in dòng thác Tiên Sa bọt tung trắng xóa, tản bộ dọc bờ suối và lắng nghe những giai điệu khèn môi mộc mạc của người bản địa.' },
+                { time: '16:30 - 19:00', title: 'Tĩnh lặng đại ngàn – Thưởng trà chiều ngắm hoàng hôn', desc: 'Di chuyển về một quán trà bản địa không gian mở trên đỉnh đồi, thưởng thức ngụm trà cổ thụ, ngắm nhìn thung lũng Mường Hoa chìm dần vào sương mờ hoàng hôn.' }
+            ]
+        },
+        cattien: {
+            subtitle: 'Nhịp Đập Rừng Già – Cát Tiên (Khởi hành: 08:00)',
+            activities: [
+                { time: '08:00 - 12:00', title: 'Dưới bóng đại ngàn – Trekking Bàu Sấu', desc: 'Lội bộ dưới những tán cây cổ thụ trăm tuổi, hít hà bầu không khí trong lành của rừng nguyên sinh để đến với vùng đầm lầy Bàu Sấu hoang sơ.' },
+                { time: '12:00 - 14:30', title: 'Bên bờ đầm vắng – Trưa xanh tĩnh lặng', desc: 'Thưởng thức bữa trưa tinh tế được chuẩn bị riêng bên trạm kiểm lâm, ngắm nhìn những chú chim quý hiếm và cá sấu tự nhiên bơi lội dưới làn nước.' },
+                { time: '14:30 - 18:00', title: 'Khúc giao mùa rừng già – Tản bộ lượt về', desc: 'Quay trở lại trung tâm bằng đường rừng, đón ánh nắng chiều xuyên qua những kẽ lá và nghỉ ngơi, ngâm chân thảo mộc thư giãn tại resort bìa rừng.' },
+                { time: '18:00 - 20:00', title: 'Hương vị đại ngàn – Bữa tối lãng mạn', desc: 'Thưởng thức bữa tối ấm cúng tại nhà hàng ven sông của resort với các món ăn mang phong vị địa phương, lắng nghe tiếng côn trùng reo vang.' },
+                { time: '20:00 - 22:00', title: 'Thanh âm bóng tối – Đi xe mui trần xem thú đêm', desc: 'Lên xe chuyên dụng mui trần len lỏi vào bìa rừng, dưới ánh đèn chuyên dụng, bạn sẽ được tận mắt ngắm nhìn cuộc sống kiếm ăn ban đêm đầy thú vị của các loài thú hoang dã.' }
+            ]
+        },
+        muine: {
+            subtitle: 'Bình Minh Cồn Cát – Mũi Né (Khởi hành: 04:30)',
+            activities: [
+                { time: '04:30 - 05:30', title: 'Đường chạy ban mai – Hành trình ra đồi cát', desc: 'Xe hạng sang đón bạn từ sớm khi trời còn đẫm sương để kịp di chuyển ra Đồi Cát Trắng xinh đẹp.' },
+                { time: '05:30 - 07:30', title: 'Nắng ấm sa mạc – Xe địa hình & Đón bình minh', desc: 'Riêng tư trải nghiệm xe địa hình ATV lao vút qua những đụn cát nhấp nhô, ngắm mặt trời nhô lên từ phía biển và chơi trượt cát bằng máng từ đỉnh đồi.' },
+                { time: '07:30 - 09:30', title: 'Bức họa của gió – Đồi Cát Đỏ & Suối Tiên', desc: 'Tiếp tục check-in Đồi Cát Đỏ lộng gió và dạo bước chân trần dưới làn nước mát rượi của dòng Suối Tiên, ngắm nhìn những bức vách đất sét màu cam rực rỡ.' },
+                { time: '09:30 - 12:30', title: 'Sóng vỗ rì rào – Thư giãn tại Beach Club', desc: 'Di chuyển về một resort sát biển cao cấp, tự do tắm hồ bơi, tắm biển hoặc nằm nghỉ ngơi dưới bóng mát, thưởng thức ly nước dừa mát lạnh.' },
+                { time: '12:30 - 15:30', title: 'Vị mặn biển khơi – Bữa trưa hải sản thượng hạng', desc: 'Thưởng thức bữa trưa với thực đơn hải sản tươi sống được đánh bắt trong ngày tại nhà hàng view biển sang trọng trước khi xe đưa bạn về lại điểm đón ban đầu.' }
+            ]
+        },
+        phuquoc: {
+            subtitle: 'Khúc Ca San Hô – Phú Quốc (Khởi hành: 08:30)',
+            activities: [
+                { time: '08:30 - 10:30', title: 'Lướt sóng trùng khơi – Khám phá các hòn đảo hoang', desc: 'Cano tốc độ cao thế mới đưa bạn rời bến cảng, băng qua làn nước xanh ngắt để ghé thăm những hòn đảo nhỏ còn giữ nguyên nét hoang sơ.' },
+                { time: '10:30 - 13:00', title: 'Vũ điệu đại dương – Bơi lặn ngắm san hô', desc: 'Đeo ống thở và kính lặn chuyên dụng, thỏa thích hòa mình vào làn nước trong vắt để ngắm nhìn những rạn san hô đung đưa cùng từng đàn cá nhỏ rực rỡ sắc màu.' },
+                { time: '13:00 - 15:30', title: 'Vị mặn của biển – Bữa trưa trên đảo hoang', desc: 'Thưởng thức bữa trưa hải sản cao cấp tươi ngon ngay trên bãi biển cát trắng mịn, ngả lưng dưới bóng dừa mát rượi.' },
+                { time: '15:30 - 18:30', title: 'Đảo ngọc hoàng hôn – Tiệc cocktail chiều tà', desc: 'Cano đưa bạn đến một hòn đảo ngắm hoàng hôn đẹp nhất. Tại đây, bạn có thể thong thả đi dạo, thưởng thức ly cocktail mát lạnh và đón khoảnh khắc mặt trời lặn nhuộm hồng cả đường chân trời trước khi trở về bến cảng lúc 18:30.' }
+            ]
+        },
+        cantho: {
+            subtitle: 'Hương Sắc Miệt Vườn – Cần Thơ (Khởi hành: 05:30)',
+            activities: [
+                { time: '05:30 - 06:00', title: 'Sương sớm trên sông – Xuống bến xuống tàu', desc: 'Đón ngày mới khi trời còn mờ sương, xuống chiếc ghe máy truyền thống được chuẩn bị riêng để bắt đầu chuyến hành trình dọc theo dòng sông Hậu.' },
+                { time: '06:00 - 08:30', title: 'Âm thanh ngày mới – Chợ nổi Cái Răng', desc: 'Len lỏi qua những chiếc ghe đơm đầy hoa trái, lắng nghe tiếng rao của người dân miền Tây và thưởng thức bữa sáng với tô hủ tiếu nóng hổi, chòng chành ngay trên mặt nước từ ghe hậu cần riêng của tour.' },
+                { time: '08:30 - 11:30', title: 'Trái ngọt trĩu cành – Thăm vườn cây ăn trái', desc: 'Ghé thăm một miệt vườn cây ăn trái sum suê, thong thả dạo bước dưới bóng mát, tự tay hái và thưởng thức quả chín mọng ngọt lịm ngay tại vườn.' },
+                { time: '11:30 - 13:30', title: 'Trải nghiệm làm bánh dân gian', desc: 'Đến với gian nhà cổ Nam Bộ, cùng các nghệ nhân miệt vườn học cách đổ bánh xèo, làm bánh tằm se tay và lắng nghe những câu chuyện đời sống mộc mạc.' },
+                { time: '13:30 - 15:30', title: 'Phong vị sông nước – Bữa trưa điền dã', desc: 'Thưởng thức bữa trưa đậm chất miền Tây với cá lóc nướng trui, lẩu mắm đậm đà tại nhà hàng lộng gió ven sông, nghỉ ngơi tĩnh tại trên những chiếc võng trước khi kết thúc hành trình.' }
             ]
         }
     };
@@ -1551,10 +1622,18 @@
     function showActivities(tourName) {
         const norm = normalizeKey(tourName || '');
         let key = null;
-        if (norm.includes('tinh tuy') || norm.includes('tinh t')) key = 'tinh tuy';
-        else if (norm.includes('doan tu') || norm.includes('doan t')) key = 'doan tu';
+        if (norm.includes('tinh tuy') || norm.includes('dong noi')) key = 'dongnoi';
+        else if (norm.includes('doan tu')) key = 'doantu';
+        else if (norm.includes('di san')) key = 'disan';
+        else if (norm.includes('tinh lang')) key = 'tinhlang';
+        else if (norm.includes('ha long') || norm.includes('song xanh')) key = 'halong';
+        else if (norm.includes('sapa') || norm.includes('suong phu')) key = 'sapa';
+        else if (norm.includes('cat tien') || norm.includes('rung gia')) key = 'cattien';
+        else if (norm.includes('mui ne') || norm.includes('con cat')) key = 'muine';
+        else if (norm.includes('phu quoc') || norm.includes('san ho')) key = 'phuquoc';
+        else if (norm.includes('can tho') || norm.includes('miet vuon')) key = 'cantho';
 
-        if (!key) return;
+        if (!key || !TOUR_ITINERARIES[key]) return;
 
         const data = TOUR_ITINERARIES[key];
         const content = document.getElementById('activities-content');
