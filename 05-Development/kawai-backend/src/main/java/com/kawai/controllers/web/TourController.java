@@ -109,7 +109,7 @@ public class TourController {
             model.addAttribute("dynamicPrice", tour.getBasePrice());
         }
 
-        String[] tourTypes = {"doantu", "dongnoi", "disan", "tinhlang"};
+        String[] tourTypes = {"doantu", "dongnoi", "disan", "tinhlang", "halong", "sapa", "cattien", "muine", "phuquoc", "cantho"};
         for (String tType : tourTypes) {
             com.kawai.models.Tour activeTour = tourRepository.findFirstByTourTypeAndIsActiveTrueOrderByIdDesc(tType).orElse(null);
             if (activeTour == null) {

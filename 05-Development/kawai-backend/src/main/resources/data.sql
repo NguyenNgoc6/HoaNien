@@ -614,17 +614,16 @@ INSERT INTO Payment_Transactions (transaction_id, invoice_id, booking_id, amount
 
 -- ── 27. Tours (10 rows) ──────────────────────────────────────
 INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capacity, short_quote, description, created_at, is_active) VALUES 
-
-(1, 'Đoàn tụ - Huế', 'doantu', '7 Giờ', 50000, 20, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Hành trình di sản cố đô Huế trải nghiệm văn hoá ẩm thực cung đình Huế.', CURRENT_TIMESTAMP, TRUE),
-(2, 'Tinh túy đồng nội - Quảng Nam', 'dongnoi', '7 Giờ', 70000, 15, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Tham quan phố cổ Hội An, làng rau Trà Quế và làng gốm Thanh Hà.', CURRENT_TIMESTAMP, TRUE),
-(3, 'Di sản thủ công - Ninh Bình', 'disan', '7 Giờ', 50000, 15, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Khám phá đầm Vân Long và làng nghề thêu ren truyền thống Văn Lâm.', CURRENT_TIMESTAMP, TRUE),
-(4, 'Tĩnh lặng liên hoa - Tháp Mười', 'tinhlang', '8 Giờ', 70000, 10, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Đi xuồng ba lá ngắm sen nở rộ Đồng Tháp Mười thiền định thư thái.', CURRENT_TIMESTAMP, TRUE),
-(5, 'Huyền thoại vịnh xanh - Hạ Long', 'Half-Day', '4 Giờ', 10000, 30, 'Du thuyền sang trọng ngắm kỳ quan thiên nhiên thế giới.', 'Lướt sóng vịnh Bắc Bộ ngắm động Thiên Cung hoành tráng.', CURRENT_TIMESTAMP, TRUE),
-(6, 'Bình yên bản nhỏ - Sapa', 'Full-Day', '8 Giờ', 13000, 20, 'Gặp gỡ nụ cười hồn hậu vùng cao mây phủ.', 'Leo ruộng bậc thang bản Cát Cát trải nghiệm văn hoá đồng bào H’mông.', CURRENT_TIMESTAMP, TRUE),
-(7, 'Nhịp đập hoang dã - Cát Tiên', 'Full-Day', '14 Giờ', 22000, 12, 'Lắng nghe tiếng gọi rừng xanh thẳm huyền bí.', 'Xem thú ban đêm rừng Nam Cát Tiên ngắm chim muông kì thú.', CURRENT_TIMESTAMP, TRUE),
-(8, 'Bình minh cồn cát - Mũi Né', 'Half-Day', '5 Giờ', 9000, 15, 'Trượt cát đón mặt trời mọc rực rỡ.', 'Khám phá Đồi Cát Trắng, Đồi Cát Đỏ Mũi Né bằng xe địa hình ATV.', CURRENT_TIMESTAMP, TRUE),
-(9, 'Sóng hát san hô - Phú Quốc', 'Half-Day', '6 Giờ', 14000, 25, 'Hoà mình vào làn nước xanh lục bảo óng ánh.', 'Lặn cano 4 đảo ngắm san hô thiên nhiên rực rỡ Phú Quốc.', CURRENT_TIMESTAMP, TRUE),
-(10, 'Hương sắc miệt vườn - Cần Thơ', 'Half-Day', '5 Giờ', 8000, 20, 'Ngọt lịm trái chín trĩu cành miền Tây sông nước.', 'Đi chợ nổi Cái Răng thưởng thức bữa sáng trên ghe thuyền mộc mạc.', CURRENT_TIMESTAMP, TRUE);
+(1, 'Hành Trình Đoàn Tụ – Cố Đô Huế', 'doantu', '10 Giờ', 75000, 15, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Chuyến đi đưa bạn ngược dòng thời gian về với nét đẹp trầm mặc của cố đô, khơi mở những câu chuyện di sản và thưởng thức phong vị ẩm thực cung đình xưa.', CURRENT_TIMESTAMP, TRUE),
+(2, 'Tinh Túy Đồng Nội – Quảng Nam', 'dongnoi', '10 Giờ', 58000, 12, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Hành trình chạm vào những điều bình dị mà sâu lắng của đất Quảng: từ những con phố rêu phong ở Hội An, hương đất nung bên dòng sông Thu Bồn đến vị mặn mòi của một làng rau lâu đời.', CURRENT_TIMESTAMP, TRUE),
+(3, 'Di Sản Thủ Công – Ninh Bình', 'disan', '10 Giờ', 65000, 12, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Hành trình tìm về vẻ đẹp sơn thủy hữu tình của vùng đất cố đô cổ kính, nơi bạn được trò chuyện và cùng các nghệ nhân lưu giữ những làng nghề truyền thống trăm năm.', CURRENT_TIMESTAMP, TRUE),
+(4, 'Tĩnh Lặng Liên Hoa – Tháp Mười', 'tinhlang', '10 Giờ', 82000, 8, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Một ngày trốn khỏi phố thị để về với đại đầm sen, mượn hương hoa và sóng nước miền Tây làm dịu lại tâm hồn, tìm lại sự bình an sâu lắng bên trong bạn.', CURRENT_TIMESTAMP, TRUE),
+(5, 'Tiếng Vọng Sóng Xanh – Hạ Long', 'halong', '10 Giờ', 75000, 15, 'Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.', 'Chuyến hải trình thong dong đưa bạn lướt qua những đảo đá nhấp nhô của vịnh Bắc Bộ, khám phá thế giới thạch nhũ kỳ vĩ được tạo hóa giấu kín ngàn năm và đón hoàng hôn buông trên mặt biển.', CURRENT_TIMESTAMP, TRUE),
+(6, 'Nẻo Đường Sương Phủ – Sapa', 'sapa', '11 Giờ', 82000, 10, 'Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.', 'Hành trình dạo bước qua những nấc thang ruộng bậc thang xanh mướt tại bản Cát Cát, tìm hiểu cuộc sống mộc mạc của đồng bào người H\'Mông và lắng lại tâm hồn giữa núi rừng Tây Bắc.', CURRENT_TIMESTAMP, TRUE),
+(7, 'Nhịp Đập Rừng Già – Cát Tiên', 'cattien', '14 Giờ', 95000, 8, 'Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.', 'Chuyến băng rừng rậm Nam Cát Tiên đầy cảm xúc, đưa bạn ghé thăm đầm lầy bảo tồn tự nhiên, thưởng thức bữa tối bên rừng và trải nghiệm ngắm thú đêm hoang dã.', CURRENT_TIMESTAMP, TRUE),
+(8, 'Bình Minh Cồn Cát – Mũi Né', 'muine', '11 Giờ', 65000, 10, 'Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.', 'Trải nghiệm cảm giác phẩn khích vượt đồi cát bằng xe ATV đón bình minh, khám phá dòng suối Tiên huyền thoại và thưởng thức mỹ vị biển khơi.', CURRENT_TIMESTAMP, TRUE),
+(9, 'Khúc Ca San Hô – Phú Quốc', 'phuquoc', '10 Giờ', 85000, 12, 'Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.', 'Đồng hành cùng cano cao cấp lướt qua những hòn đảo hoang sơ, lặn ngắm rạn san hô đa sắc màu và tận hưởng bữa chiều ngắm hoàng hôn lãng mạn trên biển.', CURRENT_TIMESTAMP, TRUE),
+(10, 'Hương Sắc Miệt Vườn – Cần Thơ', 'cantho', '10 Giờ', 68000, 12, 'Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.', 'Đón bình minh trên chiếc ghe máy mộc mạc phục vụ riêng, hòa mình vào chợ nổi Cái Răng sầm uất, khám phá miệt vườn trĩu quả và học làm bánh dân gian Nam Bộ.', CURRENT_TIMESTAMP, TRUE);
 
 
 -- ── 28. Tour Images (10 rows) ────────────────────────────────
@@ -685,18 +684,28 @@ INSERT INTO Tour_Itinerary_Details (detail_id, itinerary_id, start_time, end_tim
 
 (10, 10, '06:00:00', '08:30:00', 10, 'Chợ nổi Cái Răng', 'Lên thuyền ngắm chợ nổi nhộn nhịp, ăn hủ tiếu nóng hổi chòng chành trên sông.', 'Breakfast');
 
--- ── 32. Tour Prices (10 rows) ────────────────────────────────
+-- ── 32. Tour Prices (20 rows) ────────────────────────────────
 INSERT INTO Tour_Prices (tour_price_id, tour_id, age_from, age_to, ticket_price, combo_discount_price, is_active) VALUES 
-(1, 1, 12, 100, 1500000, 1300000, TRUE),
-(2, 1, 4, 11, 750000, 650000, TRUE),
-(3, 2, 12, 100, 1200000, 1000000, TRUE),
-(4, 2, 4, 11, 600000, 500000, TRUE),
-(5, 3, 12, 100, 1800000, 1500000, TRUE),
-(6, 4, 12, 100, 2500000, 2200000, TRUE),
-(7, 5, 12, 100, 1000000, 850000, TRUE),
-(8, 6, 12, 100, 1300000, 1100000, TRUE),
-(9, 7, 12, 100, 2200000, 2000000, TRUE),
-(10, 9, 12, 100, 1400000, 1200000, TRUE);
+(1, 1, 12, 100, 7500000, 6800000, TRUE),
+(2, 1, 2, 11, 3750000, 3400000, TRUE),
+(3, 2, 12, 100, 5800000, 5200000, TRUE),
+(4, 2, 2, 11, 2900000, 2600000, TRUE),
+(5, 3, 12, 100, 6500000, 5800000, TRUE),
+(6, 3, 2, 11, 3250000, 2900000, TRUE),
+(7, 4, 12, 100, 8200000, 7500000, TRUE),
+(8, 4, 2, 11, 4100000, 3750000, TRUE),
+(9, 5, 12, 100, 7500000, 6800000, TRUE),
+(10, 5, 2, 11, 3750000, 3400000, TRUE),
+(11, 6, 12, 100, 8200000, 7500000, TRUE),
+(12, 6, 2, 11, 4100000, 3750000, TRUE),
+(13, 7, 12, 100, 9500000, 8600000, TRUE),
+(14, 7, 2, 11, 4750000, 4300000, TRUE),
+(15, 8, 12, 100, 6500000, 5800000, TRUE),
+(16, 8, 2, 11, 3250000, 2900000, TRUE),
+(17, 9, 12, 100, 8500000, 7800000, TRUE),
+(18, 9, 2, 11, 4250000, 3900000, TRUE),
+(19, 10, 12, 100, 6800000, 6000000, TRUE),
+(20, 10, 2, 11, 3400000, 3000000, TRUE);
 
 -- ── 33. Tour Schedules (10 rows) ─────────────────────────────
 INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status) VALUES 
