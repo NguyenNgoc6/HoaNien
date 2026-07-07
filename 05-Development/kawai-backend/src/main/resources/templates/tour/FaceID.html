@@ -346,7 +346,7 @@
                 </div>
                 <div class="h-8 w-px bg-primary/10"></div>
                 <button onclick="openGuideSettingsModal(event)"
-                    class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none"
+                    class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-primary/5 transition-all outline-none cursor-pointer"
                     title="Thông tin cá nhân">
                     <div class="text-right">
                         <p class="font-label-md text-label-md text-on-surface leading-none"
@@ -411,48 +411,78 @@
                                     onclick="showActivities(this.textContent.trim())"
                                     th:text="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}">Hành trình Đoàn Tụ
                                 </h4>
+                                <span id="tour-name-data" class="hidden"
+                                    th:data-name="${tourName != null ? tourName : 'Hành trình Đoàn Tụ'}"></span>
                                 <p class="font-headline text-lg md:text-xl font-light text-on-surface-variant/60"
                                     th:text="'Khởi hành ngày ' + ${departureDate != null ? departureDate : '--'} + ' vào lúc ' + ${departureTime != null ? departureTime : '--'}">
                                     Quản lý và cập nhật tình trạng điểm danh cho đoàn khách cao cấp.</p>
                                 <div class="flex flex-wrap gap-4 mt-4 pt-2">
-                                    <button onclick="showActivities(document.getElementById('tour-name-display').textContent.trim())"
-                                            class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-semibold text-sm">
+                                    <button
+                                        onclick="showActivities(document.getElementById('tour-name-display').textContent.trim())"
+                                        class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-semibold text-sm">
                                         <span class="material-symbols-outlined text-base">event_note</span>
                                         Lịch Trình Chi Tiết
                                     </button>
-                                    <button onclick="showHandbook(document.getElementById('tour-name-display').textContent.trim())"
-                                            class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-sm shadow-md">
+                                    <button
+                                        onclick="showHandbook(document.getElementById('tour-name-display').textContent.trim())"
+                                        class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-sm shadow-md">
                                         <span class="material-symbols-outlined text-base">auto_stories</span>
                                         Cẩm Nang Dẫn Tour
                                     </button>
                                     <!-- Bắt Đầu Tour: chỉ hiện khi chưa bắt đầu (Open) -->
-                                    <form th:if="${scheduleStatus == 'Open' or scheduleStatus == null}" th:action="@{/tourguide/start-tour}" method="post" class="inline">
+                                    <form th:if="${scheduleStatus == 'Open' or scheduleStatus == null}"
+                                        th:action="@{/tourguide/start-tour}" method="post" class="inline"
+                                        id="startTourForm">
                                         <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
-                                        <button type="submit" onclick="return confirm('Xác nhận bắt đầu tour? Email thông báo khởi hành sẽ được gửi đến toàn bộ khách hàng!')"
-                                                class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-all font-semibold text-sm shadow-md">
+                                        <button type="button" onclick="checkTourSafety(event)"
+                                            class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-sm shadow-md">
                                             <span class="material-symbols-outlined text-base">play_circle</span>
                                             Bắt Đầu Tour
                                         </button>
                                     </form>
-                                    <!-- Đang diễn ra badge -->
-                                    <span th:if="${scheduleStatus == 'ongoing'}" 
-                                          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-950/80 text-blue-300 border border-blue-500/30 font-semibold text-sm">
-                                        <span class="material-symbols-outlined text-base text-blue-400">directions_run</span>
-                                        Đang Diễn Ra
-                                    </span>
-                                    <form th:if="${scheduleStatus != 'completed'}" th:action="@{/tourguide/finish-tour}" method="post" class="inline">
-                                        <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
-                                        <button type="submit"
-                                                class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all font-semibold text-sm shadow-md">
-                                            <span class="material-symbols-outlined text-base">check_circle</span>
-                                            Hoàn Thành Tour
+
+                                    <!-- ══ TRẠNG THÁI: ONGOING ══ -->
+                                    <div th:if="${scheduleStatus == 'ongoing'}"
+                                        class="flex items-center gap-2 p-1 bg-primary/5 border border-primary/15 rounded-full">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                            Đang Diễn Ra
+                                        </span>
+                                        <span class="text-primary/20 select-none">|</span>
+                                        <form th:action="@{/tourguide/finish-tour}" method="post" class="inline" id="finishTourForm">
+                                            <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
+                                            <button type="button"
+                                                onclick="confirmFinishTour(event)"
+                                                class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-xs shadow-sm">
+                                                <span class="material-symbols-outlined text-xs">check_circle</span>
+                                                Hoàn Thành Tour
+                                            </button>
+                                        </form>
+                                        <button type="button"
+                                            onclick="openResetModal('Open', 'Hoàn tác bắt đầu tour? Trạng thái sẽ quay về Chờ Bắt Đầu và thời gian khởi hành thực tế sẽ bị xóa.')"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-primary/70 border border-primary/20 hover:bg-primary/10 hover:text-primary transition-all font-medium text-xs">
+                                            <span class="material-symbols-outlined text-xs">undo</span>
+                                            Hoàn Tác
                                         </button>
-                                    </form>
-                                    <span th:if="${scheduleStatus == 'completed'}" 
-                                          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 font-semibold text-sm">
-                                        <span class="material-symbols-outlined text-base text-emerald-400">task_alt</span>
-                                        Tour Đã Hoàn Thành
-                                    </span>
+                                    </div>
+
+                                    <!-- ══ TRẠNG THÁI: COMPLETED ══ -->
+                                    <div th:if="${scheduleStatus == 'completed'}"
+                                        class="flex items-center gap-2 p-1 bg-primary/5 border border-primary/15 rounded-full">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs">
+                                            <span class="material-symbols-outlined text-xs">task_alt</span>
+                                            Đã Hoàn Thành
+                                        </span>
+                                        <span class="text-primary/20 select-none">|</span>
+                                        <button type="button"
+                                            onclick="openResetModal('ongoing', 'Hoàn tác hoàn thành tour? Trạng thái sẽ quay về Đang Diễn Ra. Trạng thái đặt chỗ của khách sẽ được khôi phục về Confirmed.')"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-primary/70 border border-primary/20 hover:bg-primary/10 hover:text-primary transition-all font-medium text-xs">
+                                            <span class="material-symbols-outlined text-xs">undo</span>
+                                            Hoàn Tác
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div
@@ -487,31 +517,33 @@
                                             th:text="'#EVN-00' + ${attendee.id}">#EVN-00234</td>
                                         <td class="py-6 px-4">
                                             <div class="flex items-center gap-3">
-                                                 <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'KH')}"
-                                                     class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm cursor-pointer hover:scale-105 transition-all"
-                                                     th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
-                                                     th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
-                                                     th:data-id="'#EVN-00' + ${attendee.id}"
-                                                     th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
-                                                     th:data-email="${attendee.customer?.email ?: '--'}"
-                                                     th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
-                                                     th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
-                                                     onclick="showCustomerContactModal(this)">
-                                                     NM
-                                                 </div>
+                                                <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'KH')}"
+                                                    class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm cursor-pointer hover:scale-105 transition-all"
+                                                    th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
+                                                    th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                    th:data-id="'#EVN-00' + ${attendee.id}"
+                                                    th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                    th:data-email="${attendee.customer?.email ?: '--'}"
+                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
+                                                    th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                    onclick="showCustomerContactModal(this)">
+                                                    NM
+                                                </div>
                                                 <div>
                                                     <p class="font-body-md font-semibold text-on-surface cursor-pointer hover:underline animate-none"
-                                                       th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
-                                                       th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
-                                                       th:data-id="'#EVN-00' + ${attendee.id}"
-                                                       th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
-                                                       th:data-email="${attendee.customer?.email ?: '--'}"
-                                                       th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
-                                                       th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
-                                                       onclick="showCustomerContactModal(this)">
+                                                        th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                        th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                        th:data-id="'#EVN-00' + ${attendee.id}"
+                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                        th:data-email="${attendee.customer?.email ?: '--'}"
+                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
+                                                        th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                        onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
-                                                    <p class="text-[12px] text-on-surface-variant/60" th:text="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}">Hà Nội</p>
+                                                    <p class="text-[12px] text-on-surface-variant/60"
+                                                        th:text="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}">
+                                                        Hà Nội</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -546,6 +578,15 @@
                                     class="material-symbols-outlined text-[48px] text-beige-decorative mb-4">groups</span>
                                 <p class="font-body-md text-on-surface-variant">Không có hành khách nào đăng ký hôm nay.
                                 </p>
+                            </div>
+                        </div>
+                        <!-- Pagination Controls -->
+                        <div id="pagination-controls" class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-primary/10 select-none">
+                            <p class="text-xs text-on-surface-variant/80 font-medium" id="pagination-info">
+                                Đang hiển thị 1 đến 5 của 25 khách hàng
+                            </p>
+                            <div class="flex items-center gap-1.5" id="pagination-buttons">
+                                <!-- Dynamic page buttons -->
                             </div>
                         </div>
                     </div>
@@ -1076,21 +1117,21 @@
                                                         <span class="material-symbols-outlined text-[16px]">check</span>
                                                     </button>
                                                 `;
-                                                
+
                                                 // Cập nhật thanh tiến độ
                                                 const countSpan = document.querySelector('.font-headline-md.text-2xl span:first-child');
                                                 const totalSpan = document.querySelector('.font-headline-md.text-2xl span:last-child');
                                                 const pctSpan = document.querySelector('.text-xs.text-on-surface-variant\\/60.font-semibold');
                                                 const barDiv = document.querySelector('.bg-primary.h-full.rounded-full');
-                                                
+
                                                 if (countSpan && totalSpan) {
                                                     let c = parseInt(countSpan.textContent) + 1;
                                                     let t = parseInt(totalSpan.textContent);
                                                     countSpan.textContent = c;
                                                     if (t > 0) {
                                                         let pct = Math.round((c / t) * 100);
-                                                        if(pctSpan) pctSpan.textContent = pct + '%';
-                                                        if(barDiv) barDiv.style.width = pct + '%';
+                                                        if (pctSpan) pctSpan.textContent = pct + '%';
+                                                        if (barDiv) barDiv.style.width = pct + '%';
                                                     }
                                                 }
                                             }
@@ -1261,15 +1302,20 @@
             }
         }
 
-        async function manualResetAttendance() {
-            if (confirm('Bạn có chắc muốn reset toàn bộ trạng thái điểm danh cho hôm nay?')) {
-                try {
-                    await fetch('/api/faceid/reset');
-                    window.location.href = '/tourguide/dashboard';
-                } catch (e) {
-                    console.error(e);
+        function manualResetAttendance() {
+            showCustomConfirm({
+                title: 'Đặt Lại Điểm Danh',
+                message: 'Bạn có chắc chắn muốn đặt lại trạng thái điểm danh cho toàn bộ khách hàng trong ngày hôm nay?',
+                icon: 'restart_alt',
+                onConfirm: async () => {
+                    try {
+                        await fetch('/api/faceid/reset');
+                        window.location.href = '/tourguide/dashboard';
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
-            }
+            });
         }
 
         function openGuideSettingsModal(e) {
@@ -1491,36 +1537,27 @@
             return accentlessText.includes(accentlessQuery);
         }
 
-        function performSearch(query) {
-            const cleanQuery = query.trim();
-            if (!cleanQuery) {
-                document.querySelectorAll('table tbody tr').forEach(r => r.style.display = '');
-                return;
-            }
+        let currentPage = 1;
+        const pageSize = 5;
+
+        function getCandidateRows() {
+            const query = (document.getElementById('search-customer-input')?.value || '').trim();
+            const rows = Array.from(document.querySelectorAll('table tbody tr'));
+            
+            if (!query) return rows;
 
             const tourName = document.getElementById('tour-name-display') ? document.getElementById('tour-name-display').textContent : '';
             const tourMetaEl = document.querySelector('[th\\:text*="departureDate"]') || document.querySelector('.font-headline.text-lg.md\\:text-xl.font-light.text-on-surface-variant\\/60') || document.querySelector('#print-area p');
             const tourMeta = tourMetaEl ? tourMetaEl.textContent : '';
             const tourDetailsText = (tourName + " " + tourMeta);
+            const matchesTour = matchQuery(tourDetailsText, query);
 
-            const matchesTour = matchQuery(tourDetailsText, cleanQuery);
+            if (matchesTour) return rows;
 
-            const rows = document.querySelectorAll('table tbody tr');
-            rows.forEach(row => {
-                if (matchesTour) {
-                    row.style.display = '';
-                    return;
-                }
-
+            return rows.filter(row => {
                 const idText = row.querySelector('td:first-child') ? row.querySelector('td:first-child').textContent : '';
                 const dataEl = row.querySelector('[data-name]');
-
-                let nameText = '';
-                let phoneText = '';
-                let emailText = '';
-                let membershipText = '';
-                let roomText = '';
-
+                let nameText = '', phoneText = '', emailText = '', membershipText = '', roomText = '';
                 if (dataEl) {
                     nameText = (dataEl.getAttribute('data-name') || '');
                     phoneText = (dataEl.getAttribute('data-phone') || '');
@@ -1528,23 +1565,111 @@
                     membershipText = (dataEl.getAttribute('data-membership') || '');
                     roomText = (dataEl.getAttribute('data-room') || '');
                 }
-
                 const statusText = row.textContent;
                 const combinedText = `${idText} ${nameText} ${phoneText} ${emailText} ${membershipText} ${roomText} ${statusText}`;
-
-                if (matchQuery(combinedText, cleanQuery)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                return matchQuery(combinedText, query);
             });
         }
+
+        function updatePagination() {
+            const candidates = getCandidateRows();
+            const total = candidates.length;
+            const pageCount = Math.ceil(total / pageSize) || 1;
+
+            if (currentPage > pageCount) currentPage = pageCount;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, total);
+
+            // Hide all rows first
+            document.querySelectorAll('table tbody tr').forEach(r => r.style.display = 'none');
+
+            // Show candidates in the current page
+            candidates.slice(startIdx, endIdx).forEach(r => r.style.display = '');
+
+            // Update info text
+            const infoEl = document.getElementById('pagination-info');
+            const wrapperEl = document.getElementById('pagination-controls');
+            
+            if (total === 0) {
+                if (infoEl) infoEl.textContent = 'Không có kết quả trùng khớp';
+                if (wrapperEl) wrapperEl.classList.add('hidden');
+                return;
+            } else {
+                if (wrapperEl) wrapperEl.classList.remove('hidden');
+            }
+
+            if (infoEl) {
+                infoEl.textContent = `Đang hiển thị ${startIdx + 1} đến ${endIdx} của ${total} khách hàng`;
+            }
+
+            // Update buttons
+            const buttonsEl = document.getElementById('pagination-buttons');
+            if (buttonsEl) {
+                let html = '';
+                
+                // Prev button
+                const prevDisabled = currentPage === 1;
+                html += `
+                    <button onclick="goToPage(${currentPage - 1})" ${prevDisabled ? 'disabled' : ''}
+                            class="w-8 h-8 flex items-center justify-center rounded-full text-primary border border-primary/20 hover:bg-primary/5 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm">
+                        <span class="material-symbols-outlined text-sm font-bold">chevron_left</span>
+                    </button>
+                `;
+
+                // Page numbers
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(pageCount, startPage + 4);
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+
+                for (let p = startPage; p <= endPage; p++) {
+                    const active = p === currentPage;
+                    html += `
+                        <button onclick="goToPage(${p})" 
+                                class="w-8 h-8 flex items-center justify-center rounded-full text-xs font-semibold transition-all shadow-sm
+                                       ${active ? 'bg-primary text-on-primary font-bold' : 'text-primary border border-primary/10 hover:bg-primary/5'}"
+                                ${active ? 'disabled' : ''}>
+                            ${p}
+                        </button>
+                    `;
+                }
+
+                // Next button
+                const nextDisabled = currentPage === pageCount;
+                html += `
+                    <button onclick="goToPage(${currentPage + 1})" ${nextDisabled ? 'disabled' : ''}
+                            class="w-8 h-8 flex items-center justify-center rounded-full text-primary border border-primary/20 hover:bg-primary/5 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-sm">
+                        <span class="material-symbols-outlined text-sm font-bold">chevron_right</span>
+                    </button>
+                `;
+
+                buttonsEl.innerHTML = html;
+            }
+        }
+
+        function goToPage(p) {
+            currentPage = p;
+            updatePagination();
+            document.querySelector('#print-area table').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function performSearch(query) {
+            currentPage = 1;
+            updatePagination();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePagination();
+        });
     </script>
 </body>
 
 <!-- Activities Popup Modal (hidden by default) -->
 <div id="activities-modal"
-     class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all duration-300">
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all duration-300">
     <div class="bg-surface rounded-lg shadow-2xl p-8 w-11/12 max-w-lg border border-primary/10">
         <div class="flex justify-between items-center mb-6 border-b border-primary/10 pb-4">
             <h3 class="text-2xl font-display-md font-bold text-primary">Lịch Trình Chi Tiết</h3>
@@ -1562,7 +1687,7 @@
 
 <!-- Handbook Popup Modal (hidden by default) -->
 <div id="handbook-modal"
-     class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all duration-300">
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all duration-300">
     <div class="bg-surface rounded-lg shadow-2xl p-8 w-11/12 max-w-2xl border border-primary/10">
         <div class="flex justify-between items-center mb-6 border-b border-primary/10 pb-4">
             <h3 class="text-2xl font-display-md font-bold text-primary flex items-center gap-2">
@@ -1572,7 +1697,8 @@
             <button class="text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold"
                 onclick="closeHandbook()">✕</button>
         </div>
-        <div id="handbook-content" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2 scrollbar-custom text-on-surface"></div>
+        <div id="handbook-content" class="space-y-6 max-h-[65vh] overflow-y-auto pr-2 scrollbar-custom text-on-surface">
+        </div>
         <div class="mt-6 pt-4 border-t border-primary/10 flex justify-end">
             <button
                 class="px-6 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80 font-bold transition-all shadow-md"
@@ -1949,7 +2075,7 @@
             '    Kho tài liệu thuyết minh (Lịch sử - Địa lý - Văn hóa)',
             '  </h5>',
             '  <div class="space-y-4">',
-            data.explanations.map(item => 
+            data.explanations.map(item =>
                 '    <div>' +
                 '      <p class="font-bold text-sm text-primary mb-1">' + item.cat + ':</p>' +
                 '      <p class="text-sm leading-relaxed opacity-90 text-on-surface-variant">' + item.content + '</p>' +
@@ -1984,6 +2110,220 @@
 
     function closeImportantNoteDetails() {
         document.getElementById('notice-details-modal').classList.add('hidden');
+    }
+
+    /* ============================================================
+       SAFETY CHECKLIST – Kiểm tra bảo hộ trước khi bắt đầu tour
+       ============================================================ */
+    const WATER_KEYWORDS = ['sông', 'ghe', 'thuyền', 'nước', 'chèo', 'bơi', 'lặn', 'kayak', 'biển', 'đảo', 'hạ long', 'phú quốc', 'cần thơ', 'thủy'];
+    const MOUNTAIN_KEYWORDS = ['leo', 'núi', 'trek', 'sapa', 'đèo', 'rừng'];
+
+    function getTourCategory() {
+        const tourNameEl = document.getElementById('tour-name-data');
+        if (!tourNameEl) return 'DEFAULT';
+        const name = (tourNameEl.getAttribute('data-name') || '').toLowerCase();
+
+        if (WATER_KEYWORDS.some(kw => name.includes(kw))) {
+            return 'WATER';
+        } else if (MOUNTAIN_KEYWORDS.some(kw => name.includes(kw))) {
+            return 'MOUNTAIN';
+        }
+        return 'DEFAULT';
+    }
+
+    function checkTourSafety(event) {
+        if (event) event.preventDefault();
+        const category = getTourCategory();
+        if (category !== 'DEFAULT') {
+            openSafetyModal(category);
+        } else {
+            showCustomConfirm({
+                title: 'Bắt Đầu Tour',
+                message: 'Xác nhận bắt đầu tour? Email thông báo khởi hành sẽ được gửi đến toàn bộ khách hàng!',
+                icon: 'play_circle',
+                onConfirm: () => {
+                    document.getElementById('startTourForm').submit();
+                }
+            });
+        }
+    }
+
+    function openSafetyModal(category) {
+        const modal = document.getElementById('safety-checklist-modal');
+        if (!modal) return;
+
+        const headerIcon = document.getElementById('safety-header-icon');
+        const subtitle = document.getElementById('safety-header-subtitle');
+        const container = document.getElementById('safety-list-container');
+
+        let iconName = 'security';
+        let subtext = 'CAM KẾT AN TOÀN (BẮT BUỘC)';
+        let items = [];
+
+        if (category === 'WATER') {
+            iconName = 'directions_boat';
+            subtext = 'CAM KẾT AN TOÀN ĐƯỜNG THỦY (BẮT BUỘC)';
+            items = [
+                { id: 'ws1', title: 'Áo phao đầy đủ', desc: 'Đã cấp phát đủ áo phao tiêu chuẩn cho tất cả hành khách.' },
+                { id: 'ws2', title: 'Kiểm tra phương tiện', desc: 'Phương tiện đường thủy đủ điều kiện an toàn để vận hành.' },
+                { id: 'ws3', title: 'Thời tiết an toàn', desc: 'Thời tiết thuận lợi, không giông bão hay sóng lớn.' },
+                { id: 'ws4', title: 'Thông tin cứu hộ', desc: 'Đã chuẩn bị sẵn số điện thoại liên lạc cứu hộ khẩn cấp.' }
+            ];
+        } else if (category === 'MOUNTAIN') {
+            iconName = 'hiking';
+            subtext = 'CAM KẾT AN TOÀN TREKKING (BẮT BUỘC)';
+            items = [
+                { id: 'ms1', title: 'Giày & Trang phục', desc: 'Khách hàng trang bị giày trekking / thể thao phù hợp địa hình.' },
+                { id: 'ms2', title: 'Thời tiết & Tầm nhìn', desc: 'Không mưa lớn hay sương mù dày đặc cản trở lối đi.' },
+                { id: 'ms3', title: 'Nước uống & Y tế', desc: 'Đã mang đủ nước uống và túi sơ cứu y tế cá nhân.' },
+                { id: 'ms4', title: 'Quy định tách đoàn', desc: 'Đã phổ biến quy tắc di chuyển theo đoàn, không tự ý rẽ hướng.' }
+            ];
+        }
+
+        headerIcon.textContent = iconName;
+        subtitle.textContent = subtext;
+
+        // Render checklist HTML
+        container.innerHTML = items.map(item => `
+            <li class="flex items-start gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all cursor-pointer"
+                onclick="toggleSafetyCheckbox('${item.id}')">
+                <input type="checkbox" id="${item.id}" class="safety-check mt-0.5 w-5 h-5 rounded cursor-pointer shrink-0" 
+                       style="accent-color:var(--color-primary)" onchange="updateConfirmBtn()" onclick="event.stopPropagation()"/>
+                <div class="select-none pointer-events-none">
+                    <span class="font-semibold text-on-surface text-sm block">${item.title}</span>
+                    <p class="text-xs text-on-surface-variant/80 mt-1 leading-relaxed">${item.desc}</p>
+                </div>
+            </li>
+        `).join('');
+
+        // Reset confirm button
+        const confirmBtn = document.getElementById('safety-confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        }
+
+        // Show Modal
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('.safety-modal-box').classList.remove('scale-95', 'opacity-0');
+            modal.querySelector('.safety-modal-box').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function toggleSafetyCheckbox(id) {
+        const cb = document.getElementById(id);
+        if (cb) {
+            cb.checked = !cb.checked;
+            updateConfirmBtn();
+        }
+    }
+
+    function closeSafetyModal() {
+        const modal = document.getElementById('safety-checklist-modal');
+        if (!modal) return;
+        const box = modal.querySelector('.safety-modal-box');
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
+
+    function updateConfirmBtn() {
+        const checkboxes = document.querySelectorAll('#safety-list-container .safety-check');
+        const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+        const btn = document.getElementById('safety-confirm-btn');
+        if (btn) {
+            btn.disabled = !allChecked;
+            btn.classList.toggle('opacity-50', !allChecked);
+            btn.classList.toggle('cursor-not-allowed', !allChecked);
+            btn.classList.toggle('pointer-events-none', !allChecked);
+        }
+    }
+
+    function confirmAndStartTour() {
+        closeSafetyModal();
+        setTimeout(() => {
+            document.getElementById('startTourForm').submit();
+        }, 250);
+    }
+
+    /* ============================================================
+       RESET TOUR – Hoàn tác trạng thái tour
+       ============================================================ */
+    function openResetModal(targetStatus, message) {
+        const modal = document.getElementById('reset-confirm-modal');
+        if (!modal) return;
+
+        document.getElementById('reset-target-status').value = targetStatus;
+        document.getElementById('reset-confirm-msg').textContent = message;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('.reset-modal-box').classList.remove('scale-95', 'opacity-0');
+            modal.querySelector('.reset-modal-box').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeResetModal() {
+        const modal = document.getElementById('reset-confirm-modal');
+        if (!modal) return;
+        const box = modal.querySelector('.reset-modal-box');
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
+
+    function confirmFinishTour(event) {
+        if (event) event.preventDefault();
+        showCustomConfirm({
+            title: 'Hoàn Thành Tour',
+            message: 'Xác nhận hoàn thành tour? Email phản hồi sẽ được gửi tới khách hàng.',
+            icon: 'check_circle',
+            onConfirm: () => {
+                document.getElementById('finishTourForm').submit();
+            }
+        });
+    }
+
+    /* ============================================================
+       CUSTOM CONFIRM DIALOG
+       ============================================================ */
+    let confirmCallback = null;
+
+    function showCustomConfirm(options) {
+        const modal = document.getElementById('custom-confirm-modal');
+        if (!modal) return;
+
+        document.getElementById('confirm-modal-title').textContent = options.title || 'Xác Nhận';
+        document.getElementById('confirm-modal-msg').textContent = options.message || '';
+        document.getElementById('confirm-modal-icon').textContent = options.icon || 'help';
+        
+        confirmCallback = options.onConfirm;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('.confirm-modal-box').classList.remove('scale-95', 'opacity-0');
+            modal.querySelector('.confirm-modal-box').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeCustomConfirm(confirmed) {
+        const modal = document.getElementById('custom-confirm-modal');
+        if (!modal) return;
+        const box = modal.querySelector('.confirm-modal-box');
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            if (confirmed && typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            confirmCallback = null;
+        }, 200);
     }
 </script>
 
@@ -2041,6 +2381,141 @@
             <button
                 class="px-6 py-2 bg-primary text-on-primary rounded-full hover:bg-primary/80 font-bold transition-all shadow-md text-sm"
                 onclick="closeImportantNoteDetails()">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     RESET TOUR — Confirm Modal (Purple theme)
+══════════════════════════════════════════════════════════ -->
+<div id="reset-confirm-modal"
+    class="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-[500] hidden p-4">
+    <!-- Hidden form submit -->
+    <form id="reset-tour-form" action="/tourguide/reset-tour" method="post" class="hidden">
+        <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
+        <input type="hidden" id="reset-target-status" name="targetStatus" value="" />
+    </form>
+
+    <!-- Modal card -->
+    <div class="reset-modal-box w-full max-w-md overflow-hidden
+                bg-white border border-primary/20 rounded-3xl shadow-2xl
+                transform scale-95 opacity-0 transition-all duration-200 ease-out">
+        <!-- Icon + Title -->
+        <div class="flex flex-col items-center text-center px-8 pt-9 pb-5">
+            <div class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
+                <span class="material-symbols-outlined text-primary" style="font-size:36px">undo</span>
+            </div>
+            <h3 class="font-bold text-on-background text-lg md:text-xl tracking-tight">Xác nhận Hoàn Tác</h3>
+            <div class="w-12 h-px bg-primary/30 mt-4"></div>
+        </div>
+
+        <!-- Message -->
+        <div class="px-8 pb-8">
+            <p id="reset-confirm-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center"></p>
+        </div>
+
+        <!-- Separator -->
+        <div class="h-px bg-primary/10 mx-6"></div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-4 px-6 py-5">
+            <button type="button" onclick="closeResetModal()"
+                class="flex-1 py-3 rounded-full text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-low transition-all">
+                Huỷ
+            </button>
+            <button type="button" onclick="document.getElementById('reset-tour-form').submit()"
+                class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">undo</span>
+                Hoàn Tác
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SAFETY CHECKLIST — Confirm Modal (Purple theme)
+══════════════════════════════════════════════════════════ -->
+<div id="safety-checklist-modal"
+    class="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-[500] hidden p-4">
+    <div class="safety-modal-box w-full max-w-md overflow-hidden bg-white border border-primary/20 rounded-3xl shadow-2xl
+                transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col items-center text-center px-8 pt-9 pb-5">
+            <div id="safety-icon-wrapper"
+                class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
+                <span id="safety-header-icon" class="material-symbols-outlined text-primary"
+                    style="font-size:36px">security</span>
+            </div>
+            <h3 class="font-bold text-on-background text-lg md:text-xl tracking-tight">Cam Kết An Toàn</h3>
+            <p id="safety-header-subtitle"
+                class="text-[10px] text-primary font-bold uppercase tracking-wider mt-2 text-center px-4"></p>
+            <div class="w-12 h-px bg-primary/30 mt-4"></div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-8 pb-8">
+            <p class="text-sm md:text-base text-on-surface-variant leading-relaxed mb-5 text-center">
+                Tour này thuộc nhóm hoạt động đặc thù. Hướng dẫn viên vui lòng cam kết các điều kiện dưới đây:
+            </p>
+            <ul id="safety-list-container" class="space-y-3 max-h-[35vh] overflow-y-auto pr-1">
+                <!-- Dynamic safety items -->
+            </ul>
+        </div>
+
+        <!-- Separator -->
+        <div class="h-px bg-primary/10 mx-6"></div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-4 px-6 py-5">
+            <button type="button" onclick="closeSafetyModal()"
+                class="flex-1 py-3 rounded-full text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-low transition-all">
+                Huỷ
+            </button>
+            <button id="safety-confirm-btn" type="button" disabled onclick="confirmAndStartTour()"
+                class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary opacity-50 cursor-not-allowed pointer-events-none transition-all shadow-md inline-flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">rocket_launch</span>
+                Khởi Hành
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CUSTOM CONFIRM MODAL (Purple theme)
+══════════════════════════════════════════════════════════ -->
+<div id="custom-confirm-modal"
+     class="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-[510] hidden p-4">
+    <div class="confirm-modal-box w-full max-w-md overflow-hidden bg-white border border-primary/20 rounded-3xl shadow-2xl
+                transform scale-95 opacity-0 transition-all duration-200 ease-out">
+        <!-- Icon + Title -->
+        <div class="flex flex-col items-center text-center px-8 pt-9 pb-5">
+            <div class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
+                <span id="confirm-modal-icon" class="material-symbols-outlined text-primary" style="font-size:36px">help</span>
+            </div>
+            <h3 id="confirm-modal-title" class="font-bold text-on-background text-lg md:text-xl tracking-tight">Xác Nhận</h3>
+            <div class="w-12 h-px bg-primary/30 mt-4"></div>
+        </div>
+
+        <!-- Message -->
+        <div class="px-8 pb-8">
+            <p id="confirm-modal-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center"></p>
+        </div>
+
+        <!-- Separator -->
+        <div class="h-px bg-primary/10 mx-6"></div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-4 px-6 py-5">
+            <button type="button"
+                    onclick="closeCustomConfirm(false)"
+                    class="flex-1 py-3 rounded-full text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-low transition-all">
+                Huỷ
+            </button>
+            <button type="button"
+                    onclick="closeCustomConfirm(true)"
+                    class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center">
+                Đồng ý
+            </button>
         </div>
     </div>
 </div>
