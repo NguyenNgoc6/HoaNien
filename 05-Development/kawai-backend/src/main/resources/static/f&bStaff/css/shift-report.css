@@ -406,14 +406,7 @@
   box-shadow: var(--shadow-card);
 }
 
-.sr-revenue-content {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
-}
-
 .revenue-cards {
-  flex: 2;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -521,16 +514,12 @@
   font-size: 0.85rem;
 }
 
-/* Pie Chart Styles */
+/* Simple Bar Chart */
 .revenue-chart-card {
-  flex: 1;
   background: var(--bg-base);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .chart-title {
@@ -542,11 +531,11 @@
   margin-bottom: 14px;
 }
 
-.pie-chart-container {
+.bar-chart {
   display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-top: 10px;
+  align-items: flex-end;
+  gap: 6px;
+  height: 80px;
 }
 
 .pie-chart {
@@ -573,33 +562,29 @@
 .pie-chart-legend {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-
-.legend-item {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--namia-text);
-}
-
-.legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.legend-item span {
+  gap: 4px;
   flex: 1;
 }
 
-.legend-item b {
-  font-weight: 700;
+.bar-chart-bar {
+  width: 100%;
+  background: rgba(44,44,44,0.15);
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: height 0.8s cubic-bezier(.4,0,.2,1), background 0.2s;
+  cursor: pointer;
 }
 
+.bar-chart-bar:hover { background: var(--namia-text); }
+.bar-chart-bar.peak  { background: rgba(44,44,44,0.35); }
+
+.bar-chart-lbl {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* ──────────────────────────────────────────────
    SECTION 4: ORDERS LIST
