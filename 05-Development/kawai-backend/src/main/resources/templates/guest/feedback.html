@@ -628,11 +628,44 @@
     </div>
 </footer>
 
+<!-- ══════════ CUSTOM ALERT MODAL ══════════ -->
+<div id="custom-alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm hidden opacity-0 transition-all duration-300">
+    <div class="bg-[#12100f]/95 border border-white/15 rounded-xl p-8 max-w-md w-full text-center shadow-2xl scale-95 transition-all duration-300">
+        <span class="material-symbols-outlined text-4xl text-[#c5a059] mb-4" style="font-variation-settings:'FILL' 1">warning</span>
+        <h3 class="font-serif text-xl text-white mb-3 italic">Thông báo từ HoaNien</h3>
+        <p id="custom-alert-msg" class="text-sm text-gray-300 leading-relaxed mb-6 font-light"></p>
+        <button onclick="closeCustomAlert()" class="px-8 py-3 text-xs uppercase font-bold tracking-widest bg-[#c5a059] text-[#1a1714] hover:bg-[#b08d4a] rounded-sm transition-all">
+            Đồng ý
+        </button>
+    </div>
+</div>
+
 <!-- ══════════ REGISTRATION & LOGIN MODAL ══════════ -->
 <div th:replace="~{guest/fragments/auth :: authModal}"></div>
 
 <script>
     const LABELS = {1:'Tệ', 2:'Không hài lòng', 3:'Bình thường', 4:'Tốt', 5:'Xuất sắc'};
+
+    function showCustomAlert(msg) {
+        const modal = document.getElementById('custom-alert-modal');
+        const text = document.getElementById('custom-alert-msg');
+        if (!modal || !text) return;
+        text.textContent = msg;
+        modal.classList.remove('hidden');
+        void modal.offsetWidth; // force reflow
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+    }
+
+    function closeCustomAlert() {
+        const modal = document.getElementById('custom-alert-modal');
+        if (!modal) return;
+        modal.classList.add('opacity-0');
+        modal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
 
     function rate(fieldId, starsId, lblId, val) {
         document.getElementById(fieldId).value = val;
@@ -668,7 +701,7 @@
             document.getElementById('toast-no-service')?.classList.remove('hidden');
             document.getElementById('toast-login-required')?.classList.add('hidden');
             document.getElementById('toast-success')?.classList.add('hidden');
-            alert('Quý khách cần có tối thiểu 1 Booking (Phòng nghỉ hoặc Tour du lịch) đã hoàn thành tại HoaNien Retreat để tham gia gửi đánh giá!');
+            showCustomAlert('Quý khách cần có tối thiểu 1 Booking (Phòng nghỉ hoặc Tour du lịch) đã hoàn thành tại HoaNien Retreat để tham gia gửi đánh giá!');
             return;
         }
 
