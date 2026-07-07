@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>HoaNien - Đánh Giá Trải Nghiệm</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Plus+Jakarta+Sans:wght@200..800&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        body {
+            background-color: #2D2926;
+            color: #E5E1DA;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(197, 160, 89, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(197, 160, 89, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: rgba(45, 41, 38, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(197, 160, 89, 0.15);
+        }
+
+        .brand-gold {
+            color: #c5a059;
+        }
+
+        .bg-brand-gold {
+            background-color: #c5a059;
+        }
+
+        .border-brand-gold {
+            border-color: #c5a059;
+        }
+
+        .star-rating button {
+            color: rgba(229, 225, 218, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .star-rating button.active,
+        .star-rating button.hovered {
+            color: #c5a059;
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between pt-24">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 bg-[#2D2926]/80 backdrop-blur-md border-b border-[#E5E1DA]/10">
+        <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex space-x-8 text-xs font-semibold tracking-widest uppercase text-[#E5E1DA]">
+                <a class="hover:text-[#c5a059] transition-all no-underline" href="/living">Nghỉ Dưỡng</a>
+                <a class="hover:text-[#c5a059] transition-all no-underline" href="/dining">Ẩm Thực</a>
+                <a class="hover:text-[#c5a059] transition-all no-underline" href="/experiences">Trải Nghiệm</a>
+                <a class="hover:text-[#c5a059] transition-all no-underline" href="/tours/search">Hành Trình</a>
+                <a class="border-b-2 border-[#c5a059] pb-1 text-[#c5a059] no-underline" href="/feedback">Đánh Giá</a>
+            </div>
+            <div class="absolute left-1/2 -translate-x-1/2">
+                <h1 class="text-3xl font-serif tracking-tighter cursor-pointer text-[#c5a059]" onclick="window.location.href='/'">
+                    HoaNien</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <!-- Profile / Logout if logged in -->
+                <a href="/profile" th:if="${isLoggedIn}"
+                    class="text-[11px] font-bold tracking-widest uppercase hover:text-[#c5a059] text-[#E5E1DA] no-underline">Hồ Sơ</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-2xl glass-panel rounded-lg p-10 md:p-12 shadow-2xl relative">
+            
+            <!-- Toast Notifications -->
+            <div id="toast-success" class="hidden mb-8 p-4 bg-emerald-950/80 border border-emerald-500/30 rounded flex items-center gap-3 text-emerald-300">
+                <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+                <div>
+                    <p class="font-bold text-sm">Gửi nhận xét thành công</p>
+                    <p class="text-xs opacity-85">Chân thành cảm ơn những ý kiến đóng góp quý báu của Quý khách.</p>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form id="feedbackForm" th:action="@{/feedback/submit}" method="post" class="space-y-8">
+                <input type="hidden" name="bookingId" th:value="${booking != null ? booking.id : ''}" />
+
+                <div class="text-center space-y-2 border-b border-[#E5E1DA]/10 pb-8">
+                    <span class="text-xs font-bold tracking-[0.2em] uppercase text-[#c5a059]">Ý Kiến Phản Hồi</span>
+                    <h2 class="font-serif text-3xl italic tracking-wide text-white" th:text="${tourName != null ? 'Hành trình ' + tourName : 'Đánh Giá Trải Nghiệm'}">Đánh Giá Trải Nghiệm</h2>
+                    <p class="text-xs font-light text-gray-400 max-w-md mx-auto leading-relaxed">
+                        Sự chia sẻ của Quý khách giúp HoaNien không ngừng nâng tầm chất lượng dịch vụ hướng tới sự tinh tế tuyệt mỹ.
+                    </p>
+                </div>
+
+                <!-- Section 1: Tour Quality -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-semibold tracking-wider text-white">1. Dịch Vụ Hành Trình</label>
+                    <p class="text-xs text-gray-400 leading-snug">Chất lượng hướng dẫn viên (Tourguide), tiến độ hoạt động và sự an toàn tiện nghi suốt chuyến đi.</p>
+                    
+                    <div class="star-rating flex items-center gap-2 mt-2" id="tour-stars">
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="1" onclick="rate('ratingTour', 1)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="2" onclick="rate('ratingTour', 2)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="3" onclick="rate('ratingTour', 3)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="4" onclick="rate('ratingTour', 4)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="5" onclick="rate('ratingTour', 5)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="ratingTour" id="ratingTour" value="5" required />
+                </div>
+
+                <!-- Section 2: Room & F&B Quality -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-semibold tracking-wider text-white">2. Dịch Vụ Phòng & Ẩm Thực</label>
+                    <p class="text-xs text-gray-400 leading-snug">Độ sạch sẽ và tiện nghi của phòng nghỉ dưỡng, chất lượng các món ăn và thái độ phục vụ tại nhà hàng.</p>
+                    
+                    <div class="star-rating flex items-center gap-2 mt-2" id="room-stars">
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="1" onclick="rate('ratingRoomDining', 1)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="2" onclick="rate('ratingRoomDining', 2)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="3" onclick="rate('ratingRoomDining', 3)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="4" onclick="rate('ratingRoomDining', 4)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                        <button type="button" class="w-10 h-10 flex items-center justify-center outline-none" data-value="5" onclick="rate('ratingRoomDining', 5)">
+                            <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="ratingRoomDining" id="ratingRoomDining" value="5" required />
+                </div>
+
+                <!-- Section 3: Text Opinion -->
+                <div class="space-y-3">
+                    <label for="reviewText" class="block text-sm font-semibold tracking-wider text-white">3. Nhận Xét Khác</label>
+                    <textarea name="reviewText" id="reviewText" rows="4" required
+                        class="w-full bg-[#1F1C1A]/60 border border-[#E5E1DA]/15 rounded p-4 text-sm text-white focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all scrollbar-custom"
+                        placeholder="Hãy chia sẻ thêm trải nghiệm hoặc đóng góp ý kiến riêng của Quý khách..."></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 flex items-center justify-between">
+                    <a href="/" class="text-xs tracking-widest uppercase font-semibold text-gray-400 hover:text-white transition-colors no-underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span>
+                        Trở Về
+                    </a>
+                    <button type="submit"
+                        class="px-10 py-4 bg-brand-gold hover:bg-[#b08d4a] text-[#2D2926] font-bold text-xs uppercase tracking-widest rounded-sm transition-all duration-300 shadow-md">
+                        Gửi Đánh Giá
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#1f1b18] text-white py-16 px-8 border-t border-[#E5E1DA]/10 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left space-y-2">
+                <h3 class="text-2xl font-serif text-[#c5a059]">HoaNien</h3>
+                <p class="text-[9px] tracking-widest opacity-40 uppercase">© 2026 HOANIEN RETREAT. A QUIET LUXURY RESORT RESIDENCE.</p>
+            </div>
+            <div class="flex space-x-8 text-[9px] font-bold tracking-widest uppercase opacity-75">
+                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/living">Nghỉ Dưỡng</a>
+                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/dining">Ẩm Thực</a>
+                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/experiences">Trải Nghiệm</a>
+                <a class="hover:text-[#c5a059] text-white no-underline transition-colors" href="/tours/search">Hành Trình</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Check params for status
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('toast') === 'success') {
+            document.getElementById('toast-success').classList.remove('hidden');
+            // disable fields
+            document.querySelectorAll('input, textarea, button[type="submit"]').forEach(el => {
+                el.disabled = true;
+                el.classList.add('opacity-50', 'pointer-events-none');
+            });
+        }
+
+        // Initialize active ratings
+        rate('ratingTour', 5);
+        rate('ratingRoomDining', 5);
+
+        function rate(fieldName, val) {
+            document.getElementById(fieldName).value = val;
+            const containerId = fieldName === 'ratingTour' ? 'tour-stars' : 'room-stars';
+            const buttons = document.querySelectorAll('#' + containerId + ' button');
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-value'));
+                if (btnVal <= val) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Hover effect setup
+        document.querySelectorAll('.star-rating').forEach(ratingDiv => {
+            const buttons = ratingDiv.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    const hoverVal = parseInt(btn.getAttribute('data-value'));
+                    buttons.forEach(b => {
+                        const bVal = parseInt(b.getAttribute('data-value'));
+                        if (bVal <= hoverVal) {
+                            b.classList.add('hovered');
+                        } else {
+                            b.classList.remove('hovered');
+                        }
+                    });
+                });
+                btn.addEventListener('mouseleave', () => {
+                    buttons.forEach(b => b.classList.remove('hovered'));
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

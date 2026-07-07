@@ -425,6 +425,34 @@
                                         <span class="material-symbols-outlined text-base">auto_stories</span>
                                         Cẩm Nang Dẫn Tour
                                     </button>
+                                    <!-- Bắt Đầu Tour: chỉ hiện khi chưa bắt đầu (Open) -->
+                                    <form th:if="${scheduleStatus == 'Open' or scheduleStatus == null}" th:action="@{/tourguide/start-tour}" method="post" class="inline">
+                                        <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
+                                        <button type="submit" onclick="return confirm('Xác nhận bắt đầu tour? Email thông báo khởi hành sẽ được gửi đến toàn bộ khách hàng!')"
+                                                class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-all font-semibold text-sm shadow-md">
+                                            <span class="material-symbols-outlined text-base">play_circle</span>
+                                            Bắt Đầu Tour
+                                        </button>
+                                    </form>
+                                    <!-- Đang diễn ra badge -->
+                                    <span th:if="${scheduleStatus == 'ongoing'}" 
+                                          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-950/80 text-blue-300 border border-blue-500/30 font-semibold text-sm">
+                                        <span class="material-symbols-outlined text-base text-blue-400">directions_run</span>
+                                        Đang Diễn Ra
+                                    </span>
+                                    <form th:if="${scheduleStatus != 'completed'}" th:action="@{/tourguide/finish-tour}" method="post" class="inline">
+                                        <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
+                                        <button type="submit"
+                                                class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all font-semibold text-sm shadow-md">
+                                            <span class="material-symbols-outlined text-base">check_circle</span>
+                                            Hoàn Thành Tour
+                                        </button>
+                                    </form>
+                                    <span th:if="${scheduleStatus == 'completed'}" 
+                                          class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 font-semibold text-sm">
+                                        <span class="material-symbols-outlined text-base text-emerald-400">task_alt</span>
+                                        Tour Đã Hoàn Thành
+                                    </span>
                                 </div>
                             </div>
                             <div
@@ -1359,6 +1387,10 @@
                     showToast('Tạo hồ sơ hướng dẫn viên thành công!', 'success');
                 } else if (toastParam === 'delete_success') {
                     showToast('Xóa hồ sơ hướng dẫn viên thành công!', 'success');
+                } else if (toastParam === 'finish_success') {
+                    showToast('Đã hoàn thành hành trình tour và gửi email cảm ơn đến quý khách!', 'success');
+                } else if (toastParam === 'start_success') {
+                    showToast('Tour đã bắt đầu! Email thông báo khởi hành đã được gửi đến toàn bộ khách hàng.', 'success');
                 }
                 // Clean url parameters
                 const cleanUrl = window.location.pathname;

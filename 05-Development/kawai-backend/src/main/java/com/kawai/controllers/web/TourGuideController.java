@@ -37,6 +37,9 @@ public class TourGuideController {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourItineraryDetailRepository tourItineraryDetailRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.services.interfaces.EmailService emailService;
+
     @org.springframework.web.bind.annotation.ModelAttribute
     public void addEmployeeToModel(Principal principal, Model model, jakarta.servlet.http.HttpServletRequest request) {
         if (principal != null) {
@@ -703,5 +706,88 @@ public class TourGuideController {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/start-tour")
+    public String startTour(
+            @org.springframework.web.bind.annotation.RequestParam("scheduleId") Long scheduleId,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        com.kawai.models.TourSchedule schedule = tourScheduleRepository.findById(scheduleId).orElse(null);
+        if (schedule != null && !"completed".equalsIgnoreCase(schedule.getScheduleStatus())) {
+            schedule.setScheduleStatus("ongoing");
+            tourScheduleRepository.saveAndFlush(schedule);
+
+            // Load activities for this tour
+            java.util.List<com.kawai.models.TourItineraryDetail> activities = new java.util.ArrayList<>();
+            if (schedule.getTour() != null) {
+                try {
+                    activities = tourItineraryDetailRepository.findByItineraryTourId(schedule.getTour().getId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Send departure notification email to all customers in this schedule
+            java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(schedule);
+            if (bookings != null) {
+                final java.util.List<com.kawai.models.TourItineraryDetail> actsFinal = activities;
+                for (com.kawai.models.TourBooking booking : bookings) {
+                    if (booking.getCustomer() != null) {
+                        try {
+                            emailService.sendTourDepartureEmail(booking, booking.getCustomer(), actsFinal);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.isBlank()) {
+            String cleanUrl = referer.replaceAll("[&?]toast=[^&]*", "");
+            String separator = cleanUrl.contains("?") ? "&" : "?";
+            return "redirect:" + cleanUrl + separator + "toast=start_success";
+        }
+        return "redirect:/tourguide/dashboard?toast=start_success";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/finish-tour")
+    public String finishTour(
+            @org.springframework.web.bind.annotation.RequestParam("scheduleId") Long scheduleId,
+            jakarta.servlet.http.HttpServletRequest request) {
+        
+        com.kawai.models.TourSchedule schedule = tourScheduleRepository.findById(scheduleId).orElse(null);
+        if (schedule != null) {
+            schedule.setScheduleStatus("completed");
+            tourScheduleRepository.saveAndFlush(schedule);
+
+            // Update all bookings on this schedule to Completed
+            java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(schedule);
+            if (bookings != null) {
+                for (com.kawai.models.TourBooking booking : bookings) {
+                    booking.setBookingStatus("Completed");
+                    tourBookingRepository.saveAndFlush(booking);
+
+                    // Send email to the customer
+                    if (booking.getCustomer() != null) {
+                        try {
+                            emailService.sendTourFeedbackEmail(booking, booking.getCustomer());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.isBlank()) {
+            String cleanUrl = referer.replaceAll("[&?]toast=[^&]*", "");
+            String separator = cleanUrl.contains("?") ? "&" : "?";
+            return "redirect:" + cleanUrl + separator + "toast=finish_success";
+        }
+        return "redirect:/tourguide/dashboard?toast=finish_success";
     }
 }
