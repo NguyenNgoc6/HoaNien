@@ -52,6 +52,9 @@ public class TourBookingServiceImpl implements TourBookingService {
         @Autowired(required = false)
         private EmailService emailService;
 
+        @Autowired
+        private DependentRepository dependentRepository;
+
         public TourBookingServiceImpl(TourScheduleRepository tourScheduleRepository,
                         TourBookingRepository tourBookingRepository,
                         TourAttendeeRepository tourAttendeeRepository,
@@ -264,15 +267,59 @@ public class TourBookingServiceImpl implements TourBookingService {
 
                 // 5. Tạo TourAttendee records
                 List<TourAttendee> attendees = new ArrayList<>();
-                for (int i = 0; i < request.getParticipantCount(); i++) {
+                int currentAttendeeCount = 0;
+
+                // Khách hàng đặt chính là attendee số 1
+                if (currentAttendeeCount < request.getParticipantCount()) {
+                        TourAttendee mainAttendee = new TourAttendee();
+                        mainAttendee.setTourBooking(savedBooking);
+                        mainAttendee.setCustomer(customer);
+                        mainAttendee.setAttendanceStatus("Not_Show");
+                        attendees.add(mainAttendee);
+                        currentAttendeeCount++;
+                }
+
+                // Tạo các attendee đi kèm dựa trên danh sách companions (người lớn đi cùng)
+                if (request.getCompanions() != null && !request.getCompanions().isEmpty()) {
+                        for (TourBookingRequest.CompanionRequest comp : request.getCompanions()) {
+                                if (currentAttendeeCount >= request.getParticipantCount()) {
+                                        break;
+                                }
+                                // Lưu thông tin người đi kèm vào bảng Dependents
+                                Dependent dep = new Dependent();
+                                dep.setCustomer(customer);
+                                dep.setDependentName(comp.getName());
+                                // Tính ngày sinh từ độ tuổi (ví dụ mặc định lấy năm hiện tại - số tuổi)
+                                int age = comp.getAge() != null ? comp.getAge() : 12;
+                                dep.setBirthDate(LocalDate.now().minusYears(age));
+                                dep.setGender("Nam");
+                                dep.setIsDeleted(false);
+                                
+                                // Nếu có sđt, lưu vào cccdPassportEncrypted dưới dạng note PHONE_xxx để tránh thiếu dữ liệu
+                                if (comp.getPhone() != null && !comp.getPhone().trim().isEmpty()) {
+                                        dep.setCccdPassportEncrypted("PHONE_" + comp.getPhone().trim());
+                                }
+                                
+                                Dependent savedDep = dependentRepository.save(dep);
+
+                                TourAttendee attendee = new TourAttendee();
+                                attendee.setTourBooking(savedBooking);
+                                attendee.setDependent(savedDep);
+                                attendee.setAttendanceStatus("Not_Show");
+                                attendees.add(attendee);
+                                currentAttendeeCount++;
+                        }
+                }
+
+                // Nếu tổng số lượng khách lớn hơn và còn thừa slot (ví dụ trẻ em hoặc khách chưa nhập chi tiết), tạo các attendee rỗng
+                while (currentAttendeeCount < request.getParticipantCount()) {
                         TourAttendee attendee = new TourAttendee();
                         attendee.setTourBooking(savedBooking);
-                        if (i == 0) {
-                                attendee.setCustomer(customer);
-                        }
                         attendee.setAttendanceStatus("Not_Show");
                         attendees.add(attendee);
+                        currentAttendeeCount++;
                 }
+
                 tourAttendeeRepository.saveAll(attendees);
 
                 // 6. Post to Room: ghi nợ vào Folio phòng
