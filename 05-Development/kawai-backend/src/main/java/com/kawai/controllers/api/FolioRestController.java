@@ -110,7 +110,8 @@ public class FolioRestController {
                         .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
                 // Tiền khách đã nạp trước (CHỈ đếm các khoản nạp hạn mức, bỏ tiền cọc Walk-in)
-                java.math.BigDecimal deposited = folioItemRepository.findCreditDepositAmountsByDetailId(d.getId()).stream()
+                java.math.BigDecimal deposited = folioItemRepository.findCreditDepositAmountsByDetailId(d.getId())
+                        .stream()
                         .filter(a -> a != null && a.compareTo(java.math.BigDecimal.ZERO) < 0)
                         .map(java.math.BigDecimal::abs)
                         .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
@@ -223,7 +224,6 @@ public class FolioRestController {
 
         if (deposit.compareTo(BigDecimal.ZERO) == 0 && detail.getRoomBooking().getDepositAmount() != null) {
             deposit = detail.getRoomBooking().getDepositAmount();
-            totalPayments = totalPayments.add(deposit);
         }
 
         BigDecimal otherPayments = totalPayments.subtract(deposit);
@@ -540,7 +540,6 @@ public class FolioRestController {
                 }
             }
 
-            BigDecimal legacyDepositUsed = BigDecimal.ZERO;
             if (booking != null && booking.getDepositAmount() != null) {
                 BigDecimal deposit = booking.getDepositAmount();
                 if (deposit.compareTo(BigDecimal.ZERO) > 0) {
@@ -558,18 +557,13 @@ public class FolioRestController {
                     } catch (Exception e) {
                     }
 
-                    BigDecimal used = BigDecimal.ZERO;
                     if (finalBalance.compareTo(deposit) <= 0) {
-                        used = finalBalance;
+                        BigDecimal used = finalBalance;
                         finalBalance = BigDecimal.ZERO;
                         booking.setDepositAmount(deposit.subtract(used));
                     } else {
-                        used = deposit;
                         finalBalance = finalBalance.subtract(deposit);
                         booking.setDepositAmount(BigDecimal.ZERO);
-                    }
-                    if (recDep.compareTo(BigDecimal.ZERO) == 0) {
-                        legacyDepositUsed = used;
                     }
                 }
             }
@@ -727,16 +721,6 @@ public class FolioRestController {
                         initialStatus,
                         txnRef);
             }
-            if (legacyDepositUsed != null && legacyDepositUsed.compareTo(BigDecimal.ZERO) > 0) {
-                paymentService.recordPayment(
-                        invoice,
-                        detail.getRoomBooking(),
-                        legacyDepositUsed,
-                        "Deposit",
-                        "SYSTEM",
-                        PaymentStatus.SUCCESS,
-                        "DEP-MIGRATE-" + System.currentTimeMillis());
-            }
 
             // 5. Sinh file PDF hóa đơn và gửi email (Sử dụng Service) nếu đã thanh toán
             if ("Paid".equalsIgnoreCase(invoice.getInvoiceStatus())) {
@@ -840,7 +824,6 @@ public class FolioRestController {
 
         // Subtract all successful payments
         BigDecimal totalPayments = BigDecimal.ZERO;
-        BigDecimal recordedDeposit = BigDecimal.ZERO;
         try {
             List<PaymentTransaction> payments = paymentService.getPaymentsByBookingId(booking.getId());
             if (payments != null) {
@@ -848,17 +831,13 @@ public class FolioRestController {
                     if (pt.getStatus() == PaymentStatus.SUCCESS) {
                         if (pt.getAmount() != null) {
                             totalPayments = totalPayments.add(pt.getAmount());
-                            if ("Deposit".equalsIgnoreCase(pt.getTransactionType())) {
-                                recordedDeposit = recordedDeposit.add(pt.getAmount());
-                            }
                         }
                     }
                 }
             }
         } catch (Exception e) {
         }
-
-        if (recordedDeposit.compareTo(BigDecimal.ZERO) == 0 && booking.getDepositAmount() != null) {
+        if (booking.getDepositAmount() != null && booking.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
             totalPayments = totalPayments.add(booking.getDepositAmount());
         }
 

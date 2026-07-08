@@ -1,105 +1,19 @@
-// ============================================================
-// UI TABS — Chuyển đổi giữa Khách đang lưu trú và Hủy/No-show
-// ============================================================
-function switchTab(tabId) {
-    if (tabId === 'inhouse') {
-        document.getElementById('tabContentInHouse').style.display = 'block';
-        document.getElementById('tabContentCancelled').style.display = 'none';
+// In-House Details Modal Logic
+function openInHouseModal(guestName, phone, roomSummary, depsDivId) {
+    document.getElementById('modalInHouseGuestName').innerText = guestName;
+    document.getElementById('modalInHousePhone').innerText = phone ? 'SĐT: ' + phone : '';
+    document.getElementById('modalInHouseRooms').innerText = roomSummary;
 
-        document.getElementById('btnTabInHouse').className = 'btn btn-primary';
-        document.getElementById('btnTabInHouse').style.background = '';
-        document.getElementById('btnTabInHouse').style.color = '';
-        document.getElementById('btnTabInHouse').style.border = '';
+    // Lấy nội dung HTML của div ẩn chứa danh sách dependents và gán vào modal
+    const depsHtml = document.getElementById(depsDivId).innerHTML;
+    document.getElementById('modalInHouseDependents').innerHTML = depsHtml;
 
-        document.getElementById('btnTabCancelled').className = 'btn btn-outline';
-        document.getElementById('btnTabCancelled').style.background = 'white';
-        document.getElementById('btnTabCancelled').style.color = '#475569';
-        document.getElementById('btnTabCancelled').style.border = '1px solid #cbd5e1';
-    } else {
-        document.getElementById('tabContentInHouse').style.display = 'none';
-        document.getElementById('tabContentCancelled').style.display = 'block';
-
-        document.getElementById('btnTabCancelled').className = 'btn btn-primary';
-        document.getElementById('btnTabCancelled').style.background = '#3b82f6';
-        document.getElementById('btnTabCancelled').style.color = 'white';
-        document.getElementById('btnTabCancelled').style.border = 'none';
-
-        document.getElementById('btnTabInHouse').className = 'btn btn-outline';
-        document.getElementById('btnTabInHouse').style.background = 'white';
-        document.getElementById('btnTabInHouse').style.color = '#475569';
-        document.getElementById('btnTabInHouse').style.border = '1px solid #cbd5e1';
-    }
-}
-
-// ============================================================
-// IN-HOUSE MODAL — Xem chi tiết đơn lưu trú
-// ============================================================
-function openInHouseModal(bookingId) {
-
-    document.getElementById('modalInHouseDependents').innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin text-primary" style="font-size: 24px;"></i></div>';
     document.getElementById('inHouseModal').style.display = 'flex';
-
-    fetch(`/receptionist/in-house/detail/${bookingId}`)
-        .then(res => {
-            if (!res.ok) throw new Error('Network response was not ok');
-            return res.json();
-        })
-        .then(data => {
-            let html = '<ul style="list-style: none; padding: 0; margin: 0; color: #475569; font-size: 15px;">';
-            if (data.guests && data.guests.length > 0) {
-                let hasDependent = false;
-                // Filter only primary contacts and exclude Main Guest
-                const primaryContacts = data.guests.filter(dep => dep.isPrimaryContact && dep.type !== 'Main Guest');
-                primaryContacts.forEach((dep, idx) => {
-
-                    hasDependent = true;
-                    let borderBottom = idx < primaryContacts.length - 1 ? 'border-bottom: 1px dashed #cbd5e1;' : '';
-                    html += `<li style="padding: 16px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; ${borderBottom}">`;
-
-                    html += `<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">`;
-                    html += `  <div style="display: flex; align-items: center; gap: 8px;">`;
-                    html += `    <span style="font-weight: 600; color: #334155; font-size: 16px;">${dep.name}</span>`;
-                    if (dep.type === 'Customer (Được nâng cấp)') {
-                        html += ` <span style="background-color: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">Customer</span>`;
-                    }
-                    html += `  </div>`;
-
-                    let subInfo = [];
-                    if (dep.dob) subInfo.push(`Sinh: <span style="color: #334155; font-weight: 500;">${dep.dob}</span>`);
-                    if (dep.cccd) subInfo.push(`CCCD/Passport: <span style="color: #334155; font-weight: 500;">${dep.cccd}</span>`);
-                    if (subInfo.length > 0) {
-                        html += `<div style="font-size: 14px; color: #64748b; display: flex; gap: 8px; align-items: center;"><span style="color: #cbd5e1;">|</span>${subInfo.join(' <span style="color: #cbd5e1;">|</span> ')}</div>`;
-                    }
-                    html += `</div>`;
-
-                    html += `<div style="display: flex; align-items: center; gap: 8px;">`;
-                    html += ` <span style="background-color: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Đứng đầu phòng ${dep.roomNumber || ''}</span>`;
-                    if (dep.dependentId != null) {
-                        html += ` <button onclick="upgradeDependent(${dep.dependentId}, this)" style="background-color: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">Nâng cấp Customer</button>`;
-
-                    }
-                    html += `</div>`;
-                    html += `</li>`;
-                });
-                if (!hasDependent) {
-                    html += `<li>Không có người đứng đầu phòng nào chưa có tài khoản.</li>`;
-                }
-            } else {
-                html += `<li>Không có dữ liệu khách hàng.</li>`;
-            }
-            html += '</ul>';
-            document.getElementById('modalInHouseDependents').innerHTML = html;
-        })
-        .catch(err => {
-            console.error('Error fetching details:', err);
-            document.getElementById('modalInHouseDependents').innerHTML = '<div style="color: red;">Không thể tải thông tin. Vui lòng thử lại sau.</div>';
-        });
 }
 
 function closeInHouseModal() {
     document.getElementById('inHouseModal').style.display = 'none';
 }
-
 // ============================================================
 // NÂNG CẤP DEPENDENT → CUSTOMER
 // ============================================================
@@ -475,7 +389,7 @@ function openCreditDepositModal(bookingId) {
             // Nếu chỉ có 1 phòng, tự động chọn luôn
             if (data.rooms.length === 1) {
                 sel.value = data.rooms[0].detailId;
-                try { onCdRoomChange(); } catch(e) { console.error('[onCdRoomChange]', e); }
+                try { onCdRoomChange(); } catch (e) { console.error('[onCdRoomChange]', e); }
             }
         })
         .catch(err => {

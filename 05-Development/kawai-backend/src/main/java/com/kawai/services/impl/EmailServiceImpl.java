@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import org.thymeleaf.TemplateEngine;
 
 import java.io.IOException;
 
@@ -610,36 +612,72 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("refundAmount", VND_FMT.format(refundRequest.getAmount()));
 
             String html = templateEngine.process("email/refund-success", ctx);
+            String subject = "[HOANIEN] Xác nhận hoàn tiền thành công";
+            boolean sentViaSmtp = false;
 
-            Email from = new Email(fromEmail, "HOANIEN Resort");
-            Email to = new Email(customer.getEmail());
-            Content content = new Content("text/html", html);
-            Mail mail = new Mail(from, "[HOANIEN] Xác nhận hoàn tiền thành công", to, content);
+            if (mailSender != null) {
+                try {
+                    jakarta.mail.internet.MimeMessage mimeMessage = mailSender.createMimeMessage();
+                    org.springframework.mail.javamail.MimeMessageHelper helper = 
+                            new org.springframework.mail.javamail.MimeMessageHelper(mimeMessage, true, "utf-8");
+                    helper.setTo(customer.getEmail());
+                    helper.setSubject(subject);
+                    helper.setText(html, true);
+                    String finalFrom = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "hoanien.00@gmail.com";
+                    helper.setFrom(finalFrom, "HOANIEN Resort");
 
-            if (absoluteAttachmentPath != null && !absoluteAttachmentPath.isBlank()) {
-                java.io.File file = new java.io.File(absoluteAttachmentPath);
-                if (file.exists()) {
-                    byte[] fileData = java.nio.file.Files.readAllBytes(file.toPath());
-                    com.sendgrid.helpers.mail.objects.Attachments attachments = new com.sendgrid.helpers.mail.objects.Attachments();
-                    attachments.setContent(java.util.Base64.getEncoder().encodeToString(fileData));
-                    String extension = file.getName().substring(file.getName().lastIndexOf(".") + 1).toLowerCase();
-                    String mimeType = "image/jpeg";
-                    if (extension.equals("png"))
-                        mimeType = "image/png";
-                    attachments.setType(mimeType);
-                    attachments.setFilename(file.getName());
-                    attachments.setDisposition("attachment");
-                    mail.addAttachments(attachments);
+                    if (absoluteAttachmentPath != null && !absoluteAttachmentPath.isBlank()) {
+                        java.io.File file = new java.io.File(absoluteAttachmentPath);
+                        if (file.exists()) {
+                            helper.addAttachment(file.getName(), file);
+                        }
+                    }
+
+                    mailSender.send(mimeMessage);
+                    logger.info("[SMTP] Sent refund email successfully to {}", customer.getEmail());
+                    sentViaSmtp = true;
+                } catch (Exception e) {
+                    logger.error("[SMTP] Lỗi gửi email hoàn tiền tới {}: {}", customer.getEmail(), e.getMessage());
+                    logger.info("[SMTP] Sẽ thử chuyển sang dùng SendGrid fallback...");
                 }
             }
 
-            SendGrid sg = new SendGrid(sendGridApiKey);
-            Request request = new Request();
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            Response response = sg.api(request);
-            logger.info("Sent refund email to {}: status {}", customer.getEmail(), response.getStatusCode());
+            if (!sentViaSmtp) {
+                if (sendGridApiKey == null || sendGridApiKey.isBlank()) {
+                    logger.warn("[SENDGRID] API_KEY chưa được cấu hình. Email hoàn tiền không được gửi.");
+                    return;
+                }
+
+                Email from = new Email(fromEmail, "HOANIEN Resort");
+                Email to = new Email(customer.getEmail());
+                Content content = new Content("text/html", html);
+                Mail mail = new Mail(from, subject, to, content);
+
+                if (absoluteAttachmentPath != null && !absoluteAttachmentPath.isBlank()) {
+                    java.io.File file = new java.io.File(absoluteAttachmentPath);
+                    if (file.exists()) {
+                        byte[] fileData = java.nio.file.Files.readAllBytes(file.toPath());
+                        com.sendgrid.helpers.mail.objects.Attachments attachments = new com.sendgrid.helpers.mail.objects.Attachments();
+                        attachments.setContent(java.util.Base64.getEncoder().encodeToString(fileData));
+                        String extension = file.getName().substring(file.getName().lastIndexOf(".") + 1).toLowerCase();
+                        String mimeType = "image/jpeg";
+                        if (extension.equals("png"))
+                            mimeType = "image/png";
+                        attachments.setType(mimeType);
+                        attachments.setFilename(file.getName());
+                        attachments.setDisposition("attachment");
+                        mail.addAttachments(attachments);
+                    }
+                }
+
+                SendGrid sg = new SendGrid(sendGridApiKey);
+                Request request = new Request();
+                request.setMethod(Method.POST);
+                request.setEndpoint("mail/send");
+                request.setBody(mail.build());
+                Response response = sg.api(request);
+                logger.info("[SENDGRID] Sent refund email to {}: status {}", customer.getEmail(), response.getStatusCode());
+            }
         } catch (Exception e) {
             logger.error("Lỗi gửi email hoàn tiền cho RefundRequest #{}: {}", refundRequest.getId(), e.getMessage());
         }
@@ -647,6 +685,73 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @org.springframework.scheduling.annotation.Async
+    public void sendTourFeedbackEmail(com.kawai.models.TourBooking booking, com.kawai.models.Customer customer) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            logger.warn("Bỏ qua gửi email cảm ơn: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
+            return;
+        }
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            ctx.setVariable("customerName", customer.getFullName());
+            ctx.setVariable("tourName", booking.getSchedule() != null && booking.getSchedule().getTour() != null
+                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm");
+            ctx.setVariable("bookingId", booking.getId());
+            ctx.setVariable("feedbackUrl", baseUrl + "/feedback?bookingId=" + booking.getId());
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            String html = templateEngine.process("email/tour-completed-feedback", ctx);
+            sendEmail(customer.getEmail(), "Cảm ơn bạn đã tham gia hành trình cùng HoaNien", html);
+        } catch (Exception e) {
+            logger.error("Lỗi gửi email cảm ơn và đánh giá cho booking #{}: {}", booking.getId(), e.getMessage());
+        }
+    }
+
+    @Override
+    @org.springframework.scheduling.annotation.Async
+    public void sendTourDepartureEmail(com.kawai.models.TourBooking booking, com.kawai.models.Customer customer,
+            java.util.List<com.kawai.models.TourItineraryDetail> activities) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            logger.warn("Bỏ qua gửi email khởi hành: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
+            return;
+        }
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            ctx.setVariable("customerName", customer.getFullName());
+
+            String tourName = "Hành trình trải nghiệm";
+            String departureDate = "";
+            String departureTime = "";
+            String guideName = "Hướng dẫn viên HoaNien";
+
+            if (booking.getSchedule() != null) {
+                com.kawai.models.TourSchedule sched = booking.getSchedule();
+                if (sched.getTour() != null) tourName = sched.getTour().getTourName();
+                if (sched.getDepartureDate() != null)
+                    departureDate = sched.getDepartureDate().format(DATE_FMT);
+                if (sched.getDepartureTime() != null)
+                    departureTime = sched.getDepartureTime().toString().substring(0, 5);
+            }
+
+            ctx.setVariable("tourName", tourName);
+            ctx.setVariable("departureDate", departureDate);
+            ctx.setVariable("departureTime", departureTime);
+            ctx.setVariable("guideName", guideName);
+            ctx.setVariable("activities", activities != null ? activities : java.util.Collections.emptyList());
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            String html = templateEngine.process("email/tour-departure-notification", ctx);
+            sendEmail(customer.getEmail(),
+                    "🚀 Hành trình " + tourName + " đã bắt đầu – Lịch trình chi tiết", html);
+        } catch (Exception e) {
+            logger.error("Lỗi gửi email khởi hành cho booking #{}: {}", booking.getId(), e.getMessage());
+        }
+    }
+
+    @Override
     public void sendTableCancellationDueToCheckoutEmail(com.kawai.models.TableReservation reservation, com.kawai.models.Customer customer) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isEmpty()) {
             return;
@@ -681,6 +786,78 @@ public class EmailServiceImpl implements EmailService {
                     + "</div>";
 
             sendEmail(customer.getEmail(), subject, htmlContent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void sendDependentUpgradeEmail(com.kawai.models.Customer masterCustomer, com.kawai.models.Customer newCustomer, String username, String password) {
+        if (masterCustomer == null || masterCustomer.getEmail() == null || masterCustomer.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+            ctx.setVariable("customerName", masterCustomer.getFullName());
+            ctx.setVariable("username", username);
+            ctx.setVariable("password", password);
+            ctx.setVariable("resortName", "HOANIEN Resort");
+
+            String htmlContent = templateEngine.process("email/account-upgrade", ctx);
+            sendEmail(masterCustomer.getEmail(), "Thông báo nâng cấp tài khoản thành công", htmlContent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void sendRoomCancellationEmail(com.kawai.models.RoomBooking booking, com.kawai.models.Customer customer, boolean isRefundable) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+            ctx.setVariable("customerName", customer.getFullName());
+            ctx.setVariable("bookingId", booking.getId());
+            ctx.setVariable("resortName", "HOANIEN Resort");
+
+            String templateName = isRefundable ? "email/room-cancelled-refund" : "email/room-cancelled-no-refund";
+            String htmlContent = templateEngine.process(templateName, ctx);
+            sendEmail(customer.getEmail(), "Xác nhận hủy đặt phòng - " + booking.getId(), htmlContent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void sendWalkInCheckInEmail(com.kawai.models.RoomBooking booking, com.kawai.models.RoomBookingDetail detail, com.kawai.models.Customer customer, boolean isNewAccount, String username, String password) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+            ctx.setVariable("customerName", customer.getFullName());
+            ctx.setVariable("bookingId", booking.getId());
+            ctx.setVariable("roomNumber", detail.getRoom() != null ? detail.getRoom().getRoomNumber() : "N/A");
+            ctx.setVariable("roomCategory", detail.getCategory() != null ? detail.getCategory().getCategoryName() : "N/A");
+            ctx.setVariable("checkInDate", booking.getCheckInDate() != null ? booking.getCheckInDate().toString() : "N/A");
+            ctx.setVariable("checkOutDate", booking.getCheckOutDate() != null ? booking.getCheckOutDate().toString() : "N/A");
+            ctx.setVariable("resortName", "HOANIEN Resort");
+            
+            if (isNewAccount) {
+                ctx.setVariable("username", username);
+                ctx.setVariable("password", password);
+            }
+
+            String templateName = isNewAccount ? "email/walkin-checkin-new" : "email/walkin-checkin-existing";
+            String htmlContent = templateEngine.process(templateName, ctx);
+            sendEmail(customer.getEmail(), "Xác nhận nhận phòng (Check-in) - " + booking.getId(), htmlContent);
         } catch (Exception e) {
             e.printStackTrace();
         }
