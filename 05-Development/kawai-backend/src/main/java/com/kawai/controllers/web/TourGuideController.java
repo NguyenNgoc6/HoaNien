@@ -721,7 +721,7 @@ public class TourGuideController {
         
         // Find all schedules on the same departure date
         java.util.List<com.kawai.models.TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(sched.getDepartureDate());
-        if (daySchedules == null || daySchedules.size() <= 1) {
+        if (daySchedules == null || daySchedules.isEmpty()) {
             return getPreferredGuide(sched);
         }
         
@@ -738,22 +738,25 @@ public class TourGuideController {
         String assignedGuide = null;
         
         for (com.kawai.models.TourSchedule s : daySchedules) {
-            String pref = getPreferredGuide(s);
-            String finalGuide;
-            if (!takenGuides.contains(pref)) {
-                finalGuide = pref;
+            String finalGuide = null;
+            if (s.getId() != null && s.getId() < 100L) {
+                // Seeded schedules: keep fixed assignments
+                finalGuide = getPreferredGuide(s);
             } else {
-                // Find a free guide
-                finalGuide = null;
-                for (String g : allGuides) {
-                    if (!takenGuides.contains(g)) {
-                        finalGuide = g;
-                        break;
+                // New customer bookings: default to NguynNgoc, fallback to others if taken
+                if (!takenGuides.contains("NguynNgoc")) {
+                    finalGuide = "NguynNgoc";
+                } else {
+                    // NguynNgoc is already taken on this day, find next free guide
+                    for (String g : allGuides) {
+                        if (!takenGuides.contains(g)) {
+                            finalGuide = g;
+                            break;
+                        }
                     }
-                }
-                if (finalGuide == null) {
-                    // Fallback if all guides are taken
-                    finalGuide = pref;
+                    if (finalGuide == null) {
+                        finalGuide = "NguynNgoc"; // ultimate fallback
+                    }
                 }
             }
             takenGuides.add(finalGuide);

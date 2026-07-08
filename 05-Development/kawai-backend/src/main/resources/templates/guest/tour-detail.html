@@ -2059,6 +2059,8 @@
         function generateChildRows(count) {
             const container = document.getElementById('child-rows-container');
             const num = parseInt(count) || 0;
+            const existingRows = container.querySelectorAll('.child-row');
+            if (existingRows.length === num) return;
             container.innerHTML = '';
             for (let i = 0; i < num; i++) {
                 const row = document.createElement('div');
@@ -2087,6 +2089,8 @@
             const container = document.getElementById('adult-companions-container');
             if (!container) return;
             const num = parseInt(count) || 0;
+            const existingRows = container.querySelectorAll('.adult-companion-row');
+            if (existingRows.length === num) return;
             container.innerHTML = '';
 
             if (num > 0) {
@@ -2110,7 +2114,7 @@
                   </div>
                   <div class="flex flex-col">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Số điện thoại</label>
-                    <input class="text-sm py-2 adult-companion-phone border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="SĐT (nếu có)" type="text">
+                    <input autocomplete="off" class="text-sm py-2 adult-companion-phone border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="SĐT (nếu có)" type="text">
                   </div>
                 `;
                 container.appendChild(row);
@@ -2556,7 +2560,10 @@
             const lang = document.documentElement.lang || 'vi';
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
+            let phone = document.getElementById('phone').value.trim().replace(/[\s\-\(\)\+]/g, '');
+            if (phone.startsWith('84')) {
+                phone = '0' + phone.substring(2);
+            }
             const departureDate = document.getElementById('departureDate').value;
 
             if (!fullName || !email || !phone || !departureDate) {
@@ -2660,16 +2667,21 @@
                         }
                     }
 
-                    if (phoneEl && phoneEl.value.trim() !== '') {
-                        const companionPhone = phoneEl.value.trim();
-                        const companionPhoneRegex = /^(0[35789])[0-9]{8}$/;
-                        if (!companionPhoneRegex.test(companionPhone)) {
-                            showWarningAlertPopup(
-                                lang === 'vi' ? 'Số điện thoại không hợp lệ' : 'Invalid Companion Phone',
-                                lang === 'vi' ? `Số điện thoại của người đi cùng thứ ${i + 1} không đúng định dạng Việt Nam (10 chữ số).` : `Phone of companion #${i + 1} is invalid.`
-                            );
-                            phoneEl.focus();
-                            return false;
+                    if (phoneEl) {
+                        let companionPhone = phoneEl.value.trim().replace(/[\s\-\(\)\+]/g, '');
+                        if (companionPhone.startsWith('84')) {
+                            companionPhone = '0' + companionPhone.substring(2);
+                        }
+                        if (companionPhone !== '' && companionPhone !== 'SĐT(nếucó)') {
+                            const companionPhoneRegex = /^(0[35789])[0-9]{8}$/;
+                            if (!companionPhoneRegex.test(companionPhone)) {
+                                showWarningAlertPopup(
+                                    lang === 'vi' ? 'Số điện thoại không hợp lệ' : 'Invalid Companion Phone',
+                                    lang === 'vi' ? `Số điện thoại của người đi cùng thứ ${i + 1} không đúng định dạng Việt Nam (10 chữ số).` : `Phone of companion #${i + 1} is invalid.`
+                                );
+                                phoneEl.focus();
+                                return false;
+                            }
                         }
                     }
                 }
@@ -2807,7 +2819,10 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
+            let phone = document.getElementById('phone').value.trim().replace(/[\s\-\(\)\+]/g, '');
+            if (phone.startsWith('84')) {
+                phone = '0' + phone.substring(2);
+            }
             const departureDate = document.getElementById('departureDate').value;
             const participantCount = parseInt(document.getElementById('participantCount').value) || 1;
             const roomSelections = selectedRooms.length > 0
@@ -2837,10 +2852,14 @@
                     const ageEl = row.querySelector('.adult-companion-age');
                     const phoneEl = row.querySelector('.adult-companion-phone');
                     if (nameEl && nameEl.value.trim() !== '') {
+                        let compPhone = phoneEl ? phoneEl.value.trim().replace(/[\s\-\(\)\+]/g, '') : '';
+                        if (compPhone.startsWith('84')) {
+                            compPhone = '0' + compPhone.substring(2);
+                        }
                         companions.push({
                             name: nameEl.value.trim(),
                             age: parseInt(ageEl.value) || 30,
-                            phone: phoneEl ? phoneEl.value.trim() : ''
+                            phone: compPhone
                         });
                     }
                 });
