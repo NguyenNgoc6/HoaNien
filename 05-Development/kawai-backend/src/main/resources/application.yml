@@ -19,13 +19,17 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+        id:
+          optimizer:
+            pooled:
+              preferred: pooled-lo
 
   thymeleaf:
     cache: false
