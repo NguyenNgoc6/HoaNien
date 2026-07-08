@@ -1712,6 +1712,8 @@
     const tourTypeDb = /*[[${tourType}]]*/ 'doantu';
     const tourActivitiesJsonDb = /*[[${tourActivitiesJson}]]*/ '[]';
     const tourHandbookJsonDb = /*[[${tourHandbookJson}]]*/ '{}';
+    const checkedInCountDb = /*[[${checkedInCount}]]*/ 0;
+    const totalAttendeesDb = /*[[${totalAttendees}]]*/ 0;
     /*]]>*/
 
     const TOUR_ITINERARIES = {
@@ -2133,19 +2135,19 @@
 
     function checkTourSafety(event) {
         if (event) event.preventDefault();
-        const category = getTourCategory();
-        if (category !== 'DEFAULT') {
-            openSafetyModal(category);
-        } else {
-            showCustomConfirm({
-                title: 'Bắt Đầu Tour',
-                message: 'Xác nhận bắt đầu tour? Email thông báo khởi hành sẽ được gửi đến toàn bộ khách hàng!',
-                icon: 'play_circle',
-                onConfirm: () => {
-                    document.getElementById('startTourForm').submit();
-                }
+        
+        // Kiểm tra xem số lượng hành khách đã điểm danh có đủ so với số lượng đăng ký hay chưa
+        if (checkedInCountDb < totalAttendeesDb) {
+            showCustomWarning({
+                title: 'Chưa Đủ Hành Khách',
+                message: `Chưa thể bắt đầu tour. Số hành khách điểm danh hiện tại (${checkedInCountDb}/${totalAttendeesDb}) chưa đủ so với danh sách đăng ký theo quy định của tour!`,
+                icon: 'warning'
             });
+            return;
         }
+
+        const category = getTourCategory();
+        openSafetyModal(category);
     }
 
     function openSafetyModal(category) {
@@ -2177,6 +2179,15 @@
                 { id: 'ms2', title: 'Thời tiết & Tầm nhìn', desc: 'Không mưa lớn hay sương mù dày đặc cản trở lối đi.' },
                 { id: 'ms3', title: 'Nước uống & Y tế', desc: 'Đã mang đủ nước uống và túi sơ cứu y tế cá nhân.' },
                 { id: 'ms4', title: 'Quy định tách đoàn', desc: 'Đã phổ biến quy tắc di chuyển theo đoàn, không tự ý rẽ hướng.' }
+            ];
+        } else {
+            iconName = 'security';
+            subtext = 'CAM KẾT AN TOÀN CHUNG (BẮT BUỘC)';
+            items = [
+                { id: 'ds1', title: 'Thông tin liên lạc', desc: 'Đã chuẩn bị đầy đủ danh bạ và phương tiện liên lạc khẩn cấp.' },
+                { id: 'ds2', title: 'Phổ biến lịch trình', desc: 'Đã thông báo rõ ràng về lịch trình di chuyển và các điểm dừng chân.' },
+                { id: 'ds3', title: 'Dụng cụ y tế', desc: 'Hộp y tế sơ cứu cơ bản đi kèm đã được kiểm tra và sẵn sàng.' },
+                { id: 'ds4', title: 'Phương tiện vận chuyển', desc: 'Xe đưa đón hoặc phương tiện di chuyển nội bộ đủ điều kiện an toàn.' }
             ];
         }
 
@@ -2303,6 +2314,42 @@
         document.getElementById('confirm-modal-icon').textContent = options.icon || 'help';
         
         confirmCallback = options.onConfirm;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('.confirm-modal-box').classList.remove('scale-95', 'opacity-0');
+            modal.querySelector('.confirm-modal-box').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function showCustomWarning(options) {
+        const modal = document.getElementById('custom-confirm-modal');
+        if (!modal) return;
+
+        document.getElementById('confirm-modal-title').textContent = options.title || 'Cảnh Báo';
+        document.getElementById('confirm-modal-msg').textContent = options.message || '';
+        document.getElementById('confirm-modal-icon').textContent = options.icon || 'warning';
+        
+        // Hide cancel button
+        const cancelBtn = modal.querySelector('button[onclick="closeCustomConfirm(false)"]');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+
+        // Update agree button label
+        const agreeBtn = modal.querySelector('button[onclick="closeCustomConfirm(true)"]');
+        if (agreeBtn) {
+            agreeBtn.textContent = 'Đóng';
+            agreeBtn.className = 'w-full py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center';
+        }
+
+        confirmCallback = () => {
+            // Restore buttons on close
+            if (cancelBtn) cancelBtn.style.display = 'block';
+            if (agreeBtn) {
+                agreeBtn.textContent = 'Đồng ý';
+                agreeBtn.className = 'flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center';
+            }
+            if (options.onConfirm) options.onConfirm();
+        };
 
         modal.classList.remove('hidden');
         setTimeout(() => {
