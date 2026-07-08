@@ -410,3 +410,174 @@ function showToast(message, type = 'success') {
     }, 4000);
 }
 
+// ===== Hiện thông báo khi VNPay redirect về trang In-House =====
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    if (paymentStatus === 'success') {
+        showToast('✅ Nạp tiền nâng hạn mức thành công!', 'success');
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    } else if (paymentStatus === 'failed') {
+        showToast('❌ Thanh toán VNPay thất bại hoặc đã hủy!', 'error');
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+});
+
+
+
+// ===== Credit Deposit Logic =====
+let cdCurrentDetailId = null;
+let cdCurrentAvailable = 0;
+let cdRoomsData = [];
+
+function formatVnd(num) {
+    if (num === undefined || num === null) return '0 ₫';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(num));
+}
+
+function openCreditDepositModal(bookingId) {
+    cdCurrentDetailId = null;
+    cdCurrentAvailable = 0;
+    cdRoomsData = [];
+    document.getElementById('cdRoomSelect').innerHTML = '<option value="">-- Đang tải... --</option>';
+    document.getElementById('cdCreditInfo').style.display = 'none';
+    document.getElementById('cdInputSection').style.display = 'none';
+    document.getElementById('cdAmount').value = '';
+    document.getElementById('cdSubmitBtn').disabled = true;
+    document.getElementById('cdSubmitBtn').style.background = '#d1d5db';
+    document.getElementById('cdSubmitBtn').style.color = '#9ca3af';
+    document.getElementById('cdSubmitBtn').style.cursor = 'not-allowed';
+    document.querySelector('input[name="cdMethod"][value="CASH"]').checked = true;
+    selectCdMethod();
+    document.getElementById('creditDepositModal').style.display = 'flex';
+
+    // Gọi API lấy thông tin hạn mức từng phòng
+    fetch(`/api/folios/booking/${bookingId}/credit-info`)
+        .then(r => {
+            if (!r.ok) {
+                return r.text().then(txt => { throw new Error(`HTTP ${r.status}: ${txt}`); });
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!data.success) { alert(data.message || 'Lỗi tải thông tin phòng'); return; }
+            cdRoomsData = data.rooms;
+            const sel = document.getElementById('cdRoomSelect');
+            sel.innerHTML = '<option value="">-- Chọn phòng cần nâng hạn mức --</option>';
+            data.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.detailId;
+                opt.text = `Phòng ${r.roomNumber}  (Khả dụng: ${formatVnd(r.available)})`;
+                sel.appendChild(opt);
+            });
+            // Nếu chỉ có 1 phòng, tự động chọn luôn
+            if (data.rooms.length === 1) {
+                sel.value = data.rooms[0].detailId;
+                try { onCdRoomChange(); } catch(e) { console.error('[onCdRoomChange]', e); }
+            }
+        })
+        .catch(err => {
+            console.error('[CreditDeposit] Fetch error:', err);
+            alert('Lỗi tải dữ liệu: ' + err.message);
+        });
+}
+
+function closeCreditDepositModal() {
+    document.getElementById('creditDepositModal').style.display = 'none';
+}
+
+function onCdRoomChange() {
+    const sel = document.getElementById('cdRoomSelect');
+    const detailId = sel.value;
+    if (!detailId) {
+        document.getElementById('cdCreditInfo').style.display = 'none';
+        document.getElementById('cdInputSection').style.display = 'none';
+        return;
+    }
+    cdCurrentDetailId = detailId;
+    const room = cdRoomsData.find(r => r.detailId == detailId);
+    if (!room) return;
+    cdCurrentAvailable = Number(room.available);
+    document.getElementById('cdLimitDisplay').innerText = formatVnd(room.creditLimit);
+    document.getElementById('cdDepositedDisplay').innerText = '+' + formatVnd(room.deposited);
+    document.getElementById('cdChargedDisplay').innerText = formatVnd(room.charged);
+    document.getElementById('cdCreditInfo').style.display = 'block';
+    document.getElementById('cdInputSection').style.display = 'block';
+    document.getElementById('cdAmount').value = '';
+    document.getElementById('cdSubmitBtn').disabled = true;
+    document.getElementById('cdSubmitBtn').style.background = '#d1d5db';
+    document.getElementById('cdSubmitBtn').style.color = '#9ca3af';
+    document.getElementById('cdSubmitBtn').style.cursor = 'not-allowed';
+}
+
+function onCdAmountChange() {
+    const amount = parseFloat(document.getElementById('cdAmount').value);
+    const submitBtn = document.getElementById('cdSubmitBtn');
+    if (amount > 0) {
+        submitBtn.disabled = false;
+        submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        submitBtn.style.color = 'white';
+        submitBtn.style.cursor = 'pointer';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.style.background = '#d1d5db';
+        submitBtn.style.color = '#9ca3af';
+        submitBtn.style.cursor = 'not-allowed';
+    }
+}
+
+function selectCdMethod() {
+    const methods = ['CASH', 'VNPAY'];
+    methods.forEach(m => {
+        const lbl = document.getElementById(`cdMethod${m === 'CASH' ? 'Cash' : 'Vnpay'}Label`);
+        const checked = document.querySelector(`input[name="cdMethod"][value="${m}"]`).checked;
+        lbl.style.borderColor = checked ? (m === 'CASH' ? '#10b981' : '#1d4ed8') : '#e5e7eb';
+        lbl.style.background = checked ? (m === 'CASH' ? '#f0fdf4' : '#eff6ff') : 'white';
+    });
+}
+
+function submitCreditDeposit() {
+    const amount = parseFloat(document.getElementById('cdAmount').value);
+    const method = document.querySelector('input[name="cdMethod"]:checked').value;
+    if (!cdCurrentDetailId || !amount || amount <= 0) {
+        alert('Vui lòng chọn phòng và nhập số tiền hợp lệ!');
+        return;
+    }
+
+    const btn = document.getElementById('cdSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Đang xử lý...';
+
+    fetch(`/api/folios/${cdCurrentDetailId}/deposit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount, method: method })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeCreditDepositModal();
+                if (data.paymentUrl) {
+                    window.open(data.paymentUrl, '_blank');
+                    alert('Đang mở cổng thanh toán VNPay. Tải lại trang sau khi khách hoàn tất!');
+                } else {
+                    alert('✅ ' + data.message);
+                    window.location.reload();
+                }
+            } else {
+                alert('❌ ' + (data.message || 'Lỗi khi nạp tiền'));
+                btn.disabled = false;
+                btn.innerText = 'Xác nhận nạp tiền';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                btn.style.color = 'white';
+                btn.style.cursor = 'pointer';
+            }
+        })
+        .catch(() => {
+            alert('Lỗi kết nối máy chủ');
+            btn.disabled = false;
+            btn.innerText = 'Xác nhận nạp tiền';
+        });
+}

@@ -281,6 +281,9 @@
                                             th:attr="onclick=|openInHouseModal(${arr.id})|">Nâng cấp TK</button>
                                         <button class="btn btn-secondary btn-sm" style="margin-left: 6px;"
                                             th:attr="onclick=|openTransferRoomModal(${arr.id})|">Đổi phòng</button>
+                                        <button class="btn btn-sm"
+                                            style="margin-left: 6px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-weight: 600;"
+                                            th:attr="onclick=|openCreditDepositModal(${arr.id})|">&#43; Hạn mức</button>
 
                                     </td>
                                 </tr>
@@ -376,6 +379,81 @@
     <script th:src="@{/receptionist/js/dashboard.js}"></script>
     <script th:src="@{/receptionist/js/in-house.js}"></script>
     <script th:src="@{/receptionist/js/room-alert.js}"></script>
+
+    <!-- Credit Deposit Modal -->
+    <div id="creditDepositModal"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+        <div style="background:white; width:500px; max-width:95%; border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,0.25); padding:32px; display:flex; flex-direction:column; gap:20px;">
+            <!-- Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e5e7eb; padding-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="background:linear-gradient(135deg,#10b981,#059669); width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-plus" style="color:white; font-size:16px;"></i>
+                    </div>
+                    <h3 style="margin:0; color:#0f172a; font-size:19px; font-weight:700;">Nạp tiền nâng hạn mức</h3>
+                </div>
+                <i class="fa-solid fa-xmark" onclick="closeCreditDepositModal()" style="cursor:pointer; color:#64748b; font-size:22px;"></i>
+            </div>
+
+            <!-- Chọn phòng -->
+            <div>
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:8px; font-size:14px;">Chọn phòng</label>
+                <select id="cdRoomSelect" onchange="onCdRoomChange()" style="width:100%; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px; font-size:14px; outline:none;">
+                    <option value="">-- Đang tải danh sách phòng... --</option>
+                </select>
+            </div>
+
+            <!-- Thông tin hạn mức hiện tại -->
+            <div id="cdCreditInfo" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px 18px; display:none;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <div style="font-size:11px; color:#6b7280; margin-bottom:3px;">Hạn mức gốc</div>
+                        <div id="cdLimitDisplay" style="font-size:16px; font-weight:700; color:#0f172a;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; color:#6b7280; margin-bottom:3px;">Đã nạp thêm</div>
+                        <div id="cdDepositedDisplay" style="font-size:16px; font-weight:700; color:#0284c7;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; color:#6b7280; margin-bottom:3px;">Đang chi tiêu</div>
+                        <div id="cdChargedDisplay" style="font-size:16px; font-weight:700; color:#ef4444;">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nhập số tiền nạp -->
+            <div id="cdInputSection" style="display:none;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:8px; font-size:14px;">Số tiền nạp (VND)</label>
+                <input type="number" id="cdAmount" oninput="onCdAmountChange()" placeholder="Ví dụ: 2,000,000"
+                       style="width:100%; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px; font-size:15px; outline:none; box-sizing:border-box;">
+
+                <div style="margin-top:16px;">
+                    <label style="display:block; font-weight:600; color:#374151; margin-bottom:8px; font-size:14px;">Phương thức thanh toán</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <label id="cdMethodCashLabel"
+                               style="border:2px solid #10b981; border-radius:8px; padding:12px; cursor:pointer; display:flex; align-items:center; gap:8px; background:#f0fdf4;">
+                            <input type="radio" name="cdMethod" value="CASH" checked onchange="selectCdMethod()" style="accent-color:#10b981;">
+                            <span style="font-weight:600; color:#065f46;"><i class="fa-solid fa-money-bill-wave"></i> Tiền mặt</span>
+                        </label>
+                        <label id="cdMethodVnpayLabel"
+                               style="border:2px solid #e5e7eb; border-radius:8px; padding:12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                            <input type="radio" name="cdMethod" value="VNPAY" onchange="selectCdMethod()" style="accent-color:#1d4ed8;">
+                            <span style="font-weight:600; color:#1e3a8a;"><i class="fa-solid fa-qrcode"></i> VNPay</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex; gap:12px; margin-top:4px;">
+                <button onclick="closeCreditDepositModal()"
+                        style="flex:1; padding:11px; border:1.5px solid #d1d5db; border-radius:8px; background:white; color:#374151; font-weight:600; font-size:14px; cursor:pointer;">Hủy</button>
+                <button id="cdSubmitBtn" onclick="submitCreditDeposit()" disabled
+                        style="flex:2; padding:11px; border:none; border-radius:8px; background:#d1d5db; color:#9ca3af; font-weight:700; font-size:14px; cursor:not-allowed; transition:all 0.2s;">Xác nhận nạp tiền</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
