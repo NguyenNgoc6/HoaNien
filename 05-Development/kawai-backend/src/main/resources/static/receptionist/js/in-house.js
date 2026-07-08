@@ -1,19 +1,4 @@
-// In-House Details Modal Logic
-function openInHouseModal(guestName, phone, roomSummary, depsDivId) {
-    document.getElementById('modalInHouseGuestName').innerText = guestName;
-    document.getElementById('modalInHousePhone').innerText = phone ? 'SĐT: ' + phone : '';
-    document.getElementById('modalInHouseRooms').innerText = roomSummary;
 
-    // Lấy nội dung HTML của div ẩn chứa danh sách dependents và gán vào modal
-    const depsHtml = document.getElementById(depsDivId).innerHTML;
-    document.getElementById('modalInHouseDependents').innerHTML = depsHtml;
-
-    document.getElementById('inHouseModal').style.display = 'flex';
-}
-
-function closeInHouseModal() {
-    document.getElementById('inHouseModal').style.display = 'none';
-}
 // ============================================================
 // NÂNG CẤP DEPENDENT → CUSTOMER
 // ============================================================
@@ -21,7 +6,6 @@ function upgradeDependent(dependentId, btnElement) {
     if (!confirm('Bạn có chắc chắn muốn nâng cấp người này thành Khách hàng chính không? (Sẽ được cấp tài khoản)')) return;
 
     btnElement.disabled = true;
-    btnElement.innerText = 'Đang nâng cấp...';
 
     fetch(`/receptionist/checkin/upgrade-dependent/${dependentId}`, {
         method: 'POST',
@@ -35,13 +19,11 @@ function upgradeDependent(dependentId, btnElement) {
             } else {
                 alert('Lỗi: ' + data.message);
                 btnElement.disabled = false;
-                btnElement.innerText = 'Nâng cấp Customer';
             }
         })
         .catch(() => {
             alert('Lỗi mạng hoặc server');
             btnElement.disabled = false;
-            btnElement.innerText = 'Nâng cấp Customer';
         });
 }
 
@@ -494,4 +476,30 @@ function submitCreditDeposit() {
             btn.disabled = false;
             btn.innerText = 'Xác nhận nạp tiền';
         });
+}
+
+function switchTab(tab) {
+    if (tab === 'inhouse') {
+        document.getElementById('tabContentInHouse').style.display = 'block';
+        document.getElementById('tabContentCancelled').style.display = 'none';
+        document.getElementById('btnTabInHouse').className = 'btn btn-primary';
+        document.getElementById('btnTabInHouse').style.background = '';
+        document.getElementById('btnTabInHouse').style.color = '';
+        document.getElementById('btnTabInHouse').style.border = '';
+        document.getElementById('btnTabCancelled').className = 'btn btn-outline';
+        document.getElementById('btnTabCancelled').style.background = 'white';
+        document.getElementById('btnTabCancelled').style.color = '#475569';
+        document.getElementById('btnTabCancelled').style.border = '1px solid #cbd5e1';
+    } else if (tab === 'cancelled') {
+        document.getElementById('tabContentInHouse').style.display = 'none';
+        document.getElementById('tabContentCancelled').style.display = 'block';
+        document.getElementById('btnTabCancelled').className = 'btn btn-primary';
+        document.getElementById('btnTabCancelled').style.background = '';
+        document.getElementById('btnTabCancelled').style.color = '';
+        document.getElementById('btnTabCancelled').style.border = '';
+        document.getElementById('btnTabInHouse').className = 'btn btn-outline';
+        document.getElementById('btnTabInHouse').style.background = 'white';
+        document.getElementById('btnTabInHouse').style.color = '#475569';
+        document.getElementById('btnTabInHouse').style.border = '1px solid #cbd5e1';
+    }
 }
