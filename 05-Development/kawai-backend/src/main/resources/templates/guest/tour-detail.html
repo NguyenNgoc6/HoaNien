@@ -2110,7 +2110,7 @@
                   </div>
                   <div class="flex flex-col">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Tuổi</label>
-                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" required>
+                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required>
                   </div>
                   <div class="flex flex-col">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Số điện thoại</label>
@@ -2657,10 +2657,10 @@
 
                     if (ageEl) {
                         const companionAge = parseInt(ageEl.value);
-                        if (isNaN(companionAge) || companionAge < 12) {
+                        if (isNaN(companionAge) || companionAge < 12 || companionAge > 100) {
                             showWarningAlertPopup(
                                 lang === 'vi' ? 'Tuổi không hợp lệ' : 'Invalid Companion Age',
-                                lang === 'vi' ? `Độ tuổi người đi cùng thứ ${i + 1} phải từ 12 tuổi trở lên.` : `Age of companion #${i + 1} must be at least 12.`
+                                lang === 'vi' ? `Độ tuổi người đi cùng thứ ${i + 1} chỉ được phép từ 12 - 100 tuổi.` : `Age of companion #${i + 1} must be between 12 and 100.`
                             );
                             ageEl.focus();
                             return false;
