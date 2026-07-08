@@ -2104,20 +2104,45 @@
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-3 gap-4 adult-companion-row animate-in fade-in slide-in-from-top-1 duration-300 border-b border-brand-border/30 pb-4';
                 row.innerHTML = `
-                  <div class="flex flex-col">
+                  <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Họ tên người đi cùng ${i + 1}</label>
                     <input class="text-sm py-2 adult-companion-name border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Họ và tên" type="text" required>
                   </div>
-                  <div class="flex flex-col">
+                  <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Tuổi</label>
-                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required>
+                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required oninput="validateAgeInput(this)">
+                    <span class="age-error-msg absolute bottom-0 left-0 text-[10px] text-red-500 font-medium hidden">Chỉ nhập tuổi từ 12 - 100 tuổi</span>
                   </div>
-                  <div class="flex flex-col">
+                  <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Số điện thoại</label>
                     <input autocomplete="off" class="text-sm py-2 adult-companion-phone border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="SĐT (nếu có)" type="text">
                   </div>
                 `;
                 container.appendChild(row);
+            }
+        }
+
+        function validateAgeInput(input) {
+            const val = parseInt(input.value);
+            const container = input.parentElement;
+            const errorSpan = container.querySelector('.age-error-msg');
+            if (!errorSpan) return;
+            
+            if (input.value.trim() === '') {
+                errorSpan.classList.add('hidden');
+                input.classList.remove('border-red-500');
+                input.classList.add('border-brand-border/50');
+                return;
+            }
+
+            if (isNaN(val) || val < 12 || val > 100) {
+                errorSpan.classList.remove('hidden');
+                input.classList.remove('border-brand-border/50');
+                input.classList.add('border-red-500');
+            } else {
+                errorSpan.classList.add('hidden');
+                input.classList.remove('border-red-500');
+                input.classList.add('border-brand-border/50');
             }
         }
 
