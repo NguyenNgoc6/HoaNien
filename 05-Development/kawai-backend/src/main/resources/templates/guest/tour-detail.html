@@ -2110,7 +2110,7 @@
                   </div>
                   <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Tuổi</label>
-                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required oninput="validateAgeInput(this)">
+                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required oninput="validateAgeInput(this)" onblur="handleAgeBlur(this)">
                     <span class="age-error-msg absolute bottom-0 left-0 text-[10px] text-red-500 font-medium hidden">Chỉ nhập tuổi từ 12 - 100 tuổi</span>
                   </div>
                   <div class="flex flex-col relative pb-4">
@@ -2143,6 +2143,18 @@
                 errorSpan.classList.add('hidden');
                 input.classList.remove('border-red-500');
                 input.classList.add('border-brand-border/50');
+            }
+        }
+
+        function handleAgeBlur(input) {
+            const val = parseInt(input.value);
+            if (input.value.trim() !== '' && (isNaN(val) || val < 12 || val > 100)) {
+                showWarningAlertPopup(
+                    'Tuổi không hợp lệ',
+                    'Độ tuổi của người đi cùng phải nằm trong khoảng từ 12 - 100 tuổi. Hệ thống đã tự động xóa số tuổi không hợp lệ này!'
+                );
+                input.value = '';
+                validateAgeInput(input);
             }
         }
 
