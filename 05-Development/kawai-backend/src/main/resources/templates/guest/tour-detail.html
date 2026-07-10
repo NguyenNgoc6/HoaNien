@@ -2110,7 +2110,10 @@
                   </div>
                   <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Tuổi</label>
-                    <input class="text-sm py-2 adult-companion-age border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required oninput="validateAgeInput(this)" onblur="handleAgeBlur(this)">
+                    <div class="relative flex items-center">
+                      <input class="text-sm py-2 pr-6 w-full adult-companion-age border-b border-brand-border/50 focus:border-brand-gold focus:ring-0 bg-transparent text-black" placeholder="Từ 12 tuổi" type="number" min="12" max="100" required oninput="validateAgeInput(this)" onblur="handleAgeBlur(this)">
+                      <button type="button" class="clear-age-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 font-bold hidden text-lg" onclick="clearAgeInput(this)">×</button>
+                    </div>
                     <span class="age-error-msg absolute bottom-0 left-0 text-[10px] text-red-500 font-medium hidden">Chỉ nhập tuổi từ 12 - 100 tuổi</span>
                   </div>
                   <div class="flex flex-col relative pb-4">
@@ -2124,8 +2127,19 @@
 
         function validateAgeInput(input) {
             const val = parseInt(input.value);
-            const container = input.parentElement;
+            const container = input.closest('.flex-col');
             const errorSpan = container.querySelector('.age-error-msg');
+            const clearBtn = container.querySelector('.clear-age-btn');
+            
+            // Show/hide clear button
+            if (clearBtn) {
+                if (input.value.trim() !== '') {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+
             if (!errorSpan) return;
             
             if (input.value.trim() === '') {
@@ -2143,6 +2157,16 @@
                 errorSpan.classList.add('hidden');
                 input.classList.remove('border-red-500');
                 input.classList.add('border-brand-border/50');
+            }
+        }
+
+        function clearAgeInput(button) {
+            const container = button.closest('.flex-col');
+            const input = container.querySelector('.adult-companion-age');
+            if (input) {
+                input.value = '';
+                validateAgeInput(input);
+                input.focus();
             }
         }
 

@@ -81,8 +81,6 @@ public class PosServiceImpl implements PosService {
                     } catch (Exception e) {}
                 }
             }
-                }
-            }
         } catch (Exception e) {
             // Bỏ qua lỗi khi DB vừa được tạo lại (ddl-auto=create) và data chưa được seed
             System.out.println("--- cleanupOrphanedFolios: DB chưa có dữ liệu, bỏ qua cleanup lần này. ---");

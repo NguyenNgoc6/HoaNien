@@ -41,6 +41,9 @@ public class TourGuideController {
     private com.kawai.repositories.ReviewRepository reviewRepository;
 
     @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.HotelOperationRepository hotelOperationRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.services.interfaces.EmailService emailService;
 
     @org.springframework.web.bind.annotation.ModelAttribute
@@ -466,7 +469,155 @@ public class TourGuideController {
         }
         
         model.addAttribute("dbTours", dbToursList);
-        
+
+        // Sinh thông báo và ghi chú động từ dữ liệu thực tế
+        java.util.List<java.util.Map<String, Object>> dynamicNotifications = new java.util.ArrayList<>();
+        java.util.List<java.util.Map<String, Object>> dynamicNotes = new java.util.ArrayList<>();
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        // 1. Duyệt qua các Tour Schedule & Booking để tìm tour thành công, ghi chú khách hàng, trẻ em
+        for (com.kawai.models.TourSchedule s : dbSchedules) {
+            if (s.getTour() == null) continue;
+            String tourName = s.getTour().getTourName();
+            java.time.LocalDate depDate = s.getDepartureDate();
+            String formattedDepDate = depDate != null ? depDate.format(dateFormatter) : today.format(dateFormatter);
+            String formattedDepTime = s.getDepartureTime() != null ? s.getDepartureTime().toString().substring(0, 5) : "08:00";
+            
+            java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(s);
+            if (bookings != null) {
+                for (com.kawai.models.TourBooking b : bookings) {
+                    // Chỉ xử lý các tour được xác nhận thành công
+                    if ("Confirmed".equalsIgnoreCase(b.getBookingStatus()) || 
+                        "Checked_In".equalsIgnoreCase(b.getBookingStatus()) || 
+                        "Completed".equalsIgnoreCase(b.getBookingStatus())) {
+                        
+                        String custName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách hàng";
+                        
+                        // 1a. Thông báo tour đăng ký thành công
+                        java.util.Map<String, Object> notif = new java.util.HashMap<>();
+                        notif.put("title", "Đăng ký Tour thành công");
+                        notif.put("content", "Có tour mới: \"" + tourName + "\" được đăng ký thành công vào ngày " + formattedDepDate + " lúc " + formattedDepTime + ".");
+                        notif.put("icon", "map");
+                        notif.put("timeText", "Vừa xong");
+                        dynamicNotifications.add(notif);
+                        
+                        // 1b. Ghi chú đặc biệt từ khách hàng
+                        if (b.getNotes() != null && !b.getNotes().trim().isEmpty()) {
+                            String noteContent = "Khách hàng " + custName + " (Tour \"" + tourName + "\") ghi chú: \"" + b.getNotes().trim() + "\"";
+                            
+                            java.util.Map<String, Object> notifNote = new java.util.HashMap<>();
+                            notifNote.put("title", "Ghi chú khách hàng");
+                            notifNote.put("content", noteContent);
+                            notifNote.put("icon", "info");
+                            notifNote.put("timeText", "10 phút trước");
+                            dynamicNotifications.add(notifNote);
+                            
+                            if (depDate != null && depDate.equals(today)) {
+                                java.util.Map<String, Object> todayNote = new java.util.HashMap<>();
+                                todayNote.put("content", noteContent);
+                                todayNote.put("icon", "info");
+                                dynamicNotes.add(todayNote);
+                            }
+                        }
+                        
+                        // 1c. Kiểm tra xem tour có trẻ em hay không
+                        java.util.List<com.kawai.models.TourAttendee> attendees = tourAttendeeRepository.findByTourBookingId(b.getId());
+                        if (attendees != null) {
+                            java.util.List<String> childNames = new java.util.ArrayList<>();
+                            for (com.kawai.models.TourAttendee att : attendees) {
+                                if (att.getDependent() != null) {
+                                    childNames.add(att.getDependent().getDependentName());
+                                }
+                            }
+                            if (!childNames.isEmpty()) {
+                                String childrenStr = String.join(", ", childNames);
+                                String childContent = "Tour \"" + tourName + "\" ngày " + formattedDepDate + " có trẻ em tham gia (" + childrenStr + ").";
+                                
+                                java.util.Map<String, Object> notifChild = new java.util.HashMap<>();
+                                notifChild.put("title", "Tour có trẻ em");
+                                notifChild.put("content", childContent);
+                                notifChild.put("icon", "child_care");
+                                notifChild.put("timeText", "20 phút trước");
+                                dynamicNotifications.add(notifChild);
+                                
+                                if (depDate != null && depDate.equals(today)) {
+                                    java.util.Map<String, Object> todayChildNote = new java.util.HashMap<>();
+                                    todayChildNote.put("content", childContent + " Vui lòng lưu ý và chuẩn bị các biện pháp an toàn phù hợp.");
+                                    todayChildNote.put("icon", "child_care");
+                                    dynamicNotes.add(todayChildNote);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 1d. Sinh thông tin thời tiết động dựa trên địa danh tour ngày hôm nay
+            if (depDate != null && depDate.equals(today)) {
+                String weatherContent = "Dự báo thời tiết: Nắng ấm và mát mẻ tại các điểm tham quan của tour \"" + tourName + "\" hôm nay, rất thích hợp cho hoạt động ngoài trời.";
+                if (tourName.contains("Mũi Né") || tourName.contains("Phú Quốc") || tourName.contains("Hạ Long") || tourName.contains("Mũ Né")) {
+                    weatherContent = "Thời tiết hôm nay: Trời nắng đẹp, nhiệt độ khoảng 28-32°C, sóng êm, cực kỳ lý tưởng cho các hoạt động bãi biển và sa mạc cát của tour \"" + tourName + "\".";
+                } else if (tourName.contains("Huế") || tourName.contains("Quảng Nam") || tourName.contains("Cần Thơ")) {
+                    weatherContent = "Thời tiết hôm nay: Dự kiến có mưa rào nhẹ vào lúc 16:30 tại vùng \"" + tourName + "\". Khuyến nghị chuẩn bị ô dù và áo mưa dự phòng cho du khách.";
+                }
+                
+                java.util.Map<String, Object> todayWeather = new java.util.HashMap<>();
+                todayWeather.put("content", weatherContent);
+                todayWeather.put("icon", "cloud");
+                // Thêm thời tiết vào đầu danh sách ghi chú
+                dynamicNotes.add(0, todayWeather);
+            }
+        }
+
+        // 2. Lấy thông tin báo cáo sự cố từ Ban quản lý (HotelOperation)
+        java.util.List<com.kawai.models.HotelOperation> tasks = hotelOperationRepository.findAll();
+        if (tasks != null) {
+            for (com.kawai.models.HotelOperation task : tasks) {
+                if ("MAINTENANCE".equalsIgnoreCase(task.getOperationalType())) {
+                    String taskNotes = task.getNotes() != null ? task.getNotes() : "Báo cáo bảo trì thiết bị";
+                    String roomName = task.getRoom() != null ? "phòng " + task.getRoom().getRoomNumber() : "resort";
+                    String statusText = "Đang chờ";
+                    if ("InProgress".equalsIgnoreCase(task.getStatus())) {
+                        statusText = "Đang xử lý";
+                    } else if ("Completed".equalsIgnoreCase(task.getStatus())) {
+                        statusText = "Đã hoàn thành";
+                    } else if ("Paused".equalsIgnoreCase(task.getStatus())) {
+                        statusText = "Tạm dừng";
+                    }
+                    
+                    String issueContent = "Ban Quản lý tiếp nhận sự cố tại " + roomName + ": \"" + taskNotes + "\" - Trạng thái: " + statusText + ".";
+                    
+                    java.util.Map<String, Object> notifIssue = new java.util.HashMap<>();
+                    notifIssue.put("title", "Phản hồi sự cố");
+                    notifIssue.put("content", issueContent);
+                    notifIssue.put("icon", "warning");
+                    notifIssue.put("timeText", "30 phút trước");
+                    dynamicNotifications.add(notifIssue);
+                    
+                    // Nếu sự cố của ngày hôm nay
+                    if (task.getCreatedAt() != null && task.getCreatedAt().toLocalDate().equals(today)) {
+                        java.util.Map<String, Object> todayIssueNote = new java.util.HashMap<>();
+                        todayIssueNote.put("content", "Sự cố bảo trì hôm nay: " + issueContent);
+                        todayIssueNote.put("icon", "warning");
+                        dynamicNotes.add(todayIssueNote);
+                    }
+                }
+            }
+        }
+
+        // Đảm bảo luôn có tối thiểu 1-2 ghi chú thời tiết nếu danh sách trống
+        if (dynamicNotes.isEmpty()) {
+            java.util.Map<String, Object> fallbackWeather = new java.util.HashMap<>();
+            fallbackWeather.put("content", "Thời tiết hôm nay: Nắng ấm và mát mẻ tại các điểm tham quan của HoaNien, nhiệt độ dao động từ 25-28°C.");
+            fallbackWeather.put("icon", "cloud");
+            dynamicNotes.add(fallbackWeather);
+        }
+
+        // Sắp xếp các thông báo để cái mới nhất/hợp lý lên đầu (ở đây list đã add theo thứ tự)
+        model.addAttribute("dynamicNotifications", dynamicNotifications);
+        model.addAttribute("dynamicNotes", dynamicNotes);
+
         return "tour/Tour";
     }
 
