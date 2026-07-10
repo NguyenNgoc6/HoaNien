@@ -276,10 +276,6 @@ public class TourGuideController {
         if (targetSchedule != null) {
             attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(targetSchedule.getId());
         }
-        
-        if (attendees.isEmpty()) {
-            attendees = tourAttendeeRepository.findByTourBooking_Schedule_DepartureDate(today);
-        }
 
         // [Removed auto-reset logic here. The status will persist across reloads unless manually reset.]
         
@@ -999,7 +995,7 @@ public class TourGuideController {
             String separator = cleanUrl.contains("?") ? "&" : "?";
             return "redirect:" + cleanUrl + separator + "toast=start_success";
         }
-        return "redirect:/tourguide/dashboard?toast=start_success";
+        return "redirect:/tourguide/dashboard?toast=start_success&scheduleId=" + scheduleId;
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/finish-tour")
@@ -1042,7 +1038,7 @@ public class TourGuideController {
             String separator = cleanUrl.contains("?") ? "&" : "?";
             return "redirect:" + cleanUrl + separator + "toast=finish_success";
         }
-        return "redirect:/tourguide/dashboard?toast=finish_success";
+        return "redirect:/tourguide/dashboard?toast=finish_success&scheduleId=" + scheduleId;
     }
 
     /**
@@ -1091,7 +1087,7 @@ public class TourGuideController {
             String separator = cleanUrl.contains("?") ? "&" : "?";
             return "redirect:" + cleanUrl + separator + "toast=reset_success";
         }
-        return "redirect:/tourguide/dashboard?toast=reset_success";
+        return "redirect:/tourguide/dashboard?toast=reset_success&scheduleId=" + scheduleId;
     }
 
     private java.util.List<java.util.Map<String, Object>> getDynamicNotifications() {
