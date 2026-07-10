@@ -152,8 +152,15 @@ Get-Content "<log-path>.log" | Select-String -Pattern "(SpelEvaluationException|
 # Nếu render hoàn chỉnh, output sẽ là hàng nghìn dòng HTML
 $res = Invoke-WebRequest -Uri "http://localhost:8081/profile/profile-test" -UseBasicParsing
 Write-Host "Lines: $($res.Content.Split([Environment]::NewLine).Length)"
-# Kết quả đạt: Lines=7529 (hoặc tương đương)
 ```
 
 **Bước 6 — Dọn dẹp:** Xóa endpoint test và revert SecurityConfig sau khi fix xong.
+
+## 13. Tự động liên kết dữ liệu thiếu ID (Auto-association Fallback)
+- **Bài học từ lỗi gửi feedback**: Khi khách hàng gửi đánh giá hoặc gửi dữ liệu từ một biểu mẫu chung (không đi qua đường dẫn chứa ID của bản ghi cụ thể), hãy thực hiện cơ chế tự động tìm kiếm đối tượng đã hoàn thành gần nhất của khách hàng đó từ cơ sở dữ liệu để tự động thiết lập liên kết (`tourBooking`, `roomBooking`, v.v.). Điều này đảm bảo dữ liệu luôn có liên kết hợp lệ, tránh việc các câu truy vấn lọc chặt chẽ (`IS NOT NULL`) vô tình bỏ qua bản ghi này.
+
+## 14. Quy tắc loại trừ chọn lọc khi ép font chữ hệ thống
+- **Khi sử dụng selector `*` để thay đổi font chữ toàn diện**:
+  - **Bắt buộc** loại trừ font icon hệ thống (ví dụ: `:not(.material-symbols-outlined)`) để tránh làm mất hiển thị của icon.
+  - **Bắt buộc** loại trừ các phần tử mang thương hiệu (như `.brand`, `.logo-text`, `.resort-name`, v.v. và các phần tử hiển thị tên thương hiệu) và thiết lập lại font-family, font-style đứng (`normal`), font-weight chuẩn cho chúng nhằm bảo vệ tính nhận diện thương hiệu nguyên bản của dự án.
 
