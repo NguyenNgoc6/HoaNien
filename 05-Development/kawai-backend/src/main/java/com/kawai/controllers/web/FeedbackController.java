@@ -27,33 +27,44 @@ public class FeedbackController {
     @GetMapping
     public String showFeedbackPage(
             Principal principal,
+            jakarta.servlet.http.HttpSession session,
             @RequestParam(name = "bookingId", required = false) Long bookingId,
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             Model model) {
 
-        boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal);
+        boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)
+                || (session != null && session.getAttribute("user") != null);
         model.addAttribute("isLoggedIn", isLoggedIn);
         model.addAttribute("activeTab", type);
 
         com.kawai.models.Customer customer = null;
         boolean hasUsedService = false;
 
-        if (isLoggedIn && principal != null) {
-            String username = principal.getName();
-            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
-                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
-                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
-                username = oauthToken.getPrincipal().getAttribute("email");
+        if (isLoggedIn) {
+            String username = null;
+            if (principal != null) {
+                username = principal.getName();
+                if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                    org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
+                        (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                    username = oauthToken.getPrincipal().getAttribute("email");
+                }
+            } else if (session != null && session.getAttribute("user") != null) {
+                com.kawai.models.Account sessionUser = (com.kawai.models.Account) session.getAttribute("user");
+                username = sessionUser.getUsername();
             }
-            final String effectiveUsername = username;
-            customer = customerRepository.findByAccount_Username(effectiveUsername)
-                    .or(() -> customerRepository.findByEmail(effectiveUsername))
-                    .orElse(null);
 
-            if (customer != null) {
-                List<com.kawai.models.Booking> completedBookings = 
-                    bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-                hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+            if (username != null) {
+                final String effectiveUsername = username;
+                customer = customerRepository.findByAccount_Username(effectiveUsername)
+                        .or(() -> customerRepository.findByEmail(effectiveUsername))
+                        .orElse(null);
+
+                if (customer != null) {
+                    List<com.kawai.models.Booking> completedBookings = 
+                        bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+                    hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+                }
             }
         }
 
@@ -227,26 +238,39 @@ public class FeedbackController {
     @PostMapping("/submit")
     public String submitFeedback(
             Principal principal,
+            jakarta.servlet.http.HttpSession session,
             @RequestParam(name = "bookingId", required = false) Long bookingId,
             @RequestParam("ratingTour") Integer ratingTour,
             @RequestParam("ratingRoomDining") Integer ratingRoomDining,
             @RequestParam("reviewText") String reviewText) {
 
-        if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)) {
+        boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)
+                || (session != null && session.getAttribute("user") != null);
+
+        if (!isLoggedIn) {
             return "redirect:/feedback?toast=login_required";
         }
 
         com.kawai.models.Customer customer = null;
-        String username = principal.getName();
-        if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
-            org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
-                (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
-            username = oauthToken.getPrincipal().getAttribute("email");
+        String username = null;
+        if (principal != null) {
+            username = principal.getName();
+            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
+                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                username = oauthToken.getPrincipal().getAttribute("email");
+            }
+        } else if (session != null && session.getAttribute("user") != null) {
+            com.kawai.models.Account sessionUser = (com.kawai.models.Account) session.getAttribute("user");
+            username = sessionUser.getUsername();
         }
-        final String effectiveUsername = username;
-        customer = customerRepository.findByAccount_Username(effectiveUsername)
-                .or(() -> customerRepository.findByEmail(effectiveUsername))
-                .orElse(null);
+
+        if (username != null) {
+            final String effectiveUsername = username;
+            customer = customerRepository.findByAccount_Username(effectiveUsername)
+                    .or(() -> customerRepository.findByEmail(effectiveUsername))
+                    .orElse(null);
+        }
 
         if (customer == null) {
             return "redirect:/feedback?toast=error";
