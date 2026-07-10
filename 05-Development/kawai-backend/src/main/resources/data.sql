@@ -801,17 +801,24 @@ INSERT INTO Checkpoint_Attendance (checkpoint_id, schedule_id, attendee_id, deta
 (10, 6, 10, 5, 'PENDING', 5);
 
 -- ── 39. Reviews (10 rows) ────────────────────────────────────
-INSERT INTO Reviews (review_id, customer_id, room_booking_detail_id, tour_booking_id, rating_service, review_text, moderation_status, moderated_by, moderation_reason, created_at) VALUES 
-(1, 1, 1, NULL, 5, 'Phòng Nipa Villa tuyệt hảo, mát mẻ, nhân viên buồng dọn rất sạch.', 'Approved', 4, 'Đánh giá tích cực hợp lệ', CURRENT_TIMESTAMP),
-(2, 2, 2, NULL, 4, 'Phòng River Villa đẹp, view sông thơ mộng, đồ ăn room service hơi chậm.', 'Approved', 4, 'Đánh giá xây dựng hợp lệ', CURRENT_TIMESTAMP),
-
-(3, 3, 3, NULL, 5, 'Khóa tu Wellness Retreats giúp tôi tịnh tâm, phục hồi sức khoẻ rất nhiều.', 'Approved', 4, 'Đánh giá tốt chất lượng cao', CURRENT_TIMESTAMP),
-(4, 4, 4, NULL, 4, 'Phòng 104 sạch sẽ, bồn tắm rộng rãi, decor buồng cưới rất tỉ mỉ.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
-(5, 5, 5, NULL, 5, 'Rất hài lòng với kỳ nghỉ tại resort, bãi cỏ xanh ngát, đồ ăn buffet ngon.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
-(6, 6, 6, NULL, 4, 'Cảnh quan xanh mát, phòng 207 view hồ bơi rộng rãi tuyệt vời.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
-(7, 7, 7, NULL, 5, 'Hội An Tour do HDV Hướng Dẫn thuyết minh rất sinh động, xe đi êm.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
-(8, 8, 8, NULL, 5, 'Bữa tối Wagyu tại nhà hàng cực ngon, thịt mềm mọng sốt tiêu thơm.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
-(10, 13, 10, NULL, 4, 'Lịch trình trơn tru, nhân viên thân thiện hiếu khách nhiệt tình.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP);
+INSERT INTO Reviews (review_id, customer_id, room_booking_detail_id, tour_booking_id, rating_service, rating_tour, review_text, moderation_status, moderated_by, moderation_reason, created_at) VALUES 
+(1, 1, 1, NULL, 5, NULL, 'Phòng Nipa Villa tuyệt hảo, mát mẻ, nhân viên buồng dọn rất sạch.', 'Approved', 4, 'Đánh giá tích cực hợp lệ', CURRENT_TIMESTAMP),
+(2, 2, 2, NULL, 4, NULL, 'Phòng River Villa đẹp, view sông thơ mộng, đồ ăn room service hơi chậm.', 'Approved', 4, 'Đánh giá xây dựng hợp lệ', CURRENT_TIMESTAMP),
+(3, 3, 3, NULL, 5, NULL, 'Khóa tu Wellness Retreats giúp tôi tịnh tâm, phục hồi sức khoẻ rất nhiều.', 'Approved', 4, 'Đánh giá tốt chất lượng cao', CURRENT_TIMESTAMP),
+(4, 4, 4, NULL, 4, NULL, 'Phòng 104 sạch sẽ, bồn tắm rộng rãi, decor buồng cưới rất tỉ mỉ.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+(5, 5, 5, NULL, 5, NULL, 'Rất hài lòng với kỳ nghỉ tại resort, bãi cỏ xanh ngát, đồ ăn buffet ngon.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+(6, 6, 6, NULL, 4, NULL, 'Cảnh quan xanh mát, phòng 207 view hồ bơi rộng rãi tuyệt vời.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+(7, 7, 7, NULL, 5, NULL, 'Hội An Tour do HDV Hướng Dẫn thuyết minh rất sinh động, xe đi êm.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+(8, 8, 8, NULL, 5, NULL, 'Bữa tối Wagyu tại nhà hàng cực ngon, thịt mềm mọng sốt tiêu thơm.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+(10, 13, 10, NULL, 4, NULL, 'Lịch trình trơn tru, nhân viên thân thiện hiếu khách nhiệt tình.', 'Approved', 4, 'Đánh giá tốt', CURRENT_TIMESTAMP),
+-- Tour reviews (tour_booking_id thực tế để hiển thị trên tab Tour)
+(11, 1, NULL, 24, 5, 5, 'Hành trình Đoàn Tụ mang lại những khoảnh khắc vô giá cùng gia đình. Hướng dẫn viên nhiệt tình, am hiểu văn hóa Huế sâu sắc.', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 3 DAY)),
+(12, 2, NULL, 25, 5, 5, 'Chuyến đi Yên Tử thật sự chữa lành tâm hồn. Không khí trong lành, cảnh sắc tuyệt đẹp. Tôi sẽ quay lại lần nữa!', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 5 DAY)),
+(13, 3, NULL, 26, 5, 4, 'Tour Di Sản Miền Trung rất phong phú về mặt văn hóa. Lịch trình hơi dày nhưng được trải nghiệm nhiều điểm đến giá trị.', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 7 DAY)),
+(14, 4, NULL, 27, 4, 4, 'Hành trình Tình Làng giúp tôi được kết nối lại với thiên nhiên và bình yên nội tâm. Đồ ăn truyền thống rất ngon.', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 10 DAY)),
+(15, 5, NULL, 9, 5, 5, 'Chuyến tour cuối tuần đầy ắp trải nghiệm mới lạ. Hướng dẫn viên thân thiện và chuyên nghiệp. Rất đáng tiền!', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 12 DAY)),
+(16, 9, NULL, 11, 5, 5, 'Lần đầu trải nghiệm tour tại HoaNien và tôi đã bị chinh phục hoàn toàn. Từng chi tiết đều được chăm chút tỉ mỉ.', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 15 DAY)),
+(17, 10, NULL, 12, 4, 4, 'Tour trọn gói rất tiện lợi, không phải lo lắng gì. Phong cảnh đẹp, thời tiết thuận lợi, đội ngũ hỗ trợ chuyên nghiệp.', 'Approved', 4, 'Tour review hợp lệ', DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 20 DAY));
 
 -- ── 40. Authorized Devices (10 rows) ─────────────────────────
 INSERT INTO Authorized_Devices (device_code, is_approved) VALUES 
@@ -1428,3 +1435,6 @@ SET rb.credit_limit = (
     WHERE room_booking_id = rb.room_booking_id
 )
 WHERE b.booking_status IN ('Checked_In', 'Confirmed');
+
+-- Reset AUTO_INCREMENT để tránh trùng khóa chính khi lưu đánh giá mới
+ALTER TABLE Reviews AUTO_INCREMENT = 100;

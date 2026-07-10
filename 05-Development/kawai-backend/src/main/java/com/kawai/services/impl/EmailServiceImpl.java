@@ -696,9 +696,11 @@ public class EmailServiceImpl implements EmailService {
         }
         try {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
-            ctx.setVariable("customerName", customer.getFullName());
-            ctx.setVariable("tourName", booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm");
+            String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
+            String rawTourName = booking.getSchedule() != null && booking.getSchedule().getTour() != null
+                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm";
+            ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
+            ctx.setVariable("tourName", java.text.Normalizer.normalize(rawTourName, java.text.Normalizer.Form.NFC));
             ctx.setVariable("bookingId", booking.getId());
             ctx.setVariable("feedbackUrl", baseUrl + "/feedback?bookingId=" + booking.getId());
             ctx.setVariable("resortPhone", resortPhone);
@@ -722,7 +724,8 @@ public class EmailServiceImpl implements EmailService {
         }
         try {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
-            ctx.setVariable("customerName", customer.getFullName());
+            String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
+            ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
 
             String tourName = "Hành trình trải nghiệm";
             String departureDate = "";
@@ -739,7 +742,8 @@ public class EmailServiceImpl implements EmailService {
                 guideName = getGuideForSchedule(sched);
             }
 
-            ctx.setVariable("tourName", tourName);
+            String normalizedTourName = java.text.Normalizer.normalize(tourName, java.text.Normalizer.Form.NFC);
+            ctx.setVariable("tourName", normalizedTourName);
             ctx.setVariable("departureDate", departureDate);
             ctx.setVariable("departureTime", departureTime);
             ctx.setVariable("guideName", guideName);
@@ -749,7 +753,7 @@ public class EmailServiceImpl implements EmailService {
 
             String html = templateEngine.process("email/tour-departure-notification", ctx);
             sendEmail(customer.getEmail(),
-                    "🚀 Hành trình " + tourName + " đã bắt đầu – Lịch trình chi tiết", html);
+                    "Hành trình " + normalizedTourName + " đã bắt đầu – Lịch trình chi tiết", html);
         } catch (Exception e) {
             logger.error("Lỗi gửi email khởi hành cho booking #{}: {}", booking.getId(), e.getMessage());
         }

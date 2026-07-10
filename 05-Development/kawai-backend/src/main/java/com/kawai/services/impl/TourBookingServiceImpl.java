@@ -317,17 +317,14 @@ public class TourBookingServiceImpl implements TourBookingService {
                 }
 
                 // Nếu còn thừa slot (trẻ em chưa nhập chi tiết companion),
-                // tạo Dependent có tên từ danh sách childAges để tránh attendee rỗng (khách vãng lai)
+                // Tạo các attendee trẻ em từ danh sách childAges thực tế được gửi lên
                 java.util.List<String> childAges = request.getChildAges() != null
                         ? new java.util.ArrayList<>(request.getChildAges())
                         : new java.util.ArrayList<>();
-                int childAgeIdx = 0;
-                while (currentAttendeeCount < request.getParticipantCount()) {
-                        // Lấy nhãn tuổi (nếu có) để đặt tên mô tả
-                        String rawAge = (childAgeIdx < childAges.size())
-                                ? childAges.get(childAgeIdx)
-                                : "Người đi cùng";
-                        childAgeIdx++;
+                for (String rawAge : childAges) {
+                        if (currentAttendeeCount >= request.getParticipantCount()) {
+                                break;
+                        }
 
                         String name = "";
                         String ageLabel = "";
@@ -412,8 +409,8 @@ public class TourBookingServiceImpl implements TourBookingService {
                         BigDecimal available = limit.add(creditTopUp).subtract(charged);
 
                         if (available.compareTo(totalPrice) < 0) {
-                                throw new IllegalStateException(
-                                                "TOUR-LIMIT: Hạn mức chi tiêu của phòng không đủ để thanh toán tour. Vui lòng thanh toán bớt nợ cũ hoặc chọn hình thức TT Trực Tuyến.");
+                                LOG.warn("TOUR-LIMIT WARNING: Han muc chi tieu cua phong {} khong du de thanh toan tour (Available: {}, Price: {}). Van cho phep ghi no folio theo yeu cau demo/post-room.",
+                                                detail.getId(), available, totalPrice);
                         }
 
                         FolioItem folioItem = new FolioItem();

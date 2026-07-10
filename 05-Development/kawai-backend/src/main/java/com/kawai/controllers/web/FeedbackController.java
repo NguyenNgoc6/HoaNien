@@ -60,6 +60,12 @@ public class FeedbackController {
                         .or(() -> customerRepository.findByEmail(effectiveUsername))
                         .orElse(null);
 
+                // Fallback cho Admin/Staff demo
+                if (customer == null) {
+                    System.out.println("DEBUG FEEDBACK (GET): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
+                    customer = customerRepository.findById(1L).orElse(null);
+                }
+
                 if (customer != null) {
                     List<com.kawai.models.Booking> completedBookings = 
                         bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
@@ -78,8 +84,10 @@ public class FeedbackController {
 
         if (booking != null) {
             model.addAttribute("booking", booking);
-            model.addAttribute("tourName", booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm");
+            String rawTourName = booking.getSchedule() != null && booking.getSchedule().getTour() != null
+                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm";
+            String normalizedTourName = java.text.Normalizer.normalize(rawTourName, java.text.Normalizer.Form.NFC);
+            model.addAttribute("tourName", normalizedTourName);
             model.addAttribute("mode", "submit");
         } else {
             model.addAttribute("booking", null);
@@ -125,7 +133,11 @@ public class FeedbackController {
         tourReviews.add(mockTour2);
 
         List<com.kawai.models.Review> dbTourReviews = safeLoad(() -> reviewRepository.findApprovedTourReviews());
+        System.out.println("DEBUG FEEDBACK: Load tour reviews tu DB - count=" + (dbTourReviews != null ? dbTourReviews.size() : 0));
         if (dbTourReviews != null) {
+            for (com.kawai.models.Review r : dbTourReviews) {
+                System.out.println("DEBUG FEEDBACK: reviewId=" + r.getId() + ", customer=" + (r.getCustomer() != null ? r.getCustomer().getFullName() : "null") + ", tourName=" + (r.getTourBooking() != null && r.getTourBooking().getSchedule() != null && r.getTourBooking().getSchedule().getTour() != null ? r.getTourBooking().getSchedule().getTour().getTourName() : "null"));
+            }
             tourReviews.addAll(dbTourReviews);
         }
         tourReviews.sort((r1, r2) -> {
@@ -273,14 +285,21 @@ public class FeedbackController {
                     .orElse(null);
         }
 
+        // Fallback cho Admin/Staff demo
+        if (customer == null) {
+            System.out.println("DEBUG FEEDBACK (POST): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
+            customer = customerRepository.findById(1L).orElse(null);
+        }
+
         if (customer == null) {
             return "redirect:/feedback?toast=error";
         }
 
-        // Check if customer has used any services
+        // Check if customer has used any services (chỉ chặn nếu không có booking hoàn thành và không có bookingId từ email)
         List<com.kawai.models.Booking> completedBookings = 
             bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-        if (completedBookings == null || completedBookings.isEmpty()) {
+        if ((completedBookings == null || completedBookings.isEmpty()) && bookingId == null) {
+            System.out.println("DEBUG FEEDBACK: Chan submit - Customer khong co booking hoan thanh va bookingId bang null");
             return "redirect:/feedback?toast=no_service_used";
         }
 
@@ -321,9 +340,11 @@ public class FeedbackController {
         review.setCreatedAt(LocalDateTime.now());
         review.setModerationStatus("Approved"); // Auto-approved for demo
 
-        reviewRepository.save(review);
+        System.out.println("DEBUG FEEDBACK: Ghi nhận submit - customerId=" + customer.getId() + ", name=" + customer.getFullName() + ", bookingId=" + (booking != null ? booking.getId() : "null") + ", tourRating=" + ratingTour + ", text=" + reviewText);
+        com.kawai.models.Review savedReview = reviewRepository.save(review);
+        System.out.println("DEBUG FEEDBACK: Lưu thành công reviewId=" + savedReview.getId() + ", moderationStatus=" + savedReview.getModerationStatus());
 
-        return "redirect:/feedback?toast=success&type=all";
+        return "redirect:/feedback?toast=success&type=tour";
     }
 
     private <T> List<T> safeLoad(java.util.function.Supplier<List<T>> supplier) {

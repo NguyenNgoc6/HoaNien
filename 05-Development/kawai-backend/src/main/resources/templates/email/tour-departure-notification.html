@@ -6,20 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thông báo khởi hành hành trình</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,600&family=Inter:ital,wght@1,600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;600&display=swap&subset=vietnamese');
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-weight: 600 !important; font-style: italic !important; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff; color: #2d2926; }
     .email-outer { background-color: #ffffff; padding: 40px 16px; min-height: 100vh; }
     .wrapper { max-width: 600px; margin: 0 auto; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05); border: 1px solid #d4c5b9; background: #ffffff; }
     
     .header { background: #fdfbf7; padding: 36px 40px 28px; text-align: center; border-bottom: 1px solid #d4c5b9; }
-    .header .brand, .header h1 { font-family: 'EB Garamond', Georgia, serif; font-size: 42px; font-weight: 400; color: #c5a059; margin-bottom: 4px; }
-    .header .logo-text, .header .tagline, .header .address, .invoice-title { font-family: 'EB Garamond', Georgia, serif; font-size: 16px; font-weight: 400; color: #70635c; letter-spacing: 2px; }
+    .header .brand, .header h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 42px; font-weight: 400; color: #c5a059; margin-bottom: 4px; }
+    .header .logo-text, .header .tagline, .header .address, .invoice-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 400; color: #70635c; letter-spacing: 2px; }
     
     .hero, .banner { background: #fdfbf7; padding: 40px 40px 36px; text-align: center; border-bottom: 1px solid #d4c5b9; }
     .hero .icon, .banner .icon { font-size: 44px; margin-bottom: 16px; display: block; color: #c5a059; }
-    .hero h1, .banner h1 { font-family: 'EB Garamond', Georgia, serif; font-size: 26px; font-weight: 400; color: #2d2926; margin-bottom: 10px; letter-spacing: 0.5px; }
+    .hero h1, .banner h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 400; color: #2d2926; margin-bottom: 10px; letter-spacing: 0.5px; }
     .hero p, .banner p { font-size: 13px; font-weight: 300; color: #70635c; letter-spacing: 0.3px; line-height: 1.7; }
     
     .body, .invoice-container { background: transparent; padding: 40px; }
@@ -36,11 +36,11 @@
     .booking-card-header .booking-id { font-family: 'EB Garamond', Georgia, serif; font-size: 15px; color: #c5a059; }
     .booking-card-body, .info-table { padding: 6px 0; width: 100%; border-collapse: collapse; }
     
-    .info-row, .info-table tr { display: flex; align-items: baseline; padding: 11px 20px; border-bottom: 1px solid #f2eee9; font-size: 13px; }
+    .info-row, .info-table tr { padding: 11px 20px; border-bottom: 1px solid #f2eee9; font-size: 13px; }
     .info-row:last-child, .info-table tr:last-child { border-bottom: none; }
-    .info-label { font-weight: 500; color: #70635c; white-space: nowrap; min-width: 160px; font-size: 13px; letter-spacing: 0.3px; }
-    .info-table td.info-label { width: 160px; }
-    .info-value { font-weight: 400; color: #2d2926; font-size: 13px; width: 100%; }
+    .info-label { font-weight: 500; color: #70635c; display: inline-block; vertical-align: top; width: 180px; font-size: 13px; letter-spacing: 0.3px; }
+    .info-table td.info-label { width: 180px; }
+    .info-value { font-weight: 400; color: #2d2926; font-size: 13px; display: inline-block; vertical-align: top; width: 330px; }
     .info-value.highlight { font-weight: 600; color: #c5a059; }
     .info-value.success { color: #2e7d32; font-weight: 500; }
     

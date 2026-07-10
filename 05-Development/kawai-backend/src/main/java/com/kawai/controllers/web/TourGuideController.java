@@ -541,7 +541,20 @@ public class TourGuideController {
                             java.util.List<String> childNames = new java.util.ArrayList<>();
                             for (com.kawai.models.TourAttendee att : attendees) {
                                 if (att.getDependent() != null) {
-                                    childNames.add(att.getDependent().getDependentName());
+                                    com.kawai.models.Dependent dep = att.getDependent();
+                                    boolean isChild = false;
+                                    if (dep.getBirthDate() != null) {
+                                        int age = java.time.Period.between(dep.getBirthDate(), java.time.LocalDate.now()).getYears();
+                                        if (age < 12) {
+                                            isChild = true;
+                                        }
+                                    }
+                                    if (dep.getCccdPassportEncrypted() != null && dep.getCccdPassportEncrypted().contains("AUTO_CHILD")) {
+                                        isChild = true;
+                                    }
+                                    if (isChild) {
+                                        childNames.add(dep.getDependentName());
+                                    }
                                 }
                             }
                             if (!childNames.isEmpty()) {
@@ -638,7 +651,11 @@ public class TourGuideController {
 
         // Fetch DB reviews and append them
         java.util.List<com.kawai.models.Review> dbReviews = reviewRepository.findApprovedTourReviews();
+        System.out.println("DEBUG TOURGUIDE: Load reviews tu DB - count=" + (dbReviews != null ? dbReviews.size() : 0));
         if (dbReviews != null) {
+            for (com.kawai.models.Review r : dbReviews) {
+                System.out.println("DEBUG TOURGUIDE: reviewId=" + r.getId() + ", customer=" + (r.getCustomer() != null ? r.getCustomer().getFullName() : "null") + ", tourName=" + (r.getTourBooking() != null && r.getTourBooking().getSchedule() != null && r.getTourBooking().getSchedule().getTour() != null ? r.getTourBooking().getSchedule().getTour().getTourName() : "null"));
+            }
             tourReviews.addAll(dbReviews);
         }
 
@@ -1156,7 +1173,20 @@ public class TourGuideController {
                                     java.util.List<String> childNames = new java.util.ArrayList<>();
                                     for (com.kawai.models.TourAttendee att : attendees) {
                                         if (att.getDependent() != null) {
-                                            childNames.add(att.getDependent().getDependentName());
+                                            com.kawai.models.Dependent dep = att.getDependent();
+                                            boolean isChild = false;
+                                            if (dep.getBirthDate() != null) {
+                                                int age = java.time.Period.between(dep.getBirthDate(), java.time.LocalDate.now()).getYears();
+                                                if (age < 12) {
+                                                    isChild = true;
+                                                }
+                                            }
+                                            if (dep.getCccdPassportEncrypted() != null && dep.getCccdPassportEncrypted().contains("AUTO_CHILD")) {
+                                                isChild = true;
+                                            }
+                                            if (isChild) {
+                                                childNames.add(dep.getDependentName());
+                                            }
                                         }
                                     }
                                     if (!childNames.isEmpty()) {
