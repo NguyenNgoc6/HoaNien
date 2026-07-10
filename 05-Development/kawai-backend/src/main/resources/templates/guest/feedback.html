@@ -243,7 +243,7 @@
                 <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">Mỗi phản hồi giúp HoaNien không ngừng hoàn thiện dịch vụ.</p>
             </div>
             <!-- Glassmorphic Form for submit mode -->
-            <form th:action="@{/feedback/submit}" method="post" class="space-y-6">
+            <form th:action="@{/feedback/submit}" method="post" onsubmit="return validateFeedbackForm(this)" class="space-y-6">
                 <input type="hidden" name="bookingId" th:value="${booking != null ? booking.id : ''}" />
                 <div class="space-y-3 rounded-xl p-6 bg-[#12100f]/50 backdrop-blur-md border border-white/12 shadow-lg">
                     <div class="flex items-center gap-2">
@@ -259,12 +259,12 @@
                         <button type="button" class="rating-btn" data-val="5" onclick="rate('ratingTourA','stars-tour-a','lbl-tour-a',5)"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
                         <span id="lbl-tour-a" class="ml-3 text-xs font-semibold" style="color:#c5a059">Xuất sắc</span>
                     </div>
-                    <input type="hidden" name="ratingTour" id="ratingTourA" value="5" />
+                    <input type="hidden" name="ratingTour" id="ratingTourA" value="" />
                 </div>
 
                 <div class="space-y-2">
                     <label class="text-sm font-bold tracking-wider text-white">Nhận Xét Chi Tiết</label>
-                    <textarea name="reviewText" rows="4" required
+                    <textarea name="reviewText" rows="4"
                         class="w-full rounded-lg p-4 text-sm text-white bg-[#12100f]/40 border border-white/15 focus:outline-none focus:border-[#c5a059] transition-all resize-none shadow-md"
                         placeholder="Hãy chia sẻ cảm nhận chân thực của Quý khách..."></textarea>
                 </div>
@@ -394,7 +394,7 @@
                     <h2 class="text-2xl font-serif italic text-white font-medium">Chia Sẻ Trải Nghiệm Của Bạn</h2>
                     <p class="text-xs text-gray-300 mt-1">Đánh giá tổng quan về trải nghiệm tại HoaNien</p>
                 </div>
-                <form th:action="@{/feedback/submit}" method="post" class="space-y-6">
+                <form th:action="@{/feedback/submit}" method="post" onsubmit="return validateFeedbackForm(this)" class="space-y-6">
                     <input type="hidden" name="bookingId" value="" />
                     
                     <!-- Rating Tour -->
@@ -412,7 +412,7 @@
                             <button type="button" class="rating-btn" data-val="5" onclick="rate('ratingTourB','stars-tour-b','lbl-tour-b',5)"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
                             <span id="lbl-tour-b" class="ml-3 text-xs font-semibold" style="color:#c5a059">Xuất sắc</span>
                         </div>
-                        <input type="hidden" name="ratingTour" id="ratingTourB" value="5" />
+                        <input type="hidden" name="ratingTour" id="ratingTourB" value="" />
                     </div>
 
                     <!-- Rating Room -->
@@ -430,7 +430,7 @@
                             <button type="button" class="rating-btn" data-val="5" onclick="rate('ratingRoomB','stars-room-b','lbl-room-b',5)"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
                             <span id="lbl-room-b" class="ml-3 text-xs font-semibold" style="color:#c5a059">Xuất sắc</span>
                         </div>
-                        <input type="hidden" name="ratingRoomDining" id="ratingRoomB" value="5" />
+                        <input type="hidden" name="ratingRoomDining" id="ratingRoomB" value="" />
                     </div>
 
                     <!-- Rating Other -->
@@ -448,12 +448,12 @@
                             <button type="button" class="rating-btn" data-val="5" onclick="rate('ratingServiceB','stars-service-b','lbl-service-b',5)"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">star</span></button>
                             <span id="lbl-service-b" class="ml-3 text-xs font-semibold" style="color:#c5a059">Xuất sắc</span>
                         </div>
-                        <input type="hidden" name="ratingService" id="ratingServiceB" value="5" />
+                        <input type="hidden" name="ratingService" id="ratingServiceB" value="" />
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-sm font-bold tracking-wider text-white">Nhận Xét Chi Tiết</label>
-                        <textarea name="reviewText" rows="4" required
+                        <textarea name="reviewText" rows="4"
                             class="w-full rounded-lg p-4 text-sm text-white bg-[#12100f]/40 border border-white/15 focus:outline-none focus:border-[#c5a059] transition-all resize-none shadow-md"
                             placeholder="Hãy chia sẻ cảm nhận chân thực của Quý khách..."></textarea>
                     </div>
@@ -548,11 +548,27 @@
     }
 
     function rate(fieldId, starsId, lblId, val) {
-        document.getElementById(fieldId).value = val;
+        document.getElementById(fieldId).value = val || '';
         document.querySelectorAll('#' + starsId + ' button').forEach(b =>
-            b.classList.toggle('active', parseInt(b.dataset.val) <= val));
+            b.classList.toggle('active', val && parseInt(b.dataset.val) <= val));
         const lbl = document.getElementById(lblId);
-        if (lbl) lbl.textContent = LABELS[val] || '';
+        if (lbl) lbl.textContent = val ? (LABELS[val] || '') : 'Chưa đánh giá';
+    }
+
+    function validateFeedbackForm(form) {
+        const txt = form.querySelector('textarea[name="reviewText"]')?.value.trim();
+        
+        const activeRatingInputs = Array.from(form.querySelectorAll('input[type="hidden"]'))
+            .filter(input => !input.disabled && ['ratingTour', 'ratingRoomDining', 'ratingService'].includes(input.name));
+            
+        const hasRating = activeRatingInputs.some(input => input.value && parseInt(input.value) > 0);
+        const hasText = txt && txt.length > 0;
+        
+        if (!hasRating && !hasText) {
+            showCustomAlert('Quý khách vui lòng chọn số sao đánh giá hoặc nhập nhận xét chi tiết trước khi gửi!');
+            return false;
+        }
+        return true;
     }
 
     let currentTab = 'tour';
@@ -676,10 +692,10 @@
         }
         
         // Init stars
-        rate('ratingTourA','stars-tour-a','lbl-tour-a',5);
-        rate('ratingTourB','stars-tour-b','lbl-tour-b',5);
-        rate('ratingRoomB','stars-room-b','lbl-room-b',5);
-        rate('ratingServiceB','stars-service-b','lbl-service-b',5);
+        rate('ratingTourA','stars-tour-a','lbl-tour-a',0);
+        rate('ratingTourB','stars-tour-b','lbl-tour-b',0);
+        rate('ratingRoomB','stars-room-b','lbl-room-b',0);
+        rate('ratingServiceB','stars-service-b','lbl-service-b',0);
     });
 
     // Hover effect
