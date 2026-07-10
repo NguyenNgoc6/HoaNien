@@ -111,7 +111,6 @@
 
       <!-- Banner -->
       <div class="banner">
-        <span class="icon">🚀</span>
         <h1>Hành Trình Bắt Đầu Hôm Nay!</h1>
         <p>Chúc Quý khách một hành trình trọn vẹn và đầy ắp kỷ niệm</p>
       </div>
@@ -148,7 +147,7 @@
         </div>
 
         <!-- Itinerary -->
-        <div class="section-title">📅 Lịch Trình Hoạt Động Chi Tiết</div>
+        <div class="section-title">Lịch Trình Hoạt Động Chi Tiết</div>
 
         <div th:if="${activities != null and !#lists.isEmpty(activities)}">
           <div class="activity-item" th:each="act : ${activities}">
@@ -170,7 +169,7 @@
 
         <!-- Note -->
         <div class="note-box">
-          <strong>📌 Lưu ý quan trọng:</strong><br/>
+          <strong>Lưu ý quan trọng:</strong><br/>
           Vui lòng mặc trang phục phù hợp với lịch trình, mang theo giấy tờ tùy thân và đảm bảo sức khỏe tốt.
           Nếu có bất kỳ thắc mắc nào, Quý khách vui lòng liên hệ hướng dẫn viên trực tiếp hoặc hotline resort.
         </div>
@@ -180,8 +179,8 @@
       <div class="footer">
         <div class="resort-name">Hòa Niên</div>
         <p>
-          📞 <span th:text="${resortPhone}">1900 xxxx</span> &nbsp;|&nbsp;
-          🌐 <a th:href="${resortWebsite}" th:text="${resortWebsite}">hoaniensorretreat.vn</a>
+          Hotline: <span th:text="${resortPhone}">1900 xxxx</span> &nbsp;|&nbsp;
+          Website: <a th:href="${resortWebsite}" th:text="${resortWebsite}">hoaniensorretreat.vn</a>
         </p>
         <div class="footer-divider"></div>
         <p>
