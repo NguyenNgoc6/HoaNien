@@ -518,8 +518,7 @@ public class ProfileController {
             // Hủy tour (false có nghĩa là khách hàng tự hủy)
             java.math.BigDecimal refundAmount = tourBookingService.cancelTour(bookingId, false);
 
-            // Gửi email hủy tour cho khách hàng
-            emailService.sendCancellationNotice(booking, customer, refundAmount, false);
+
 
             return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
                     "status", "success",
