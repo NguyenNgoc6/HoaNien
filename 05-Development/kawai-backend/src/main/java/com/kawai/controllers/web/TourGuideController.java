@@ -209,15 +209,24 @@ public class TourGuideController {
             @org.springframework.web.bind.annotation.RequestParam(value = "scanned", required = false) String scanned,
             @org.springframework.web.bind.annotation.RequestParam(value = "scheduleId", required = false) Long scheduleId,
             Principal principal,
-            Model model) {
+            Model model,
+            jakarta.servlet.http.HttpSession session) {
         
-        
-
         model.addAttribute("isLoggedIn", principal != null);
         if (principal != null) {
             model.addAttribute("username", principal.getName());
         }
         java.time.LocalDate today = java.time.LocalDate.now();
+
+        // Quản lý activeScheduleId trong session để tránh mất tour đang thao tác khi mất param
+        if (scheduleId != null) {
+            session.setAttribute("activeScheduleId", scheduleId);
+        } else {
+            Long sessionScheduleId = (Long) session.getAttribute("activeScheduleId");
+            if (sessionScheduleId != null) {
+                scheduleId = sessionScheduleId;
+            }
+        }
         
         // Find targeted schedule
         com.kawai.models.TourSchedule targetSchedule = null;
@@ -263,6 +272,10 @@ public class TourGuideController {
                             .filter(s -> s.getId() != null && s.getId() == 5L)
                             .findFirst()
                             .orElse(schedules.get(0));
+                }
+                
+                if (targetSchedule != null) {
+                    session.setAttribute("activeScheduleId", targetSchedule.getId());
                 }
                 
                 if (targetSchedule != null && !today.equals(targetSchedule.getDepartureDate())) {
