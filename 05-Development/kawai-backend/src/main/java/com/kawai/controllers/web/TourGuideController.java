@@ -503,21 +503,24 @@ public class TourGuideController {
                         dynamicNotifications.add(notif);
                         
                         // 1b. Ghi chú đặc biệt từ khách hàng
-                        if (b.getNotes() != null && !b.getNotes().trim().isEmpty()) {
-                            String noteContent = "Khách hàng " + custName + " (Tour \"" + tourName + "\") ghi chú: \"" + b.getNotes().trim() + "\"";
-                            
-                            java.util.Map<String, Object> notifNote = new java.util.HashMap<>();
-                            notifNote.put("title", "Ghi chú khách hàng");
-                            notifNote.put("content", noteContent);
-                            notifNote.put("icon", "info");
-                            notifNote.put("timeText", "10 phút trước");
-                            dynamicNotifications.add(notifNote);
-                            
-                            if (depDate != null && depDate.equals(today)) {
-                                java.util.Map<String, Object> todayNote = new java.util.HashMap<>();
-                                todayNote.put("content", noteContent);
-                                todayNote.put("icon", "info");
-                                dynamicNotes.add(todayNote);
+                        if (b.getNotes() != null) {
+                            String parsedNote = parseCustomerNotes(b.getNotes());
+                            if (!parsedNote.isEmpty()) {
+                                String noteContent = "Khách hàng " + custName + " (Tour \"" + tourName + "\") ghi chú: \"" + parsedNote + "\"";
+                                
+                                java.util.Map<String, Object> notifNote = new java.util.HashMap<>();
+                                notifNote.put("title", "Ghi chú khách hàng");
+                                notifNote.put("content", noteContent);
+                                notifNote.put("icon", "info");
+                                notifNote.put("timeText", "10 phút trước");
+                                dynamicNotifications.add(notifNote);
+                                
+                                if (depDate != null && depDate.equals(today)) {
+                                    java.util.Map<String, Object> todayNote = new java.util.HashMap<>();
+                                    todayNote.put("content", noteContent);
+                                    todayNote.put("icon", "info");
+                                    dynamicNotes.add(todayNote);
+                                }
                             }
                         }
                         
@@ -963,6 +966,25 @@ public class TourGuideController {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private String parseCustomerNotes(String rawNotes) {
+        if (rawNotes == null) return "";
+        rawNotes = rawNotes.trim();
+        if (rawNotes.contains("customerNotes=")) {
+            String[] parts = rawNotes.split(";");
+            for (String part : parts) {
+                part = part.trim();
+                if (part.startsWith("customerNotes=")) {
+                    String val = part.substring("customerNotes=".length()).trim();
+                    if (val.startsWith("\"") && val.endsWith("\"") && val.length() > 1) {
+                        val = val.substring(1, val.length() - 1);
+                    }
+                    return val;
+                }
+            }
+        }
+        return rawNotes;
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/start-tour")
