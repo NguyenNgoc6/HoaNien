@@ -2362,9 +2362,9 @@
                         if (activeRooms.length === 1) {
                             console.log("Exactly 1 active room. Auto-selecting.");
                             const singleRoom = activeRooms[0];
-                            const adults = singleRoom.numberOfAdults || 1;
-                            const children = singleRoom.numberOfChildren || 0;
-                            selectedRooms = [{ id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType, adults, children }];
+                            const mainAdults = parseInt(document.getElementById('num-adults').value) || 1;
+                            const mainChildren = parseInt(document.getElementById('num-children').value) || 0;
+                            selectedRooms = [{ id: singleRoom.id, roomNumber: singleRoom.roomNumber, type: singleRoom.roomType, adults: mainAdults, children: mainChildren }];
                             confirmRoomSelection();
                         } else {
                             // Reset selection
@@ -2372,11 +2372,13 @@
                             // 2: display checkbox list with per-room participant inputs
                             const container = document.getElementById('active-rooms-list');
                             if (container) {
+                                const mainAdults = parseInt(document.getElementById('num-adults').value) || 1;
+                                const mainChildren = parseInt(document.getElementById('num-children').value) || 0;
                                 container.innerHTML = activeRooms.map((r, idx) => {
                                     const safeId = r.id.replace(/'/g, "\\'");
                                     const roomIdx = idx;
-                                    const defaultAdults = r.numberOfAdults || 1;
-                                    const defaultChildren = r.numberOfChildren || 0;
+                                    const defaultAdults = Math.min(mainAdults, r.numberOfAdults || 1);
+                                    const defaultChildren = Math.min(mainChildren, r.numberOfChildren || 0);
                                     return `
                                     <div class="room-item border border-brand-border p-4 transition-all" id="room-item-${roomIdx}">
                                         <label class="flex items-start space-x-3 cursor-pointer">
@@ -2507,6 +2509,17 @@
                     alert('Vui lòng chọn ít nhất 1 phòng để gán tour.');
                     return;
                 }
+                
+                const mainAdults = parseInt(document.getElementById('num-adults').value) || 1;
+                const mainChildren = parseInt(document.getElementById('num-children').value) || 0;
+                const totalSelectedAdults = selectedRooms.reduce((sum, r) => sum + (r.adults || 0), 0);
+                const totalSelectedChildren = selectedRooms.reduce((sum, r) => sum + (r.children || 0), 0);
+
+                if (totalSelectedAdults !== mainAdults || totalSelectedChildren !== mainChildren) {
+                    alert('Tổng số thành viên phân bổ vào các phòng (' + totalSelectedAdults + ' người lớn, ' + totalSelectedChildren + ' trẻ em) phải khớp hoàn toàn với số lượng đăng ký đi tour tại form chính (' + mainAdults + ' người lớn, ' + mainChildren + ' trẻ em)!');
+                    return;
+                }
+
                 selectedPaymentType = 'post-room';
                 const container = document.getElementById('room-charge-container');
                 if (container) {
