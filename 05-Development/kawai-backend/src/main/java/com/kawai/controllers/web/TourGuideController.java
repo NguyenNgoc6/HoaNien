@@ -321,6 +321,25 @@ public class TourGuideController {
         model.addAttribute("checkedInCount", checkedIn);
         model.addAttribute("totalAttendees", attendees.size());
 
+        // Tổng hợp và parse ghi chú của các đặt tour cho hành trình này
+        String parsedBookingNotes = "";
+        if (!attendees.isEmpty()) {
+            for (com.kawai.models.TourAttendee attendee : attendees) {
+                com.kawai.models.TourBooking tb = attendee.getTourBooking();
+                if (tb != null && tb.getNotes() != null && !tb.getNotes().isBlank()) {
+                    String cleanNote = parseCustomerNotes(tb.getNotes());
+                    if (cleanNote != null && !cleanNote.isBlank() && !cleanNote.equalsIgnoreCase("null")) {
+                        if (parsedBookingNotes.isEmpty()) {
+                            parsedBookingNotes = cleanNote;
+                        } else if (!parsedBookingNotes.contains(cleanNote)) {
+                            parsedBookingNotes += " | " + cleanNote;
+                        }
+                    }
+                }
+            }
+        }
+        model.addAttribute("tourBookingNotes", parsedBookingNotes);
+
         // Load detailed activities and handbook for the active tour schedule dynamically
         com.kawai.models.Tour currentTour = null;
         if (targetSchedule != null) {
@@ -387,6 +406,7 @@ public class TourGuideController {
             e.printStackTrace();
         }
         model.addAttribute("tourType", tourTypeKey);
+        model.addAttribute("dynamicNotifications", getDynamicNotifications());
 
         return "tour/FaceID";
     }
@@ -442,16 +462,13 @@ public class TourGuideController {
             map.put("id", sched.getId());
             map.put("name", sched.getTour() != null ? sched.getTour().getTourName() : "Chưa xác định");
             
-            // Format time
             String timeStr = "08:00 - 12:00";
             if (sched.getDepartureTime() != null) {
                 java.time.LocalTime depTime = sched.getDepartureTime();
-                java.time.LocalTime endTime = depTime.plusHours(4); // Default tour duration 4 hours
+                java.time.LocalTime endTime = depTime.plusHours(4);
                 timeStr = depTime.toString().substring(0, 5) + " - " + endTime.toString().substring(0, 5);
             }
             map.put("time", timeStr);
-            
-            // Format guide name
             map.put("guide", getGuideForSchedule(sched));
             
             String dbStatus = sched.getScheduleStatus();
@@ -464,7 +481,6 @@ public class TourGuideController {
             map.put("status", mappedStatus);
             map.put("date", sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "2026-06-27");
             
-            // Match image
             String image = "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
             if (sched.getTour() != null) {
                 String name = sched.getTour().getTourName();
@@ -479,7 +495,6 @@ public class TourGuideController {
             map.put("image", image);
             map.put("type", "");
             
-            // Count total bookings/attendees dynamically from database
             int count = tourAttendeeRepository.findByTourBooking_Schedule_Id(sched.getId()).size();
             map.put("guests", count + " khách");
             
@@ -488,51 +503,30 @@ public class TourGuideController {
         
         model.addAttribute("dbTours", dbToursList);
 
-        // Sinh thông báo và ghi chú động từ dữ liệu thực tế
-        java.util.List<java.util.Map<String, Object>> dynamicNotifications = new java.util.ArrayList<>();
+        java.util.List<java.util.Map<String, Object>> dynamicNotifications = getDynamicNotifications();
         java.util.List<java.util.Map<String, Object>> dynamicNotes = new java.util.ArrayList<>();
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // 1. Duyệt qua các Tour Schedule & Booking để tìm tour thành công, ghi chú khách hàng, trẻ em
         for (com.kawai.models.TourSchedule s : dbSchedules) {
             if (s.getTour() == null) continue;
             String tourName = s.getTour().getTourName();
             java.time.LocalDate depDate = s.getDepartureDate();
             String formattedDepDate = depDate != null ? depDate.format(dateFormatter) : today.format(dateFormatter);
-            String formattedDepTime = s.getDepartureTime() != null ? s.getDepartureTime().toString().substring(0, 5) : "08:00";
             
             java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(s);
             if (bookings != null) {
                 for (com.kawai.models.TourBooking b : bookings) {
-                    // Chỉ xử lý các tour được xác nhận thành công
                     if ("Confirmed".equalsIgnoreCase(b.getBookingStatus()) || 
                         "Checked_In".equalsIgnoreCase(b.getBookingStatus()) || 
                         "Completed".equalsIgnoreCase(b.getBookingStatus())) {
                         
                         String custName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách hàng";
                         
-                        // 1a. Thông báo tour đăng ký thành công
-                        java.util.Map<String, Object> notif = new java.util.HashMap<>();
-                        notif.put("title", "Đăng ký Tour thành công");
-                        notif.put("content", "Có tour mới: \"" + tourName + "\" được đăng ký thành công vào ngày " + formattedDepDate + " lúc " + formattedDepTime + ".");
-                        notif.put("icon", "map");
-                        notif.put("timeText", "Vừa xong");
-                        dynamicNotifications.add(notif);
-                        
-                        // 1b. Ghi chú đặc biệt từ khách hàng
                         if (b.getNotes() != null) {
                             String parsedNote = parseCustomerNotes(b.getNotes());
                             if (!parsedNote.isEmpty()) {
                                 String noteContent = "Khách hàng " + custName + " (Tour \"" + tourName + "\") ghi chú: \"" + parsedNote + "\"";
-                                
-                                java.util.Map<String, Object> notifNote = new java.util.HashMap<>();
-                                notifNote.put("title", "Ghi chú khách hàng");
-                                notifNote.put("content", noteContent);
-                                notifNote.put("icon", "info");
-                                notifNote.put("timeText", "10 phút trước");
-                                dynamicNotifications.add(notifNote);
-                                
                                 if (depDate != null && depDate.equals(today)) {
                                     java.util.Map<String, Object> todayNote = new java.util.HashMap<>();
                                     todayNote.put("content", noteContent);
@@ -542,7 +536,6 @@ public class TourGuideController {
                             }
                         }
                         
-                        // 1c. Kiểm tra xem tour có trẻ em hay không
                         java.util.List<com.kawai.models.TourAttendee> attendees = tourAttendeeRepository.findByTourBookingId(b.getId());
                         if (attendees != null) {
                             java.util.List<String> childNames = new java.util.ArrayList<>();
@@ -554,14 +547,6 @@ public class TourGuideController {
                             if (!childNames.isEmpty()) {
                                 String childrenStr = String.join(", ", childNames);
                                 String childContent = "Tour \"" + tourName + "\" ngày " + formattedDepDate + " có trẻ em tham gia (" + childrenStr + ").";
-                                
-                                java.util.Map<String, Object> notifChild = new java.util.HashMap<>();
-                                notifChild.put("title", "Tour có trẻ em");
-                                notifChild.put("content", childContent);
-                                notifChild.put("icon", "child_care");
-                                notifChild.put("timeText", "20 phút trước");
-                                dynamicNotifications.add(notifChild);
-                                
                                 if (depDate != null && depDate.equals(today)) {
                                     java.util.Map<String, Object> todayChildNote = new java.util.HashMap<>();
                                     todayChildNote.put("content", childContent + " Vui lòng lưu ý và chuẩn bị các biện pháp an toàn phù hợp.");
@@ -573,10 +558,8 @@ public class TourGuideController {
                     }
                 }
             }
-
         }
 
-        // Đảm bảo luôn có tối thiểu 1 ghi chú nếu danh sách trống
         if (dynamicNotes.isEmpty()) {
             java.util.Map<String, Object> fallbackNote = new java.util.HashMap<>();
             fallbackNote.put("content", "Hôm nay không có ghi chú đặc biệt nào từ các đoàn khách.");
@@ -584,7 +567,6 @@ public class TourGuideController {
             dynamicNotes.add(fallbackNote);
         }
 
-        // Sắp xếp các thông báo để cái mới nhất/hợp lý lên đầu (ở đây list đã add theo thứ tự)
         model.addAttribute("dynamicNotifications", dynamicNotifications);
         model.addAttribute("dynamicNotes", dynamicNotes);
 
@@ -696,6 +678,7 @@ public class TourGuideController {
         model.addAttribute("averageRating", String.format(java.util.Locale.US, "%.1f", avg));
         model.addAttribute("satisfactionRate", satisfactionRate + "%");
         model.addAttribute("negativeReviewsCount", negativeCount);
+        model.addAttribute("dynamicNotifications", getDynamicNotifications());
 
         return "tour/Feedback";
     }
@@ -1094,5 +1077,95 @@ public class TourGuideController {
             return "redirect:" + cleanUrl + separator + "toast=reset_success";
         }
         return "redirect:/tourguide/dashboard?toast=reset_success";
+    }
+
+    private java.util.List<java.util.Map<String, Object>> getDynamicNotifications() {
+        java.util.List<java.util.Map<String, Object>> dynamicNotifications = new java.util.ArrayList<>();
+        try {
+            java.util.List<com.kawai.models.TourSchedule> dbSchedules = tourScheduleRepository.findAll();
+            if (dbSchedules != null) {
+                dbSchedules.sort((s1, s2) -> {
+                    Long id1 = s1.getId() != null ? s1.getId() : 0L;
+                    Long id2 = s2.getId() != null ? s2.getId() : 0L;
+                    return id2.compareTo(id1);
+                });
+                
+                java.util.List<com.kawai.models.TourSchedule> filteredSchedules = new java.util.ArrayList<>();
+                int demoCount = 0;
+                for (com.kawai.models.TourSchedule s : dbSchedules) {
+                    if (s.getId() != null && s.getId() < 100L) {
+                        if (demoCount < 3) {
+                            filteredSchedules.add(s);
+                            demoCount++;
+                        }
+                    } else {
+                        filteredSchedules.add(s);
+                    }
+                }
+                
+                java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                java.time.LocalDate today = java.time.LocalDate.now();
+                
+                for (com.kawai.models.TourSchedule s : filteredSchedules) {
+                    if (s.getTour() == null) continue;
+                    String tourName = s.getTour().getTourName();
+                    java.time.LocalDate depDate = s.getDepartureDate();
+                    String formattedDepDate = depDate != null ? depDate.format(dateFormatter) : today.format(dateFormatter);
+                    String formattedDepTime = s.getDepartureTime() != null ? s.getDepartureTime().toString().substring(0, 5) : "08:00";
+                    
+                    java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(s);
+                    if (bookings != null) {
+                        for (com.kawai.models.TourBooking b : bookings) {
+                            if ("Confirmed".equalsIgnoreCase(b.getBookingStatus()) || 
+                                "Checked_In".equalsIgnoreCase(b.getBookingStatus()) || 
+                                "Completed".equalsIgnoreCase(b.getBookingStatus())) {
+                                
+                                String custName = b.getCustomer() != null ? b.getCustomer().getFullName() : "Khách hàng";
+                                
+                                java.util.Map<String, Object> notif = new java.util.HashMap<>();
+                                notif.put("title", "Đăng ký Tour thành công");
+                                notif.put("content", "Có tour mới: \"" + tourName + "\" được đăng ký thành công vào ngày " + formattedDepDate + " lúc " + formattedDepTime + ".");
+                                notif.put("icon", "map");
+                                notif.put("timeText", "Vừa xong");
+                                dynamicNotifications.add(notif);
+                                
+                                if (b.getNotes() != null) {
+                                    String parsedNote = parseCustomerNotes(b.getNotes());
+                                    if (!parsedNote.isEmpty()) {
+                                        java.util.Map<String, Object> notifNote = new java.util.HashMap<>();
+                                        notifNote.put("title", "Ghi chú khách hàng");
+                                        notifNote.put("content", "Khách hàng " + custName + " (Tour \"" + tourName + "\") ghi chú: \"" + parsedNote + "\"");
+                                        notifNote.put("icon", "info");
+                                        notifNote.put("timeText", "10 phút trước");
+                                        dynamicNotifications.add(notifNote);
+                                    }
+                                }
+                                
+                                java.util.List<com.kawai.models.TourAttendee> attendees = tourAttendeeRepository.findByTourBookingId(b.getId());
+                                if (attendees != null) {
+                                    java.util.List<String> childNames = new java.util.ArrayList<>();
+                                    for (com.kawai.models.TourAttendee att : attendees) {
+                                        if (att.getDependent() != null) {
+                                            childNames.add(att.getDependent().getDependentName());
+                                        }
+                                    }
+                                    if (!childNames.isEmpty()) {
+                                        java.util.Map<String, Object> notifChild = new java.util.HashMap<>();
+                                        notifChild.put("title", "Tour có trẻ em");
+                                        notifChild.put("content", "Tour \"" + tourName + "\" ngày " + formattedDepDate + " có trẻ em tham gia (" + String.join(", ", childNames) + ").");
+                                        notifChild.put("icon", "child_care");
+                                        notifChild.put("timeText", "20 phút trước");
+                                        dynamicNotifications.add(notifChild);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dynamicNotifications;
     }
 }

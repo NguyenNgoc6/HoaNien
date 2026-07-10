@@ -215,26 +215,16 @@
                             class="text-xs text-primary hover:underline font-semibold">Đọc tất cả</button>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto text-left" id="notifications-list">
-                        <!-- Notification Item 1 -->
-                        <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
-                            <p class="text-xs font-semibold text-on-surface">Yêu cầu hỗ trợ từ Đoàn khách</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Đoàn khách Singapore tại Cố
-                                đô Huế yêu cầu chuẩn bị thêm nước uống đóng chai.</p>
-                            <p class="text-[9px] text-on-surface-variant/50">5 phút trước</p>
+                        <div th:each="n : ${dynamicNotifications}" class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[14px] text-primary" th:text="${n.icon}">info</span>
+                                <p class="text-xs font-semibold text-on-surface" th:text="${n.title}">Tiêu đề thông báo</p>
+                            </div>
+                            <p class="text-[11px] text-on-surface-variant/70 leading-snug" th:text="${n.content}">Nội dung thông báo...</p>
+                            <p class="text-[9px] text-on-surface-variant/50" th:text="${n.timeText}">5 phút trước</p>
                         </div>
-                        <!-- Notification Item 2 -->
-                        <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
-                            <p class="text-xs font-semibold text-on-surface">Cảnh báo Thời tiết</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Dự báo có mưa rào nhẹ tại khu
-                                vực Tháp Mười từ 16:30 chiều nay.</p>
-                            <p class="text-[9px] text-on-surface-variant/50">20 phút trước</p>
-                        </div>
-                        <!-- Notification Item 3 -->
-                        <div class="p-3 hover:bg-primary/5 rounded-xl transition-colors space-y-1">
-                            <p class="text-xs font-medium text-on-surface-variant">Lịch trình Ngày mai</p>
-                            <p class="text-[11px] text-on-surface-variant/70 leading-snug">Bạn có lịch dẫn đoàn tham
-                                quan Ninh Bình bắt đầu lúc 08:30 sáng mai.</p>
-                            <p class="text-[9px] text-on-surface-variant/50">2 giờ trước</p>
+                        <div th:if="${dynamicNotifications == null || dynamicNotifications.isEmpty()}" class="p-4 text-center text-xs text-on-surface-variant/50">
+                            Không có thông báo mới nào.
                         </div>
                     </div>
                 </div>

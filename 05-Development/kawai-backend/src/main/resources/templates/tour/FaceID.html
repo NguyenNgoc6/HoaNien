@@ -335,26 +335,16 @@
                                 class="text-xs text-primary hover:underline font-semibold">Đọc tất cả</button>
                         </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto text-left" id="notifications-list">
-                            <!-- Notification Item 1 -->
-                            <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
-                                <p class="text-xs font-semibold text-on-surface">Yêu cầu hỗ trợ từ Đoàn khách</p>
-                                <p class="text-[11px] text-on-surface-variant/70 leading-snug">Đoàn khách Singapore tại
-                                    Cố đô Huế yêu cầu chuẩn bị thêm nước uống đóng chai.</p>
-                                <p class="text-[9px] text-on-surface-variant/50">5 phút trước</p>
+                            <div th:each="n : ${dynamicNotifications}" class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px] text-primary" th:text="${n.icon}">info</span>
+                                    <p class="text-xs font-semibold text-on-surface" th:text="${n.title}">Tiêu đề thông báo</p>
+                                </div>
+                                <p class="text-[11px] text-on-surface-variant/70 leading-snug" th:text="${n.content}">Nội dung thông báo...</p>
+                                <p class="text-[9px] text-on-surface-variant/50" th:text="${n.timeText}">5 phút trước</p>
                             </div>
-                            <!-- Notification Item 2 -->
-                            <div class="p-3 bg-primary/5 rounded-xl border-l-4 border-primary space-y-1">
-                                <p class="text-xs font-semibold text-on-surface">Cảnh báo Thời tiết</p>
-                                <p class="text-[11px] text-on-surface-variant/70 leading-snug">Dự báo có mưa rào nhẹ tại
-                                    khu vực Tháp Mười từ 16:30 chiều nay.</p>
-                                <p class="text-[9px] text-on-surface-variant/50">20 phút trước</p>
-                            </div>
-                            <!-- Notification Item 3 -->
-                            <div class="p-3 hover:bg-primary/5 rounded-xl transition-colors space-y-1">
-                                <p class="text-xs font-medium text-on-surface-variant">Lịch trình Ngày mai</p>
-                                <p class="text-[11px] text-on-surface-variant/70 leading-snug">Bạn có lịch dẫn đoàn tham
-                                    quan Ninh Bình bắt đầu lúc 08:30 sáng mai.</p>
-                                <p class="text-[9px] text-on-surface-variant/50">2 giờ trước</p>
+                            <div th:if="${dynamicNotifications == null || dynamicNotifications.isEmpty()}" class="p-4 text-center text-xs text-on-surface-variant/50">
+                                Không có thông báo mới nào.
                             </div>
                         </div>
                     </div>
@@ -535,6 +525,18 @@
                         </div>
                     </div>
 
+                    <!-- Tour Booking General Notes Banner -->
+                    <div th:if="${tourBookingNotes != null and !#strings.isEmpty(tourBookingNotes)}"
+                        class="glass-panel rounded-lg p-6 border-amber-500/20 bg-amber-500/5 mb-8 text-left">
+                        <div class="flex items-center gap-2 text-amber-800 mb-2">
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">sticky_note_2</span>
+                            <h5 class="font-bold text-[15px]">Ghi chú hành trình của Khách hàng</h5>
+                        </div>
+                        <p class="text-sm font-semibold text-on-surface leading-relaxed" th:text="${tourBookingNotes}">
+                            Yêu cầu đặc biệt của khách hàng...
+                        </p>
+                    </div>
+
                     <!-- Table Container -->
                     <div class="glass-panel rounded-lg overflow-hidden flex flex-col p-8 border-primary/10 shadow-sm">
                         <div class="overflow-x-auto">
@@ -550,9 +552,6 @@
                                         <th
                                             class="pb-6 font-label-md text-label-md text-primary uppercase tracking-widest px-4">
                                             TRẠNG THÁI</th>
-                                        <th
-                                            class="pb-6 font-label-md text-label-md text-primary uppercase tracking-widest px-4">
-                                            LƯU Ý</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-primary/5">
@@ -613,21 +612,6 @@
                                                 class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner">
                                                 <span class="material-symbols-outlined text-[18px]">check</span>
                                             </button>
-                                        </td>
-                                        <!-- Lưu ý / Notes từ đặt tour -->
-                                        <td class="py-6 px-4 max-w-[200px]"
-                                            th:with="
-                                            rawNotes=${attendee.tourBooking?.notes},
-                                            customerNotes=${rawNotes != null && #strings.contains(rawNotes, 'customerNotes=') ? #strings.substringAfter(rawNotes, 'customerNotes=') : ''}">
-                                            <span th:if="${customerNotes != null && !#strings.isEmpty(customerNotes)}"
-                                                class="inline-flex items-start gap-1.5 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 leading-snug max-w-full break-words">
-                                                <span
-                                                    class="material-symbols-outlined text-[14px] mt-[1px] flex-shrink-0"
-                                                    style="font-variation-settings:'FILL' 1">info</span>
-                                                <span th:text="${customerNotes}">Yêu cầu đặc biệt của khách</span>
-                                            </span>
-                                            <span th:if="${customerNotes == null || #strings.isEmpty(customerNotes)}"
-                                                class="text-on-surface-variant/30 text-[12px]">—</span>
                                         </td>
                                     </tr>
                                 </tbody>
