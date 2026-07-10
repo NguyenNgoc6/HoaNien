@@ -594,7 +594,7 @@ INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capa
 (5, 'Tiếng Vọng Sóng Xanh – Hạ Long', 'halong', '10 Giờ', 7500000, 15, 'Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.', 'Chuyến hải trình thong dong đưa bạn lướt qua những đảo đá nhấp nhô của vịnh Bắc Bộ, khám phá thế giới thạch nhũ kỳ vĩ được tạo hóa giấu kín ngàn năm và đón hoàng hôn buông trên mặt biển.', '10 Giờ (08:00 - 18:00) | Sức chứa: 15 khách.', '["Chuẩn bị: Nhắc khách mang theo đồ bơi, quần áo dự phòng để thay sau khi chèo Kayak hoặc tắm biển.","An toàn: Kiểm tra túi chống nước cho điện thoại của khách. Chuẩn bị sẵn thuốc say sóng phòng trường hợp khách nhạy cảm với sóng biển"]', '[{"cat":"Địa lý (Kiến tạo Karst)","content":"Vịnh Hạ Long là Di sản Thiên nhiên Thế giới được UNESCO công nhận, sở hữu giá trị địa chất độc độc đáo trải qua hơn 500 triệu năm kiến tạo để tạo nên ngàn đảo đá vôi trùng điệp."},{"cat":"Lịch sử & Huyền thoại","content":"Hạ Long nghĩa là rồng đáp xuống. Truyền thuyết kể rằng Ngọc Hoàng đã sai Rồng Mẹ mang theo một đàn Rồng Con xuống hạ giới giúp người Việt đánh giặc ngoại xâm. Đàn rồng phun ra muôn ngàn châu ngọc, hóa thành các đảo đá dựng thành lũy vững chắc ngăn chặn thuyền giặc. Động Thiên Cung chính là cung điện lộng lẫy nơi diễn ra đám cưới của Vua Rồng xưa kia."}]', CURRENT_TIMESTAMP, TRUE, 10.0, FALSE, 0),
 (6, 'Nẻo Đường Sương Phủ – Sapa', 'sapa', '11 Giờ', 8200000, 10, 'Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.', 'Hành trình dạo bước qua những nấc thang ruộng bậc thang xanh mướt tại bản Cát Cát, tìm hiểu cuộc sống mộc mạc của đồng bào người H''Mông và lắng lại tâm hồn giữa núi rừng Tây Bắc.', '11 Giờ (08:00 - 19:00) | Sức chứa: 10 khách.', '["Thể lực: Tour này tản bộ nhiều dốc (bản Cát Cát), nhắc khách mang giày trekking hoặc giày thể thao có độ bám tốt.","Thời tiết: Thời tiết Sapa thay đổi liên tục, luôn nhắc khách mang theo một chiếc áo khoác nhẹ (phòng lạnh về chiều) và ô/áo mưa bỏ túi"]', '[{"cat":"Địa lý","content":"Sapa nằm ở độ cao trung bình 1,500m - 1,800m so với mực nước biển, thuộc dãy Hoàng Liên Sơn hùng vĩ. Thác Tiên Sa là nguồn nước mát lạnh đổ trực tiếp từ trên núi cao xuống, quanh năm tung bọt trắng xóa."},{"cat":"Văn hóa","content":"Bản Cát Cát là nơi sinh sống lâu đời của người H''Mông đen. Hãy thuyết minh về chiếc cối xay nước tận dụng sức nước của dòng suối để giã gạo, và nghệ thuật vẽ hoa văn bằng sáp ong bướm trên vải trước khi mang đi nhuộm chàm – một nét văn hóa độc đáo giúp trang phục của họ có màu xanh đen đặc trưng bền bỉ với thời gian."}]', CURRENT_TIMESTAMP, TRUE, 11.0, FALSE, 0),
 (7, 'Nhịp Đập Rừng Già – Cát Tiên', 'cattien', '14 Giờ', 9500000, 8, 'Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.', 'Chuyến băng rừng rậm Nam Cát Tiên đầy cảm xúc, đưa bạn ghé thăm đầm lầy bảo tồn tự nhiên, thưởng thức bữa tối bên rừng và trải nghiệm ngắm thú đêm hoang dã.', '14 Giờ (08:00 - 22:00) | Sức chứa: 8 khách.', '["An toàn tuyệt đối: Bắt buộc khách mặc quần áo dài, mang tất cao cổ. Bạn phải chuẩn bị sẵn thuốc chống vắt và xịt côn trùng cao cấp cho cả đoàn trước khi vào rừng.","Quy định rừng: Khi đi xe mui trần xem thú đêm, tuyệt đối nhắc khách giữ im lặng, không dùng đèn pin cá nhân chiếu vào mắt thú, không bật flash chụp ảnh"]', '[{"cat":"Địa lý & Sinh thái","content":"Vườn quốc gia Cát Tiên là Khu dự trữ sinh quyển thế giới. Bàu Sấu là vùng đất ngập nước Ramsar tầm cỡ quốc tế, nơi bảo tồn loài Cá Sấu Xiêm thuần chủng của Việt Nam."},{"cat":"Hành vi động vật (Thú đêm)","content":"Giải thích cho khách biết lý do xem thú đêm: Ban ngày rừng rậm rất nóng, các loài thú móng guốc như nai, móp, mển thường ẩn nấp. Khi đêm xuống, nhiệt độ hạ, chúng mới ra các trảng cỏ trống để tìm thức ăn và muối khoáng."}]', CURRENT_TIMESTAMP, TRUE, 14.0, FALSE, 0),
-(8, 'Bình Minh Cồn Cát – Mũ Né', 'muine', '11 Giờ', 6500000, 10, 'Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.', 'Trải nghiệm cảm giác phẩn khích vượt đồi cát bằng xe ATV đón bình minh, khám phá dòng suối Tiên huyền thoại và thưởng thức mỹ vị biển khơi.', '11 Giờ (04:30 - 15:30) | Sức chứa: 10 khách.', '["Giờ giấc: Khởi hành rất sớm (04:30), nhắc khách ngủ sớm từ tối hôm trước.","Trang phục: Mang theo kính râm, kem chống nắng đầy đủ vì đồi cát bắt nắng rất mạnh. Khi lội Suối Tiên phải đi chân trần, nhắc khách mang dép dễ tháo rời"]', '[{"cat":"Địa lý & Địa chất","content":"Bàu Trắng (Đồi Cát Trắng) là một sa mạc thu nhỏ được bao quanh bởi hồ nước ngọt tự nhiên khổng lồ. Điểm kỳ thú ở đây là gió thổi liên tục làm thay đổi hình dáng của các đụn cát theo từng giờ (\"đồi cát di động\")."},{"cat":"Suối Tiên","content":"Bản chất không phải là một dòng suối thông thường, mà là một khe nước nhỏ chảy khuất sau những đồi cát, trải qua năm tháng bào mòn các vách đất sét, tạo nên những tháp cát màu đỏ cam rực rỡ như những lâu đài thạch nhũ lộ thiên."}]', CURRENT_TIMESTAMP, TRUE, 11.0, FALSE, 0),
+(8, 'Bình Minh Cồn Cát – Mũi Né', 'muine', '11 Giờ', 6500000, 10, 'Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.', 'Trải nghiệm cảm giác phẩn khích vượt đồi cát bằng xe ATV đón bình minh, khám phá dòng suối Tiên huyền thoại và thưởng thức mỹ vị biển khơi.', '11 Giờ (04:30 - 15:30) | Sức chứa: 10 khách.', '["Giờ giấc: Khởi hành rất sớm (04:30), nhắc khách ngủ sớm từ tối hôm trước.","Trang phục: Mang theo kính râm, kem chống nắng đầy đủ vì đồi cát bắt nắng rất mạnh. Khi lội Suối Tiên phải đi chân trần, nhắc khách mang dép dễ tháo rời"]', '[{"cat":"Địa lý & Địa chất","content":"Bàu Trắng (Đồi Cát Trắng) là một sa mạc thu nhỏ được bao quanh bởi hồ nước ngọt tự nhiên khổng lồ. Điểm kỳ thú ở đây là gió thổi liên tục làm thay đổi hình dáng của các đụn cát theo từng giờ (\"đồi cát di động\")."},{"cat":"Suối Tiên","content":"Bản chất không phải là một dòng suối thông thường, mà là một khe nước nhỏ chảy khuất sau những đồi cát, trải qua năm tháng bào mòn các vách đất sét, tạo nên những tháp cát màu đỏ cam rực rỡ như những lâu đài thạch nhũ lộ thiên."}]', CURRENT_TIMESTAMP, TRUE, 11.0, FALSE, 0),
 (9, 'Khúc Ca San Hô – Phú Quốc', 'phuquoc', '10 Giờ', 8500000, 12, 'Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.', 'Đồng hành cùng cano cao cấp lướt qua những hòn đảo hoang sơ, lặn ngắm rạn san hô đa sắc màu và tận hưởng bữa chiều ngắm hoàng hôn lãng mạn trên biển.', '10 Giờ (08:30 - 18:30) | Sức chứa: 12 khách.', '["Hậu cần biển: Kiểm tra kỹ áo phao, kính lặn ống thở xem có vừa vặn với kích thước của từng khách hay không.","Bảo vệ môi trường: Nhắc nhở khách tuyệt đối không dẫm đạp lên san hô, không nhặt san hô sống hoặc sao biển mang về đất liền"]', '[{"cat":"Địa lý biển","content":"Vùng biển phía Nam Phú Quốc (quần đảo An Thới) nằm trong vịnh Thái Lan, khu vực biển ấm, ít sóng lớn, tạo điều kiện hoàn hảo cho các rạn san hô phiến và san hô gạc nai phát triển mạnh mẽ."},{"cat":"Văn hóa bản địa","content":"Phú Quốc còn gọi là Đảo Ngọc vì vùng biển này có độ mặn và nhiệt độ lý tưởng cho nghề nuôi cấy ngọc trai cao cấp."}]', CURRENT_TIMESTAMP, TRUE, 10.0, FALSE, 0),
 (10, 'Hương Sắc Miệt Vườn – Cần Thơ', 'cantho', '10 Giờ', 6800000, 12, 'Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.', 'Đón bình minh trên chiếc ghe máy mộc mạc phục vụ riêng, hòa mình vào chợ nổi Cái Răng sầm uất, khám phá miệt vườn trĩu quả và học làm bánh dân gian Nam Bộ.', '10 Giờ (05:30 - 15:30) | Sức chứa: 12 khách.', '["An toàn bến bãi: Lúc bước từ bờ xuống ghe máy tại bến tàu sương sớm rất dễ trơn trượt, Guide luôn phải đứng ở mạn thuyền để đỡ tay cho khách.","Vệ sinh an toàn thực phẩm: Khi khách ăn hủ tiếu trên sông, đảm bảo đũa muỗng sạch sẽ, chuẩn bị sẵn khăn giấy cao cấp"]', '[{"cat":"Văn hóa sông nước","content":"Chợ nổi Cái Răng hình thành từ thời chưa có đường bộ, người dân lấy sông ngòi làm đường đi, ghe xuồng làm nhà. Điểm nhấn là \"Cây bẹo\" (gồm một cây sào tre cắm trước mũi ghe, treo sản vật gì lên đó là thông báo cho người mua biết ghe mình bán món đó - \"treo gì bán nấy\")."},{"cat":"Ẩm thực & Con người","content":"Giới thiệu phong vị hào sảng, hiếu khách của người miền Tây qua cách họ làm bánh dân gian hay chế biến món cá lóc nướng trui (cá bắt dưới sông lên, xiên bằng thanh tre, phủ rơm đốt rụi rồi cạo lớp vảy đen ra thịt trắng thơm phức)."}]', CURRENT_TIMESTAMP, TRUE, 10.0, FALSE, 0);
 
@@ -712,17 +712,22 @@ INSERT INTO Tour_Prices (tour_price_id, tour_id, age_from, age_to, ticket_price,
 (20, 10, 2, 11, 3400000, 3000000, TRUE);
 
 -- ── 33. Tour Schedules (10 rows) ─────────────────────────────
-INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status) VALUES 
-(1, 1, '2026-06-14', '08:00:00', 0, 'Open'),
-(2, 2, '2026-06-15', '14:00:00', 0, 'Open'),
-(3, 3, '2026-06-15', '17:00:00', 0, 'Open'),
-(4, 4, '2026-06-16', '09:00:00', 0, 'Open'),
-(5, 2, '2026-06-13', '08:00:00', 5, 'Open'),
-(6, 5, '2026-06-17', '08:00:00', 0, 'Open'),
-(7, 6, '2026-06-18', '09:00:00', 0, 'Open'),
-(8, 7, '2026-06-19', '07:30:00', 0, 'Open'),
-(9, 8, '2026-06-20', '05:00:00', 0, 'Open'),
-(10, 9, '2026-06-21', '09:00:00', 0, 'Open');
+INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
+(1, 1, '2026-06-14', '08:00:00.000000', 0, 'Open', FALSE),
+(2, 2, '2026-06-15', '14:00:00.000000', 0, 'Open', FALSE),
+(3, 3, '2026-06-15', '17:00:00.000000', 0, 'Open', FALSE),
+(4, 4, '2026-06-16', '09:00:00.000000', 0, 'Open', FALSE),
+(5, 2, '2026-06-13', '08:00:00.000000', 5, 'Open', FALSE),
+(6, 5, '2026-06-17', '08:00:00.000000', 0, 'Open', FALSE),
+(7, 6, '2026-06-18', '09:00:00.000000', 0, 'Open', FALSE),
+(8, 7, '2026-06-19', '07:30:00.000000', 0, 'Open', FALSE),
+(9, 8, '2026-06-20', '05:00:00.000000', 0, 'Open', FALSE),
+(10, 9, '2026-06-21', '09:00:00.000000', 0, 'Open', FALSE),
+(11, 2, '2026-07-10', '08:00:00.000000', 0, 'Open', FALSE),
+(12, 4, '2026-07-08', '07:30:00.000000', 0, 'Open', FALSE),
+(13, 1, '2026-07-11', '07:30:00.000000', 0, 'Open', FALSE),
+(14, 7, '2026-07-06', '19:00:00.000000', 0, 'Completed', FALSE),
+(15, 8, '2026-07-13', '04:00:00.000000', 0, 'Cancelled', FALSE);
 
 -- ── 34. Tour Staff Assignments (10 rows) ─────────────────────
 INSERT INTO Tour_Staff_Assignments (assignment_id, schedule_id, employee_id, staff_role) VALUES 
@@ -735,7 +740,12 @@ INSERT INTO Tour_Staff_Assignments (assignment_id, schedule_id, employee_id, sta
 (7, 4, 7, 'GUIDE'),
 (8, 6, 5, 'GUIDE'),
 (9, 7, 6, 'GUIDE'),
-(10, 8, 7, 'GUIDE');
+(10, 8, 7, 'GUIDE'),
+(11, 11, 6, 'GUIDE'),
+(12, 12, 6, 'GUIDE'),
+(13, 13, 7, 'GUIDE'),
+(14, 14, 7, 'GUIDE'),
+(15, 15, 6, 'GUIDE');
 
 -- ── 35. Run Itinerary Status (10 rows) ───────────────────────
 INSERT INTO Run_Itinerary_Status (run_status_id, schedule_id, detail_id, actual_start_time, actual_end_time, current_stage_status, guide_notes) VALUES 
@@ -946,10 +956,10 @@ INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price,
 
 -- TourBookings: liên kết với RoomBooking 14 (Phạm Hùng Anh) và 23 (test Confirmed)
 -- room_booking_detail_id = NULL vì chưa check-in / chưa phân phòng
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, room_booking_detail_id) VALUES
-(200, 1, 2, 1200000, 14, NULL),
-(201, 2, 5, 3000000, 14, NULL),
-(202, 3, 2, 1200000, 23, NULL);
+INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, room_booking_detail_id, is_walk_in_tour) VALUES
+(200, 1, 2, 1200000, 14, NULL, FALSE),
+(201, 2, 5, 3000000, 14, NULL, FALSE),
+(202, 3, 2, 1200000, 23, NULL, FALSE);
 
 ALTER TABLE Tour_Bookings AUTO_INCREMENT = 300;
 
