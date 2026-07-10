@@ -508,6 +508,9 @@
                                         <th
                                             class="pb-6 font-label-md text-label-md text-primary uppercase tracking-widest px-4">
                                             TRẠNG THÁI</th>
+                                        <th
+                                            class="pb-6 font-label-md text-label-md text-primary uppercase tracking-widest px-4">
+                                            LƯU Ý</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-primary/5">
@@ -568,6 +571,18 @@
                                                 class="ml-3 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/5 hover:scale-105 transition-all shadow-sm active:shadow-inner">
                                                 <span class="material-symbols-outlined text-[18px]">check</span>
                                             </button>
+                                        </td>
+                                        <!-- Lưu ý / Notes từ đặt tour -->
+                                        <td class="py-6 px-4 max-w-[200px]" th:with="
+                                            rawNotes=${attendee.tourBooking?.notes},
+                                            customerNotes=${rawNotes != null && #strings.contains(rawNotes, 'customerNotes=') ? #strings.substringAfter(rawNotes, 'customerNotes=') : ''}">
+                                            <span th:if="${customerNotes != null && !#strings.isEmpty(customerNotes)}"
+                                                class="inline-flex items-start gap-1.5 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 leading-snug max-w-full break-words">
+                                                <span class="material-symbols-outlined text-[14px] mt-[1px] flex-shrink-0" style="font-variation-settings:'FILL' 1">info</span>
+                                                <span th:text="${customerNotes}">Yêu cầu đặc biệt của khách</span>
+                                            </span>
+                                            <span th:if="${customerNotes == null || #strings.isEmpty(customerNotes)}"
+                                                class="text-on-surface-variant/30 text-[12px]">—</span>
                                         </td>
                                     </tr>
                                 </tbody>
