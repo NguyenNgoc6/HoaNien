@@ -33,6 +33,9 @@ public class EmailServiceImpl implements EmailService {
     @org.springframework.beans.factory.annotation.Autowired
     private org.thymeleaf.TemplateEngine templateEngine;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourScheduleRepository tourScheduleRepository;
+
     @Value("${sendgrid.api-key:}")
     private String sendGridApiKey;
 
@@ -724,7 +727,7 @@ public class EmailServiceImpl implements EmailService {
             String tourName = "Hành trình trải nghiệm";
             String departureDate = "";
             String departureTime = "";
-            String guideName = "Hướng dẫn viên HoaNien";
+            String guideName = "NguynNgoc";
 
             if (booking.getSchedule() != null) {
                 com.kawai.models.TourSchedule sched = booking.getSchedule();
@@ -733,6 +736,7 @@ public class EmailServiceImpl implements EmailService {
                     departureDate = sched.getDepartureDate().format(DATE_FMT);
                 if (sched.getDepartureTime() != null)
                     departureTime = sched.getDepartureTime().toString().substring(0, 5);
+                guideName = getGuideForSchedule(sched);
             }
 
             ctx.setVariable("tourName", tourName);
@@ -749,6 +753,84 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             logger.error("Lỗi gửi email khởi hành cho booking #{}: {}", booking.getId(), e.getMessage());
         }
+    }
+
+    private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
+        if (sched == null) return "NguynNgoc";
+        
+        if (sched.getId() != null && sched.getId() < 100L) {
+            return getPreferredGuide(sched);
+        }
+        
+        java.time.LocalDate depDate = sched.getDepartureDate();
+        java.time.LocalTime depTime = sched.getDepartureTime();
+        
+        if (depDate == null || depTime == null) {
+            return "NguynNgoc";
+        }
+        
+        if (tourScheduleRepository == null) {
+            return "NguynNgoc";
+        }
+        
+        java.util.List<com.kawai.models.TourSchedule> allSchedules = tourScheduleRepository.findAll();
+        java.util.List<com.kawai.models.TourSchedule> conflictSchedules = new java.util.ArrayList<>();
+        for (com.kawai.models.TourSchedule s : allSchedules) {
+            if (depDate.equals(s.getDepartureDate()) && depTime.equals(s.getDepartureTime())) {
+                conflictSchedules.add(s);
+            }
+        }
+        conflictSchedules.sort((s1, s2) -> {
+            Long id1 = s1.getId() != null ? s1.getId() : 0L;
+            Long id2 = s2.getId() != null ? s2.getId() : 0L;
+            return id1.compareTo(id2);
+        });
+        
+        java.util.Set<String> taken = new java.util.HashSet<>();
+        for (com.kawai.models.TourSchedule s : conflictSchedules) {
+            if (s.getId() != null && s.getId() < 100L) {
+                taken.add(getPreferredGuide(s));
+            }
+        }
+        
+        String assigned = null;
+        for (com.kawai.models.TourSchedule s : conflictSchedules) {
+            if (s.getId() != null && s.getId() < 100L) {
+                if (s.getId().equals(sched.getId())) {
+                    return getPreferredGuide(sched);
+                }
+                continue;
+            }
+            
+            String g;
+            if (!taken.contains("NguynNgoc")) {
+                g = "NguynNgoc";
+            } else if (!taken.contains("Ngọc Lan")) {
+                g = "Ngọc Lan";
+            } else {
+                g = "Hoàng Nam";
+            }
+            taken.add(g);
+            
+            if (s.getId() != null && s.getId().equals(sched.getId())) {
+                assigned = g;
+                break;
+            }
+        }
+        
+        return assigned != null ? assigned : "NguynNgoc";
+    }
+
+    private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
+        if (sched == null) return "Ngọc Lan";
+        if (sched.getId() != null && sched.getId() < 100L) {
+            if (sched.getId() % 2 == 0) {
+                return "Ngọc Lan";
+            } else {
+                return "Hoàng Nam";
+            }
+        }
+        return "NguynNgoc";
     }
 
     @Override
