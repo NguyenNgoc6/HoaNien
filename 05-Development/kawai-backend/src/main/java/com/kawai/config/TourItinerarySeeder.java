@@ -16,7 +16,16 @@ public class TourItinerarySeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
+        // Guard: chỉ chạy khi Tours đã có data (data.sql đã seed xong)
+        Integer tourCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM Tours", Integer.class);
+        if (tourCount == null || tourCount < 10) {
+            System.out.println("[ItinerarySeeder] ⚠️ Chưa đủ 10 Tours trong DB (hiện có: " + tourCount + "). Bỏ qua seeder lần này.");
+            return;
+        }
         System.out.println("[ItinerarySeeder] Khởi chạy đồng bộ dữ liệu 10 Tour và Chi tiết hành trình...");
+
+        // Đảm bảo sửa lỗi chính tả cho Tour số 8 (Mũ Né -> Mũi Né) nếu DB cũ đã tồn tại record
+        jdbcTemplate.execute("UPDATE Tours SET tour_name = 'Bình Minh Cồn Cát – Mũi Né' WHERE tour_id = 8 AND (tour_name LIKE '%Mũ Né%' OR tour_name LIKE '%Mu Né%')");
 
         // 1. Chèn thông tin cơ bản cho 10 Tours (nếu chưa có)
         jdbcTemplate.execute("INSERT IGNORE INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, duration, duration_hours, is_insurance_required, insurance_price, short_quote, description, is_active) VALUES (1, 'Hành trình Cố đô', 'CULTURAL', 7500000, 15, '10 Giờ', 10.0, FALSE, 0, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Chuyến đi đưa bạn ngược dòng thời gian về với nét đẹp trầm mặc của cố đô, khơi mở những câu chuyện di sản và thưởng thức phong vị ẩm thực cung đình xưa.', TRUE)");
