@@ -164,3 +164,11 @@ Write-Host "Lines: $($res.Content.Split([Environment]::NewLine).Length)"
   - **Bắt buộc** loại trừ font icon hệ thống (ví dụ: `:not(.material-symbols-outlined)`) để tránh làm mất hiển thị của icon.
   - **Bắt buộc** loại trừ các phần tử mang thương hiệu (như `.brand`, `.logo-text`, `.resort-name`, v.v. và các phần tử hiển thị tên thương hiệu) và thiết lập lại font-family, font-style đứng (`normal`), font-weight chuẩn cho chúng nhằm bảo vệ tính nhận diện thương hiệu nguyên bản của dự án.
 
+## 15. Đồng bộ và bảo toàn số lượng thành viên đi tour khi gán phòng (Post to Room)
+- **Phía Frontend:** Số người phân bổ gán cho các phòng luôn phải mặc định và bị giới hạn khớp hoàn toàn với số lượng người đăng ký đi tour tại form chính. Tuyệt đối không tự động lấy toàn bộ số người ở phòng gán để ghi đè lên đơn đặt tour.
+- **Phía Backend:** Không tự động ghi đè số người đi tour của request bằng tổng số lượng người đặt phòng gán, trừ khi có logic phân bổ cụ thể được người dùng xác nhận và validate trùng khớp từ frontend gửi lên.
+
+## 16. Quy trình Hủy đặt chỗ (Booking Cancellation Flow) từ khách hàng
+- **Xác nhận UI:** Khi khách hàng bấm hủy đơn dịch vụ (như đặt tour) tại trang cá nhân, bắt buộc hiển thị popup xác nhận rõ ràng (ví dụ qua SweetAlert2) để tránh bấm nhầm.
+- **Gửi Email đồng bộ:** Email thông báo hủy tour gửi về cho khách hàng phải sử dụng chung giao diện, CSS và các thông tin chi tiết hóa đơn (Breakdown) giống hệt email đặt tour thành công ban đầu, chỉ cập nhật trạng thái đơn thành 'Đã hủy' và hiển thị rõ số tiền được hoàn cọc.
+
