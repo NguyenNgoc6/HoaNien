@@ -450,10 +450,10 @@
                                             Đang Diễn Ra
                                         </span>
                                         <span class="text-primary/20 select-none">|</span>
-                                        <form th:action="@{/tourguide/finish-tour}" method="post" class="inline" id="finishTourForm">
+                                        <form th:action="@{/tourguide/finish-tour}" method="post" class="inline"
+                                            id="finishTourForm">
                                             <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
-                                            <button type="button"
-                                                onclick="confirmFinishTour(event)"
+                                            <button type="button" onclick="confirmFinishTour(event)"
                                                 class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-xs shadow-sm">
                                                 <span class="material-symbols-outlined text-xs">check_circle</span>
                                                 Hoàn Thành Tour
@@ -491,6 +491,54 @@
                                 <span class="font-label-md text-label-md text-primary"
                                     th:text="${totalAttendees} + ' Khách hàng'">128 Khách hàng</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- LƯU Ý CHUNG (General Notes Banner) -->
+                    <div class="glass-panel rounded-lg p-6 border-primary/10 shadow-sm space-y-4"
+                        th:if="${(tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)) or scheduleId != null}">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="material-symbols-outlined text-primary text-[20px]"
+                                style="font-variation-settings:'FILL' 1">sticky_note_2</span>
+                            <h5 class="font-label-md text-[13px] text-primary uppercase tracking-widest">Lưu ý chung cho
+                                Tour Guide</h5>
+                        </div>
+
+                        <!-- Phần 1: Lưu ý cố định từ Tour -->
+                        <div th:if="${tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)}"
+                            class="flex items-start gap-3 bg-blue-50/80 border border-blue-200 rounded-lg px-4 py-3">
+                            <span class="material-symbols-outlined text-blue-500 text-[18px] mt-0.5 flex-shrink-0"
+                                style="font-variation-settings:'FILL' 1">info</span>
+                            <div>
+                                <p class="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1">Thông
+                                    tin Tour</p>
+                                <p class="text-[13px] text-blue-800 leading-relaxed whitespace-pre-line"
+                                    th:text="${tourGeneralNotes}">Logistics...</p>
+                            </div>
+                        </div>
+
+                        <!-- Phần 2: Ghi chú chuyến (có thể chỉnh sửa inline) -->
+                        <div th:if="${scheduleId != null}" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <p
+                                    class="text-[11px] font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]"
+                                        style="font-variation-settings:'FILL' 1">edit_note</span>
+                                    Ghi chú chuyến hôm nay
+                                </p>
+                                <span id="schedNotesSaveStatus" class="text-[11px] text-emerald-600 hidden">
+                                    <span class="material-symbols-outlined text-[13px]">check_circle</span> Đã lưu
+                                </span>
+                            </div>
+                            <textarea id="scheduleNotesInput" rows="3"
+                                placeholder="Nhập ghi chú đặc biệt cho chuyến hôm nay (thời tiết, thay đổi lịch trình, yêu cầu đặc biệt…)"
+                                class="w-full text-[13px] text-on-surface bg-amber-50/60 border border-amber-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 placeholder-on-surface-variant/40 leading-relaxed"
+                                th:text="${scheduleNotes}" th:data-schedule-id="${scheduleId}"></textarea>
+                            <button onclick="saveScheduleNotes()"
+                                class="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all">
+                                <span class="material-symbols-outlined text-[14px]">save</span>
+                                Lưu ghi chú chuyến
+                            </button>
                         </div>
                     </div>
 
@@ -574,12 +622,15 @@
                                             </button>
                                         </td>
                                         <!-- Lưu ý / Notes từ đặt tour -->
-                                        <td class="py-6 px-4 max-w-[200px]" th:with="
+                                        <td class="py-6 px-4 max-w-[200px]"
+                                            th:with="
                                             rawNotes=${attendee.tourBooking?.notes},
                                             customerNotes=${rawNotes != null && #strings.contains(rawNotes, 'customerNotes=') ? #strings.substringAfter(rawNotes, 'customerNotes=') : ''}">
                                             <span th:if="${customerNotes != null && !#strings.isEmpty(customerNotes)}"
                                                 class="inline-flex items-start gap-1.5 text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 leading-snug max-w-full break-words">
-                                                <span class="material-symbols-outlined text-[14px] mt-[1px] flex-shrink-0" style="font-variation-settings:'FILL' 1">info</span>
+                                                <span
+                                                    class="material-symbols-outlined text-[14px] mt-[1px] flex-shrink-0"
+                                                    style="font-variation-settings:'FILL' 1">info</span>
                                                 <span th:text="${customerNotes}">Yêu cầu đặc biệt của khách</span>
                                             </span>
                                             <span th:if="${customerNotes == null || #strings.isEmpty(customerNotes)}"
@@ -597,7 +648,8 @@
                             </div>
                         </div>
                         <!-- Pagination Controls -->
-                        <div id="pagination-controls" class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-primary/10 select-none">
+                        <div id="pagination-controls"
+                            class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-primary/10 select-none">
                             <p class="text-xs text-on-surface-variant/80 font-medium" id="pagination-info">
                                 Đang hiển thị 1 đến 5 của 25 khách hàng
                             </p>
@@ -623,32 +675,6 @@
                                 class="px-8 py-3 rounded-full bg-primary text-white font-label-md text-label-md shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-semibold">
                                 Gửi báo cáo
                             </button>
-                        </div>
-                    </div>
-                    <div id="notice-banner-card"
-                        class="glass-panel p-8 rounded-lg relative overflow-hidden group no-print">
-                        <div class="relative z-10 flex flex-col h-full justify-between">
-                            <div class="max-w-md">
-                                <h4 class="font-display-md text-[28px] text-primary mb-2">Thông tin Quan trọng (Lưu ý)
-                                </h4>
-                                <p class="font-headline text-lg font-light text-on-surface-variant/70">Yêu cầu tất cả
-                                    nhân viên kiểm tra
-                                    thiết bị quét khuôn mặt trước giờ đón khách 30 phút. Báo cáo ngay nếu có sự cố xảy
-                                    ra.</p>
-                            </div>
-                            <div class="flex items-center gap-4 mt-8">
-                                <button onclick="showImportantNoteDetails()"
-                                    class="px-6 py-2 rounded-full bg-on-background text-white font-label-md text-label-md hover:opacity-90 transition-all">Xem
-                                    chi tiết</button>
-                                <button onclick="dismissImportantNote()"
-                                    class="px-6 py-2 rounded-full border border-primary/20 text-primary font-label-md text-label-md hover:bg-primary/5 transition-all">Bỏ
-                                    qua</button>
-                            </div>
-                        </div>
-                        <div
-                            class="absolute right-0 top-0 w-1/3 h-full opacity-20 group-hover:opacity-30 transition-opacity duration-700 mix-blend-overlay">
-                            <img alt="Lavender" class="w-full h-full object-cover"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeLvciBkxzpqCj99jbhYDz-jWK36X0hiX6zOFGSREI9SK6R5-Vo7lRAKfEd6Z3Wr_hSC3C__jVEYbxzQbBA-UkwdGxwaQrHu6isYZl1ibWqp4M42CGW_uMKaNtNYsHjycv_UNAjCuOeuZY4xTpjnAdYN6JsWf65fvEvvXEIJ9vCn5SP80Tgu7X6wUXuynSbPC_s_W9jdb69eSOlgBl2aRhYQQeMe7ukL-J4tGjtg1WlG9E3UW6GzWv8GF0Xi9HHgxqHfeX3CjWgZ8">
                         </div>
                     </div>
                 </div>
@@ -775,46 +801,22 @@
                         </div>
                     </div>
 
-                    <!-- LƯU Ý CHUNG (General Notes Banner) -->
-                    <div class="glass-panel rounded-lg p-6 border-primary/10 shadow-sm space-y-4"
-                         th:if="${(tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)) or scheduleId != null}">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1">sticky_note_2</span>
-                            <h5 class="font-label-md text-[13px] text-primary uppercase tracking-widest">Lưu ý chung cho Tour Guide</h5>
+                    <!-- Thông tin Quan trọng (Lưu ý) - Không có ảnh Lavender, giao diện nhỏ gọn cho cột phải -->
+                    <div id="notice-banner-card"
+                        class="glass-panel p-6 rounded-lg group no-print space-y-4">
+                        <div class="space-y-2">
+                            <h4 class="font-display-md text-lg text-primary font-semibold">Thông tin Quan trọng (Lưu ý)</h4>
+                            <p class="font-headline text-xs font-light text-on-surface-variant/70 leading-relaxed">
+                                Yêu cầu tất cả nhân viên kiểm tra thiết bị quét khuôn mặt trước giờ đón khách 30 phút. Báo cáo ngay nếu có sự cố xảy ra.
+                            </p>
                         </div>
-
-                        <!-- Phần 1: Lưu ý cố định từ Tour -->
-                        <div th:if="${tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)}"
-                             class="flex items-start gap-3 bg-blue-50/80 border border-blue-200 rounded-lg px-4 py-3">
-                            <span class="material-symbols-outlined text-blue-500 text-[18px] mt-0.5 flex-shrink-0" style="font-variation-settings:'FILL' 1">info</span>
-                            <div>
-                                <p class="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1">Thông tin Tour</p>
-                                <p class="text-[13px] text-blue-800 leading-relaxed whitespace-pre-line" th:text="${tourGeneralNotes}">Logistics...</p>
-                            </div>
-                        </div>
-
-                        <!-- Phần 2: Ghi chú chuyến (có thể chỉnh sửa inline) -->
-                        <div th:if="${scheduleId != null}" class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p class="text-[11px] font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1">edit_note</span>
-                                    Ghi chú chuyến hôm nay
-                                </p>
-                                <span id="schedNotesSaveStatus" class="text-[11px] text-emerald-600 hidden">
-                                    <span class="material-symbols-outlined text-[13px]">check_circle</span> Đã lưu
-                                </span>
-                            </div>
-                            <textarea id="scheduleNotesInput"
-                                      rows="3"
-                                      placeholder="Nhập ghi chú đặc biệt cho chuyến hôm nay (thời tiết, thay đổi lịch trình, yêu cầu đặc biệt…)"
-                                      class="w-full text-[13px] text-on-surface bg-amber-50/60 border border-amber-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 placeholder-on-surface-variant/40 leading-relaxed"
-                                      th:text="${scheduleNotes}"
-                                      th:data-schedule-id="${scheduleId}"></textarea>
-                            <button onclick="saveScheduleNotes()"
-                                    class="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all">
-                                <span class="material-symbols-outlined text-[14px]">save</span>
-                                Lưu ghi chú chuyến
-                            </button>
+                        <div class="flex items-center gap-3">
+                            <button onclick="showImportantNoteDetails()"
+                                class="px-4 py-1.5 rounded-full bg-on-background text-white font-label-md text-[11px] hover:opacity-90 transition-all">Xem
+                                chi tiết</button>
+                            <button onclick="dismissImportantNote()"
+                                class="px-4 py-1.5 rounded-full border border-primary/20 text-primary font-label-md text-[11px] hover:bg-primary/5 transition-all">Bỏ
+                                qua</button>
                         </div>
                     </div>
                 </div>
@@ -1350,7 +1352,7 @@
             const scheduleId = input.getAttribute('data-schedule-id');
             const notes = input.value;
             const statusSpan = document.getElementById('schedNotesSaveStatus');
-            
+
             try {
                 const resp = await fetch(`/tourguide/schedule/${scheduleId}/update-notes`, {
                     method: 'POST',
@@ -1632,7 +1634,7 @@
         function getCandidateRows() {
             const query = (document.getElementById('search-customer-input')?.value || '').trim();
             const rows = Array.from(document.querySelectorAll('table tbody tr'));
-            
+
             if (!query) return rows;
 
             const tourName = document.getElementById('tour-name-display') ? document.getElementById('tour-name-display').textContent : '';
@@ -1680,7 +1682,7 @@
             // Update info text
             const infoEl = document.getElementById('pagination-info');
             const wrapperEl = document.getElementById('pagination-controls');
-            
+
             if (total === 0) {
                 if (infoEl) infoEl.textContent = 'Không có kết quả trùng khớp';
                 if (wrapperEl) wrapperEl.classList.add('hidden');
@@ -1697,7 +1699,7 @@
             const buttonsEl = document.getElementById('pagination-buttons');
             if (buttonsEl) {
                 let html = '';
-                
+
                 // Prev button
                 const prevDisabled = currentPage === 1;
                 html += `
@@ -2224,13 +2226,13 @@
 
     function checkTourSafety(event) {
         if (event) event.preventDefault();
-        
+
         // Kiểm tra xem số lượng hành khách đã điểm danh có đủ so với số lượng đăng ký hay chưa
         if (totalAttendeesDb === 0 || checkedInCountDb < totalAttendeesDb) {
             showCustomWarning({
                 title: 'Không Thể Bắt Đầu Tour',
-                message: totalAttendeesDb === 0 
-                    ? 'Chưa thể bắt đầu tour do chưa có hành khách nào đăng ký!' 
+                message: totalAttendeesDb === 0
+                    ? 'Chưa thể bắt đầu tour do chưa có hành khách nào đăng ký!'
                     : `Chưa thể bắt đầu tour. Số hành khách điểm danh hiện tại (${checkedInCountDb}/${totalAttendeesDb}) chưa đủ so với danh sách đăng ký theo quy định của tour!`,
                 icon: 'warning'
             });
@@ -2403,7 +2405,7 @@
         document.getElementById('confirm-modal-title').textContent = options.title || 'Xác Nhận';
         document.getElementById('confirm-modal-msg').textContent = options.message || '';
         document.getElementById('confirm-modal-icon').textContent = options.icon || 'help';
-        
+
         confirmCallback = options.onConfirm;
 
         modal.classList.remove('hidden');
@@ -2420,7 +2422,7 @@
         document.getElementById('confirm-modal-title').textContent = options.title || 'Cảnh Báo';
         document.getElementById('confirm-modal-msg').textContent = options.message || '';
         document.getElementById('confirm-modal-icon').textContent = options.icon || 'warning';
-        
+
         // Hide cancel button
         const cancelBtn = modal.querySelector('button[onclick="closeCustomConfirm(false)"]');
         if (cancelBtn) cancelBtn.style.display = 'none';
@@ -2540,7 +2542,8 @@
                 transform scale-95 opacity-0 transition-all duration-200 ease-out">
         <!-- Icon + Title -->
         <div class="flex flex-col items-center text-center px-8 pt-9 pb-5">
-            <div class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
+            <div
+                class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
                 <span class="material-symbols-outlined text-primary" style="font-size:36px">undo</span>
             </div>
             <h3 class="font-bold text-on-background text-lg md:text-xl tracking-tight">Xác nhận Hoàn Tác</h3>
@@ -2549,7 +2552,8 @@
 
         <!-- Message -->
         <div class="px-8 pb-8">
-            <p id="reset-confirm-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center"></p>
+            <p id="reset-confirm-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center">
+            </p>
         </div>
 
         <!-- Separator -->
@@ -2622,21 +2626,25 @@
      CUSTOM CONFIRM MODAL (Purple theme)
 ══════════════════════════════════════════════════════════ -->
 <div id="custom-confirm-modal"
-     class="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-[510] hidden p-4">
+    class="fixed inset-0 bg-primary/20 backdrop-blur-md flex items-center justify-center z-[510] hidden p-4">
     <div class="confirm-modal-box w-full max-w-md overflow-hidden bg-white border border-primary/20 rounded-3xl shadow-2xl
                 transform scale-95 opacity-0 transition-all duration-200 ease-out">
         <!-- Icon + Title -->
         <div class="flex flex-col items-center text-center px-8 pt-9 pb-5">
-            <div class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
-                <span id="confirm-modal-icon" class="material-symbols-outlined text-primary" style="font-size:36px">help</span>
+            <div
+                class="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-5 shadow-inner">
+                <span id="confirm-modal-icon" class="material-symbols-outlined text-primary"
+                    style="font-size:36px">help</span>
             </div>
-            <h3 id="confirm-modal-title" class="font-bold text-on-background text-lg md:text-xl tracking-tight">Xác Nhận</h3>
+            <h3 id="confirm-modal-title" class="font-bold text-on-background text-lg md:text-xl tracking-tight">Xác Nhận
+            </h3>
             <div class="w-12 h-px bg-primary/30 mt-4"></div>
         </div>
 
         <!-- Message -->
         <div class="px-8 pb-8">
-            <p id="confirm-modal-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center"></p>
+            <p id="confirm-modal-msg" class="text-sm md:text-base text-on-surface-variant leading-relaxed text-center">
+            </p>
         </div>
 
         <!-- Separator -->
@@ -2644,14 +2652,12 @@
 
         <!-- Action buttons -->
         <div class="flex gap-4 px-6 py-5">
-            <button type="button"
-                    onclick="closeCustomConfirm(false)"
-                    class="flex-1 py-3 rounded-full text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-low transition-all">
+            <button type="button" onclick="closeCustomConfirm(false)"
+                class="flex-1 py-3 rounded-full text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-low transition-all">
                 Huỷ
             </button>
-            <button type="button"
-                    onclick="closeCustomConfirm(true)"
-                    class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center">
+            <button type="button" onclick="closeCustomConfirm(true)"
+                class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center">
                 Đồng ý
             </button>
         </div>
