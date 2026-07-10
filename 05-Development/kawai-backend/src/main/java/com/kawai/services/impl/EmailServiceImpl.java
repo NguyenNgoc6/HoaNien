@@ -331,7 +331,7 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("departureDate", departureDate);
             ctx.setVariable("departureTime", departureTime);
             ctx.setVariable("participantCount", booking.getParticipantCount());
-            ctx.setVariable("bookingDate", booking.getCreatedAt() != null ? booking.getCreatedAt().format(DATE_FMT) : java.time.LocalDate.now().format(DATE_FMT));
+            ctx.setVariable("bookingDate", booking.getBookingDate() != null ? booking.getBookingDate().format(DATE_FMT) : java.time.LocalDate.now().format(DATE_FMT));
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
 
