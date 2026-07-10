@@ -240,8 +240,9 @@ public class FeedbackController {
             Principal principal,
             jakarta.servlet.http.HttpSession session,
             @RequestParam(name = "bookingId", required = false) Long bookingId,
-            @RequestParam("ratingTour") Integer ratingTour,
-            @RequestParam("ratingRoomDining") Integer ratingRoomDining,
+            @RequestParam(name = "ratingTour", required = false) Integer ratingTour,
+            @RequestParam(name = "ratingRoomDining", required = false) Integer ratingRoomDining,
+            @RequestParam(name = "ratingService", required = false) Integer ratingService,
             @RequestParam("reviewText") String reviewText) {
 
         boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)
@@ -293,7 +294,18 @@ public class FeedbackController {
         review.setTourBooking(booking);
         review.setRatingTour(ratingTour);
         review.setRatingRoomDining(ratingRoomDining);
-        review.setRatingService((ratingTour + ratingRoomDining) / 2);
+        
+        int finalServiceRating = 5;
+        if (ratingService != null) {
+            finalServiceRating = ratingService;
+        } else if (ratingTour != null && ratingRoomDining != null) {
+            finalServiceRating = (ratingTour + ratingRoomDining) / 2;
+        } else if (ratingTour != null) {
+            finalServiceRating = ratingTour;
+        } else if (ratingRoomDining != null) {
+            finalServiceRating = ratingRoomDining;
+        }
+        review.setRatingService(finalServiceRating);
         review.setReviewText(reviewText);
         review.setCreatedAt(LocalDateTime.now());
         review.setModerationStatus("Approved"); // Auto-approved for demo
