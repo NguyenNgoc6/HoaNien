@@ -1164,7 +1164,7 @@
 
                                 // Tự động tải lại trang sau khi điểm danh thành công
                                 setTimeout(() => {
-                                    window.location.href = '/tourguide/dashboard?scanned=true';
+                                    window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : '');
                                 }, 1500);
                             }
                         } else {
@@ -1280,7 +1280,7 @@
                 } catch (e) {
                     console.warn(e);
                 }
-                setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true'; }, 2000);
+                setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : ''); }, 2000);
             } else {
                 faceFrame.className = 'face-frame failed';
                 statusLabel.textContent = 'KHÔNG TỒN TẠI';
@@ -1343,7 +1343,7 @@
                 const data = await resp.json();
                 if (data.success) {
                     showToast(data.name + ' đã được điểm danh thành công!', 'success');
-                    window.location.href = '/tourguide/dashboard?scanned=true';
+                    window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : '');
                 }
             } catch (e) {
                 console.error(e);
@@ -1358,7 +1358,7 @@
                 onConfirm: async () => {
                     try {
                         await fetch('/api/faceid/reset');
-                        window.location.href = '/tourguide/dashboard';
+                        window.location.href = '/tourguide/dashboard' + (activeScheduleId ? '?scheduleId=' + activeScheduleId : '');
                     } catch (e) {
                         console.error(e);
                     }
