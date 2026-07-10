@@ -920,10 +920,11 @@
     <div id="toast-container" class="fixed top-24 right-8 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Script Section -->
-    <script>
+    <script th:inline="javascript">
         const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
         const FACE_MATCH_THRESHOLD = 0.45;
         const MIN_CONFIDENCE = 85;
+        const activeScheduleId = [[${scheduleId}]];
 
         let cameraStream = null;
         let cameraActive = false;
@@ -953,7 +954,7 @@
 
         async function loadReferenceFaces() {
             try {
-                const response = await fetch('/api/faceid/references');
+                const response = await fetch('/api/faceid/references?scheduleId=' + activeScheduleId);
                 const refs = await response.json();
                 for (const ref of refs) {
                     try {
@@ -1118,7 +1119,7 @@
                                     await fetch('/api/faceid/verify', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ name: bestName })
+                                        body: JSON.stringify({ name: bestName, scheduleId: activeScheduleId })
                                     });
 
                                     // Update UI List bên tay trái ngay lập tức (không cần reload)
@@ -1274,7 +1275,7 @@
                     await fetch('/api/faceid/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: matchResult.name })
+                        body: JSON.stringify({ name: matchResult.name, scheduleId: activeScheduleId })
                     });
                 } catch (e) {
                     console.warn(e);
