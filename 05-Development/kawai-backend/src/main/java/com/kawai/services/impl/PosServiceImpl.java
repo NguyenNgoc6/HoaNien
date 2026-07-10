@@ -81,6 +81,8 @@ public class PosServiceImpl implements PosService {
                     } catch (Exception e) {}
                 }
             }
+                }
+            }
         } catch (Exception e) {
             // Bỏ qua lỗi khi DB vừa được tạo lại (ddl-auto=create) và data chưa được seed
             System.out.println("--- cleanupOrphanedFolios: DB chưa có dữ liệu, bỏ qua cleanup lần này. ---");
@@ -102,7 +104,7 @@ public class PosServiceImpl implements PosService {
             order.setOrderType("Room Service");
             Room room = roomRepository.findByRoomNumber(request.getRoomNumber())
                     .orElseThrow(() -> new BusinessException("POS-001", "Phòng không tồn tại!"));
-            
+
             if (room.getCurrentBookingDetailId() != null) {
                 Optional<RoomBookingDetail> detailOpt = roomBookingDetailRepository
                         .findById(room.getCurrentBookingDetailId());
@@ -116,10 +118,11 @@ public class PosServiceImpl implements PosService {
             }
         } else {
             order.setOrderType("Dine In");
-            
+
             java.time.LocalTime orderTime = java.time.LocalTime.now();
             if (orderTime.isAfter(java.time.LocalTime.of(22, 59)) || orderTime.isBefore(java.time.LocalTime.of(8, 0))) {
-                throw new BusinessException("POS-009", "Nhà hàng không nhận khách ăn tại bàn trong khung giờ từ 23:00 đến 08:00 sáng. Quý khách vui lòng sử dụng dịch vụ gọi món lên phòng.");
+                throw new BusinessException("POS-009",
+                        "Nhà hàng không nhận khách ăn tại bàn trong khung giờ từ 23:00 đến 08:00 sáng. Quý khách vui lòng sử dụng dịch vụ gọi món lên phòng.");
             }
 
             if (request.getTableId() != null) {
@@ -135,21 +138,26 @@ public class PosServiceImpl implements PosService {
 
                 RestaurantTable table = restaurantTableRepository.findById(request.getTableId())
                         .orElseThrow(() -> new BusinessException("POS-002", "Bàn ăn không tồn tại!"));
-                
-                if ("Cleaning".equalsIgnoreCase(table.getTableStatus()) || "Out_of_service".equalsIgnoreCase(table.getTableStatus())) {
+
+                if ("Cleaning".equalsIgnoreCase(table.getTableStatus())
+                        || "Out_of_service".equalsIgnoreCase(table.getTableStatus())) {
                     throw new BusinessException("POS-007", "Bàn đang được dọn hoặc bảo trì, không thể tạo hóa đơn!");
                 }
-                
+
                 if ("Available".equalsIgnoreCase(table.getTableStatus())) {
                     java.time.LocalDate today = java.time.LocalDate.now();
                     java.time.LocalTime now = java.time.LocalTime.now();
-                    
+
                     java.time.LocalDateTime currentDT = java.time.LocalDateTime.now();
-                    
-                    List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
+
+                    List<TableReservation> reservations = tableReservationRepository
+                            .findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
                     for (TableReservation res : reservations) {
-                        if ("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus()) || "Completed".equalsIgnoreCase(res.getStatus())) {
-                            java.time.LocalDateTime resStartDT = java.time.LocalDateTime.of(today, res.getReserveTime());
+                        if ("Confirmed".equalsIgnoreCase(res.getStatus()) || "Pending".equalsIgnoreCase(res.getStatus())
+                                || "Seated".equalsIgnoreCase(res.getStatus())
+                                || "Completed".equalsIgnoreCase(res.getStatus())) {
+                            java.time.LocalDateTime resStartDT = java.time.LocalDateTime.of(today,
+                                    res.getReserveTime());
                             java.time.LocalDateTime resEndDT;
                             if (res.getEndTime() != null) {
                                 resEndDT = java.time.LocalDateTime.of(today, res.getEndTime());
@@ -159,20 +167,21 @@ public class PosServiceImpl implements PosService {
                             } else {
                                 resEndDT = resStartDT.plusHours(1);
                             }
-                            
+
                             // Add 15 minutes buffer time
                             resEndDT = resEndDT.plusMinutes(15);
-                            
+
                             if (currentDT.isAfter(resStartDT.minusHours(2)) && currentDT.isBefore(resEndDT)) {
-                                throw new BusinessException("POS-008", "Bàn đã có khách đặt trước trong thời gian tới!");
+                                throw new BusinessException("POS-008",
+                                        "Bàn đã có khách đặt trước trong thời gian tới!");
                             }
                         }
                     }
                 }
-                
+
                 table.setTableStatus("Occupied");
                 restaurantTableRepository.save(table);
-                
+
                 order.setTable(table);
             }
         }
@@ -238,16 +247,19 @@ public class PosServiceImpl implements PosService {
             for (CartItemDto itemDto : request.getItems()) {
                 MenuItem menuItem = foodItemRepository.findById(itemDto.getId())
                         .orElseThrow(() -> new BusinessException("POS-004", "Món ăn không tồn tại!"));
-                
+
                 // =========================================================
                 // CHỐT CHẶN BẢO MẬT: KIỂM TRA MÓN ĂN THEO NGÀY
-                // Ngăn chặn trường hợp user dùng Postman hack gửi id món ăn của ngày mai vào giỏ hàng hôm nay.
-                // Nếu món này KHÔNG phải món cố định (isAlwaysAvailable = false) 
+                // Ngăn chặn trường hợp user dùng Postman hack gửi id món ăn của ngày mai vào
+                // giỏ hàng hôm nay.
+                // Nếu món này KHÔNG phải món cố định (isAlwaysAvailable = false)
                 // VÀ ngày hiện tại không nằm trong danh sách được bán -> Văng lỗi!
                 // =========================================================
-                if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) && 
-                    (menuItem.getAvailableDays() == null || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
-                    throw new BusinessException("POS-010", "Món ăn '" + menuItem.getItemName() + "' không được phục vụ vào hôm nay. Vui lòng làm mới giỏ hàng.");
+                if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) &&
+                        (menuItem.getAvailableDays() == null
+                                || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
+                    throw new BusinessException("POS-010", "Món ăn '" + menuItem.getItemName()
+                            + "' không được phục vụ vào hôm nay. Vui lòng làm mới giỏ hàng.");
                 }
 
                 FoodOrderDetail detail = new FoodOrderDetail();
@@ -271,7 +283,8 @@ public class PosServiceImpl implements PosService {
         BigDecimal finalTotal = subtotal;
         if ("Room Service".equalsIgnoreCase(savedOrder.getOrderType())) {
             BigDecimal feePercent = new BigDecimal("0.05");
-            if ("VNPAY".equalsIgnoreCase(request.getPaymentType()) || "ONLINE".equalsIgnoreCase(request.getPaymentType())) {
+            if ("VNPAY".equalsIgnoreCase(request.getPaymentType())
+                    || "ONLINE".equalsIgnoreCase(request.getPaymentType())) {
                 feePercent = new BigDecimal("0.03");
             }
             BigDecimal fee = subtotal.multiply(feePercent);
@@ -287,12 +300,17 @@ public class PosServiceImpl implements PosService {
 
             RoomBookingDetail detailToCharge = order.getRoomBookingDetail();
             if (detailToCharge == null) {
-                List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(activeBooking.getId());
-                detailToCharge = details.stream().filter(d -> "Checked_In".equals(d.getDetailStatus())).findFirst().orElse(!details.isEmpty() ? details.get(0) : null);
+                List<RoomBookingDetail> details = roomBookingDetailRepository
+                        .findByRoomBookingId(activeBooking.getId());
+                detailToCharge = details.stream().filter(d -> "Checked_In".equals(d.getDetailStatus())).findFirst()
+                        .orElse(!details.isEmpty() ? details.get(0) : null);
             }
 
             if (detailToCharge != null) {
-                BigDecimal limit = detailToCharge.getSubCreditLimit() != null ? detailToCharge.getSubCreditLimit() : (((RoomBooking) activeBooking).getCreditLimit() != null ? ((RoomBooking) activeBooking).getCreditLimit() : BigDecimal.ZERO);
+                BigDecimal limit = detailToCharge.getSubCreditLimit() != null ? detailToCharge.getSubCreditLimit()
+                        : (((RoomBooking) activeBooking).getCreditLimit() != null
+                                ? ((RoomBooking) activeBooking).getCreditLimit()
+                                : BigDecimal.ZERO);
                 BigDecimal used = folioItemRepository.findByRoomBookingDetailId(detailToCharge.getId()).stream()
                         .filter(f -> !Boolean.TRUE.equals(f.getIsSettledSeparately()))
                         .map(FolioItem::getAmount)
@@ -321,10 +339,12 @@ public class PosServiceImpl implements PosService {
             }
         }
 
-        if ("Room Service".equalsIgnoreCase(savedOrder.getOrderType()) && !"AWAITING_PAYMENT".equalsIgnoreCase(savedOrder.getOrderStatus())) {
+        if ("Room Service".equalsIgnoreCase(savedOrder.getOrderType())
+                && !"AWAITING_PAYMENT".equalsIgnoreCase(savedOrder.getOrderStatus())) {
             if (activeBooking != null && activeBooking.getCustomer() != null) {
                 String roomNum = request.getRoomNumber();
-                if (roomNum == null && savedOrder.getRoomBookingDetail() != null && savedOrder.getRoomBookingDetail().getRoom() != null) {
+                if (roomNum == null && savedOrder.getRoomBookingDetail() != null
+                        && savedOrder.getRoomBookingDetail().getRoom() != null) {
                     roomNum = savedOrder.getRoomBookingDetail().getRoom().getRoomNumber();
                 }
                 emailService.sendRoomServiceConfirmation(savedOrder, activeBooking.getCustomer(), roomNum);
@@ -339,14 +359,15 @@ public class PosServiceImpl implements PosService {
         FoodOrder order = foodOrderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
         if ("AWAITING_PAYMENT".equalsIgnoreCase(order.getOrderStatus())) {
-             order.setOrderStatus("Pending");
+            order.setOrderStatus("Pending");
         }
         order.setIsPaidInPos(true);
 
         // Update reservation to Completed and set endTime to now
         RestaurantTable table = order.getTable();
         if (table != null) {
-            List<TableReservation> activeReservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), java.time.LocalDate.now());
+            List<TableReservation> activeReservations = tableReservationRepository
+                    .findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), java.time.LocalDate.now());
             for (TableReservation res : activeReservations) {
                 if ("Seated".equalsIgnoreCase(res.getStatus())) {
                     res.setStatus("Completed");
@@ -354,7 +375,7 @@ public class PosServiceImpl implements PosService {
                     tableReservationRepository.save(res);
                 }
             }
-            
+
             // Tự động chuyển bàn sang Cleaning
             table.setTableStatus("Cleaning");
             table.setCleaningStartTime(java.time.LocalDateTime.now());
@@ -394,7 +415,7 @@ public class PosServiceImpl implements PosService {
         BigDecimal used = folioItemRepository.findByRoomBookingDetailId(detail.getId()).stream()
                 .map(com.kawai.models.FolioItem::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+
         if (limit.subtract(used).compareTo(amount) < 0) {
             throw new BusinessException("POS-003", "Hạn mức chi tiêu phòng không đủ để thanh toán (vượt Credit Limit)");
         }
@@ -420,27 +441,36 @@ public class PosServiceImpl implements PosService {
         FoodOrder order = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new com.kawai.exceptions.BusinessException("POS-002", "Không tìm thấy đơn hàng"));
 
-        if ("Room Service".equalsIgnoreCase(order.getOrderType()) || "RoomService".equalsIgnoreCase(order.getOrderType())) {
-            throw new com.kawai.exceptions.BusinessException("POS-005", "Không hỗ trợ gọi thêm món cho đơn Room Service. Vui lòng tạo đơn mới.");
+        if ("Room Service".equalsIgnoreCase(order.getOrderType())
+                || "RoomService".equalsIgnoreCase(order.getOrderType())) {
+            throw new com.kawai.exceptions.BusinessException("POS-005",
+                    "Không hỗ trợ gọi thêm món cho đơn Room Service. Vui lòng tạo đơn mới.");
         }
 
-        if (Boolean.TRUE.equals(order.getIsPaidInPos()) || "PAID".equalsIgnoreCase(order.getOrderStatus()) || "Cancelled".equalsIgnoreCase(order.getOrderStatus())) {
-            throw new com.kawai.exceptions.BusinessException("POS-006", "Đơn hàng đã thanh toán hoặc bị hủy, không thể thêm món.");
+        if (Boolean.TRUE.equals(order.getIsPaidInPos()) || "PAID".equalsIgnoreCase(order.getOrderStatus())
+                || "Cancelled".equalsIgnoreCase(order.getOrderStatus())) {
+            throw new com.kawai.exceptions.BusinessException("POS-006",
+                    "Đơn hàng đã thanh toán hoặc bị hủy, không thể thêm món.");
         }
 
         java.util.List<FoodOrderDetail> newDetails = new java.util.ArrayList<>();
         for (com.kawai.dto.CartItemDto item : items) {
             MenuItem menuItem = foodItemRepository.findById(item.getId())
-                    .orElseThrow(() -> new com.kawai.exceptions.BusinessException("POS-003", "Món ăn không tồn tại: ID " + item.getId()));
+                    .orElseThrow(() -> new com.kawai.exceptions.BusinessException("POS-003",
+                            "Món ăn không tồn tại: ID " + item.getId()));
 
             if (Boolean.FALSE.equals(menuItem.getIsAvailable())) {
-                throw new com.kawai.exceptions.BusinessException("POS-004", "Món đã hết — không thể order: " + menuItem.getItemName());
+                throw new com.kawai.exceptions.BusinessException("POS-004",
+                        "Món đã hết — không thể order: " + menuItem.getItemName());
             }
 
-            // CHỐT CHẶN BẢO MẬT: Áp dụng tương tự cho tính năng "Gọi thêm món" khi đang ăn tại bàn
-            if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) && 
-                (menuItem.getAvailableDays() == null || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
-                throw new com.kawai.exceptions.BusinessException("POS-010", "Món ăn '" + menuItem.getItemName() + "' không được phục vụ vào hôm nay.");
+            // CHỐT CHẶN BẢO MẬT: Áp dụng tương tự cho tính năng "Gọi thêm món" khi đang ăn
+            // tại bàn
+            if (!Boolean.TRUE.equals(menuItem.getIsAlwaysAvailable()) &&
+                    (menuItem.getAvailableDays() == null
+                            || !menuItem.getAvailableDays().contains(java.time.LocalDate.now().getDayOfWeek()))) {
+                throw new com.kawai.exceptions.BusinessException("POS-010",
+                        "Món ăn '" + menuItem.getItemName() + "' không được phục vụ vào hôm nay.");
             }
 
             FoodOrderDetail detail = new FoodOrderDetail();
@@ -459,7 +489,7 @@ public class PosServiceImpl implements PosService {
         } else {
             order.setDetails(newDetails);
         }
-        
+
         // Reset order status to pending so kitchen sees new items
         order.setOrderStatus("Pending");
         foodOrderRepository.save(order);
@@ -469,7 +499,7 @@ public class PosServiceImpl implements PosService {
     public void updateOrderStatus(Long orderId, String status) {
         FoodOrder order = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
-        
+
         order.setOrderStatus(status);
 
         // Update KOT status for all details based on order status
@@ -481,7 +511,8 @@ public class PosServiceImpl implements PosService {
             }
         } else if ("Ready".equalsIgnoreCase(status)) {
             for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
-                if ("Preparing".equalsIgnoreCase(detail.getKotStatus()) || "Pending".equalsIgnoreCase(detail.getKotStatus())) {
+                if ("Preparing".equalsIgnoreCase(detail.getKotStatus())
+                        || "Pending".equalsIgnoreCase(detail.getKotStatus())) {
                     detail.setKotStatus("Ready");
                 }
             }
@@ -491,7 +522,7 @@ public class PosServiceImpl implements PosService {
                     detail.setKotStatus("Served");
                 }
             }
-            
+
             // Tự động gán cờ thanh toán cho đơn Room-Service khi giao xong (Served)
             String orderTypeStr = order.getOrderType() != null ? order.getOrderType().replace(" ", "") : "";
             if ("RoomService".equalsIgnoreCase(orderTypeStr) || "Room-Svc".equalsIgnoreCase(orderTypeStr)) {
@@ -519,7 +550,8 @@ public class PosServiceImpl implements PosService {
 
         // Handle refund logic based on payment method
         String pType = order.getPaymentType();
-        if ("Post to Room".equalsIgnoreCase(pType) || "CHARGE_TO_ROOM".equalsIgnoreCase(pType) || "Post_To_Room".equalsIgnoreCase(pType)) {
+        if ("Post to Room".equalsIgnoreCase(pType) || "CHARGE_TO_ROOM".equalsIgnoreCase(pType)
+                || "Post_To_Room".equalsIgnoreCase(pType)) {
             java.util.List<com.kawai.models.FolioItem> folios = null;
             if (order.getRoomBookingDetail() != null) {
                 folios = folioItemRepository.findByRoomBookingDetailId(order.getRoomBookingDetail().getId());
@@ -528,7 +560,8 @@ public class PosServiceImpl implements PosService {
             }
             if (folios != null) {
                 for (com.kawai.models.FolioItem folio : folios) {
-                    if (folio.getDescription() != null && folio.getDescription().contains("Order #" + order.getId() + ")")) {
+                    if (folio.getDescription() != null
+                            && folio.getDescription().contains("Order #" + order.getId() + ")")) {
                         folioItemRepository.delete(folio);
                     }
                 }
@@ -549,4 +582,3 @@ public class PosServiceImpl implements PosService {
         foodOrderRepository.save(order);
     }
 }
-

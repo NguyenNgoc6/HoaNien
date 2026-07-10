@@ -33,9 +33,7 @@ import com.kawai.services.interfaces.VnPayService;
 @RequestMapping("/api/folios")
 public class FolioRestController {
 
-    @Autowired
-    private com.kawai.services.interfaces.WorkflowEngineService workflowEngineService;
-
+    private final com.kawai.services.interfaces.WorkflowEngineService workflowEngineService;
     private final NightAuditService nightAuditService;
     private final FolioItemRepository folioItemRepository;
     private final RoomBookingDetailRepository roomBookingDetailRepository;
@@ -50,7 +48,9 @@ public class FolioRestController {
     private final com.kawai.repositories.CustomerRepository customerRepository;
     private final com.kawai.repositories.RoomGuestRepository roomGuestRepository;
     private final com.kawai.repositories.MembershipTierRepository membershipTierRepository;
-
+    private final com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo;
+    private final com.kawai.repositories.EmployeeRepository employeeRepository;
+    private final com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
     @Autowired
     public FolioRestController(NightAuditService nightAuditService,
             FolioItemRepository folioItemRepository,
@@ -65,7 +65,11 @@ public class FolioRestController {
             com.kawai.repositories.PromotionRepository promotionRepository,
             com.kawai.repositories.CustomerRepository customerRepository,
             com.kawai.repositories.RoomGuestRepository roomGuestRepository,
-            com.kawai.repositories.MembershipTierRepository membershipTierRepository) {
+            com.kawai.repositories.MembershipTierRepository membershipTierRepository,
+            com.kawai.services.interfaces.WorkflowEngineService workflowEngineService,
+            com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo,
+            com.kawai.repositories.EmployeeRepository employeeRepository,
+            com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository) {
         this.nightAuditService = nightAuditService;
         this.folioItemRepository = folioItemRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
@@ -80,6 +84,63 @@ public class FolioRestController {
         this.customerRepository = customerRepository;
         this.roomGuestRepository = roomGuestRepository;
         this.membershipTierRepository = membershipTierRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
+        this.workflowEngineService = workflowEngineService;
+        this.housekeepingTaskRepo = housekeepingTaskRepo;
+        this.employeeRepository = employeeRepository;
+    }
+
+    /**
+     * Lấy thông tin hạn mức tín dụng của tất cả phòng trong một Booking.
+     * Dùng cho Modal "Nâng hạn mức" trên trang In-House.
+     */
+    @GetMapping("/booking/{bookingId}/credit-info")
+    public ResponseEntity<?> getCreditInfoByBooking(@PathVariable Long bookingId) {
+        try {
+            List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
+            if (details.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("success", false, "message", "Không tìm thấy phòng trong booking!"));
+            }
+
+            List<Map<String, Object>> rooms = new java.util.ArrayList<>();
+            for (RoomBookingDetail d : details) {
+                // Dùng native query lấy trực tiếp amount — tránh lỗi Hibernate mapping
+                // khi DB có row cũ vi phạm payer_customer_id NOT NULL
+                List<java.math.BigDecimal> amounts = folioItemRepository.findAmountsByDetailId(d.getId());
+
+                // Chi tiêu thực (FolioItem DƯƠNG)
+                java.math.BigDecimal charged = amounts.stream()
+                        .filter(a -> a != null && a.compareTo(java.math.BigDecimal.ZERO) > 0)
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+                // Tiền khách đã nạp trước (CHỈ đếm các khoản nạp hạn mức, bỏ tiền cọc Walk-in)
+                java.math.BigDecimal deposited = folioItemRepository.findCreditDepositAmountsByDetailId(d.getId())
+                        .stream()
+                        .filter(a -> a != null && a.compareTo(java.math.BigDecimal.ZERO) < 0)
+                        .map(java.math.BigDecimal::abs)
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+                java.math.BigDecimal limit = d.getSubCreditLimit() != null ? d.getSubCreditLimit()
+                        : java.math.BigDecimal.ZERO;
+                // Khả dụng = Hạn mức gốc + Đã nạp - Đang chi
+                java.math.BigDecimal available = limit.add(deposited).subtract(charged);
+
+                Map<String, Object> roomMap = new java.util.HashMap<>();
+                roomMap.put("detailId", d.getId());
+                roomMap.put("roomNumber", d.getRoom() != null ? d.getRoom().getRoomNumber() : "N/A");
+                roomMap.put("creditLimit", limit);
+                roomMap.put("charged", charged);
+                roomMap.put("deposited", deposited);
+                roomMap.put("available", available);
+                rooms.add(roomMap);
+            }
+
+            return ResponseEntity.ok(Map.of("success", true, "rooms", rooms));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
+        }
     }
 
     /**
@@ -166,11 +227,20 @@ public class FolioRestController {
         } catch (Exception e) {
         }
 
+        boolean depositFromBooking = false;
         if (deposit.compareTo(BigDecimal.ZERO) == 0 && detail.getRoomBooking().getDepositAmount() != null) {
             deposit = detail.getRoomBooking().getDepositAmount();
+            depositFromBooking = true;
         }
 
-        BigDecimal otherPayments = totalPayments.subtract(deposit);
+        BigDecimal otherPayments;
+        if (depositFromBooking) {
+            otherPayments = totalPayments;
+            totalPayments = totalPayments.add(deposit);
+        } else {
+            otherPayments = totalPayments.subtract(deposit);
+        }
+
         if (otherPayments.compareTo(BigDecimal.ZERO) < 0) {
             otherPayments = BigDecimal.ZERO;
         }
@@ -363,6 +433,112 @@ public class FolioRestController {
                 "item", item));
     }
 
+    @PostMapping("/room/{roomBookingDetailId}/request-checkout")
+    public ResponseEntity<?> requestCheckout(@PathVariable Long roomBookingDetailId) {
+        try {
+            Optional<RoomBookingDetail> optDetail = roomBookingDetailRepository.findById(roomBookingDetailId);
+            if (optDetail.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không tìm thấy phòng"));
+            }
+            RoomBookingDetail detail = optDetail.get();
+            com.kawai.models.Room room = detail.getRoom();
+
+            if (!"Checked_In".equalsIgnoreCase(detail.getDetailStatus())) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Phòng chưa check-in hoặc đã checkout."));
+            }
+
+            // Kiểm tra xem đã có task ROOM_CHECK chưa hoàn thành chưa
+            boolean hasPendingCheck = housekeepingTaskRepo.findAll().stream()
+                    .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
+                            && "ROOM_CHECK".equals(t.getOperationalType())
+                            && !"Completed".equals(t.getStatus()));
+            if (hasPendingCheck) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                        "Phòng đang được chờ kiểm tra (ROOM_CHECK) bởi bộ phận Housekeeping."));
+            }
+
+            com.kawai.models.Employee staff = employeeRepository.findAll().stream().findFirst().orElse(null);
+            com.kawai.models.HotelOperation task = new com.kawai.models.HotelOperation();
+            task.setRoom(room);
+            task.setStaff(staff);
+            task.setSupervisor(staff);
+            task.setOperationalType("ROOM_CHECK");
+            task.setPriority("High");
+            task.setStatus("Pending");
+            task.setCreatedAt(LocalDateTime.now());
+            task.setNotes("Lễ tân yêu cầu kiểm tra phòng để checkout (Minibar & Hỏng hóc).");
+
+            housekeepingTaskRepo.save(task);
+
+            return ResponseEntity
+                    .ok(Map.of("success", true, "message", "Đã gửi yêu cầu kiểm tra phòng đến bộ phận Housekeeping."));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/booking/{bookingId}/request-group-checkout")
+    public ResponseEntity<?> requestGroupCheckout(@PathVariable Long bookingId) {
+        try {
+            List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
+            if (details.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không tìm thấy phòng nào trong đơn đặt phòng này."));
+            }
+
+            com.kawai.models.Employee staff = employeeRepository.findAll().stream().findFirst().orElse(null);
+            List<String> createdRooms = new java.util.ArrayList<>();
+            List<String> skippedRooms = new java.util.ArrayList<>();
+
+            for (RoomBookingDetail detail : details) {
+                if (!"Checked_In".equalsIgnoreCase(detail.getDetailStatus())) {
+                    continue;
+                }
+                com.kawai.models.Room room = detail.getRoom();
+                if (room == null) continue;
+
+                // Kiểm tra xem đã có task ROOM_CHECK chưa hoàn thành chưa
+                boolean hasPendingCheck = housekeepingTaskRepo.findAll().stream()
+                        .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
+                                && "ROOM_CHECK".equals(t.getOperationalType())
+                                && !"Completed".equals(t.getStatus()));
+                if (hasPendingCheck) {
+                    skippedRooms.add(room.getRoomNumber());
+                    continue;
+                }
+
+                com.kawai.models.HotelOperation task = new com.kawai.models.HotelOperation();
+                task.setRoom(room);
+                task.setStaff(staff);
+                task.setSupervisor(staff);
+                task.setOperationalType("ROOM_CHECK");
+                task.setPriority("High");
+                task.setStatus("Pending");
+                task.setCreatedAt(LocalDateTime.now());
+                task.setNotes("Lễ tân yêu cầu kiểm tra phòng để checkout (Minibar & Hỏng hóc) - Yêu cầu cả đoàn.");
+
+                housekeepingTaskRepo.save(task);
+                createdRooms.add(room.getRoomNumber());
+            }
+
+            if (createdRooms.isEmpty() && skippedRooms.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không có phòng nào đang ở (Checked_In) để kiểm tra."));
+            }
+
+            String msg = "";
+            if (!createdRooms.isEmpty()) {
+                msg += "Đã gửi yêu cầu kiểm tra cho các phòng: " + String.join(", ", createdRooms) + ". ";
+            }
+            if (!skippedRooms.isEmpty()) {
+                msg += "Các phòng đã có yêu cầu trước đó: " + String.join(", ", skippedRooms) + ".";
+            }
+
+            return ResponseEntity.ok(Map.of("success", true, "message", msg.trim()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
     /**
      * UC21.3 & UC22.1 - Gom Folio và Tất toán (Có xử lý Payment & Invoice)
      */
@@ -378,6 +554,16 @@ public class FolioRestController {
             }
             RoomBookingDetail detail = optDetail.get();
             com.kawai.models.RoomBooking booking = detail.getRoomBooking();
+
+            // KIỂM TRA: Đảm bảo task ROOM_CHECK đã hoàn tất
+            boolean hasPendingCheck = housekeepingTaskRepo.findAll().stream()
+                    .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                            && "ROOM_CHECK".equals(t.getOperationalType())
+                            && !"Completed".equals(t.getStatus()));
+            if (hasPendingCheck) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                        "Vui lòng chờ bộ phận Housekeeping hoàn tất kiểm tra phòng (Minibar/Hỏng hóc) trước khi thanh toán và checkout."));
+            }
             boolean isGroup = false;
             if (payload != null && payload.containsKey("isGroup")) {
                 isGroup = Boolean.TRUE.equals(payload.get("isGroup"));
@@ -484,9 +670,23 @@ public class FolioRestController {
                 }
             }
 
-            if (booking != null && booking.getDepositAmount() != null) {
+            if (isGroup && booking != null && booking.getDepositAmount() != null) {
                 BigDecimal deposit = booking.getDepositAmount();
                 if (deposit.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal recDep = BigDecimal.ZERO;
+                    try {
+                        List<PaymentTransaction> pts = paymentService.getPaymentsByBookingId(booking.getId());
+                        if (pts != null) {
+                            for (PaymentTransaction pt : pts) {
+                                if (pt.getStatus() == PaymentStatus.SUCCESS
+                                        && "Deposit".equalsIgnoreCase(pt.getTransactionType())) {
+                                    recDep = recDep.add(pt.getAmount());
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                    }
+
                     if (finalBalance.compareTo(deposit) <= 0) {
                         BigDecimal used = finalBalance;
                         finalBalance = BigDecimal.ZERO;
@@ -531,7 +731,7 @@ public class FolioRestController {
 
             // 1 & 2. Thay đổi trạng thái phòng (CHỈ làm khi KHÔNG PHẢI VNPAY VÀ thao tác
             // này là "Hoàn tất Checkout" tức là paymentAmount = 0)
-            boolean isCheckoutAction = (!isVnPay && paymentAmount.compareTo(BigDecimal.ZERO) == 0);
+            boolean isCheckoutAction = (!isVnPay && (paymentAmount.compareTo(BigDecimal.ZERO) == 0 || paymentAmount.compareTo(minRequired) >= 0));
             if (isCheckoutAction) {
                 if (isGroup) {
                     List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(booking.getId());
@@ -539,9 +739,10 @@ public class FolioRestController {
                         if ("Checked_In".equalsIgnoreCase(d.getDetailStatus())) {
                             d.setDetailStatus("Checked_Out");
                             roomBookingDetailRepository.save(d);
-                            
+
                             if (d.getRoomBooking() != null && d.getRoomBooking().getCustomer() != null) {
-                                eventPublisher.publishEvent(new com.kawai.events.CustomerCheckedOutEvent(this, d.getRoomBooking().getCustomer()));
+                                eventPublisher.publishEvent(new com.kawai.events.CustomerCheckedOutEvent(this,
+                                        d.getRoomBooking().getCustomer()));
                             }
 
                             Room room = d.getRoom();
@@ -563,9 +764,10 @@ public class FolioRestController {
                 } else {
                     detail.setDetailStatus("Checked_Out");
                     roomBookingDetailRepository.save(detail);
-                    
+
                     if (detail.getRoomBooking() != null && detail.getRoomBooking().getCustomer() != null) {
-                        eventPublisher.publishEvent(new com.kawai.events.CustomerCheckedOutEvent(this, detail.getRoomBooking().getCustomer()));
+                        eventPublisher.publishEvent(new com.kawai.events.CustomerCheckedOutEvent(this,
+                                detail.getRoomBooking().getCustomer()));
                     }
 
                     // 2. Thay đổi trạng thái phòng vật lý qua Dirty (hoặc theo cấu hình workflow)
@@ -585,21 +787,40 @@ public class FolioRestController {
                         roomRepository.save(room);
                     }
                 }
+
+                // Đồng bộ trạng thái Booking sang Checked_Out nếu toàn bộ các phòng đã checkout
+                if (booking != null) {
+                    List<RoomBookingDetail> allDetails = roomBookingDetailRepository.findByRoomBookingId(booking.getId());
+                    boolean allCheckedOut = allDetails.stream()
+                            .allMatch(d -> "Checked_Out".equalsIgnoreCase(d.getDetailStatus()));
+                    if (allCheckedOut) {
+                        booking.setBookingStatus("Checked_Out");
+                        roomBookingRepository.save(booking);
+                    }
+                }
             }
 
             // 3. Tạo hóa đơn tổng (Consolidated Invoice) hoặc cập nhật nếu đã có
             ConsolidatedInvoice invoice = consolidatedInvoiceRepository.findByBooking_Id(booking.getId())
                     .orElse(new ConsolidatedInvoice());
             if (invoice.getInvoiceNumber() == null) {
-                invoice.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                invoice.setInvoiceNumber("INV-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
                 invoice.setBooking(booking);
+                invoice.setSubtotalBeforeVat(BigDecimal.ZERO);
+                invoice.setVatAmount(BigDecimal.ZERO);
+                invoice.setTotalAmount(BigDecimal.ZERO);
             }
             if (appliedPromo != null) {
                 invoice.setPromo(appliedPromo);
             }
 
-            BigDecimal currentTotal = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
-            BigDecimal newTotal = currentTotal.add(finalBalance);
+            BigDecimal newTotal;
+            if (isGroup) {
+                newTotal = finalBalance;
+            } else {
+                BigDecimal currentTotal = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
+                newTotal = currentTotal.add(finalBalance);
+            }
 
             BigDecimal subtotal = newTotal.divide(new BigDecimal("1.10"), 2, java.math.RoundingMode.HALF_UP);
             BigDecimal vat = newTotal.subtract(subtotal);
@@ -661,11 +882,11 @@ public class FolioRestController {
                 eventPublisher.publishEvent(new com.kawai.events.SystemEmailEvent(this, customerEmail,
                         "Hóa đơn điện tử - HOANIEN", "invoice", ctx));
 
-                // 5.1 Cộng điểm Loyalty (1 điểm = 10,000 VNĐ chi tiêu)
-                if (paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                // 5.1 Cộng điểm Loyalty (1 điểm = 10,000 VNĐ chi tiêu trên tổng hóa đơn)
+                if (invoice.getTotalAmount() != null && invoice.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
                     com.kawai.models.Customer customer = detail.getRoomBooking().getCustomer();
                     if (customer != null) {
-                        int pointsEarned = paymentAmount.divide(new BigDecimal("10000"), 0, java.math.RoundingMode.DOWN)
+                        int pointsEarned = invoice.getTotalAmount().divide(new BigDecimal("10000"), 0, java.math.RoundingMode.DOWN)
                                 .intValue();
                         if (pointsEarned > 0) {
                             int currentPoints = customer.getLoyaltyPoints() != null ? customer.getLoyaltyPoints() : 0;
@@ -674,18 +895,21 @@ public class FolioRestController {
 
                             // Auto upgrade tier based on new points
                             String newTier = "Regular";
-                            if (newPoints >= 20000)
-                                newTier = "Diamond";
+                            if (newPoints >= 10000)
+                                newTier = "Platinum";
                             else if (newPoints >= 5000)
                                 newTier = "Gold";
                             else if (newPoints >= 1000)
                                 newTier = "Silver";
 
-                            customer.setMembershipTier(
-                                    membershipTierRepository.findByTierNameIgnoreCase(newTier).orElse(null));
+                            com.kawai.models.MembershipTier tierObj = membershipTierRepository.findByTierNameIgnoreCase(newTier).orElse(null);
+                            if (tierObj != null) {
+                                customer.setMembershipTier(tierObj);
+                            }
                             customerRepository.save(customer);
                             System.out.println("[LOYALTY] Khách " + customer.getFullName() + " vừa nhận " + pointsEarned
-                                    + " điểm. Tổng: " + newPoints + " (" + newTier + ")");
+
+                                    + " điểm. Tổng: " + newPoints + " (" + (tierObj != null ? tierObj.getTierName() : (customer.getMembershipTier() != null ? customer.getMembershipTier().getTierName() : "Regular")) + ")");
                         }
                     }
                 }
@@ -765,6 +989,10 @@ public class FolioRestController {
             }
         } catch (Exception e) {
         }
+        if (booking.getDepositAmount() != null && booking.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
+            totalPayments = totalPayments.add(booking.getDepositAmount());
+        }
+
 
         BigDecimal outstanding = totalCharges.multiply(new BigDecimal("1.10")).subtract(totalPayments);
         return outstanding.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : outstanding;
@@ -856,16 +1084,24 @@ public class FolioRestController {
 
                 // Sum all successful payments for this booking
                 BigDecimal totalPayments = BigDecimal.ZERO;
+                BigDecimal txDeposit = BigDecimal.ZERO;
                 try {
                     List<PaymentTransaction> payments = paymentService.getPaymentsByBookingId(bookingId);
                     if (payments != null) {
                         for (PaymentTransaction pt : payments) {
                             if (pt.getStatus() == PaymentStatus.SUCCESS && pt.getAmount() != null) {
                                 totalPayments = totalPayments.add(pt.getAmount());
+                                if ("ROOM_BOOKING".equalsIgnoreCase(pt.getTransactionType()) || "DEPOSIT".equalsIgnoreCase(pt.getTransactionType())) {
+                                    txDeposit = txDeposit.add(pt.getAmount());
+                                }
                             }
                         }
                     }
                 } catch (Exception e) {
+                }
+
+                if (txDeposit.compareTo(BigDecimal.ZERO) == 0 && !details.isEmpty() && details.get(0).getRoomBooking().getDepositAmount() != null) {
+                    totalPayments = totalPayments.add(details.get(0).getRoomBooking().getDepositAmount());
                 }
 
                 groupBalance = groupBalance.multiply(new BigDecimal("1.10")).subtract(totalPayments);
@@ -876,6 +1112,7 @@ public class FolioRestController {
                 groupTotalCharges = groupTotalCharges.multiply(new BigDecimal("1.10"));
 
                 Map<String, Object> map = new java.util.HashMap<>();
+                map.put("bookingId", bookingId);
 
                 map.put("folioNo", "BKG-" + String.format("%04d", bookingId));
                 map.put("roomNumber", String.join(", ", roomNumbers));
@@ -944,6 +1181,81 @@ public class FolioRestController {
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(Map.of("success", false, "message", "Lỗi kiểm tra mã giảm giá: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{detailId}/deposit")
+    public ResponseEntity<?> depositForCreditLimit(@PathVariable Long detailId,
+            @RequestBody Map<String, Object> payload, HttpServletRequest request) {
+        try {
+            RoomBookingDetail detail = roomBookingDetailRepository.findById(detailId).orElse(null);
+            if (detail == null) {
+                return ResponseEntity.status(404).body(Map.of("success", false, "message", "Không tìm thấy phòng!"));
+            }
+
+            if (!payload.containsKey("amount") || !payload.containsKey("method")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Thiếu thông tin nạp tiền!"));
+            }
+
+            BigDecimal amount;
+            try {
+                amount = new BigDecimal(payload.get("amount").toString());
+                if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("success", false, "message", "Số tiền nạp phải lớn hơn 0!"));
+                }
+            } catch (Exception e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Định dạng số tiền không hợp lệ!"));
+            }
+
+            String method = payload.get("method").toString().toUpperCase();
+
+            if ("CASH".equals(method)) {
+                // Tiền mặt: Ghi nhận như FolioItem âm (ký quỹ/ứng trước)
+                // → Checkout sẽ tự động cấn trừ: chi tiêu(+) + đã nạp(-) = số thực nợ
+                FolioItem deposit = new FolioItem();
+                deposit.setRoomBookingDetail(detail);
+                deposit.setBooking(detail.getRoomBooking());
+                deposit.setSourceDepartment("FRONT_DESK");
+                deposit.setAmount(amount.negate()); // Số tiền âm = đã thu tiền mặt
+                deposit.setDescription("Nạp tiền nâng hạn mức (Tiền mặt)");
+                if (detail.getCustomer() != null) {
+                    deposit.setPayerCustomer(detail.getCustomer());
+                } else {
+                    deposit.setPayerCustomer(detail.getRoomBooking().getCustomer());
+                }
+                folioItemRepository.save(deposit);
+
+                return ResponseEntity
+                        .ok(Map.of("success", true, "message", "Nạp tiền thành công! Hạn mức khả dụng đã tăng!"));
+            } else if ("VNPAY".equals(method)) {
+                // VNPay: Tạo transaction và trả về link
+                PaymentTransaction txn = new PaymentTransaction();
+                txn.setBooking(detail.getRoomBooking()); // Reference to booking
+                txn.setAmount(amount);
+                txn.setStatus(PaymentStatus.PENDING);
+                txn.setTransactionType("CREDIT_LIMIT_DEPOSIT");
+                txn.setPaymentMethod("VNPAY");
+                txn.setTransactionRef("CREDITDEPOSIT_" + detailId + "_" + System.currentTimeMillis());
+                txn.setCreatedAt(java.time.LocalDateTime.now());
+                paymentTransactionRepository.save(txn);
+
+                String paymentUrl = vnPayService.createPaymentUrlFromTransaction(txn, request.getRemoteAddr());
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Chuyển hướng đến VNPay",
+                        "paymentUrl", paymentUrl));
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Phương thức thanh toán không hỗ trợ!"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
         }
     }
 }
