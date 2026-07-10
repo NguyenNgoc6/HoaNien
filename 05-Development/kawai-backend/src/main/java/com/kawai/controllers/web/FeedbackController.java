@@ -287,6 +287,17 @@ public class FeedbackController {
         com.kawai.models.TourBooking booking = null;
         if (bookingId != null) {
             booking = tourBookingRepository.findById(bookingId).orElse(null);
+        } else if (ratingTour != null) {
+            // Khách hàng gửi đánh giá tour chung -> tự động liên kết với TourBooking gần đây nhất của họ
+            java.util.List<com.kawai.models.TourBooking> tourBookings = tourBookingRepository.findTourBookingsByCustomerId(customer.getId());
+            if (tourBookings != null && !tourBookings.isEmpty()) {
+                tourBookings.sort((b1, b2) -> {
+                    Long id1 = b1.getId() != null ? b1.getId() : 0L;
+                    Long id2 = b2.getId() != null ? b2.getId() : 0L;
+                    return id2.compareTo(id1);
+                });
+                booking = tourBookings.get(0);
+            }
         }
 
         com.kawai.models.Review review = new com.kawai.models.Review();
