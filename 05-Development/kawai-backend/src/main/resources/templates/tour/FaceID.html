@@ -517,33 +517,33 @@
                                             th:text="'#EVN-00' + ${attendee.id}">#EVN-00234</td>
                                         <td class="py-6 px-4">
                                             <div class="flex items-center gap-3">
-                                                <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'KH')}"
+                                                <div th:with="custName=${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: '--')}"
                                                     class="w-10 h-10 rounded-full glass-card flex items-center justify-center font-display-md text-primary text-sm cursor-pointer hover:scale-105 transition-all"
                                                     th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
-                                                    th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                    th:data-name="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
                                                     th:data-id="'#EVN-00' + ${attendee.id}"
-                                                    th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                    th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
                                                     th:data-email="${attendee.customer?.email ?: '--'}"
-                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
-                                                    th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? 'Khách đi cùng' : 'Chưa xác định')}"
+                                                    th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                     onclick="showCustomerContactModal(this)">
                                                     NM
                                                 </div>
                                                 <div>
                                                     <p class="font-body-md font-semibold text-on-surface cursor-pointer hover:underline animate-none"
-                                                        th:text="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
-                                                        th:data-name="${attendee.customer?.fullName ?: (attendee.dependent?.dependentName ?: 'Khách vãng lai')}"
+                                                        th:text="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
+                                                        th:data-name="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
                                                         th:data-id="'#EVN-00' + ${attendee.id}"
-                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent != null ? 'Người thân' : '--')}"
+                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
                                                         th:data-email="${attendee.customer?.email ?: '--'}"
-                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}"
-                                                        th:data-room="'Phòng ' + ${100 + (attendee.id != null ? attendee.id % 20 : 0)}"
+                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? 'Khách đi cùng' : 'Chưa xác định')}"
+                                                        th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                         onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
                                                     <p class="text-[12px] text-on-surface-variant/60"
-                                                        th:text="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách đi cùng'}">
-                                                        Hà Nội</p>
+                                                        th:text="${attendee.customer != null ? (attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách hàng') : 'Khách đi cùng'}">
+                                                        Khách đi cùng</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -1437,6 +1437,8 @@
                     showToast('Đã hoàn thành hành trình tour và gửi email cảm ơn đến quý khách!', 'success');
                 } else if (toastParam === 'start_success') {
                     showToast('Tour đã bắt đầu! Email thông báo khởi hành đã được gửi đến toàn bộ khách hàng.', 'success');
+                } else if (toastParam === 'start_failed_pax') {
+                    showToast('Không thể bắt đầu tour do chưa có khách hàng hoặc chưa điểm danh đủ!', 'error');
                 }
                 // Clean url parameters
                 const cleanUrl = window.location.pathname;
@@ -2137,10 +2139,12 @@
         if (event) event.preventDefault();
         
         // Kiểm tra xem số lượng hành khách đã điểm danh có đủ so với số lượng đăng ký hay chưa
-        if (checkedInCountDb < totalAttendeesDb) {
+        if (totalAttendeesDb === 0 || checkedInCountDb < totalAttendeesDb) {
             showCustomWarning({
-                title: 'Chưa Đủ Hành Khách',
-                message: `Chưa thể bắt đầu tour. Số hành khách điểm danh hiện tại (${checkedInCountDb}/${totalAttendeesDb}) chưa đủ so với danh sách đăng ký theo quy định của tour!`,
+                title: 'Không Thể Bắt Đầu Tour',
+                message: totalAttendeesDb === 0 
+                    ? 'Chưa thể bắt đầu tour do chưa có hành khách nào đăng ký!' 
+                    : `Chưa thể bắt đầu tour. Số hành khách điểm danh hiện tại (${checkedInCountDb}/${totalAttendeesDb}) chưa đủ so với danh sách đăng ký theo quy định của tour!`,
                 icon: 'warning'
             });
             return;

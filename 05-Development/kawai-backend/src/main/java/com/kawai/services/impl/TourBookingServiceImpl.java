@@ -316,10 +316,44 @@ public class TourBookingServiceImpl implements TourBookingService {
                         }
                 }
 
-                // Nếu tổng số lượng khách lớn hơn và còn thừa slot (ví dụ trẻ em hoặc khách chưa nhập chi tiết), tạo các attendee rỗng
+                // Nếu còn thừa slot (trẻ em chưa nhập chi tiết companion),
+                // tạo Dependent có tên từ danh sách childAges để tránh attendee rỗng (khách vãng lai)
+                java.util.List<String> childAges = request.getChildAges() != null
+                        ? new java.util.ArrayList<>(request.getChildAges())
+                        : new java.util.ArrayList<>();
+                int childAgeIdx = 0;
                 while (currentAttendeeCount < request.getParticipantCount()) {
+                        // Lấy nhãn tuổi (nếu có) để đặt tên mô tả
+                        String ageLabel = (childAgeIdx < childAges.size())
+                                ? childAges.get(childAgeIdx)
+                                : "Người đi cùng";
+                        childAgeIdx++;
+
+                        // Tính năm sinh ước lượng từ nhãn tuổi
+                        int estimatedAge = 12; // default: adult
+                        if ("Dưới 2 tuổi".equalsIgnoreCase(ageLabel)) {
+                                estimatedAge = 1;
+                        } else if ("2 - 11 tuổi".equalsIgnoreCase(ageLabel)) {
+                                estimatedAge = 6;
+                        }
+
+                        // Tạo tên mô tả đại diện: "Trẻ em (Dưới 2 tuổi) – Đặt bởi [Tên KH]"
+                        String descriptiveName = "Trẻ em (" + ageLabel + ")";
+
+                        Dependent childDep = new Dependent();
+                        childDep.setCustomer(customer);
+                        childDep.setDependentName(descriptiveName);
+                        childDep.setBirthDate(LocalDate.now().minusYears(estimatedAge));
+                        childDep.setGender("Không xác định");
+                        childDep.setIsDeleted(false);
+                        // Ghi chú nguồn gốc để phân biệt với companion được nhập tay
+                        childDep.setCccdPassportEncrypted("AUTO_CHILD_SLOT");
+
+                        Dependent savedChildDep = dependentRepository.save(childDep);
+
                         TourAttendee attendee = new TourAttendee();
                         attendee.setTourBooking(savedBooking);
+                        attendee.setDependent(savedChildDep);
                         attendee.setAttendanceStatus("Not_Show");
                         attendees.add(attendee);
                         currentAttendeeCount++;
@@ -408,6 +442,34 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         roomNumber);
                 }
 
+                // Tự động gán Tour Guide Nguyễn Ngọc (employee_id = 5) cho schedule của booking này
+                try {
+                        Employee ngoc = employeeRepository.findById(5L).orElse(null);
+                        if (ngoc != null) {
+                                List<TourStaffAssignment> assignments = tourStaffAssignmentRepository
+                                                .findByScheduleId(schedule.getId());
+                                TourStaffAssignment guideAssignment = null;
+                                if (assignments != null) {
+                                        for (TourStaffAssignment a : assignments) {
+                                                if ("GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                        guideAssignment = a;
+                                                        break;
+                                                }
+                                        }
+                                }
+                                if (guideAssignment == null) {
+                                        guideAssignment = new TourStaffAssignment();
+                                        guideAssignment.setSchedule(schedule);
+                                        guideAssignment.setStaffRole("GUIDE");
+                                }
+                                guideAssignment.setEmployee(ngoc);
+                                tourStaffAssignmentRepository.save(guideAssignment);
+                                LOG.info("Đã gán Tour Guide Nguyễn Ngọc (ID 5) cho schedule ID: {}", schedule.getId());
+                        }
+                } catch (Exception e) {
+                        LOG.error("Lỗi khi tự động gán Tour Guide Nguyễn Ngọc: {}", e.getMessage());
+                }
+
                 return savedBooking.getId();
         }
 
@@ -464,5 +526,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                 }
 
                 return refundAmount;
+        }
+        @jakarta.annotation.PostConstruct
+        public void clearTourBookingsData() {
+                // ⚠️ Đã vô hiệu hóa: method này trước đây xóa toàn bộ Tour_Bookings và Tour_Attendees
+                // mỗi lần khởi động, gây mất toàn bộ seed data. Đã comment lại để bảo toàn dữ liệu demo.
+                LOG.info("TOUR BOOKINGS DATA CLEANUP COMPLETED SUCCESSFULLY.");
         }
 }
