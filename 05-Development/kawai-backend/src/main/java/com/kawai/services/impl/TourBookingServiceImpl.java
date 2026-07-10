@@ -324,10 +324,21 @@ public class TourBookingServiceImpl implements TourBookingService {
                 int childAgeIdx = 0;
                 while (currentAttendeeCount < request.getParticipantCount()) {
                         // Lấy nhãn tuổi (nếu có) để đặt tên mô tả
-                        String ageLabel = (childAgeIdx < childAges.size())
+                        String rawAge = (childAgeIdx < childAges.size())
                                 ? childAges.get(childAgeIdx)
                                 : "Người đi cùng";
                         childAgeIdx++;
+
+                        String name = "";
+                        String ageLabel = "";
+                        if (rawAge.contains("|")) {
+                                String[] parts = rawAge.split("\\|");
+                                name = parts[0].trim();
+                                ageLabel = parts[1].trim();
+                        } else {
+                                name = "Trẻ em (" + rawAge + ")";
+                                ageLabel = rawAge;
+                        }
 
                         // Tính năm sinh ước lượng từ nhãn tuổi
                         int estimatedAge = 12; // default: adult
@@ -337,17 +348,14 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 estimatedAge = 6;
                         }
 
-                        // Tạo tên mô tả đại diện: "Trẻ em (Dưới 2 tuổi) – Đặt bởi [Tên KH]"
-                        String descriptiveName = "Trẻ em (" + ageLabel + ")";
-
                         Dependent childDep = new Dependent();
                         childDep.setCustomer(customer);
-                        childDep.setDependentName(descriptiveName);
+                        childDep.setDependentName(name);
                         childDep.setBirthDate(LocalDate.now().minusYears(estimatedAge));
                         childDep.setGender("Không xác định");
                         childDep.setIsDeleted(false);
-                        // Ghi chú nguồn gốc để phân biệt với companion được nhập tay
-                        childDep.setCccdPassportEncrypted("AUTO_CHILD_SLOT");
+                        // Ghi chú nguồn gốc và nhãn tuổi để hiển thị trong popup
+                        childDep.setCccdPassportEncrypted("AUTO_CHILD_" + ageLabel.replace(" ", "_"));
 
                         Dependent savedChildDep = dependentRepository.save(childDep);
 

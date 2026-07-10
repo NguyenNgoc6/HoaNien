@@ -2897,10 +2897,55 @@
 
             const childAges = [];
             const childrenQty = parseInt(document.getElementById('num-children').value) || 0;
+            const childRows = document.querySelectorAll('.child-row');
             for (let i = 0; i < childrenQty; i++) {
-                const ageEl = document.getElementById(`child-age-${i}`);
-                if (ageEl) {
-                    childAges.push(ageEl.value);
+                const row = childRows[i];
+                if (row) {
+                    const nameEl = row.querySelector('.child-name');
+                    const ageEl = row.querySelector(`#child-age-${i}`);
+                    if (ageEl) {
+                        const childName = nameEl ? nameEl.value.trim() : '';
+                        if (!childName) {
+                            showWarningAlertPopup(
+                                lang === 'vi' ? 'Thiếu thông tin trẻ em' : 'Child Info Required',
+                                lang === 'vi' ? `Vui lòng nhập họ tên cho trẻ em thứ ${i + 1}.` : `Please enter name for child #${i + 1}.`
+                            );
+                            if (nameEl) nameEl.focus();
+                            if (confirmBtn) {
+                                confirmBtn.disabled = false;
+                                confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT TOUR' : 'CONFIRM BOOKING';
+                            }
+                            return;
+                        }
+                        
+                        const childNameRegex = /^[\p{L}]+(?:\s+[\p{L}]+)+$/u;
+                        if (!childNameRegex.test(childName)) {
+                            showWarningAlertPopup(
+                                lang === 'vi' ? 'Tên trẻ em không hợp lệ' : 'Invalid Child Name',
+                                lang === 'vi' ? `Tên của trẻ em thứ ${i + 1} không hợp lệ (tối thiểu 2 từ).` : `Name of child #${i + 1} is invalid.`
+                            );
+                            if (nameEl) nameEl.focus();
+                            if (confirmBtn) {
+                                confirmBtn.disabled = false;
+                                confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT TOUR' : 'CONFIRM BOOKING';
+                            }
+                            return;
+                        }
+
+                        if (!ageEl.value || ageEl.value === 'Chọn độ tuổi') {
+                            showWarningAlertPopup(
+                                lang === 'vi' ? 'Thiếu độ tuổi trẻ em' : 'Child Age Required',
+                                lang === 'vi' ? `Vui lòng chọn độ tuổi cho trẻ em thứ ${i + 1}.` : `Please select age for child #${i + 1}.`
+                            );
+                            if (confirmBtn) {
+                                confirmBtn.disabled = false;
+                                confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT TOUR' : 'CONFIRM BOOKING';
+                            }
+                            return;
+                        }
+
+                        childAges.push(childName + "|" + ageEl.value);
+                    }
                 }
             }
 

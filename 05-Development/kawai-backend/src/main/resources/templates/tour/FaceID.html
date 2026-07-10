@@ -568,7 +568,7 @@
                                                     th:data-id="'#EVN-00' + ${attendee.id}"
                                                     th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
                                                     th:data-email="${attendee.customer?.email ?: '--'}"
-                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? 'Khách đi cùng' : 'Chưa xác định')}"
+                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                     th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                     onclick="showCustomerContactModal(this)">
                                                     NM
@@ -580,13 +580,13 @@
                                                         th:data-id="'#EVN-00' + ${attendee.id}"
                                                         th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
                                                         th:data-email="${attendee.customer?.email ?: '--'}"
-                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? 'Khách đi cùng' : 'Chưa xác định')}"
+                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                         th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                         onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
                                                     <p class="text-[12px] text-on-surface-variant/60"
-                                                        th:text="${attendee.customer != null ? (attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách hàng') : 'Khách đi cùng'}">
+                                                        th:text="${attendee.customer != null ? (attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách hàng') : (attendee.dependent != null && attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng')}">
                                                         Khách đi cùng</p>
                                                 </div>
                                             </div>
