@@ -236,7 +236,89 @@ public class EmailServiceImpl implements EmailService {
                     : "Tour";
             String departureDate = booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null
                     ? booking.getSchedule().getDepartureDate().format(DATE_FMT)
-                    : "--/--/----";
+                    : java.time.LocalDate.now().format(DATE_FMT);
+            String departureTime = booking.getSchedule() != null && booking.getSchedule().getDepartureTime() != null
+                    ? booking.getSchedule().getDepartureTime().toString().substring(0, 5)
+                    : "--:--";
+
+            int adultCount = booking.getParticipantCount() != null ? booking.getParticipantCount() : 1;
+            int childCount = 0;
+            java.math.BigDecimal childDiscountVal = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal promoDiscountVal = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal originalPriceVal = booking.getTotalPrice() != null ? booking.getTotalPrice()
+                    : java.math.BigDecimal.ZERO;
+
+            String paymentMethod = "counter";
+            String paymentType = "full";
+            String roomDetail = "";
+
+            if (booking.getNotes() != null && booking.getNotes().contains(";")) {
+                java.util.Map<String, String> noteMap = new java.util.HashMap<>();
+                String[] pairs = booking.getNotes().split(";");
+                for (String pair : pairs) {
+                    String[] kv = pair.split("=");
+                    if (kv.length == 2) {
+                        noteMap.put(kv[0], kv[1]);
+                    }
+                }
+                try {
+                    if (noteMap.containsKey("adults"))
+                        adultCount = Integer.parseInt(noteMap.get("adults"));
+                    if (noteMap.containsKey("children"))
+                        childCount = Integer.parseInt(noteMap.get("children"));
+                    if (noteMap.containsKey("childDiscount"))
+                        childDiscountVal = new java.math.BigDecimal(noteMap.get("childDiscount"));
+                    if (noteMap.containsKey("promoDiscount"))
+                        promoDiscountVal = new java.math.BigDecimal(noteMap.get("promoDiscount"));
+                    if (noteMap.containsKey("originalPrice"))
+                        originalPriceVal = new java.math.BigDecimal(noteMap.get("originalPrice"));
+                    if (noteMap.containsKey("paymentMethod"))
+                        paymentMethod = noteMap.get("paymentMethod");
+                    if (noteMap.containsKey("paymentType"))
+                        paymentType = noteMap.get("paymentType");
+                    if (noteMap.containsKey("roomDetail"))
+                        roomDetail = noteMap.get("roomDetail");
+                } catch (Exception parseEx) {
+                    logger.warn("Lỗi phân tích notes metadata cho booking {}: {}", booking.getId(),
+                            parseEx.getMessage());
+                }
+            }
+
+            if ("post-room".equalsIgnoreCase(paymentMethod)) {
+                com.kawai.models.RoomBookingDetail detail = booking.getRoomBookingDetail();
+                if (detail != null && detail.getRoom() != null) {
+                    roomDetail = detail.getRoom().getRoomNumber();
+                }
+            }
+
+            boolean isCheckedIn = false;
+            if ("post-room".equalsIgnoreCase(paymentMethod)) {
+                com.kawai.models.RoomBookingDetail detail = booking.getRoomBookingDetail();
+                if (detail != null && detail.getRoomBooking() != null) {
+                    String bookingStatus = detail.getRoomBooking().getBookingStatus();
+                    String roomNumber = detail.getRoom() != null ? detail.getRoom().getRoomNumber() : "";
+                    if ("Checked_In".equalsIgnoreCase(bookingStatus) && roomNumber != null
+                            && !roomNumber.toUpperCase().startsWith("VIRTUAL_")) {
+                        isCheckedIn = true;
+                    }
+                }
+            }
+
+            String paymentLabel = "Số tiền thanh toán";
+            java.math.BigDecimal finalPrice = booking.getTotalPrice() != null ? booking.getTotalPrice()
+                    : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal paymentAmountVal = finalPrice;
+            if ("deposit".equalsIgnoreCase(paymentType)) {
+                paymentLabel = "Số tiền đặt cọc (30%)";
+                paymentAmountVal = finalPrice.multiply(new java.math.BigDecimal("0.3")).setScale(0,
+                        java.math.RoundingMode.HALF_UP);
+            } else if ("full".equalsIgnoreCase(paymentType)) {
+                paymentLabel = "Tổng tiền thanh toán (100%)";
+                paymentAmountVal = finalPrice;
+            } else if ("room".equalsIgnoreCase(paymentType)) {
+                paymentLabel = "Số tiền gán nợ phòng";
+                paymentAmountVal = finalPrice;
+            }
 
             java.math.BigDecimal forfeitAmount = booking.getTotalPrice() != null && refundAmount != null
                     ? booking.getTotalPrice().subtract(refundAmount)
@@ -247,14 +329,34 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("bookingId", booking.getId());
             ctx.setVariable("tourName", tourName);
             ctx.setVariable("departureDate", departureDate);
+            ctx.setVariable("departureTime", departureTime);
             ctx.setVariable("participantCount", booking.getParticipantCount());
-            ctx.setVariable("totalPrice", formatVnd(booking.getTotalPrice()));
+            ctx.setVariable("bookingDate", booking.getCreatedAt() != null ? booking.getCreatedAt().format(DATE_FMT) : java.time.LocalDate.now().format(DATE_FMT));
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            ctx.setVariable("basePrice",
+                    formatVnd(booking.getSchedule() != null && booking.getSchedule().getTour() != null
+                            ? booking.getSchedule().getTour().getBasePrice()
+                            : java.math.BigDecimal.ZERO));
+            ctx.setVariable("adultCount", adultCount);
+            ctx.setVariable("childCount", childCount);
+            ctx.setVariable("childDiscount", formatVnd(childDiscountVal));
+            ctx.setVariable("childDiscountVal", childDiscountVal);
+            ctx.setVariable("promoDiscount", formatVnd(promoDiscountVal));
+            ctx.setVariable("promoDiscountVal", promoDiscountVal);
+            ctx.setVariable("totalPrice", formatVnd(finalPrice));
+
+            ctx.setVariable("paymentMethod", paymentMethod);
+            ctx.setVariable("paymentType", paymentType);
+            ctx.setVariable("isCheckedIn", isCheckedIn);
+            ctx.setVariable("roomDetail", roomDetail);
+            ctx.setVariable("paymentLabel", paymentLabel);
+            ctx.setVariable("paymentAmount", formatVnd(paymentAmountVal));
+
             ctx.setVariable("refundAmount", formatVnd(refundAmount));
             ctx.setVariable("forfeitAmount", formatVnd(forfeitAmount));
             ctx.setVariable("cancelledByResort", cancelledByResort);
-            ctx.setVariable("resortPhone", resortPhone);
-            ctx.setVariable("resortWebsite", resortWebsite);
-            ctx.setVariable("bgUrl", "https://i.ibb.co/99JSj0SF/BREmail.png");
 
             String html = templateEngine.process("email/tour-booking-cancelled", ctx);
             String subject = cancelledByResort ? "❌ Thông báo hủy tour — " + tourName + " | Hòa Niên Retreat & Resort"
