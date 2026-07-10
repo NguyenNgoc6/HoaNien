@@ -494,54 +494,6 @@
                         </div>
                     </div>
 
-                    <!-- LƯU Ý CHUNG (General Notes Banner) -->
-                    <div class="glass-panel rounded-lg p-6 border-primary/10 shadow-sm space-y-4"
-                        th:if="${(tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)) or scheduleId != null}">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-primary text-[20px]"
-                                style="font-variation-settings:'FILL' 1">sticky_note_2</span>
-                            <h5 class="font-label-md text-[13px] text-primary uppercase tracking-widest">Lưu ý chung cho
-                                Tour Guide</h5>
-                        </div>
-
-                        <!-- Phần 1: Lưu ý cố định từ Tour -->
-                        <div th:if="${tourGeneralNotes != null and !#strings.isEmpty(tourGeneralNotes)}"
-                            class="flex items-start gap-3 bg-blue-50/80 border border-blue-200 rounded-lg px-4 py-3">
-                            <span class="material-symbols-outlined text-blue-500 text-[18px] mt-0.5 flex-shrink-0"
-                                style="font-variation-settings:'FILL' 1">info</span>
-                            <div>
-                                <p class="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1">Thông
-                                    tin Tour</p>
-                                <p class="text-[13px] text-blue-800 leading-relaxed whitespace-pre-line"
-                                    th:text="${tourGeneralNotes}">Logistics...</p>
-                            </div>
-                        </div>
-
-                        <!-- Phần 2: Ghi chú chuyến (có thể chỉnh sửa inline) -->
-                        <div th:if="${scheduleId != null}" class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <p
-                                    class="text-[11px] font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]"
-                                        style="font-variation-settings:'FILL' 1">edit_note</span>
-                                    Ghi chú chuyến hôm nay
-                                </p>
-                                <span id="schedNotesSaveStatus" class="text-[11px] text-emerald-600 hidden">
-                                    <span class="material-symbols-outlined text-[13px]">check_circle</span> Đã lưu
-                                </span>
-                            </div>
-                            <textarea id="scheduleNotesInput" rows="3"
-                                placeholder="Nhập ghi chú đặc biệt cho chuyến hôm nay (thời tiết, thay đổi lịch trình, yêu cầu đặc biệt…)"
-                                class="w-full text-[13px] text-on-surface bg-amber-50/60 border border-amber-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 placeholder-on-surface-variant/40 leading-relaxed"
-                                th:text="${scheduleNotes}" th:data-schedule-id="${scheduleId}"></textarea>
-                            <button onclick="saveScheduleNotes()"
-                                class="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-all">
-                                <span class="material-symbols-outlined text-[14px]">save</span>
-                                Lưu ghi chú chuyến
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- Table Container -->
                     <div class="glass-panel rounded-lg overflow-hidden flex flex-col p-8 border-primary/10 shadow-sm">
                         <div class="overflow-x-auto">
