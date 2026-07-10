@@ -842,89 +842,77 @@ public class TourGuideController {
     }
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "Ngọc Lan";
-        
-        // Nếu là tour cố định (ID < 100) -> chỉ gán cho các HDV khác để demo
-        if (sched.getId() != null && sched.getId() < 100L) {
+        if (sched == null) return "Nguyễn Ngọc";
+        if (sched.getDepartureDate() == null) {
             return getPreferredGuide(sched);
         }
         
-        // Nếu là tour mới do khách đặt (ID >= 100 hoặc null)
-        // Áp dụng luật: kiểm tra xem NguynNgoc đã có tour nào trùng thời gian (cùng ngày và cùng giờ khởi hành) chưa.
-        // Nếu chưa trùng thời gian -> gán cho NguynNgoc.
-        // Nếu trùng thời gian -> đẩy cho tourguide khác (Ngọc Lan hoặc Hoàng Nam).
-        java.time.LocalDate depDate = sched.getDepartureDate();
-        java.time.LocalTime depTime = sched.getDepartureTime();
-        
-        if (depDate == null || depTime == null) {
-            return "NguynNgoc"; // Mặc định nếu thiếu thông tin thời gian
+        // Find all schedules on the same departure date
+        java.util.List<com.kawai.models.TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(sched.getDepartureDate());
+        if (daySchedules == null || daySchedules.size() <= 1) {
+            return getPreferredGuide(sched);
         }
         
-        java.util.List<com.kawai.models.TourSchedule> allSchedules = tourScheduleRepository.findAll();
-        // Lọc các schedule có cùng ngày và giờ khởi hành, sắp xếp theo ID tăng dần
-        java.util.List<com.kawai.models.TourSchedule> conflictSchedules = new java.util.ArrayList<>();
-        for (com.kawai.models.TourSchedule s : allSchedules) {
-            if (depDate.equals(s.getDepartureDate()) && depTime.equals(s.getDepartureTime())) {
-                conflictSchedules.add(s);
-            }
-        }
-        conflictSchedules.sort((s1, s2) -> {
+        // Sort by ID to ensure deterministic assignment
+        daySchedules.sort((s1, s2) -> {
             Long id1 = s1.getId() != null ? s1.getId() : 0L;
             Long id2 = s2.getId() != null ? s2.getId() : 0L;
             return id1.compareTo(id2);
         });
         
-        java.util.Set<String> taken = new java.util.HashSet<>();
-        // Đầu tiên, các tour cố định đã được gán trước cố định cho các HDV khác
-        for (com.kawai.models.TourSchedule s : conflictSchedules) {
-            if (s.getId() != null && s.getId() < 100L) {
-                taken.add(getPreferredGuide(s));
-            }
-        }
+        java.util.Set<String> takenGuides = new java.util.HashSet<>();
+        java.util.List<String> allGuides = java.util.Arrays.asList("Nguyễn Ngọc", "Ngọc Lan", "Hoàng Nam");
         
-        String assigned = null;
-        for (com.kawai.models.TourSchedule s : conflictSchedules) {
-            if (s.getId() != null && s.getId() < 100L) {
-                if (s.getId().equals(sched.getId())) {
-                    return getPreferredGuide(sched);
-                }
-                continue;
-            }
-            
-            // Tour mới: ưu tiên gán cho NguynNgoc nếu rảnh
-            String g;
-            if (!taken.contains("NguynNgoc")) {
-                g = "NguynNgoc";
-            } else if (!taken.contains("Ngọc Lan")) {
-                g = "Ngọc Lan";
+        String assignedGuide = null;
+        
+        for (com.kawai.models.TourSchedule s : daySchedules) {
+            String pref = getPreferredGuide(s);
+            String finalGuide;
+            if (!takenGuides.contains(pref)) {
+                finalGuide = pref;
             } else {
-                g = "Hoàng Nam";
+                // Find a free guide
+                finalGuide = null;
+                for (String g : allGuides) {
+                    if (!takenGuides.contains(g)) {
+                        finalGuide = g;
+                        break;
+                    }
+                }
+                if (finalGuide == null) {
+                    // Fallback if all guides are taken
+                    finalGuide = pref;
+                }
             }
-            taken.add(g);
+            takenGuides.add(finalGuide);
             
             if (s.getId() != null && s.getId().equals(sched.getId())) {
-                assigned = g;
-                break;
+                assignedGuide = finalGuide;
             }
         }
         
-        return assigned != null ? assigned : "NguynNgoc";
+        return assignedGuide != null ? assignedGuide : getPreferredGuide(sched);
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "Ngọc Lan";
-        
-        // Toàn bộ tour cố định (ID < 100) không gán cho NguynNgoc
-        if (sched.getId() != null && sched.getId() < 100L) {
-            // Phân bổ xen kẽ cho Ngọc Lan và Hoàng Nam để demo giao diện
-            if (sched.getId() % 2 == 0) {
+        if (sched == null) return "Nguyễn Ngọc";
+        if (scheduleHasSpecialCustomer(sched)) {
+            return "Nguyễn Ngọc";
+        }
+        if (sched.getId() != null && sched.getId() == 5L) {
+            return "Nguyễn Ngọc";
+        }
+        if (sched.getTour() != null) {
+            String tn = sched.getTour().getTourName();
+            if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
                 return "Ngọc Lan";
-            } else {
+            } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
                 return "Hoàng Nam";
+            } else if (tn.contains("Di sản") || tn.contains("di sản") || tn.contains("disan")) {
+                return "Ngọc Lan";
             }
         }
-        
-        return "NguynNgoc";
+        return "Nguyễn Ngọc";
     }
 
     private boolean scheduleHasSpecialCustomer(com.kawai.models.TourSchedule sched) {
