@@ -186,28 +186,48 @@
     </div>
 </div>
 
+<!-- Toast Notifications Container ở góc phải -->
+        <div class="fixed top-28 right-6 z-50 flex flex-col gap-3 w-80 md:w-96 max-w-[calc(100vw-3rem)]">
+            <!-- Toast Success -->
+            <div id="toast-success" class="hidden p-4 rounded-lg flex items-start justify-between gap-3 shadow-xl transition-all duration-300"
+                 style="background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.5);color:#a7f3d0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
+                <div class="flex gap-2.5">
+                    <span class="material-symbols-outlined text-xl flex-shrink-0" style="color:#34d399">check_circle</span>
+                    <p class="text-xs md:text-sm font-semibold leading-relaxed">Cảm ơn! Đánh giá của Quý khách đã được ghi nhận thành công.</p>
+                </div>
+                <button onclick="this.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <!-- Toast Login Required -->
+            <div id="toast-login-required" class="hidden p-4 rounded-lg flex items-start justify-between gap-3 shadow-xl transition-all duration-300"
+                 style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);color:#fca5a5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
+                <div class="flex gap-2.5">
+                    <span class="material-symbols-outlined text-xl flex-shrink-0" style="color:#ef4444">error</span>
+                    <p class="text-xs md:text-sm font-semibold leading-relaxed">Vui lòng đăng nhập tài khoản của Quý khách để gửi đánh giá dịch vụ!</p>
+                </div>
+                <button onclick="this.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <!-- Toast No Service -->
+            <div id="toast-no-service" class="hidden p-4 rounded-lg flex items-start justify-between gap-3 shadow-xl transition-all duration-300"
+                 style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.5);color:#fde68a;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
+                <div class="flex gap-2.5">
+                    <span class="material-symbols-outlined text-xl flex-shrink-0" style="color:#f59e0b">warning</span>
+                    <p class="text-xs md:text-sm font-semibold leading-relaxed">Đánh giá chỉ dành cho khách hàng đã từng trải nghiệm dịch vụ tại HoaNien Retreat.</p>
+                </div>
+                <button onclick="this.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors flex-shrink-0">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+        </div>
+
 <!-- ══════════ MAIN CONTENT ══════════ -->
 <main class="flex-grow" style="padding-top:190px; padding-bottom:80px;">
     <div class="max-w-6xl mx-auto px-6">
-
-        <!-- Toast Notifications -->
-        <div id="toast-success" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
-             style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.4);color:#a7f3d0;">
-            <span class="material-symbols-outlined" style="color:#34d399">check_circle</span>
-            <p class="text-sm font-semibold">Cảm ơn! Đánh giá của Quý khách đã được ghi nhận thành công.</p>
-        </div>
-
-        <div id="toast-login-required" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
-             style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;">
-            <span class="material-symbols-outlined" style="color:#ef4444">error</span>
-            <p class="text-sm font-semibold">Vui lòng đăng nhập tài khoản của Quý khách để gửi đánh giá dịch vụ!</p>
-        </div>
-
-        <div id="toast-no-service" class="hidden mb-8 p-4 rounded-lg flex items-center gap-3 max-w-xl mx-auto"
-             style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.4);color:#fde68a;">
-            <span class="material-symbols-outlined" style="color:#f59e0b">warning</span>
-            <p class="text-sm font-semibold">Đánh giá chỉ dành cho khách hàng đã từng trải nghiệm dịch vụ tại HoaNien Retreat.</p>
-        </div>
 
         <!-- Hidden input for thymeleaf check in javascript -->
         <input type="hidden" id="jsIsLoggedIn" th:value="${isLoggedIn}" />
@@ -539,14 +559,44 @@
         history.replaceState(null, '', '/feedback?type=' + name);
     }
 
+    let activeToastTimeouts = {};
+
+    function showToast(id) {
+        const toastEl = document.getElementById(id);
+        if (!toastEl) return;
+        
+        // Ẩn tất cả toast khác trước
+        ['toast-success', 'toast-login-required', 'toast-no-service'].forEach(tId => {
+            const el = document.getElementById(tId);
+            if (el && tId !== id) {
+                el.classList.add('hidden');
+                el.classList.remove('opacity-0');
+            }
+        });
+        
+        toastEl.classList.remove('hidden');
+        toastEl.classList.remove('opacity-0');
+        
+        // Clear previous timeout if exists
+        if (activeToastTimeouts[id]) {
+            clearTimeout(activeToastTimeouts[id]);
+        }
+        
+        activeToastTimeouts[id] = setTimeout(() => {
+            toastEl.classList.add('opacity-0');
+            setTimeout(() => {
+                toastEl.classList.add('hidden');
+                toastEl.classList.remove('opacity-0');
+            }, 400);
+        }, 6000);
+    }
+
     function handleFeedbackButtonClick() {
         const isLoggedInVal = document.getElementById('jsIsLoggedIn').value === 'true';
         const hasUsedServiceVal = document.getElementById('jsHasUsedService').value === 'true';
 
         if (!isLoggedInVal) {
-            document.getElementById('toast-login-required')?.classList.remove('hidden');
-            document.getElementById('toast-no-service')?.classList.add('hidden');
-            document.getElementById('toast-success')?.classList.add('hidden');
+            showToast('toast-login-required');
             if (typeof openLoginModal === 'function') {
                 openLoginModal();
             }
@@ -554,9 +604,7 @@
         }
 
         if (!hasUsedServiceVal) {
-            document.getElementById('toast-no-service')?.classList.remove('hidden');
-            document.getElementById('toast-login-required')?.classList.add('hidden');
-            document.getElementById('toast-success')?.classList.add('hidden');
+            showToast('toast-no-service');
             showCustomAlert('Quý khách cần có tối thiểu 1 Booking (Phòng nghỉ hoặc Tour du lịch) đã hoàn thành tại HoaNien Retreat để tham gia gửi đánh giá!');
             return;
         }
@@ -578,12 +626,12 @@
         
         const toast = params.get('toast');
         if (toast === 'success') {
-            document.getElementById('toast-success')?.classList.remove('hidden');
+            showToast('toast-success');
         } else if (toast === 'login_required') {
-            document.getElementById('toast-login-required')?.classList.remove('hidden');
+            showToast('toast-login-required');
             if (typeof openLoginModal === 'function') openLoginModal();
         } else if (toast === 'no_service_used') {
-            document.getElementById('toast-no-service')?.classList.remove('hidden');
+            showToast('toast-no-service');
         }
         
         // Init stars
