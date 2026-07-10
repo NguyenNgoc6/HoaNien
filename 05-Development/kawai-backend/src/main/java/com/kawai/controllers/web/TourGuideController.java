@@ -538,6 +538,13 @@ public class TourGuideController {
         if (dbReviews != null) {
             tourReviews.addAll(dbReviews);
         }
+
+        // Sắp xếp toàn bộ review theo ngày tạo giảm dần (mới nhất lên đầu)
+        tourReviews.sort((r1, r2) -> {
+            java.time.LocalDateTime time1 = r1.getCreatedAt() != null ? r1.getCreatedAt() : java.time.LocalDateTime.MIN;
+            java.time.LocalDateTime time2 = r2.getCreatedAt() != null ? r2.getCreatedAt() : java.time.LocalDateTime.MIN;
+            return time2.compareTo(time1);
+        });
         
         int total = tourReviews.size();
         double avg = 0.0;

@@ -291,54 +291,6 @@
             <!-- ── Dịch Vụ Tour Panel ── -->
             <div id="panel-tour" class="tab-panel">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Static 5-star review 1 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">15/06/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Hành trình Thiền hành Yên tử mang lại sự tĩnh lặng sâu sắc. Hướng dẫn viên chu đáo, am hiểu sâu sắc về văn hóa và thiền học.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">T</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Trần Minh Anh</p>
-                                <p class="text-[10px] text-gray-400">Hành trình Yên Tử</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Static 5-star review 2 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">02/07/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Một chuyến đi trọn vẹn dọc sông Hậu. Sương sớm trên sông và bữa sáng truyền thống trên ghe máy làm tôi nhớ mãi.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">L</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Lê Hoài Nam</p>
-                                <p class="text-[10px] text-gray-400">Hành trình Sông Hậu</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${tourReviews}">
                         <div class="flex items-center justify-between mb-3">
@@ -371,54 +323,6 @@
             <!-- ── Dịch Vụ Phòng Panel ── -->
             <div id="panel-room" class="tab-panel hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Static 5-star review 1 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">20/06/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Phòng Suite view sông Hậu cực kỳ yên bình. Thiết kế tối giản, tinh tế, gỗ tự nhiên thơm nhẹ rất dễ chịu.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">N</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Nguyễn Bích Thủy</p>
-                                <p class="text-[10px] text-gray-400">Lưu trú HoaNien</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Static 5-star review 2 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">29/06/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Giường ngủ êm ái, dịch vụ dọn phòng hoàn hảo. Nhà hàng chay phục vụ món ăn thanh đạm nhưng hương vị xuất sắc.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">P</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Phạm Thành Trung</p>
-                                <p class="text-[10px] text-gray-400">Ẩm thực chay HoaNien</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${roomReviews}">
                         <div class="flex items-center justify-between mb-3">
@@ -451,54 +355,6 @@
             <!-- ── Dịch Vụ Khác Panel ── -->
             <div id="panel-other" class="tab-panel hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Static 5-star review 1 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">18/06/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Trải nghiệm Spa trị liệu bằng thảo mộc tự nhiên tại HoaNien thực sự giúp tôi phục hồi năng lượng sau những ngày căng thẳng.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">H</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Hoàng Thu Thảo</p>
-                                <p class="text-[10px] text-gray-400">Thảo mộc Spa</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Static 5-star review 2 -->
-                    <div class="review-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-0.5">
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                                <span class="material-symbols-outlined text-lg star-gold" style="font-variation-settings:'FILL' 1;">star</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400">05/07/2026</span>
-                        </div>
-                        <p class="text-sm text-gray-300 leading-relaxed mb-4" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">
-                            Dịch vụ đưa đón tận tình, nhân viên thân thiện. Không gian Hub kết nối tuyệt vời để thư giãn đọc sách.
-                        </p>
-                        <div class="flex items-center gap-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.2);color:#c5a059;">Đ</div>
-                            <div>
-                                <p class="text-xs font-semibold text-white">Đỗ Quốc Huy</p>
-                                <p class="text-[10px] text-gray-400">Dịch vụ đưa đón</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${generalReviews}">
                         <div class="flex items-center justify-between mb-3">
