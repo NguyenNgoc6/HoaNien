@@ -971,12 +971,17 @@ public class TourGuideController {
             java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(schedule);
             if (bookings != null) {
                 final java.util.List<com.kawai.models.TourItineraryDetail> actsFinal = activities;
+                java.util.Set<Long> sentCustomerIds = new java.util.HashSet<>();
                 for (com.kawai.models.TourBooking booking : bookings) {
-                    if (booking.getCustomer() != null) {
-                        try {
-                            emailService.sendTourDepartureEmail(booking, booking.getCustomer(), actsFinal);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    if (booking.getCustomer() != null && booking.getCustomer().getId() != null) {
+                        Long custId = booking.getCustomer().getId();
+                        if (!sentCustomerIds.contains(custId)) {
+                            sentCustomerIds.add(custId);
+                            try {
+                                emailService.sendTourDepartureEmail(booking, booking.getCustomer(), actsFinal);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -1005,16 +1010,21 @@ public class TourGuideController {
             // Update all bookings on this schedule to Completed
             java.util.List<com.kawai.models.TourBooking> bookings = tourBookingRepository.findBySchedule(schedule);
             if (bookings != null) {
+                java.util.Set<Long> sentCustomerIds = new java.util.HashSet<>();
                 for (com.kawai.models.TourBooking booking : bookings) {
                     booking.setBookingStatus("Completed");
                     tourBookingRepository.saveAndFlush(booking);
 
                     // Send email to the customer
-                    if (booking.getCustomer() != null) {
-                        try {
-                            emailService.sendTourFeedbackEmail(booking, booking.getCustomer());
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    if (booking.getCustomer() != null && booking.getCustomer().getId() != null) {
+                        Long custId = booking.getCustomer().getId();
+                        if (!sentCustomerIds.contains(custId)) {
+                            sentCustomerIds.add(custId);
+                            try {
+                                emailService.sendTourFeedbackEmail(booking, booking.getCustomer());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
