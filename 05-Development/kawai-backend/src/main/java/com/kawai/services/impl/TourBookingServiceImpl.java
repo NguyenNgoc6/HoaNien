@@ -442,10 +442,58 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         roomNumber);
                 }
 
-                // Tự động gán Tour Guide Nguyễn Ngọc (employee_id = 5) cho schedule của booking này
+                // Tự động gán Tour Guide cho schedule của booking này theo luật
                 try {
-                        Employee ngoc = employeeRepository.findById(5L).orElse(null);
-                        if (ngoc != null) {
+                        java.time.LocalDate depDate = schedule.getDepartureDate();
+                        java.time.LocalTime depTime = schedule.getDepartureTime();
+                        
+                        // ID của các Tour Guides: 5 = NguynNgoc, 6 = Ngọc Lan, 7 = Hoàng Nam
+                        Long selectedGuideId = 5L; // Ưu tiên NguynNgoc
+                        
+                        if (depDate != null && depTime != null) {
+                                // 1. Kiểm tra xem NguynNgoc (5L) có bị trùng lịch vào ngày & giờ này không
+                                boolean ngocConflict = false;
+                                List<TourStaffAssignment> ngocAssigns = tourStaffAssignmentRepository.findByEmployeeId(5L);
+                                if (ngocAssigns != null) {
+                                        for (TourStaffAssignment a : ngocAssigns) {
+                                                if (a.getSchedule() != null && !a.getSchedule().getId().equals(schedule.getId())) {
+                                                        if (depDate.equals(a.getSchedule().getDepartureDate()) && 
+                                                            depTime.equals(a.getSchedule().getDepartureTime()) &&
+                                                            "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                                ngocConflict = true;
+                                                                break;
+                                                        }
+                                                }
+                                        }
+                                }
+                                
+                                if (ngocConflict) {
+                                        // 2. Nếu NguynNgoc bị trùng, kiểm tra xem Ngọc Lan (6L) có bị trùng không
+                                        boolean lanConflict = false;
+                                        List<TourStaffAssignment> lanAssigns = tourStaffAssignmentRepository.findByEmployeeId(6L);
+                                        if (lanAssigns != null) {
+                                                for (TourStaffAssignment a : lanAssigns) {
+                                                        if (a.getSchedule() != null && !a.getSchedule().getId().equals(schedule.getId())) {
+                                                                if (depDate.equals(a.getSchedule().getDepartureDate()) && 
+                                                                    depTime.equals(a.getSchedule().getDepartureTime()) &&
+                                                                    "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                                        lanConflict = true;
+                                                                        break;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        
+                                        if (!lanConflict) {
+                                                selectedGuideId = 6L; // Gán cho Ngọc Lan
+                                        } else {
+                                                selectedGuideId = 7L; // Fallback gán cho Hoàng Nam
+                                        }
+                                }
+                        }
+                        
+                        Employee guide = employeeRepository.findById(selectedGuideId).orElse(null);
+                        if (guide != null) {
                                 List<TourStaffAssignment> assignments = tourStaffAssignmentRepository
                                                 .findByScheduleId(schedule.getId());
                                 TourStaffAssignment guideAssignment = null;
@@ -462,12 +510,12 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         guideAssignment.setSchedule(schedule);
                                         guideAssignment.setStaffRole("GUIDE");
                                 }
-                                guideAssignment.setEmployee(ngoc);
+                                guideAssignment.setEmployee(guide);
                                 tourStaffAssignmentRepository.save(guideAssignment);
-                                LOG.info("Đã gán Tour Guide Nguyễn Ngọc (ID 5) cho schedule ID: {}", schedule.getId());
+                                LOG.info("Đã gán Tour Guide {} (ID {}) cho schedule ID: {}", guide.getFullName(), selectedGuideId, schedule.getId());
                         }
                 } catch (Exception e) {
-                        LOG.error("Lỗi khi tự động gán Tour Guide Nguyễn Ngọc: {}", e.getMessage());
+                        LOG.error("Lỗi khi tự động gán Tour Guide theo luật thời gian: {}", e.getMessage());
                 }
 
                 return savedBooking.getId();

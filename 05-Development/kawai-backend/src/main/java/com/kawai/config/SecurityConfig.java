@@ -278,7 +278,7 @@ public class SecurityConfig {
                             }
                             break;
                         } else if (role.equals("ROLE_TOURGUIDE")) {
-                            redirect = "/tourguide/dashboard";
+                            redirect = "/tourguide/tour";
                             break;
                         } else if (role.equals("ROLE_HOUSEKEEPING")) {
                             redirect = "/housekeeping/dashboard";
@@ -307,7 +307,7 @@ public class SecurityConfig {
                                 redirect = "/maintenance/dashboard";
                                 break;
                             } else if (perm.startsWith("OP_TOUR")) {
-                                redirect = "/tourguide/dashboard";
+                                redirect = "/tourguide/tour";
                                 break;
                             } else if (perm.startsWith("OP_MASTER_DATA") || perm.startsWith("OP_AUDIT_LOG") ||
                                        perm.startsWith("OP_WORKFLOW")) {

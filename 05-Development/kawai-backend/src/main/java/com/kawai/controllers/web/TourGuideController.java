@@ -409,13 +409,31 @@ public class TourGuideController {
             }
         }
         
-        // Ensure schedule 5 is at the top of the list for demo
-        dbSchedules.sort((s1, s2) -> {
-            if (s1.getId() != null && s1.getId() == 5L) return -1;
-            if (s2.getId() != null && s2.getId() == 5L) return 1;
-            if (s1.getDepartureDate() == null || s2.getDepartureDate() == null) return 0;
-            return s2.getDepartureDate().compareTo(s1.getDepartureDate());
-        });
+        // Sắp xếp các tour đặt thành công mới nhất lên đầu danh sách (ID lớn nhất lên trước)
+        if (dbSchedules != null) {
+            dbSchedules.sort((s1, s2) -> {
+                Long id1 = s1.getId() != null ? s1.getId() : 0L;
+                Long id2 = s2.getId() != null ? s2.getId() : 0L;
+                return id2.compareTo(id1);
+            });
+
+            // Lọc danh sách schedule:
+            // - Chỉ giữ lại tối đa 3 tour cố định (ID < 100) của các hướng dẫn viên khác để demo.
+            // - Giữ lại tất cả các tour mới (ID >= 100).
+            java.util.List<com.kawai.models.TourSchedule> filteredSchedules = new java.util.ArrayList<>();
+            int demoCount = 0;
+            for (com.kawai.models.TourSchedule s : dbSchedules) {
+                if (s.getId() != null && s.getId() < 100L) {
+                    if (demoCount < 3) {
+                        filteredSchedules.add(s);
+                        demoCount++;
+                    }
+                } else {
+                    filteredSchedules.add(s);
+                }
+            }
+            dbSchedules = filteredSchedules;
+        }
 
         java.util.List<java.util.Map<String, Object>> dbToursList = new java.util.ArrayList<>();
         
@@ -556,65 +574,14 @@ public class TourGuideController {
                 }
             }
 
-            // 1d. Sinh thông tin thời tiết động dựa trên địa danh tour ngày hôm nay
-            if (depDate != null && depDate.equals(today)) {
-                String weatherContent = "Dự báo thời tiết: Nắng ấm và mát mẻ tại các điểm tham quan của tour \"" + tourName + "\" hôm nay, rất thích hợp cho hoạt động ngoài trời.";
-                if (tourName.contains("Mũi Né") || tourName.contains("Phú Quốc") || tourName.contains("Hạ Long") || tourName.contains("Mũ Né")) {
-                    weatherContent = "Thời tiết hôm nay: Trời nắng đẹp, nhiệt độ khoảng 28-32°C, sóng êm, cực kỳ lý tưởng cho các hoạt động bãi biển và sa mạc cát của tour \"" + tourName + "\".";
-                } else if (tourName.contains("Huế") || tourName.contains("Quảng Nam") || tourName.contains("Cần Thơ")) {
-                    weatherContent = "Thời tiết hôm nay: Dự kiến có mưa rào nhẹ vào lúc 16:30 tại vùng \"" + tourName + "\". Khuyến nghị chuẩn bị ô dù và áo mưa dự phòng cho du khách.";
-                }
-                
-                java.util.Map<String, Object> todayWeather = new java.util.HashMap<>();
-                todayWeather.put("content", weatherContent);
-                todayWeather.put("icon", "cloud");
-                // Thêm thời tiết vào đầu danh sách ghi chú
-                dynamicNotes.add(0, todayWeather);
-            }
         }
 
-        // 2. Lấy thông tin báo cáo sự cố từ Ban quản lý (HotelOperation)
-        java.util.List<com.kawai.models.HotelOperation> tasks = hotelOperationRepository.findAll();
-        if (tasks != null) {
-            for (com.kawai.models.HotelOperation task : tasks) {
-                if ("MAINTENANCE".equalsIgnoreCase(task.getOperationalType())) {
-                    String taskNotes = task.getNotes() != null ? task.getNotes() : "Báo cáo bảo trì thiết bị";
-                    String roomName = task.getRoom() != null ? "phòng " + task.getRoom().getRoomNumber() : "resort";
-                    String statusText = "Đang chờ";
-                    if ("InProgress".equalsIgnoreCase(task.getStatus())) {
-                        statusText = "Đang xử lý";
-                    } else if ("Completed".equalsIgnoreCase(task.getStatus())) {
-                        statusText = "Đã hoàn thành";
-                    } else if ("Paused".equalsIgnoreCase(task.getStatus())) {
-                        statusText = "Tạm dừng";
-                    }
-                    
-                    String issueContent = "Ban Quản lý tiếp nhận sự cố tại " + roomName + ": \"" + taskNotes + "\" - Trạng thái: " + statusText + ".";
-                    
-                    java.util.Map<String, Object> notifIssue = new java.util.HashMap<>();
-                    notifIssue.put("title", "Phản hồi sự cố");
-                    notifIssue.put("content", issueContent);
-                    notifIssue.put("icon", "warning");
-                    notifIssue.put("timeText", "30 phút trước");
-                    dynamicNotifications.add(notifIssue);
-                    
-                    // Nếu sự cố của ngày hôm nay
-                    if (task.getCreatedAt() != null && task.getCreatedAt().toLocalDate().equals(today)) {
-                        java.util.Map<String, Object> todayIssueNote = new java.util.HashMap<>();
-                        todayIssueNote.put("content", "Sự cố bảo trì hôm nay: " + issueContent);
-                        todayIssueNote.put("icon", "warning");
-                        dynamicNotes.add(todayIssueNote);
-                    }
-                }
-            }
-        }
-
-        // Đảm bảo luôn có tối thiểu 1-2 ghi chú thời tiết nếu danh sách trống
+        // Đảm bảo luôn có tối thiểu 1 ghi chú nếu danh sách trống
         if (dynamicNotes.isEmpty()) {
-            java.util.Map<String, Object> fallbackWeather = new java.util.HashMap<>();
-            fallbackWeather.put("content", "Thời tiết hôm nay: Nắng ấm và mát mẻ tại các điểm tham quan của HoaNien, nhiệt độ dao động từ 25-28°C.");
-            fallbackWeather.put("icon", "cloud");
-            dynamicNotes.add(fallbackWeather);
+            java.util.Map<String, Object> fallbackNote = new java.util.HashMap<>();
+            fallbackNote.put("content", "Hôm nay không có ghi chú đặc biệt nào từ các đoàn khách.");
+            fallbackNote.put("icon", "info");
+            dynamicNotes.add(fallbackNote);
         }
 
         // Sắp xếp các thông báo để cái mới nhất/hợp lý lên đầu (ở đây list đã add theo thứ tự)
@@ -875,79 +842,88 @@ public class TourGuideController {
     }
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
-        if (sched.getDepartureDate() == null) {
+        if (sched == null) return "Ngọc Lan";
+        
+        // Nếu là tour cố định (ID < 100) -> chỉ gán cho các HDV khác để demo
+        if (sched.getId() != null && sched.getId() < 100L) {
             return getPreferredGuide(sched);
         }
         
-        // Find all schedules on the same departure date
-        java.util.List<com.kawai.models.TourSchedule> daySchedules = tourScheduleRepository.findByDepartureDate(sched.getDepartureDate());
-        if (daySchedules == null || daySchedules.isEmpty()) {
-            return getPreferredGuide(sched);
+        // Nếu là tour mới do khách đặt (ID >= 100 hoặc null)
+        // Áp dụng luật: kiểm tra xem NguynNgoc đã có tour nào trùng thời gian (cùng ngày và cùng giờ khởi hành) chưa.
+        // Nếu chưa trùng thời gian -> gán cho NguynNgoc.
+        // Nếu trùng thời gian -> đẩy cho tourguide khác (Ngọc Lan hoặc Hoàng Nam).
+        java.time.LocalDate depDate = sched.getDepartureDate();
+        java.time.LocalTime depTime = sched.getDepartureTime();
+        
+        if (depDate == null || depTime == null) {
+            return "NguynNgoc"; // Mặc định nếu thiếu thông tin thời gian
         }
         
-        // Sort by ID to ensure deterministic assignment
-        daySchedules.sort((s1, s2) -> {
+        java.util.List<com.kawai.models.TourSchedule> allSchedules = tourScheduleRepository.findAll();
+        // Lọc các schedule có cùng ngày và giờ khởi hành, sắp xếp theo ID tăng dần
+        java.util.List<com.kawai.models.TourSchedule> conflictSchedules = new java.util.ArrayList<>();
+        for (com.kawai.models.TourSchedule s : allSchedules) {
+            if (depDate.equals(s.getDepartureDate()) && depTime.equals(s.getDepartureTime())) {
+                conflictSchedules.add(s);
+            }
+        }
+        conflictSchedules.sort((s1, s2) -> {
             Long id1 = s1.getId() != null ? s1.getId() : 0L;
             Long id2 = s2.getId() != null ? s2.getId() : 0L;
             return id1.compareTo(id2);
         });
         
-        java.util.Set<String> takenGuides = new java.util.HashSet<>();
-        java.util.List<String> allGuides = java.util.Arrays.asList("NguynNgoc", "Ngọc Lan", "Hoàng Nam");
-        
-        String assignedGuide = null;
-        
-        for (com.kawai.models.TourSchedule s : daySchedules) {
-            String finalGuide = null;
+        java.util.Set<String> taken = new java.util.HashSet<>();
+        // Đầu tiên, các tour cố định đã được gán trước cố định cho các HDV khác
+        for (com.kawai.models.TourSchedule s : conflictSchedules) {
             if (s.getId() != null && s.getId() < 100L) {
-                // Seeded schedules: keep fixed assignments
-                finalGuide = getPreferredGuide(s);
-            } else {
-                // New customer bookings: default to NguynNgoc, fallback to others if taken
-                if (!takenGuides.contains("NguynNgoc")) {
-                    finalGuide = "NguynNgoc";
-                } else {
-                    // NguynNgoc is already taken on this day, find next free guide
-                    for (String g : allGuides) {
-                        if (!takenGuides.contains(g)) {
-                            finalGuide = g;
-                            break;
-                        }
-                    }
-                    if (finalGuide == null) {
-                        finalGuide = "NguynNgoc"; // ultimate fallback
-                    }
-                }
-            }
-            takenGuides.add(finalGuide);
-            
-            if (s.getId() != null && s.getId().equals(sched.getId())) {
-                assignedGuide = finalGuide;
+                taken.add(getPreferredGuide(s));
             }
         }
         
-        return assignedGuide != null ? assignedGuide : getPreferredGuide(sched);
+        String assigned = null;
+        for (com.kawai.models.TourSchedule s : conflictSchedules) {
+            if (s.getId() != null && s.getId() < 100L) {
+                if (s.getId().equals(sched.getId())) {
+                    return getPreferredGuide(sched);
+                }
+                continue;
+            }
+            
+            // Tour mới: ưu tiên gán cho NguynNgoc nếu rảnh
+            String g;
+            if (!taken.contains("NguynNgoc")) {
+                g = "NguynNgoc";
+            } else if (!taken.contains("Ngọc Lan")) {
+                g = "Ngọc Lan";
+            } else {
+                g = "Hoàng Nam";
+            }
+            taken.add(g);
+            
+            if (s.getId() != null && s.getId().equals(sched.getId())) {
+                assigned = g;
+                break;
+            }
+        }
+        
+        return assigned != null ? assigned : "NguynNgoc";
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
-        if (scheduleHasSpecialCustomer(sched)) {
-            return "NguynNgoc";
-        }
-        if (sched.getId() != null && sched.getId() == 5L) {
-            return "NguynNgoc";
-        }
-        if (sched.getTour() != null) {
-            String tn = sched.getTour().getTourName();
-            if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
+        if (sched == null) return "Ngọc Lan";
+        
+        // Toàn bộ tour cố định (ID < 100) không gán cho NguynNgoc
+        if (sched.getId() != null && sched.getId() < 100L) {
+            // Phân bổ xen kẽ cho Ngọc Lan và Hoàng Nam để demo giao diện
+            if (sched.getId() % 2 == 0) {
                 return "Ngọc Lan";
-            } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
+            } else {
                 return "Hoàng Nam";
-            } else if (tn.contains("Di sản") || tn.contains("di sản") || tn.contains("disan")) {
-                return "Ngọc Lan";
             }
         }
+        
         return "NguynNgoc";
     }
 
