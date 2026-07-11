@@ -488,6 +488,8 @@ public class TourGuideController {
             if (dbStatus != null) {
                 if ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus) || "done".equalsIgnoreCase(dbStatus)) {
                     mappedStatus = "completed";
+                } else if ("ongoing".equalsIgnoreCase(dbStatus)) {
+                    mappedStatus = "ongoing";
                 }
             }
             map.put("status", mappedStatus);

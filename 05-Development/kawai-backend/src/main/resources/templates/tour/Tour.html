@@ -317,6 +317,9 @@
                         <button onclick="filterTours('upcoming', this)"
                             class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp
                             tới</button>
+                        <button onclick="filterTours('ongoing', this)"
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Đang
+                            diễn ra</button>
                         <button onclick="filterTours('completed', this)"
                             class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn
                             thành</button>
@@ -385,6 +388,13 @@
                                                             th:text="${tour.guide}">Minh Anh</span></span>
                                                     <span class="text-on-surface-variant text-label-sm">• Ngày: <span
                                                             th:text="${tour.date}">2026-06-27</span></span>
+                                                    <span class="text-on-surface-variant text-label-sm">•</span>
+                                                    <span th:if="${tour.status == 'upcoming'}"
+                                                        class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Sắp diễn ra</span>
+                                                    <span th:if="${tour.status == 'ongoing'}"
+                                                        class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border bg-amber-500/10 text-amber-600 border-amber-500/20">Đang diễn ra</span>
+                                                    <span th:if="${tour.status == 'completed'}"
+                                                        class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border bg-secondary-container/30 text-secondary border-secondary-container">Đã hoàn thành</span>
                                                 </div>
                                                 <h3 class="font-headline-md text-2xl text-on-surface group-hover:text-primary transition-colors mb-2"
                                                     th:text="${tour.name}">Hành trình Đoàn Tụ - Huế</h3>
@@ -732,6 +742,8 @@
                     matchesFilter = isSameGuide(guideName, loggedInGuideName);
                 } else if (activeTourFilter === 'upcoming') {
                     matchesFilter = (status === 'upcoming');
+                } else if (activeTourFilter === 'ongoing') {
+                    matchesFilter = (status === 'ongoing');
                 } else if (activeTourFilter === 'completed') {
                     matchesFilter = (status === 'completed');
                 }
@@ -820,10 +832,15 @@
         }
 
         function createModalTourCard(tour) {
-            const statusBg = tour.status === 'upcoming'
-                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                : 'bg-secondary-container/30 text-secondary border-secondary-container';
-            const statusText = tour.status === 'upcoming' ? 'Sắp diễn ra' : 'Đã hoàn thành';
+            let statusBg = 'bg-secondary-container/30 text-secondary border-secondary-container';
+            let statusText = 'Đã hoàn thành';
+            if (tour.status === 'upcoming') {
+                statusBg = 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+                statusText = 'Sắp diễn ra';
+            } else if (tour.status === 'ongoing') {
+                statusBg = 'bg-amber-500/10 text-amber-600 border-amber-500/20';
+                statusText = 'Đang diễn ra';
+            }
 
             return `
                 <div class="glass-panel border-primary/10 rounded-xl p-4 flex gap-4 hover:scale-[1.01] transition-transform duration-300 bg-white/40 backdrop-blur-md cursor-pointer" onclick="handleViewDetails(${tour.id}, '${tour.guide}')">
