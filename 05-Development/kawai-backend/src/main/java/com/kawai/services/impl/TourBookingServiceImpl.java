@@ -136,13 +136,12 @@ public class TourBookingServiceImpl implements TourBookingService {
                         }
                 }
 
-                // 3b. Cộng phí bảo hiểm (nếu tour bắt buộc và khách đã đồng ý)
+                // 3b. Tính phí bảo hiểm để hạch toán (đã bao gồm trong giá tour gốc)
                 BigDecimal insuranceFee = BigDecimal.ZERO;
                 if (Boolean.TRUE.equals(tour.getIsInsuranceRequired()) && request.isAcceptInsurance()) {
                         insuranceFee = tour.getInsurancePrice()
                                         .multiply(BigDecimal.valueOf(request.getParticipantCount()));
-                        totalPrice = totalPrice.add(insuranceFee);
-                        LOG.info("Cộng phí bảo hiểm: {} x {} người = {} VND",
+                        LOG.info("Phí bảo hiểm hạch toán (đã bao gồm trong giá): {} x {} người = {} VND",
                                         tour.getInsurancePrice(), request.getParticipantCount(), insuranceFee);
                 }
 
@@ -300,8 +299,10 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 dep.setGender("Nam");
                                 dep.setIsDeleted(false);
                                 
-                                // Nếu có sđt, lưu vào cccdPassportEncrypted dưới dạng note PHONE_xxx để tránh thiếu dữ liệu
-                                if (comp.getPhone() != null && !comp.getPhone().trim().isEmpty()) {
+                                // Lưu số CCCD/Passport của người đi cùng để làm thủ tục bảo hiểm lữ hành bắt buộc
+                                if (comp.getIdCard() != null && !comp.getIdCard().trim().isEmpty()) {
+                                        dep.setCccdPassportEncrypted(comp.getIdCard().trim());
+                                } else if (comp.getPhone() != null && !comp.getPhone().trim().isEmpty()) {
                                         dep.setCccdPassportEncrypted("PHONE_" + comp.getPhone().trim());
                                 }
                                 
