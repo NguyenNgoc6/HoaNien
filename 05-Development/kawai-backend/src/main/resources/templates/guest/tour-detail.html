@@ -2202,9 +2202,9 @@
                     </div>
                     <span class="age-error-msg absolute bottom-0 left-0 text-[10px] text-red-500 font-medium hidden">Chỉ nhập tuổi từ 12 - 100 tuổi</span>
                   </div>
-                  <div class="flex flex-col relative pb-4">
+                  <div class="flex flex-col relative pb-4 adult-companion-idcard-container hidden">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Số CCCD / Hộ chiếu</label>
-                    <input class="text-sm py-2 adult-companion-idcard border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="CCCD hoặc Passport" type="text" required>
+                    <input class="text-sm py-2 adult-companion-idcard border-b border-brand-border/50 focus:border-brand-gold bg-transparent text-black" placeholder="CCCD hoặc Passport" type="text">
                   </div>
                   <div class="flex flex-col relative pb-4">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-1">Số điện thoại</label>
@@ -2247,6 +2247,23 @@
                 errorSpan.classList.add('hidden');
                 input.classList.remove('border-red-500');
                 input.classList.add('border-brand-border/50');
+            }
+
+            // Toggle CCCD/Passport container based on age >= 14
+            const row = input.closest('.adult-companion-row');
+            if (row) {
+                const idCardContainer = row.querySelector('.adult-companion-idcard-container');
+                const idCardInput = row.querySelector('.adult-companion-idcard');
+                if (idCardContainer && idCardInput) {
+                    if (!isNaN(val) && val >= 14 && val <= 100) {
+                        idCardContainer.classList.remove('hidden');
+                        idCardInput.required = true;
+                    } else {
+                        idCardContainer.classList.add('hidden');
+                        idCardInput.required = false;
+                        idCardInput.value = '';
+                    }
+                }
             }
         }
 
@@ -2928,7 +2945,7 @@
                     }
 
                     const idCardEl = row.querySelector('.adult-companion-idcard');
-                    if (idCardEl) {
+                    if (idCardEl && idCardEl.required) {
                         const companionIdCard = idCardEl.value.trim();
                         if (companionIdCard === '') {
                             showWarningAlertPopup(
