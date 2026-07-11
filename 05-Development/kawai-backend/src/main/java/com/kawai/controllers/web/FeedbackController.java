@@ -85,9 +85,8 @@ public class FeedbackController {
             }
 
             if (customer != null) {
-                List<com.kawai.models.Booking> completedBookings = 
-                    bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-                hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+                long completedCount = bookingRepository.countCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+                hasUsedService = completedCount > 0;
                 
                 // Lấy các TourBookings chưa đánh giá
                 List<com.kawai.models.TourBooking> allTours = tourBookingRepository.findTourBookingsByCustomerId(customer.getId());
@@ -386,9 +385,8 @@ public class FeedbackController {
         }
 
         // Check if customer has used any services (chỉ chặn nếu không có booking hoàn thành)
-        List<com.kawai.models.Booking> completedBookings = 
-            bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-        if ((completedBookings == null || completedBookings.isEmpty()) && targetTourBookingId == null && selectedRoomBookingDetailId == null) {
+        long completedCount = bookingRepository.countCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+        if (completedCount <= 0 && targetTourBookingId == null && selectedRoomBookingDetailId == null) {
             System.out.println("DEBUG FEEDBACK: Chan submit - Customer khong co booking hoan thanh");
             return "redirect:/feedback?toast=no_service_used";
         }
