@@ -836,35 +836,37 @@
             <div class="w-full md:w-1/2 p-10">
                 <h3 class="text-2xl font-serif mb-8" id="modal-payment-title">Thanh toán</h3>
                 <div class="space-y-6 pt-2">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">Chọn phương
-                        thức</label>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="payment-method-toggle border border-brand-border p-4 flex flex-col cursor-pointer transition-all hover:border-brand-dark border-brand-dark"
-                            id="toggle-counter" onclick="selectPaymentMethod('counter')">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4">
-                                    <span class="material-symbols-outlined text-brand-dark text-lg">storefront</span>
-                                    <p class="text-[10px] font-bold uppercase tracking-wider">Thanh toán tại quầy</p>
-                                </div>
-                                <div
-                                    class="method-radio w-4 h-4 rounded-full border border-brand-border flex items-center justify-center">
-                                    <div class="radio-inner w-2 h-2 rounded-full bg-brand-dark transition-opacity">
+                    <div id="payment-methods-selector">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">Chọn phương
+                            thức</label>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="payment-method-toggle border border-brand-border p-4 flex flex-col cursor-pointer transition-all hover:border-brand-dark border-brand-dark"
+                                id="toggle-counter" onclick="selectPaymentMethod('counter')">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <span class="material-symbols-outlined text-brand-dark text-lg">storefront</span>
+                                        <p class="text-[10px] font-bold uppercase tracking-wider">Thanh toán tại quầy</p>
+                                    </div>
+                                    <div
+                                        class="method-radio w-4 h-4 rounded-full border border-brand-border flex items-center justify-center">
+                                        <div class="radio-inner w-2 h-2 rounded-full bg-brand-dark transition-opacity">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="payment-method-toggle border border-brand-border p-4 flex flex-col cursor-pointer transition-all hover:border-brand-dark"
-                            id="toggle-vnpay" onclick="selectPaymentMethod('vnpay')">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4">
-                                    <span
-                                        class="material-symbols-outlined text-brand-dark text-lg">account_balance_wallet</span>
-                                    <p class="text-[10px] font-bold uppercase tracking-wider">Thanh toán qua VNPay</p>
-                                </div>
-                                <div
-                                    class="method-radio w-4 h-4 rounded-full border border-brand-border flex items-center justify-center">
+                            <div class="payment-method-toggle border border-brand-border p-4 flex flex-col cursor-pointer transition-all hover:border-brand-dark"
+                                id="toggle-vnpay" onclick="selectPaymentMethod('vnpay')">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <span
+                                            class="material-symbols-outlined text-brand-dark text-lg">account_balance_wallet</span>
+                                        <p class="text-[10px] font-bold uppercase tracking-wider">Thanh toán qua VNPay</p>
+                                    </div>
                                     <div
-                                        class="radio-inner w-2 h-2 rounded-full bg-brand-dark opacity-0 transition-opacity">
+                                        class="method-radio w-4 h-4 rounded-full border border-brand-border flex items-center justify-center">
+                                        <div
+                                            class="radio-inner w-2 h-2 rounded-full bg-brand-dark opacity-0 transition-opacity">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -923,6 +925,31 @@
                                     <span
                                         class="px-2 py-1 bg-white border border-gray-200 rounded-sm text-[8px] font-bold uppercase tracking-widest text-gray-500">+
                                         40 NH</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapsible-content" id="post-room-details">
+                        <div class="mt-4 border border-emerald-100 bg-emerald-50/60 rounded-sm overflow-hidden">
+                            <!-- Room Charge header -->
+                            <div class="flex items-center gap-3 px-5 py-3 bg-white border-b border-emerald-100">
+                                <span class="material-symbols-outlined text-emerald-600 text-xl">bedroom_parent</span>
+                                <div>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-800">Thanh toán Gán phòng</p>
+                                    <p class="text-[9px] text-gray-400">Post to Room — Charge to Stay Folio</p>
+                                </div>
+                            </div>
+                            <div class="p-5 space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-emerald-600 text-base mt-0.5">room_service</span>
+                                    <p class="text-[10px] text-gray-600 leading-relaxed">
+                                        Sau khi xác nhận đặt tour, chi phí dịch vụ sẽ được tự động ghi nhận trực tiếp vào hóa đơn phòng (Folio) của phòng đã chọn: 
+                                        <strong id="modal-post-room-numbers" class="text-emerald-850 font-bold">---</strong>.
+                                    </p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-emerald-600 text-base mt-0.5">check_circle</span>
+                                    <p class="text-[10px] text-gray-600 leading-relaxed">Bạn sẽ thực hiện thanh toán tổng hóa đơn này khi thực hiện thủ tục Check-out tại quầy lễ tân.</p>
                                 </div>
                             </div>
                         </div>
@@ -2313,8 +2340,38 @@
             summaryMembers.innerText = `${qty - numChildren} Người lớn, ${numChildren} Trẻ em`;
 
             // Update title and label based on payment type
-            document.getElementById('modal-payment-title').innerText = (type === 'deposit') ? 'Thanh toán Đặt cọc (30%)' : 'Thanh toán Trọn gói (100%)';
-            document.getElementById('modal-payment-label').innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
+            const titleEl = document.getElementById('modal-payment-title');
+            const labelEl = document.getElementById('modal-payment-label');
+            const methodsSelector = document.getElementById('payment-methods-selector');
+            const postRoomDetails = document.getElementById('post-room-details');
+            const branchDetails = document.getElementById('branch-details');
+            const vnpayDetails = document.getElementById('vnpay-details');
+            const confirmBtn = document.getElementById('final-confirm-btn');
+
+            if (type === 'post-room') {
+                if (titleEl) titleEl.innerText = 'Thanh toán Gán phòng';
+                if (labelEl) labelEl.innerText = 'Số tiền gán phòng (100%)';
+                if (methodsSelector) methodsSelector.classList.add('hidden');
+                if (postRoomDetails) postRoomDetails.classList.add('expanded');
+                if (branchDetails) branchDetails.classList.remove('expanded');
+                if (vnpayDetails) vnpayDetails.classList.remove('expanded');
+                
+                currentPaymentMethod = 'post-room';
+                if (confirmBtn) confirmBtn.innerText = 'XÁC NHẬN GÁN PHÒNG';
+                
+                const roomNumbersText = selectedRooms.map(r => `Phòng ${r.roomNumber}`).join(', ');
+                const roomNumEl = document.getElementById('modal-post-room-numbers');
+                if (roomNumEl) {
+                    roomNumEl.innerText = roomNumbersText;
+                }
+            } else {
+                if (titleEl) titleEl.innerText = (type === 'deposit') ? 'Thanh toán Đặt cọc (30%)' : 'Thanh toán Trọn gói (100%)';
+                if (labelEl) labelEl.innerText = (type === 'deposit') ? 'Số tiền thanh toán (Cọc 30%)' : 'Số tiền thanh toán (Toàn bộ)';
+                if (methodsSelector) methodsSelector.classList.remove('hidden');
+                if (postRoomDetails) postRoomDetails.classList.remove('expanded');
+                
+                selectPaymentMethod('counter');
+            }
 
             // Display final payment amount based on type
             const paymentAmount = (type === 'deposit') ? Math.round(finalPriceWithInsurance * 0.3) : finalPriceWithInsurance;
@@ -2323,7 +2380,6 @@
             overlay.classList.add('active');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-            selectPaymentMethod('counter');
         }
 
         function openRoomSelection() {
@@ -3063,11 +3119,7 @@
             if (form) {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    if (selectedPaymentType === 'post-room') {
-                        submitBookingFlow();
-                    } else {
-                        showPaymentModal(selectedPaymentType);
-                    }
+                    showPaymentModal(selectedPaymentType);
                 });
             }
 
