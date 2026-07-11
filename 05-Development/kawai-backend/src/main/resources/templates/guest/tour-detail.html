@@ -728,7 +728,7 @@
                             <input class="mt-1 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
                                 id="insuranceConsent" type="checkbox" onchange="updateTotalPrice(); validateConsentAndEnableButtons()">
                             <label for="insuranceConsent" class="text-[10px] leading-relaxed text-amber-800 cursor-pointer">
-                                Tôi xác nhận đã đọc, hiểu và đồng ý với điều khoản bảo hiểm du lịch bắt buộc dành cho hành khách (Mức bồi thường tối đa 30.000.000 VNĐ/vụ theo Luật Du lịch Việt Nam) đã được bao gồm trong tổng chi phí tour.
+                                Tôi xác nhận đã đọc, hiểu và đồng ý với <button type="button" onclick="event.preventDefault(); event.stopPropagation(); openInsuranceDetailModal()" class="underline text-amber-900 hover:text-amber-950 font-semibold bg-transparent border-none p-0 inline cursor-pointer">điều khoản bảo hiểm du lịch bắt buộc</button> dành cho hành khách đã được bao gồm trong tổng chi phí tour.
                             </label>
                         </div>
                         <div class="flex items-start space-x-3">
