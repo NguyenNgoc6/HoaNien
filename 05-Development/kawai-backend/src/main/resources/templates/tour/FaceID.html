@@ -466,51 +466,51 @@
                                         id="startTourForm">
                                         <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
                                         <button type="button" onclick="checkTourSafety(event)"
-                                            class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-sm shadow-md">
-                                            <span class="material-symbols-outlined text-base">play_circle</span>
+                                            class="flex items-center gap-2 px-6 py-3.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 hover:scale-[1.03] transition-all font-bold text-base shadow-lg">
+                                            <span class="material-symbols-outlined text-lg">play_circle</span>
                                             Bắt Đầu Tour
                                         </button>
                                     </form>
 
                                     <!-- ══ TRẠNG THÁI: ONGOING ══ -->
                                     <div th:if="${scheduleStatus == 'ongoing'}"
-                                        class="flex items-center gap-2 p-1 bg-primary/5 border border-primary/15 rounded-full">
+                                        class="flex items-center gap-3 p-1.5 bg-primary/10 border-2 border-primary/30 rounded-full shadow-md">
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm border border-primary/30 shadow-sm">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
                                             Đang Diễn Ra
                                         </span>
-                                        <span class="text-primary/20 select-none">|</span>
+                                        <span class="text-primary/30 select-none font-light">|</span>
                                         <form th:action="@{/tourguide/finish-tour}" method="post" class="inline"
                                             id="finishTourForm">
                                             <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
                                             <button type="button" onclick="confirmFinishTour(event)"
-                                                class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 transition-all font-semibold text-xs shadow-sm">
-                                                <span class="material-symbols-outlined text-xs">check_circle</span>
+                                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 hover:scale-[1.03] transition-all font-bold text-sm shadow-md">
+                                                <span class="material-symbols-outlined text-base">check_circle</span>
                                                 Hoàn Thành Tour
                                             </button>
                                         </form>
                                         <button type="button"
                                             onclick="openResetModal('Open', 'Hoàn tác bắt đầu tour? Trạng thái sẽ quay về Chờ Bắt Đầu và thời gian khởi hành thực tế sẽ bị xóa.')"
-                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-primary/70 border border-primary/20 hover:bg-primary/10 hover:text-primary transition-all font-medium text-xs">
-                                            <span class="material-symbols-outlined text-xs">undo</span>
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-primary/80 border-2 border-primary/20 hover:bg-primary/10 hover:text-primary hover:scale-[1.03] transition-all font-bold text-sm">
+                                            <span class="material-symbols-outlined text-base">undo</span>
                                             Hoàn Tác
                                         </button>
                                     </div>
 
                                     <!-- ══ TRẠNG THÁI: COMPLETED ══ -->
                                     <div th:if="${scheduleStatus == 'completed'}"
-                                        class="flex items-center gap-2 p-1 bg-primary/5 border border-primary/15 rounded-full">
+                                        class="flex items-center gap-3 p-1.5 bg-primary/10 border-2 border-primary/30 rounded-full shadow-md">
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary font-semibold text-xs">
-                                            <span class="material-symbols-outlined text-xs">task_alt</span>
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm border border-primary/30 shadow-sm">
+                                            <span class="material-symbols-outlined text-base">task_alt</span>
                                             Đã Hoàn Thành
                                         </span>
-                                        <span class="text-primary/20 select-none">|</span>
+                                        <span class="text-primary/30 select-none font-light">|</span>
                                         <button type="button"
                                             onclick="openResetModal('ongoing', 'Hoàn tác hoàn thành tour? Trạng thái sẽ quay về Đang Diễn Ra. Trạng thái đặt chỗ của khách sẽ được khôi phục về Confirmed.')"
-                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-primary/70 border border-primary/20 hover:bg-primary/10 hover:text-primary transition-all font-medium text-xs">
-                                            <span class="material-symbols-outlined text-xs">undo</span>
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-primary/80 border-2 border-primary/20 hover:bg-primary/10 hover:text-primary hover:scale-[1.03] transition-all font-bold text-sm">
+                                            <span class="material-symbols-outlined text-base">undo</span>
                                             Hoàn Tác
                                         </button>
                                     </div>
