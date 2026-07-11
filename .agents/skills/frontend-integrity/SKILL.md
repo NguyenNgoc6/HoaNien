@@ -172,3 +172,10 @@ Write-Host "Lines: $($res.Content.Split([Environment]::NewLine).Length)"
 - **Xác nhận UI:** Khi khách hàng bấm hủy đơn dịch vụ (như đặt tour) tại trang cá nhân, bắt buộc hiển thị popup xác nhận rõ ràng (ví dụ qua SweetAlert2) để tránh bấm nhầm.
 - **Gửi Email đồng bộ:** Email thông báo hủy tour gửi về cho khách hàng phải sử dụng chung giao diện, CSS và các thông tin chi tiết hóa đơn (Breakdown) giống hệt email đặt tour thành công ban đầu, chỉ cập nhật trạng thái đơn thành 'Đã hủy' và hiển thị rõ số tiền được hoàn cọc.
 
+## 17. Truyền dữ liệu Thymeleaf sang JavaScript qua HTML5 Data-Attributes
+- **Vấn đề:** Khi muốn truyền các chuỗi ký tự động (có chứa nháy đơn, nháy kép, xuống dòng từ DB) vào các hàm JavaScript trực tiếp trong thuộc tính sự kiện (ví dụ: `th:onclick="'openModal(' + ${r.text} + ')'"`), việc sử dụng các hàm giả định như `#strings.escapeJavaScript` sẽ làm crash bộ render template của Spring Boot, dẫn đến hiện tượng sập trang (trắng trang).
+- **Giải pháp (BẮT BUỘC):**
+  1. Tránh truyền chuỗi thô qua biểu thức nối chuỗi của Thymeleaf trong các thẻ sự kiện JS.
+  2. Lưu trữ dữ liệu động vào các thuộc tính HTML5 custom data-attributes (`th:data-id`, `th:data-text`, `th:data-rating`).
+  3. Sử dụng JavaScript thuần để bắt sự kiện (`onclick="openModalFromButton(this)"`) và trích xuất dữ liệu: `const text = btn.getAttribute('data-text')`. Cơ chế này đảm bảo an toàn chuỗi và tương thích 100% với trình phân tích cú pháp HTML của trình duyệt.
+
