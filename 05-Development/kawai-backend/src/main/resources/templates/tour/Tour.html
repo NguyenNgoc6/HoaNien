@@ -318,8 +318,10 @@
                             class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Sắp
                             tới</button>
                         <button onclick="filterTours('ongoing', this)"
-                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Đang
-                            diễn ra</button>
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all flex items-center gap-1.5 justify-center">
+                            <span>Đang diễn ra</span>
+                            <span id="ongoing-count-badge" class="hidden px-2 py-0.5 rounded-full bg-amber-500 text-white font-bold text-[10px] animate-pulse">0</span>
+                        </button>
                         <button onclick="filterTours('completed', this)"
                             class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn
                             thành</button>
@@ -342,6 +344,13 @@
                             class="text-sm text-red-600 hover:text-red-800 font-bold hover:underline">
                             Xóa lọc
                         </button>
+                    </div>
+
+                    <!-- Empty State Message -->
+                    <div id="empty-state-container" class="hidden flex flex-col items-center justify-center py-16 bg-surface-container/10 border border-outline-variant/30 rounded-2xl text-center shadow-inner">
+                        <span class="material-symbols-outlined text-6xl text-primary/30 mb-4 animate-bounce">info</span>
+                        <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Không tìm thấy hành trình</h3>
+                        <p id="empty-state-message" class="text-sm text-on-surface-variant max-w-sm px-6">Không có tour nào trong danh sách của bạn.</p>
                     </div>
 
                     <!-- Dynamic Tour Schedules Section -->
@@ -681,6 +690,22 @@
             toursData = dbTours;
         }
 
+        function updateOngoingBadge() {
+            const ongoingCount = toursData.filter(t => t.status === 'ongoing').length;
+            const badge = document.getElementById('ongoing-count-badge');
+            if (badge) {
+                if (ongoingCount > 0) {
+                    badge.textContent = ongoingCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        // Update ongoing badge initial state
+        updateOngoingBadge();
+
         let activeTourFilter = 'all';
 
         function removeVietnameseAccents(str) {
@@ -777,17 +802,47 @@
                 heading.style.display = hasVisible ? 'flex' : 'none';
             });
 
-            // Update section visibility
+            // Update section visibility and count total visible tours
+            let totalVisibleTours = 0;
             const sections = document.querySelectorAll('.tour-section');
             sections.forEach(sec => {
                 let visibleCount = 0;
                 sec.querySelectorAll('.tour-card').forEach(c => {
                     if (c.style.display !== 'none') {
                         visibleCount++;
+                        totalVisibleTours++;
                     }
                 });
                 sec.style.display = (visibleCount === 0) ? 'none' : 'block';
             });
+
+            // Update empty state container visibility
+            const emptyState = document.getElementById('empty-state-container');
+            const emptyStateMsg = document.getElementById('empty-state-message');
+            if (emptyState && emptyStateMsg) {
+                if (totalVisibleTours === 0) {
+                    let msg = "Không có hành trình nào khớp với bộ lọc của bạn.";
+                    if (activeTourFilter === 'all') {
+                        msg = "Không có tour nào trong danh sách hành trình của bạn.";
+                    } else if (activeTourFilter === 'mine') {
+                        msg = "Bạn không có tour nào được phân công nhiệm vụ.";
+                    } else if (activeTourFilter === 'upcoming') {
+                        msg = "Không có tour nào sắp diễn ra trong danh sách của bạn.";
+                    } else if (activeTourFilter === 'ongoing') {
+                        msg = "Không có tour nào đang diễn ra trong danh sách của bạn.";
+                    } else if (activeTourFilter === 'completed') {
+                        msg = "Không có tour nào đã hoàn thành trong danh sách của bạn.";
+                    }
+                    if (selectedDateFilter) {
+                        const parts = selectedDateFilter.split('-');
+                        msg += ` (Cho ngày ${parts[2]}/${parts[1]}/${parts[0]})`;
+                    }
+                    emptyStateMsg.textContent = msg;
+                    emptyState.classList.remove('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                }
+            }
         }
 
         // Calendar detail popup functions
@@ -1037,6 +1092,7 @@
         }
 
         renderCalendar();
+        applyCombinedFilter();
     </script>
 </body>
 
