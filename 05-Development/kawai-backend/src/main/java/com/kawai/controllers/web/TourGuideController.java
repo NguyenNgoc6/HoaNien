@@ -714,6 +714,53 @@ public class TourGuideController {
         return "tour/Feedback";
     }
 
+    @org.springframework.web.bind.annotation.PostMapping("/feedback/reply")
+    public String replyFeedback(
+            @org.springframework.web.bind.annotation.RequestParam("reviewId") Long reviewId,
+            @org.springframework.web.bind.annotation.RequestParam("replyText") String replyText,
+            jakarta.servlet.http.HttpServletRequest request) {
+        
+        // Chỉ lưu reply khi reviewId dương (review trong DB)
+        if (reviewId != null && reviewId > 0) {
+            reviewRepository.findById(reviewId).ifPresent(review -> {
+                review.setReplyText(replyText);
+                reviewRepository.saveAndFlush(review);
+            });
+        }
+        
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.isBlank()) {
+            String cleanUrl = referer.replaceAll("[&?]toast=[^&]*", "");
+            String separator = cleanUrl.contains("?") ? "&" : "?";
+            return "redirect:" + cleanUrl + separator + "toast=reply_success";
+        }
+        return "redirect:/tourguide/feedback?toast=reply_success";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/feedback/report")
+    public String reportFeedback(
+            @org.springframework.web.bind.annotation.RequestParam("reviewId") Long reviewId,
+            @org.springframework.web.bind.annotation.RequestParam("reportReason") String reportReason,
+            jakarta.servlet.http.HttpServletRequest request) {
+        
+        // Chỉ lưu report khi reviewId dương
+        if (reviewId != null && reviewId > 0) {
+            reviewRepository.findById(reviewId).ifPresent(review -> {
+                review.setIsReported(true);
+                review.setReportReason(reportReason);
+                reviewRepository.saveAndFlush(review);
+            });
+        }
+        
+        String referer = request.getHeader("Referer");
+        if (referer != null && !referer.isBlank()) {
+            String cleanUrl = referer.replaceAll("[&?]toast=[^&]*", "");
+            String separator = cleanUrl.contains("?") ? "&" : "?";
+            return "redirect:" + cleanUrl + separator + "toast=report_success";
+        }
+        return "redirect:/tourguide/feedback?toast=report_success";
+    }
+
     @GetMapping("/doantu")
     public String doanTu(Principal principal, Model model) {
         model.addAttribute("isLoggedIn", principal != null);
