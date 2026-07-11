@@ -39,6 +39,9 @@ public class EmailServiceImpl implements EmailService {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourStaffAssignmentRepository tourStaffAssignmentRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourAttendeeRepository tourAttendeeRepository;
+
     @Value("${sendgrid.api-key:}")
     private String sendGridApiKey;
 
@@ -212,6 +215,23 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("paymentLabel", paymentLabel);
             ctx.setVariable("paymentAmount", formatVnd(paymentAmountVal));
             ctx.setVariable("customerNotes", customerNotes);
+
+            // Insurance context variables
+            String insurancePolicyNumber = "Đang cập nhật (chờ cấp đơn)";
+            boolean hasInsurance = false;
+            if (booking.getSchedule() != null) {
+                if (booking.getSchedule().getTour() != null && Boolean.TRUE.equals(booking.getSchedule().getTour().getIsInsuranceRequired())) {
+                    hasInsurance = true;
+                    if (booking.getSchedule().getInsurancePolicyNumber() != null) {
+                        insurancePolicyNumber = booking.getSchedule().getInsurancePolicyNumber();
+                    }
+                }
+            }
+            ctx.setVariable("hasInsurance", hasInsurance);
+            ctx.setVariable("insurancePolicyNumber", insurancePolicyNumber);
+
+            java.util.List<com.kawai.models.TourAttendee> attendeesList = tourAttendeeRepository.findByTourBookingId(booking.getId());
+            ctx.setVariable("attendees", attendeesList != null ? attendeesList : new java.util.ArrayList<>());
 
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);
             sendEmail(customer.getEmail(), "Xác nhận đặt tour - " + tourName + " | Hòa Niên Retreat & Resort", html);

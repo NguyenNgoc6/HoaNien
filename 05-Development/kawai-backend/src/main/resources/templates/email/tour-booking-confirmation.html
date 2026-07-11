@@ -200,6 +200,61 @@
           </div>
         </div>
 
+        <!-- Thông tin bảo hiểm du lịch bắt buộc theo luật định -->
+        <div class="section-label" th:if="${hasInsurance}">Thông tin bảo hiểm du lịch bắt buộc</div>
+        <div class="booking-card" th:if="${hasInsurance}" style="margin-bottom: 28px;">
+          <div class="booking-card-header">
+            <span class="card-title">Chính sách bảo hiểm hành khách</span>
+            <span class="booking-id" th:text="${insurancePolicyNumber}">INS-XXXXXX</span>
+          </div>
+          <div class="booking-card-body">
+            <div class="info-row">
+              <span class="info-label">Đối tác bảo hiểm:</span>
+              <span class="info-value">Tổng Công ty Bảo hiểm Bảo Việt</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Hạn mức bồi thường:</span>
+              <span class="info-value highlight">30.000.000 VNĐ / khách / vụ</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Căn cứ pháp lý:</span>
+              <span class="info-value">Điều 37 Luật Du lịch 2017 (Bảo hiểm bắt buộc dành cho hành khách lữ hành)</span>
+            </div>
+            <div class="info-row" style="background: #fdfbf7;">
+              <span class="info-label">Chi phí bảo hiểm:</span>
+              <span class="info-value">Đã bao gồm trọn gói trong giá tour niêm yết (Quý khách không phải thanh toán thêm tại quầy)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danh sách thành viên được bảo hiểm -->
+        <div class="section-label" th:if="${attendees != null and !attendees.isEmpty()}">Danh sách hành khách & Bảo hiểm</div>
+        <div class="booking-card" th:if="${attendees != null and !attendees.isEmpty()}" style="margin-bottom: 28px;">
+          <div class="booking-card-body">
+            <div class="info-row" th:each="att, iter : ${attendees}">
+              <span class="info-label" th:text="'Hành khách ' + ${iter.index + 1} + ':'">Hành khách 1:</span>
+              <span class="info-value">
+                <!-- Case 1: Customer -->
+                <span th:if="${att.customer != null}">
+                  <strong th:text="${att.customer.fullName}">NGUYEN VAN A</strong>
+                  <span th:if="${att.customer.cccdPassportEncrypted != null and !att.customer.cccdPassportEncrypted.isEmpty()}" 
+                        th:text="' (CCCD/Passport: ' + ${att.customer.cccdPassportEncrypted} + ')'"> (CCCD/Passport: 012345678)</span>
+                </span>
+                <!-- Case 2: Dependent -->
+                <span th:if="${att.dependent != null}">
+                  <strong th:text="${att.dependent.dependentName}">NGUYEN VAN B</strong>
+                  <span th:if="${att.dependent.cccdPassportEncrypted != null and !att.dependent.cccdPassportEncrypted.isEmpty() and !att.dependent.cccdPassportEncrypted.startsWith('PHONE_') and !att.dependent.cccdPassportEncrypted.startsWith('AUTO_CHILD_')}" 
+                        th:text="' (CCCD/Passport: ' + ${att.dependent.cccdPassportEncrypted} + ')'"> (CCCD/Passport: 012345678)</span>
+                  <span th:if="${att.dependent.cccdPassportEncrypted != null and att.dependent.cccdPassportEncrypted.startsWith('AUTO_CHILD_')}" 
+                        style="color: #70635c; font-size: 11px;"> (Trẻ em đi kèm)</span>
+                  <span th:if="${att.dependent.cccdPassportEncrypted == null or att.dependent.cccdPassportEncrypted.isEmpty() or att.dependent.cccdPassportEncrypted.startsWith('PHONE_')}" 
+                        style="color: #70635c; font-size: 11px;"> (Người lớn đi kèm)</span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Total -->
         <div class="total-box">
           <div class="total-label" th:text="${paymentLabel}">Số tiền cần thanh toán</div>
