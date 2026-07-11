@@ -89,7 +89,8 @@
         #payment-modal,
         .age-picker-popup,
         #activity-modal,
-        #map-detail-popup {
+        #map-detail-popup,
+        #insurance-detail-modal {
             display: none;
         }
 
@@ -102,7 +103,8 @@
         #payment-modal.active,
         .age-picker-popup.active,
         #activity-modal.active,
-        #map-detail-popup.active {
+        #map-detail-popup.active,
+        #insurance-detail-modal.active {
             display: flex;
         }
 
@@ -669,7 +671,10 @@
                         <div class="flex items-start gap-3">
                             <span class="material-symbols-outlined text-amber-600 text-[20px] mt-0.5">shield</span>
                             <div>
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-amber-800 mb-1">Bảo hiểm du lịch bắt buộc</p>
+                                <div class="flex items-center justify-between mb-1.5 min-w-[280px]">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-amber-800">Bảo hiểm du lịch bắt buộc</p>
+                                    <button type="button" onclick="openInsuranceDetailModal()" class="text-[9px] font-bold text-amber-700 hover:text-amber-900 underline uppercase tracking-widest transition-colors ml-4">Xem chi tiết</button>
+                                </div>
                                 <p class="text-[11px] text-amber-700 leading-relaxed">
                                     Theo <strong>Điều 37 Luật Du lịch 2017</strong>, tour du lịch bắt buộc phải bao gồm bảo hiểm dành cho hành khách lữ hành.<br />
                                     • Mức bồi thường tối đa: <strong class="text-amber-900">30.000.000 VNĐ / vụ / khách</strong>.<br />
@@ -986,6 +991,53 @@
                     class="flex-1 bg-brand-dark text-white py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-gold transition"
                     onclick="confirmRoomSelection()">Gán phòng</button>
             </div>
+        </div>
+        <!-- Insurance Detail Modal -->
+        <div class="bg-white text-black border border-brand-border shadow-2xl w-full max-w-2xl relative flex flex-col animate-in zoom-in-95 duration-300 rounded-sm p-10 max-h-[85vh] overflow-y-auto"
+            id="insurance-detail-modal">
+            <button class="absolute top-6 right-6 text-2xl text-gray-400 hover:text-brand-dark transition-colors z-10"
+                onclick="closeModal()">×</button>
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-8 h-[1px] bg-brand-gold"></div>
+                <p class="text-[10px] font-bold tracking-widest uppercase text-brand-gold">Bảo hiểm du lịch bắt buộc</p>
+            </div>
+            <h3 class="text-3xl font-serif text-brand-dark mb-6">Chính Sách Bảo Hiểm Hành Khách Lữ Hành</h3>
+            <div class="space-y-6 text-xs text-gray-700 leading-relaxed overflow-y-auto">
+                <div class="p-4 bg-amber-50/50 border border-amber-200 rounded-sm text-amber-900">
+                    <p class="font-bold mb-1">Căn cứ pháp lý: Điều 37 Luật Du lịch Việt Nam 2017</p>
+                    <p>Doanh nghiệp kinh doanh dịch vụ lữ hành có nghĩa vụ bắt buộc mua bảo hiểm cho khách du lịch trong suốt thời gian thực hiện chương trình du lịch.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-[10px] uppercase text-brand-dark tracking-wider mb-2">1. Thông tin đơn bảo hiểm</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Nhà cung cấp đối tác:</strong> Tổng Công ty Bảo hiểm Bảo Việt.</li>
+                        <li><strong>Đối tượng được bảo hiểm:</strong> Toàn bộ hành khách có tên trong danh sách đăng ký tham gia tour và có thông tin định danh hợp lệ (CCCD/CMND/Passport).</li>
+                        <li><strong>Thời hạn bảo hiểm:</strong> Bắt đầu từ thời điểm đón khách khởi hành tour cho đến khi kết thúc hành trình và trả khách về resort an toàn.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-[10px] uppercase text-brand-dark tracking-wider mb-2">2. Quyền lợi và Hạn mức bồi thường</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Hạn mức trách nhiệm tối đa:</strong> <strong class="text-brand-gold">30.000.000 VNĐ / khách / vụ</strong>.</li>
+                        <li><strong>Phạm vi bảo hiểm:</strong> Các trường hợp tai nạn, thương tật thân thể hoặc tử vong phát sinh do sự cố khách quan trong suốt quá trình tham gia các hoạt động thuộc lịch trình tour du lịch.</li>
+                        <li><strong>Chi phí y tế:</strong> Chi trả các chi phí cấp cứu, điều trị nội trú, ngoại trú hợp lý phát sinh tại các cơ sở y tế hợp pháp.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-[10px] uppercase text-brand-dark tracking-wider mb-2">3. Các điều khoản loại trừ chính</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-gray-500">
+                        <li>Hành vi cố ý tự gây thương tích, tự tử hoặc vi phạm pháp luật hình sự của người được bảo hiểm.</li>
+                        <li>Ảnh hưởng của rượu, bia, ma túy hoặc chất kích thích bất hợp pháp khi tham gia tour.</li>
+                        <li>Các bệnh lý nền, bệnh mãn tính có sẵn của hành khách (không do tai nạn phát sinh trong tour).</li>
+                        <li>Khách hàng tự ý rời đoàn, tham gia các hoạt động nguy hiểm ngoài chương trình tour mà không có sự đồng ý của Hướng dẫn viên trưởng phụ trách.</li>
+                    </ul>
+                </div>
+                <div class="pt-4 border-t border-brand-border">
+                    <p class="italic text-[10px] text-gray-500">Hòa Niên Retreat Resort cam kết thực hiện đầy đủ nghĩa vụ mua và khai báo danh tính của quý khách với công ty bảo hiểm đối tác. Chi phí bảo hiểm đã được tính trọn gói trong giá bán của tour, quý khách không phải đóng thêm bất kỳ phụ phí nào khác.</p>
+                </div>
+            </div>
+            <button class="mt-8 w-full bg-brand-dark text-white py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-gold transition"
+                onclick="closeModal()">Đã Hiểu & Đóng</button>
         </div>
     </div>
     <!-- END: Modals -->
@@ -2694,15 +2746,31 @@
                 const paymentModal = document.getElementById('payment-modal');
                 const roomModal = document.getElementById('room-selection-modal');
                 const activityModal = document.getElementById('activity-modal');
+                const insuranceModal = document.getElementById('insurance-detail-modal');
 
                 if (overlay) overlay.classList.remove('active');
                 if (paymentModal) paymentModal.classList.remove('active');
                 if (roomModal) roomModal.classList.remove('active');
                 if (activityModal) activityModal.classList.remove('active');
+                if (insuranceModal) insuranceModal.classList.remove('active');
 
                 document.body.style.overflow = 'auto';
             } catch (err) {
                 console.error("Error in closeModal:", err);
+            }
+        }
+
+        function openInsuranceDetailModal() {
+            try {
+                closeModal();
+                const overlay = document.getElementById('overlay');
+                const insuranceModal = document.getElementById('insurance-detail-modal');
+
+                if (overlay) overlay.classList.add('active');
+                if (insuranceModal) insuranceModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } catch (err) {
+                console.error("Error in openInsuranceDetailModal:", err);
             }
         }
 
