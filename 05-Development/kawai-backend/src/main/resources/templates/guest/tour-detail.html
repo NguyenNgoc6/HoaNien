@@ -489,7 +489,10 @@
                             </span>
                         </div>
                         <div class="flex justify-between items-center pb-4 border-b border-brand-border/50">
-                            <span class="text-[10px] font-bold uppercase tracking-widest">Giá trọn gói</span>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Giá trọn gói</span>
+                                <span class="text-[8px] text-gray-400 mt-0.5">(Đã bao gồm bảo hiểm du lịch bắt buộc)</span>
+                            </div>
                             <span class="text-sm font-bold text-brand-gold" id="displayTotalPrice">1.200.000 VNĐ</span>
                         </div>
                         <div class="flex justify-between items-center">
@@ -2894,6 +2897,30 @@
                         }
                     }
                 }
+            }
+
+            // Validate insuranceConsent
+            const insConsent = document.getElementById('insuranceConsent');
+            const insuranceBanner = document.getElementById('insurance-banner');
+            const isInsVisible = insuranceBanner && !insuranceBanner.classList.contains('hidden');
+            if (isInsVisible && insConsent && !insConsent.checked) {
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Chưa xác nhận bảo hiểm' : 'Insurance Consent Required',
+                    lang === 'vi' ? 'Quý khách vui lòng tích chọn đồng ý điều khoản Bảo hiểm du lịch bắt buộc để tiếp tục.' : 'Please confirm agreement to the mandatory travel insurance terms.'
+                );
+                insConsent.focus();
+                return false;
+            }
+
+            // Validate tourConsent
+            const tourConsent = document.getElementById('tourConsent');
+            if (tourConsent && !tourConsent.checked) {
+                showWarningAlertPopup(
+                    lang === 'vi' ? 'Chưa đồng ý điều khoản' : 'Terms Agreement Required',
+                    lang === 'vi' ? 'Quý khách vui lòng tích chọn đồng ý cung cấp thông tin cá nhân và hành trình.' : 'Please confirm agreement to the terms of personal data usage.'
+                );
+                tourConsent.focus();
+                return false;
             }
 
             return true;
