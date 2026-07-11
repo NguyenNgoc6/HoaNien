@@ -716,15 +716,28 @@ public class TourGuideController {
 
     @org.springframework.web.bind.annotation.PostMapping("/feedback/reply")
     public String replyFeedback(
+            java.security.Principal principal,
             @org.springframework.web.bind.annotation.RequestParam("reviewId") Long reviewId,
             @org.springframework.web.bind.annotation.RequestParam("replyText") String replyText,
             jakarta.servlet.http.HttpServletRequest request) {
         
+        com.kawai.models.Employee loggedInEmployee = null;
+        if (principal != null) {
+            loggedInEmployee = employeeRepository.findByAccountUsername(principal.getName()).orElse(null);
+        }
+
         // Chỉ lưu reply khi reviewId dương (review trong DB)
         if (reviewId != null && reviewId > 0) {
+            final com.kawai.models.Employee replier = loggedInEmployee;
             reviewRepository.findById(reviewId).ifPresent(review -> {
                 review.setReplyText(replyText);
+                review.setRepliedBy(replier);
                 reviewRepository.saveAndFlush(review);
+                
+                // Gửi email thông báo cho khách hàng khi có phản hồi
+                if (emailService != null && review.getCustomer() != null) {
+                    emailService.sendFeedbackReplyEmail(review, review.getCustomer());
+                }
             });
         }
         

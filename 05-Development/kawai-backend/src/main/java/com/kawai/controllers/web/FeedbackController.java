@@ -24,6 +24,12 @@ public class FeedbackController {
     @Autowired
     private com.kawai.repositories.BookingRepository bookingRepository;
 
+    @Autowired
+    private com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepository;
+
+    @Autowired
+    private com.kawai.repositories.TourStaffAssignmentRepository tourStaffAssignmentRepository;
+
     @GetMapping
     public String showFeedbackPage(
             Principal principal,
@@ -36,6 +42,15 @@ public class FeedbackController {
                 || (session != null && session.getAttribute("user") != null);
         model.addAttribute("isLoggedIn", isLoggedIn);
         model.addAttribute("activeTab", type);
+
+        // Mode: submit form (came from email with bookingId)
+        com.kawai.models.TourBooking booking = null;
+        if (bookingId != null) {
+            if (reviewRepository.existsByTourBookingId(bookingId)) {
+                return "redirect:/feedback?toast=already_reviewed";
+            }
+            booking = tourBookingRepository.findById(bookingId).orElse(null);
+        }
 
         com.kawai.models.Customer customer = null;
         boolean hasUsedService = false;
@@ -54,33 +69,53 @@ public class FeedbackController {
                 username = sessionUser.getUsername();
             }
 
-            if (username != null) {
+            if (booking != null) {
+                customer = booking.getCustomer();
+            } else if (username != null) {
                 final String effectiveUsername = username;
                 customer = customerRepository.findByAccount_Username(effectiveUsername)
                         .or(() -> customerRepository.findByEmail(effectiveUsername))
                         .orElse(null);
+            }
 
-                // Fallback cho Admin/Staff demo
-                if (customer == null) {
-                    System.out.println("DEBUG FEEDBACK (GET): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
-                    customer = customerRepository.findById(1L).orElse(null);
-                }
+            // Fallback cho Admin/Staff demo
+            if (customer == null) {
+                System.out.println("DEBUG FEEDBACK (GET): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
+                customer = customerRepository.findById(1L).orElse(null);
+            }
 
-                if (customer != null) {
-                    List<com.kawai.models.Booking> completedBookings = 
-                        bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-                    hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+            if (customer != null) {
+                List<com.kawai.models.Booking> completedBookings = 
+                    bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
+                hasUsedService = completedBookings != null && !completedBookings.isEmpty();
+                
+                // Lấy các TourBookings chưa đánh giá
+                List<com.kawai.models.TourBooking> allTours = tourBookingRepository.findTourBookingsByCustomerId(customer.getId());
+                List<com.kawai.models.TourBooking> unreviewedTours = new java.util.ArrayList<>();
+                if (allTours != null) {
+                    for (com.kawai.models.TourBooking tb : allTours) {
+                        if (!reviewRepository.existsByTourBookingId(tb.getId())) {
+                            unreviewedTours.add(tb);
+                        }
+                    }
                 }
+                model.addAttribute("unreviewedTours", unreviewedTours);
+
+                // Lấy các RoomBookingDetails chưa đánh giá
+                List<com.kawai.models.RoomBookingDetail> allRooms = roomBookingDetailRepository.findByAnyCustomerId(customer.getId());
+                List<com.kawai.models.RoomBookingDetail> unreviewedRooms = new java.util.ArrayList<>();
+                if (allRooms != null) {
+                    for (com.kawai.models.RoomBookingDetail rd : allRooms) {
+                        if (!reviewRepository.existsByRoomBookingDetailId(rd.getId())) {
+                            unreviewedRooms.add(rd);
+                        }
+                    }
+                }
+                model.addAttribute("unreviewedRooms", unreviewedRooms);
             }
         }
 
         model.addAttribute("hasUsedService", hasUsedService);
-
-        // Mode: submit form (came from email with bookingId)
-        com.kawai.models.TourBooking booking = null;
-        if (bookingId != null) {
-            booking = tourBookingRepository.findById(bookingId).orElse(null);
-        }
 
         if (booking != null) {
             model.addAttribute("booking", booking);
@@ -113,6 +148,8 @@ public class FeedbackController {
         tsTour1.setTour(tTour1);
         tbTour1.setSchedule(tsTour1);
         mockTour1.setTourBooking(tbTour1);
+        mockTour1.setTourNameResolved("Hành trình Yên Tử");
+        mockTour1.setGuideName("Nguyễn Lan Chi");
         tourReviews.add(mockTour1);
 
         com.kawai.models.Review mockTour2 = new com.kawai.models.Review();
@@ -130,13 +167,31 @@ public class FeedbackController {
         tsTour2.setTour(tTour2);
         tbTour2.setSchedule(tsTour2);
         mockTour2.setTourBooking(tbTour2);
+        mockTour2.setTourNameResolved("Hành trình Sông Hậu");
+        mockTour2.setGuideName("Trần Minh Ngọc");
         tourReviews.add(mockTour2);
 
         List<com.kawai.models.Review> dbTourReviews = safeLoad(() -> reviewRepository.findApprovedTourReviews());
         System.out.println("DEBUG FEEDBACK: Load tour reviews tu DB - count=" + (dbTourReviews != null ? dbTourReviews.size() : 0));
         if (dbTourReviews != null) {
             for (com.kawai.models.Review r : dbTourReviews) {
-                System.out.println("DEBUG FEEDBACK: reviewId=" + r.getId() + ", customer=" + (r.getCustomer() != null ? r.getCustomer().getFullName() : "null") + ", tourName=" + (r.getTourBooking() != null && r.getTourBooking().getSchedule() != null && r.getTourBooking().getSchedule().getTour() != null ? r.getTourBooking().getSchedule().getTour().getTourName() : "null"));
+                if (r.getTourBooking() != null && r.getTourBooking().getSchedule() != null) {
+                    if (r.getTourBooking().getSchedule().getTour() != null) {
+                        r.setTourNameResolved(r.getTourBooking().getSchedule().getTour().getTourName());
+                    }
+                    Long scheduleId = r.getTourBooking().getSchedule().getId();
+                    List<com.kawai.models.TourStaffAssignment> assigns = tourStaffAssignmentRepository.findByScheduleId(scheduleId);
+                    if (assigns != null && !assigns.isEmpty()) {
+                        com.kawai.models.TourStaffAssignment lead = assigns.stream()
+                            .filter(a -> Boolean.TRUE.equals(a.getIsLeadGuide()))
+                            .findFirst()
+                            .orElse(assigns.get(0));
+                        if (lead.getEmployee() != null) {
+                            r.setGuideName(lead.getEmployee().getFullName());
+                        }
+                    }
+                }
+                System.out.println("DEBUG FEEDBACK: reviewId=" + r.getId() + ", customer=" + (r.getCustomer() != null ? r.getCustomer().getFullName() : "null") + ", tourName=" + r.getTourNameResolved() + ", guide=" + r.getGuideName());
             }
             tourReviews.addAll(dbTourReviews);
         }
@@ -252,6 +307,8 @@ public class FeedbackController {
             Principal principal,
             jakarta.servlet.http.HttpSession session,
             @RequestParam(name = "bookingId", required = false) Long bookingId,
+            @RequestParam(name = "selectedTourBookingId", required = false) Long selectedTourBookingId,
+            @RequestParam(name = "selectedRoomBookingDetailId", required = false) Long selectedRoomBookingDetailId,
             @RequestParam(name = "ratingTour", required = false) Integer ratingTour,
             @RequestParam(name = "ratingRoomDining", required = false) Integer ratingRoomDining,
             @RequestParam(name = "ratingService", required = false) Integer ratingService,
@@ -264,50 +321,77 @@ public class FeedbackController {
             return "redirect:/feedback?toast=login_required";
         }
 
+        Long targetTourBookingId = bookingId != null ? bookingId : selectedTourBookingId;
+        if (targetTourBookingId != null && reviewRepository.existsByTourBookingId(targetTourBookingId)) {
+            System.out.println("DEBUG FEEDBACK: Chan submit - targetTourBookingId " + targetTourBookingId + " da duoc danh gia.");
+            return "redirect:/feedback?toast=already_reviewed";
+        }
+
+        if (selectedRoomBookingDetailId != null && reviewRepository.existsByRoomBookingDetailId(selectedRoomBookingDetailId)) {
+            System.out.println("DEBUG FEEDBACK: Chan submit - selectedRoomBookingDetailId " + selectedRoomBookingDetailId + " da duoc danh gia.");
+            return "redirect:/feedback?toast=already_reviewed";
+        }
+
+        com.kawai.models.TourBooking booking = null;
+        com.kawai.models.RoomBookingDetail roomDetail = null;
         com.kawai.models.Customer customer = null;
-        String username = null;
-        if (principal != null) {
-            username = principal.getName();
-            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
-                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
-                    (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
-                username = oauthToken.getPrincipal().getAttribute("email");
+
+        if (targetTourBookingId != null) {
+            booking = tourBookingRepository.findById(targetTourBookingId).orElse(null);
+            if (booking != null) {
+                customer = booking.getCustomer();
             }
-        } else if (session != null && session.getAttribute("user") != null) {
-            com.kawai.models.Account sessionUser = (com.kawai.models.Account) session.getAttribute("user");
-            username = sessionUser.getUsername();
         }
 
-        if (username != null) {
-            final String effectiveUsername = username;
-            customer = customerRepository.findByAccount_Username(effectiveUsername)
-                    .or(() -> customerRepository.findByEmail(effectiveUsername))
-                    .orElse(null);
+        if (selectedRoomBookingDetailId != null) {
+            roomDetail = roomBookingDetailRepository.findById(selectedRoomBookingDetailId).orElse(null);
+            if (roomDetail != null && roomDetail.getRoomBooking() != null && customer == null) {
+                customer = roomDetail.getRoomBooking().getCustomer();
+            }
         }
 
-        // Fallback cho Admin/Staff demo
         if (customer == null) {
-            System.out.println("DEBUG FEEDBACK (POST): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
-            customer = customerRepository.findById(1L).orElse(null);
+            String username = null;
+            if (principal != null) {
+                username = principal.getName();
+                if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                    org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken =
+                        (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                    username = oauthToken.getPrincipal().getAttribute("email");
+                }
+            } else if (session != null && session.getAttribute("user") != null) {
+                com.kawai.models.Account sessionUser = (com.kawai.models.Account) session.getAttribute("user");
+                username = sessionUser.getUsername();
+            }
+
+            if (username != null) {
+                final String effectiveUsername = username;
+                customer = customerRepository.findByAccount_Username(effectiveUsername)
+                        .or(() -> customerRepository.findByEmail(effectiveUsername))
+                        .orElse(null);
+            }
+
+            // Fallback cho Admin/Staff demo
+            if (customer == null) {
+                System.out.println("DEBUG FEEDBACK (POST): Tai khoan la Staff/Admin. Dung Customer ID = 1 lam fallback de demo.");
+                customer = customerRepository.findById(1L).orElse(null);
+            }
         }
 
         if (customer == null) {
             return "redirect:/feedback?toast=error";
         }
 
-        // Check if customer has used any services (chỉ chặn nếu không có booking hoàn thành và không có bookingId từ email)
+        // Check if customer has used any services (chỉ chặn nếu không có booking hoàn thành)
         List<com.kawai.models.Booking> completedBookings = 
             bookingRepository.findCompletedOrConfirmedBookingsByCustomerId(customer.getId());
-        if ((completedBookings == null || completedBookings.isEmpty()) && bookingId == null) {
-            System.out.println("DEBUG FEEDBACK: Chan submit - Customer khong co booking hoan thanh va bookingId bang null");
+        if ((completedBookings == null || completedBookings.isEmpty()) && targetTourBookingId == null && selectedRoomBookingDetailId == null) {
+            System.out.println("DEBUG FEEDBACK: Chan submit - Customer khong co booking hoan thanh");
             return "redirect:/feedback?toast=no_service_used";
         }
 
-        com.kawai.models.TourBooking booking = null;
-        if (bookingId != null) {
-            booking = tourBookingRepository.findById(bookingId).orElse(null);
-        } else if (ratingTour != null) {
-            // Khách hàng gửi đánh giá tour chung -> tự động liên kết với TourBooking gần đây nhất của họ
+        if (targetTourBookingId == null && ratingTour != null) {
+            // Khách hàng gửi đánh giá tour chung -> tự động liên kết với TourBooking gần đây nhất của họ chưa đánh giá
             java.util.List<com.kawai.models.TourBooking> tourBookings = tourBookingRepository.findTourBookingsByCustomerId(customer.getId());
             if (tourBookings != null && !tourBookings.isEmpty()) {
                 tourBookings.sort((b1, b2) -> {
@@ -315,13 +399,45 @@ public class FeedbackController {
                     Long id2 = b2.getId() != null ? b2.getId() : 0L;
                     return id2.compareTo(id1);
                 });
-                booking = tourBookings.get(0);
+                for (com.kawai.models.TourBooking tb : tourBookings) {
+                    if (!reviewRepository.existsByTourBookingId(tb.getId())) {
+                        booking = tb;
+                        break;
+                    }
+                }
+                if (booking == null) {
+                    System.out.println("DEBUG FEEDBACK: Chan submit - Toan bo TourBookings cua khach hang da duoc review.");
+                    return "redirect:/feedback?toast=already_reviewed";
+                }
+            }
+        }
+
+        if (selectedRoomBookingDetailId == null && ratingRoomDining != null) {
+            // Khách hàng gửi đánh giá phòng chung -> tự động liên kết với RoomBookingDetail gần đây nhất của họ chưa đánh giá
+            java.util.List<com.kawai.models.RoomBookingDetail> roomDetails = roomBookingDetailRepository.findByAnyCustomerId(customer.getId());
+            if (roomDetails != null && !roomDetails.isEmpty()) {
+                roomDetails.sort((r1, r2) -> {
+                    Long id1 = r1.getId() != null ? r1.getId() : 0L;
+                    Long id2 = r2.getId() != null ? r2.getId() : 0L;
+                    return id2.compareTo(id1);
+                });
+                for (com.kawai.models.RoomBookingDetail rd : roomDetails) {
+                    if (!reviewRepository.existsByRoomBookingDetailId(rd.getId())) {
+                        roomDetail = rd;
+                        break;
+                    }
+                }
+                if (roomDetail == null) {
+                    System.out.println("DEBUG FEEDBACK: Chan submit - Toan bo RoomBookingDetails cua khach hang da duoc review.");
+                    return "redirect:/feedback?toast=already_reviewed";
+                }
             }
         }
 
         com.kawai.models.Review review = new com.kawai.models.Review();
         review.setCustomer(customer);
         review.setTourBooking(booking);
+        review.setRoomBookingDetail(roomDetail);
         review.setRatingTour(ratingTour);
         review.setRatingRoomDining(ratingRoomDining);
         

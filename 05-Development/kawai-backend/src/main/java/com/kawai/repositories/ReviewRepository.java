@@ -23,4 +23,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // All approved reviews
     List<Review> findByModerationStatusOrderByCreatedAtDesc(String status);
+
+    boolean existsByTourBookingId(Long tourBookingId);
+    boolean existsByRoomBookingDetailId(Long roomBookingDetailId);
 }

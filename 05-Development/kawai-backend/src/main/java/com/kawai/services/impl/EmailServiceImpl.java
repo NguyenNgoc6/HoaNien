@@ -36,6 +36,9 @@ public class EmailServiceImpl implements EmailService {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.TourScheduleRepository tourScheduleRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourStaffAssignmentRepository tourStaffAssignmentRepository;
+
     @Value("${sendgrid.api-key:}")
     private String sendGridApiKey;
 
@@ -812,6 +815,54 @@ public class EmailServiceImpl implements EmailService {
             sendEmail(customer.getEmail(), "Cảm ơn bạn đã tham gia hành trình cùng HoaNien", html);
         } catch (Exception e) {
             logger.error("Lỗi gửi email cảm ơn và đánh giá cho booking #{}: {}", booking.getId(), e.getMessage());
+        }
+    }
+
+    @Override
+    @org.springframework.scheduling.annotation.Async
+    public void sendFeedbackReplyEmail(com.kawai.models.Review review, com.kawai.models.Customer customer) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            logger.warn("Bỏ qua gửi email phản hồi: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
+            return;
+        }
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
+            String rawTourName = review.getTourBooking() != null && review.getTourBooking().getSchedule() != null && review.getTourBooking().getSchedule().getTour() != null
+                    ? review.getTourBooking().getSchedule().getTour().getTourName() : "Hành trình trải nghiệm";
+            
+            ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
+            ctx.setVariable("tourName", java.text.Normalizer.normalize(rawTourName, java.text.Normalizer.Form.NFC));
+            
+            String replierName = "Quản trị viên";
+            if (review.getRepliedBy() != null) {
+                replierName = review.getRepliedBy().getFullName();
+            } else if (review.getTourBooking() != null && review.getTourBooking().getSchedule() != null) {
+                Long scheduleId = review.getTourBooking().getSchedule().getId();
+                java.util.List<com.kawai.models.TourStaffAssignment> assigns = tourStaffAssignmentRepository.findByScheduleId(scheduleId);
+                if (assigns != null && !assigns.isEmpty()) {
+                    com.kawai.models.TourStaffAssignment lead = assigns.stream()
+                        .filter(a -> Boolean.TRUE.equals(a.getIsLeadGuide()))
+                        .findFirst()
+                        .orElse(assigns.get(0));
+                    if (lead.getEmployee() != null) {
+                        replierName = lead.getEmployee().getFullName();
+                    }
+                }
+            }
+            
+            ctx.setVariable("replierName", replierName);
+            ctx.setVariable("reviewText", review.getReviewText());
+            ctx.setVariable("replyText", review.getReplyText());
+            ctx.setVariable("rating", review.getRatingTour() != null ? review.getRatingTour() : 5);
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            String html = templateEngine.process("email/tour-feedback-reply", ctx);
+            sendEmail(customer.getEmail(), "Phản hồi về nhận xét hành trình từ HoaNien Retreat", html);
+        } catch (Exception e) {
+            logger.error("Lỗi gửi email phản hồi nhận xét cho review #{}: {}", review.getId(), e.getMessage());
         }
     }
 
