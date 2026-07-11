@@ -32,6 +32,7 @@ public class ReceptionistController {
     private final EmployeeRepository employeeRepository;
     private final TourBookingRepository tourBookingRepository;
     private final com.kawai.services.interfaces.EncryptionService encryptionService;
+    private final com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepository;
 
     @org.springframework.web.bind.annotation.ModelAttribute("todayLabel")
     public String getTodayLabel() {
@@ -875,5 +876,29 @@ public class ReceptionistController {
                     .ifPresent(r -> result.put(roomNum, r.getRoomStatus()));
         }
         return org.springframework.http.ResponseEntity.ok(result);
+    }
+
+    /**
+     * API polling: Trả về danh sách task URGENT_CLEAN đã hoàn thành trong vòng 30 phút gần nhất.
+     * Frontend (room-alert.js) poll định kỳ để hiện toast notify cho Lễ tân khi Housekeeping dọn xong.
+     * Response: [ { taskId, roomNumber, completedAt }, ... ]
+     */
+    @GetMapping("/api/notifications/clean-tasks-done")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<List<Map<String, String>>> getCleanTasksDone() {
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusMinutes(30);
+        List<com.kawai.models.HotelOperation> tasks =
+                housekeepingTaskRepository.findRecentCompletedCleanTasks(since);
+        List<Map<String, String>> response = new ArrayList<>();
+        for (com.kawai.models.HotelOperation task : tasks) {
+            if (task.getRoom() == null) continue;
+            Map<String, String> map = new HashMap<>();
+            map.put("taskId", task.getId().toString());
+            map.put("roomNumber", task.getRoom().getRoomNumber());
+            map.put("completedAt",
+                    task.getCompletedAt() != null ? task.getCompletedAt().toString() : "");
+            response.add(map);
+        }
+        return org.springframework.http.ResponseEntity.ok(response);
     }
 }

@@ -101,6 +101,10 @@ public class NightAuditServiceImpl implements NightAuditService {
         if (roomCharge == null) {
             roomCharge = BigDecimal.ZERO;
         }
+        BigDecimal extraSurcharge = detail.getExtraSurcharge();
+        if (extraSurcharge != null) {
+            roomCharge = roomCharge.add(extraSurcharge);
+        }
 
         RoomBooking roomBooking = detail.getRoomBooking();
         Booking booking = roomBooking;

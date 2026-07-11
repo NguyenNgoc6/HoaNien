@@ -225,9 +225,9 @@ function getRoomImages(categoryName) {
     const nameLower = categoryName.toLowerCase();
     if (nameLower.includes("nipa pool villa") || nameLower.includes("nipa")) {
         return [
-            "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
-            "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&q=80",
-            "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
+            "/guest/images/rooms/nipa-view.png",
+            "/guest/images/rooms/nipa-bed.png",
+            "/guest/images/rooms/nipa-bathroom.png"
         ];
     } else if (nameLower.includes("river pool villa") || nameLower.includes("river")) {
         return [
@@ -539,7 +539,6 @@ function openRoomInfoModal(roomJsonStr) {
 
     // TODO: SAU NÀY LẤY ẢNH TỪ DATABASE / LOCAL
     // Nếu API trả về mảng link ảnh trong thuộc tính `room.images` (hoặc tên khác tuỳ bạn đặt trong Backend),
-    // bạn chỉ cần thay đổi dòng bên dưới thành:
     // currentRoomImages = (room.images && room.images.length > 0) ? room.images : getRoomImages(room.categoryName);
     currentRoomImages = getRoomImages(room.categoryName);
 
