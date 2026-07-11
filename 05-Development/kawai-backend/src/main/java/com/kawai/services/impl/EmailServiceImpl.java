@@ -231,6 +231,34 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("insurancePolicyNumber", insurancePolicyNumber);
 
             java.util.List<com.kawai.models.TourAttendee> attendeesList = tourAttendeeRepository.findByTourBookingId(booking.getId());
+            java.util.List<java.util.Map<String, String>> formattedAttendees = new java.util.ArrayList<>();
+            if (attendeesList != null) {
+                for (com.kawai.models.TourAttendee att : attendeesList) {
+                    java.util.Map<String, String> map = new java.util.HashMap<>();
+                    String name = "";
+                    String cccd = "";
+                    if (att.getCustomer() != null) {
+                        name = att.getCustomer().getFullName();
+                        cccd = att.getCustomer().getCccdPassportEncrypted();
+                    } else if (att.getDependent() != null) {
+                        name = att.getDependent().getDependentName();
+                        cccd = att.getDependent().getCccdPassportEncrypted();
+                    }
+                    if (cccd != null && !cccd.isEmpty() && !cccd.startsWith("PHONE_") && !cccd.startsWith("AUTO_CHILD_")) {
+                        if (cccd.length() > 4) {
+                            cccd = cccd.substring(0, cccd.length() - 2) + "xx";
+                        } else {
+                            cccd = cccd + "xx";
+                        }
+                    } else {
+                        cccd = "";
+                    }
+                    map.put("name", name != null ? name.toUpperCase() : "");
+                    map.put("cccd", cccd);
+                    formattedAttendees.add(map);
+                }
+            }
+            ctx.setVariable("formattedAttendees", formattedAttendees);
             ctx.setVariable("attendees", attendeesList != null ? attendeesList : new java.util.ArrayList<>());
 
             String html = templateEngine.process("email/tour-booking-confirmation", ctx);

@@ -200,8 +200,8 @@
           </div>
         </div>
 
-        <!-- Thông tin bảo hiểm du lịch bắt buộc theo luật định -->
-        <div class="section-label" th:if="${hasInsurance}">Thông tin bảo hiểm du lịch bắt buộc</div>
+        <!-- ĐIỀU KHOẢN BẢO HIỂM DU LỊCH BẮT BUỘC -->
+        <div class="section-label" th:if="${hasInsurance}">ĐIỀU KHOẢN BẢO HIỂM DU LỊCH BẮT BUỘC</div>
         <div class="booking-card" th:if="${hasInsurance}" style="margin-bottom: 28px;">
           <div class="booking-card-header">
             <span class="card-title">Chính sách bảo hiểm hành khách</span>
@@ -209,46 +209,29 @@
           </div>
           <div class="booking-card-body">
             <div class="info-row">
-              <span class="info-label">Đối tác bảo hiểm:</span>
+              <span class="info-label">Nhà cung cấp đối tác:</span>
               <span class="info-value">Tổng Công ty Bảo hiểm Bảo Việt</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Quyền lợi bảo hiểm:</span>
+              <span class="info-value">Tai nạn, thương tật hoặc tử vong phát sinh trong thời gian thực hiện tour.</span>
             </div>
             <div class="info-row">
               <span class="info-label">Hạn mức bồi thường:</span>
               <span class="info-value highlight">30.000.000 VNĐ / khách / vụ</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Căn cứ pháp lý:</span>
-              <span class="info-value">Điều 37 Luật Du lịch 2017 (Bảo hiểm bắt buộc dành cho hành khách lữ hành)</span>
+              <span class="info-label">Số hợp đồng bảo hiểm:</span>
+              <span class="info-value" th:text="${insurancePolicyNumber}">INS-XXXXXX</span>
             </div>
-            <div class="info-row" style="background: #fdfbf7;">
-              <span class="info-label">Chi phí bảo hiểm:</span>
-              <span class="info-value">Đã bao gồm trọn gói trong giá tour niêm yết (Quý khách không phải thanh toán thêm tại quầy)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Danh sách thành viên được bảo hiểm -->
-        <div class="section-label" th:if="${attendees != null and !attendees.isEmpty()}">Danh sách hành khách & Bảo hiểm</div>
-        <div class="booking-card" th:if="${attendees != null and !attendees.isEmpty()}" style="margin-bottom: 28px;">
-          <div class="booking-card-body">
-            <div class="info-row" th:each="att, iter : ${attendees}">
-              <span class="info-label" th:text="'Hành khách ' + ${iter.index + 1} + ':'">Hành khách 1:</span>
-              <span class="info-value">
-                <!-- Case 1: Customer -->
-                <span th:if="${att.customer != null}">
-                  <strong th:text="${att.customer.fullName}">NGUYEN VAN A</strong>
-                  <span th:if="${att.customer.cccdPassportEncrypted != null and !att.customer.cccdPassportEncrypted.isEmpty()}" 
-                        th:text="' (CCCD/Passport: ' + ${att.customer.cccdPassportEncrypted} + ')'"> (CCCD/Passport: 012345678)</span>
-                </span>
-                <!-- Case 2: Dependent -->
-                <span th:if="${att.dependent != null}">
-                  <strong th:text="${att.dependent.dependentName}">NGUYEN VAN B</strong>
-                  <span th:if="${att.dependent.cccdPassportEncrypted != null and !att.dependent.cccdPassportEncrypted.isEmpty() and !att.dependent.cccdPassportEncrypted.startsWith('PHONE_') and !att.dependent.cccdPassportEncrypted.startsWith('AUTO_CHILD_')}" 
-                        th:text="' (CCCD/Passport: ' + ${att.dependent.cccdPassportEncrypted} + ')'"> (CCCD/Passport: 012345678)</span>
-                  <span th:if="${att.dependent.cccdPassportEncrypted != null and att.dependent.cccdPassportEncrypted.startsWith('AUTO_CHILD_')}" 
-                        style="color: #70635c; font-size: 11px;"> (Trẻ em đi kèm)</span>
-                  <span th:if="${att.dependent.cccdPassportEncrypted == null or att.dependent.cccdPassportEncrypted.isEmpty() or att.dependent.cccdPassportEncrypted.startsWith('PHONE_')}" 
-                        style="color: #70635c; font-size: 11px;"> (Người lớn đi kèm)</span>
+            <!-- Danh sách người được bảo hiểm -->
+            <div class="info-row" th:if="${formattedAttendees != null and !formattedAttendees.isEmpty()}">
+              <span class="info-label" style="display: block; width: 100%; margin-bottom: 8px;">Danh sách người được bảo hiểm:</span>
+              <span class="info-value" style="display: block; width: 100%; font-family: monospace; line-height: 1.6;">
+                <span th:each="att, iter : ${formattedAttendees}" style="display: block;">
+                  <span th:text="${iter.index + 1} + '. ' + ${att.name} + (${att.cccd != null and !att.cccd.isEmpty()} ? ' - CCCD: ' + ${att.cccd} : '')">
+                    1. NGUYỄN VĂN A - CCCD: 0123456789xx
+                  </span>
                 </span>
               </span>
             </div>
