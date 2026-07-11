@@ -665,25 +665,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Insurance Banner (hiện động qua JS khi tour bắt buộc bảo hiểm) -->
-                    <div id="insurance-banner"
-                        class="hidden space-y-3 p-5 border border-amber-300 bg-amber-50/60 rounded-sm">
-                        <div class="flex items-start gap-3">
-                            <span class="material-symbols-outlined text-amber-600 text-[20px] mt-0.5">shield</span>
-                            <div>
-                                <div class="flex items-center justify-between mb-1.5 min-w-[280px]">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest text-amber-800">Bảo hiểm du lịch bắt buộc</p>
-                                    <button type="button" onclick="openInsuranceDetailModal()" class="text-[9px] font-bold text-amber-700 hover:text-amber-900 underline uppercase tracking-widest transition-colors ml-4">Xem chi tiết</button>
-                                </div>
-                                <p class="text-[11px] text-amber-700 leading-relaxed">
-                                    Theo <strong>Điều 37 Luật Du lịch 2017</strong>, tour du lịch bắt buộc phải bao gồm bảo hiểm dành cho hành khách lữ hành.<br />
-                                    • Mức bồi thường tối đa: <strong class="text-amber-900">30.000.000 VNĐ / vụ / khách</strong>.<br />
-                                    • Đối tác bảo hiểm: <strong>Tổng Công ty Bảo hiểm Bảo Việt</strong>.<br />
-                                    • Chi phí bảo hiểm: Đã được <strong>tích hợp sẵn trong giá bán niêm yết</strong> của tour.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+
                     <!-- Payment Options -->
                     <div class="space-y-4 opacity-50 pointer-events-none transition-all duration-300" id="payment-options-group">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block text-black">Phương thức thanh toán</label>
@@ -1912,16 +1894,13 @@
             const insuranceFee = getInsuranceFee();
             // totalPrice += insuranceFee; // Đã bao gồm, không cộng dồn thêm
 
-            // Hiển thị / ẩn banner bảo hiểm & checkbox ở chân trang
+            // Hiển thị / ẩn checkbox bảo hiểm ở chân trang
             const dbTour = (typeof dbTours !== 'undefined') ? dbTours[currentTour] : null;
-            const insuranceBanner = document.getElementById('insurance-banner');
             const insuranceConsentContainer = document.getElementById('insurance-consent-container');
             
             if (dbTour && dbTour.insuranceRequired) {
-                if (insuranceBanner) insuranceBanner.classList.remove('hidden');
                 if (insuranceConsentContainer) insuranceConsentContainer.classList.remove('hidden');
             } else {
-                if (insuranceBanner) insuranceBanner.classList.add('hidden');
                 if (insuranceConsentContainer) insuranceConsentContainer.classList.add('hidden');
                 const consentChk = document.getElementById('insuranceConsent');
                 if (consentChk) consentChk.checked = false;
@@ -2306,8 +2285,8 @@
             const payGroup = document.getElementById('payment-options-group');
             const submitBtn = document.getElementById('btn-submit-booking');
 
-            const insuranceBanner = document.getElementById('insurance-banner');
-            const isInsVisible = insuranceBanner && !insuranceBanner.classList.contains('hidden');
+            const insuranceConsentContainer = document.getElementById('insurance-consent-container');
+            const isInsVisible = insuranceConsentContainer && !insuranceConsentContainer.classList.contains('hidden');
 
             const isInsChecked = !isInsVisible || (insConsent && insConsent.checked);
             const isTourChecked = tourConsent && tourConsent.checked;
@@ -2987,8 +2966,8 @@
 
             // Validate insuranceConsent
             const insConsent = document.getElementById('insuranceConsent');
-            const insuranceBanner = document.getElementById('insurance-banner');
-            const isInsVisible = insuranceBanner && !insuranceBanner.classList.contains('hidden');
+            const insuranceConsentContainer = document.getElementById('insurance-consent-container');
+            const isInsVisible = insuranceConsentContainer && !insuranceConsentContainer.classList.contains('hidden');
             if (isInsVisible && insConsent && !insConsent.checked) {
                 showWarningAlertPopup(
                     lang === 'vi' ? 'Chưa xác nhận bảo hiểm' : 'Insurance Consent Required',
