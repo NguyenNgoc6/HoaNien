@@ -683,15 +683,6 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-3 pt-1">
-                            <input type="checkbox" id="insuranceConsent"
-                                class="mt-0.5 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
-                                onchange="updateTotalPrice(); validateConsentAndEnableButtons()">
-                            <label for="insuranceConsent"
-                                class="text-[10px] leading-relaxed text-amber-800 cursor-pointer">
-                                Tôi xác nhận đã đọc, hiểu và đồng ý với điều khoản bảo hiểm du lịch bắt buộc dành cho hành khách (Mức bồi thường tối đa 30.000.000 VNĐ/vụ theo Luật Du lịch Việt Nam) đã được bao gồm trong tổng chi phí tour.
-                            </label>
-                        </div>
                     </div>
                     <!-- Payment Options -->
                     <div class="space-y-4 opacity-50 pointer-events-none transition-all duration-300" id="payment-options-group">
@@ -731,13 +722,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-start space-x-3 pt-4">
-                        <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
-                            id="tourConsent" type="checkbox" onchange="validateConsentAndEnableButtons()">
-                        <p class="text-[10px] leading-relaxed text-gray-500">
-                            Tôi đồng ý cung cấp thông tin cá nhân và hành trình để resort thực hiện dịch vụ đặt tour và
-                            mã hóa bảo mật thông tin.
-                        </p>
+                    <div class="flex flex-col space-y-4 pt-4 border-t border-brand-border/30">
+                        <!-- Insurance Consent (hiện động qua JS khi tour bắt buộc bảo hiểm) -->
+                        <div id="insurance-consent-container" class="flex items-start space-x-3 hidden">
+                            <input class="mt-1 rounded border-amber-400 text-amber-700 focus:ring-amber-500"
+                                id="insuranceConsent" type="checkbox" onchange="updateTotalPrice(); validateConsentAndEnableButtons()">
+                            <label for="insuranceConsent" class="text-[10px] leading-relaxed text-amber-800 cursor-pointer">
+                                Tôi xác nhận đã đọc, hiểu và đồng ý với điều khoản bảo hiểm du lịch bắt buộc dành cho hành khách (Mức bồi thường tối đa 30.000.000 VNĐ/vụ theo Luật Du lịch Việt Nam) đã được bao gồm trong tổng chi phí tour.
+                            </label>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
+                                id="tourConsent" type="checkbox" onchange="validateConsentAndEnableButtons()">
+                            <p class="text-[10px] leading-relaxed text-gray-500">
+                                Tôi đồng ý cung cấp thông tin cá nhân và hành trình để resort thực hiện dịch vụ đặt tour và
+                                mã hóa bảo mật thông tin.
+                            </p>
+                        </div>
                     </div>
                     <button type="submit" id="btn-submit-booking" disabled
                         class="w-full bg-brand-dark text-white py-5 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-brand-gold transition-all duration-300 opacity-50 pointer-events-none cursor-not-allowed">
@@ -1911,19 +1912,19 @@
             const insuranceFee = getInsuranceFee();
             // totalPrice += insuranceFee; // Đã bao gồm, không cộng dồn thêm
 
-            // Hiển thị / ẩn banner bảo hiểm
+            // Hiển thị / ẩn banner bảo hiểm & checkbox ở chân trang
             const dbTour = (typeof dbTours !== 'undefined') ? dbTours[currentTour] : null;
             const insuranceBanner = document.getElementById('insurance-banner');
-            if (insuranceBanner) {
-                if (dbTour && dbTour.insuranceRequired) {
-                    insuranceBanner.classList.remove('hidden');
-                    const priceDisplay = document.getElementById('insurance-price-display');
-                    if (priceDisplay) priceDisplay.textContent = formatVND(Number(dbTour.insurancePrice) || 0);
-                } else {
-                    insuranceBanner.classList.add('hidden');
-                    const consentChk = document.getElementById('insuranceConsent');
-                    if (consentChk) consentChk.checked = false;
-                }
+            const insuranceConsentContainer = document.getElementById('insurance-consent-container');
+            
+            if (dbTour && dbTour.insuranceRequired) {
+                if (insuranceBanner) insuranceBanner.classList.remove('hidden');
+                if (insuranceConsentContainer) insuranceConsentContainer.classList.remove('hidden');
+            } else {
+                if (insuranceBanner) insuranceBanner.classList.add('hidden');
+                if (insuranceConsentContainer) insuranceConsentContainer.classList.add('hidden');
+                const consentChk = document.getElementById('insuranceConsent');
+                if (consentChk) consentChk.checked = false;
             }
 
             // Apply promo discount if one is active
