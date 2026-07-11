@@ -317,11 +317,14 @@ public class FeedbackController {
         boolean isLoggedIn = com.kawai.utils.SecurityUtils.isCustomerLoggedIn(principal)
                 || (session != null && session.getAttribute("user") != null);
 
-        if (!isLoggedIn) {
-            return "redirect:/feedback?toast=login_required";
-        }
-
         Long targetTourBookingId = bookingId != null ? bookingId : selectedTourBookingId;
+        if (!isLoggedIn) {
+            String redirectUrl = "/feedback?toast=login_required";
+            if (targetTourBookingId != null) {
+                redirectUrl += "&bookingId=" + targetTourBookingId;
+            }
+            return "redirect:" + redirectUrl;
+        }
         if (targetTourBookingId != null && reviewRepository.existsByTourBookingId(targetTourBookingId)) {
             System.out.println("DEBUG FEEDBACK: Chan submit - targetTourBookingId " + targetTourBookingId + " da duoc danh gia.");
             return "redirect:/feedback?toast=already_reviewed";

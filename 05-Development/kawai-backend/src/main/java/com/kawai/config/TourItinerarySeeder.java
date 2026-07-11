@@ -27,6 +27,9 @@ public class TourItinerarySeeder implements ApplicationRunner {
         // Đảm bảo sửa lỗi chính tả cho Tour số 8 (Mũ Né -> Mũi Né) nếu DB cũ đã tồn tại record
         jdbcTemplate.execute("UPDATE Tours SET tour_name = 'Bình Minh Cồn Cát – Mũi Né' WHERE tour_id = 8 AND (tour_name LIKE '%Mũ Né%' OR tour_name LIKE '%Mu Né%')");
 
+        // Đảm bảo toàn bộ 10 Tours hiện tại đều có is_insurance_required = TRUE và insurance_price = 50000
+        jdbcTemplate.execute("UPDATE Tours SET is_insurance_required = TRUE, insurance_price = 50000");
+
         // 1. Chèn thông tin cơ bản cho 10 Tours (nếu chưa có)
         jdbcTemplate.execute("INSERT IGNORE INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, duration, duration_hours, is_insurance_required, insurance_price, short_quote, description, is_active) VALUES (1, 'Hành trình Cố đô', 'CULTURAL', 7500000, 15, '10 Giờ', 10.0, TRUE, 50000, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Chuyến đi đưa bạn ngược dòng thời gian về với nét đẹp trầm mặc của cố đô, khơi mở những câu chuyện di sản và thưởng thức phong vị ẩm thực cung đình xưa.', TRUE)");
         jdbcTemplate.execute("INSERT IGNORE INTO Tours (tour_id, tour_name, tour_type, base_price, max_capacity, duration, duration_hours, is_insurance_required, insurance_price, short_quote, description, is_active) VALUES (2, 'Hồn Quê Xứ Quảng', 'CULTURAL', 5800000, 12, '10 Giờ', 10.0, TRUE, 50000, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Hành trình chạm vào những điều bình dị mà sâu lắng của đất Quảng: từ những con phố rêu phong ở Hội An, hương đất nung bên dòng sông Thu Bồn đến vị mặn mòi của một làng rau lâu đời.', TRUE)");

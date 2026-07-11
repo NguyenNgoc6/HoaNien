@@ -827,7 +827,9 @@
             document.getElementById('tab-' + t)?.classList.toggle('active', t === name);
             document.getElementById('panel-' + t)?.classList.toggle('hidden', t !== name);
         });
-        history.replaceState(null, '', '/feedback?type=' + name);
+        const params = new URLSearchParams(window.location.search);
+        params.set('type', name);
+        history.replaceState(null, '', '/feedback?' + params.toString());
         updateInlineFormRatings();
     }
 
@@ -894,9 +896,19 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
+        const bookingId = params.get('bookingId');
+        const isLoggedInVal = document.getElementById('jsIsLoggedIn').value === 'true';
+
         const rawType = params.get('type') || 'tour';
         const validTabs = ['tour', 'room', 'other'];
         switchTab(validTabs.includes(rawType) ? rawType : 'tour');
+
+        if (bookingId && !isLoggedInVal) {
+            showToast('toast-login-required');
+            if (typeof openLoginModal === 'function') {
+                openLoginModal();
+            }
+        }
         
         const toast = params.get('toast');
         if (toast === 'success') {
