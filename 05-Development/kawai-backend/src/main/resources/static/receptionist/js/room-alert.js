@@ -128,7 +128,7 @@ async function pollPendingWalkInRooms() {
         roomNums.forEach(roomNum => {
             const status = statusMap[roomNum];
             if (status === 'Vacant_Clean') {
-                showToastAlert(`✅ Phòng ${roomNum} đã dọn xong! Bạn có thể tiếp tục hoàn tất đơn Walk-in.`, roomNum);
+                showToastAlert(`✅ Phòng ${roomNum} đã dọn xong! Bạn có thể tiếp tục hoàn tất đơn.`, roomNum);
                 playAlertSound();
                 delete pendingRooms[roomNum];
                 changed = true;
@@ -185,11 +185,10 @@ async function pollCleanedRooms() {
 const URGENT_CLEAN_LS_KEY = 'urgentCleanAlertedTaskIds';
 // Track room numbers alerted via urgentClean để tránh toast trùng với pollCleanedRooms
 const URGENT_CLEAN_ROOM_KEY = 'urgentCleanAlertedRoomNums';
-const PAGE_LOAD_TIME = Date.now();
 
 function getAlertedUrgentTaskIds() {
     try {
-        const raw = sessionStorage.getItem(URGENT_CLEAN_LS_KEY);
+        const raw = localStorage.getItem(URGENT_CLEAN_LS_KEY);
         return raw ? JSON.parse(raw) : {};
     } catch (e) { return {}; }
 }
@@ -214,9 +213,10 @@ function markUrgentTaskAlerted(taskId, roomNum) {
         // Track taskId
         const map = getAlertedUrgentTaskIds();
         map[taskId] = Date.now();
-        sessionStorage.setItem(URGENT_CLEAN_LS_KEY, JSON.stringify(map));
-        
-        // Track roomNumber để pollCleanedRooms bỏ qua (Dùng localStorage để share across tabs cho handover)
+        const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+        Object.keys(map).forEach(id => { if (map[id] < twoHoursAgo) delete map[id]; });
+        localStorage.setItem(URGENT_CLEAN_LS_KEY, JSON.stringify(map));
+        // Track roomNumber để pollCleanedRooms bỏ qua
         const roomMap = getUrgentCleanAlertedRooms();
         roomMap[roomNum] = Date.now();
         Object.keys(roomMap).forEach(r => { if ((Date.now() - roomMap[r]) > 2 * 60 * 60 * 1000) delete roomMap[r]; });
@@ -236,14 +236,6 @@ async function pollCleanTasksDone() {
 
         tasks.forEach(task => {
             if (alerted[task.taskId]) return; // Đã alert rồi → bỏ qua
-            
-            // Chỉ alert những task hoàn thành SAU khi load trang, để tránh nổ 1 đống toast khi mở tab mới
-            const completedTime = task.completedAt ? new Date(task.completedAt).getTime() : 0;
-            if (completedTime > 0 && completedTime < PAGE_LOAD_TIME - 10000) {
-                markUrgentTaskAlerted(task.taskId, task.roomNumber);
-                return;
-            }
-
             playSound = true;
             markUrgentTaskAlerted(task.taskId, task.roomNumber); // truyền roomNumber để suppress handover toast
             showToastAlert(
