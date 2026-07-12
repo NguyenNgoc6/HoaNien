@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -217,8 +217,10 @@
                                     <td th:text="${arr.checkInDate}"></td>
                                     <td th:text="${arr.bookingDate}" style="color: #4b5563;"></td>
                                     <td th:text="${arr.notes}"
-                                        style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                        th:title="${arr.notes}"></td>
+                                        class="notes-cell"
+                                        th:classappend="${arr.notes != null and #strings.length(arr.notes) > 0} ? 'has-note' : ''"
+                                        th:attr="data-full-note=${arr.notes}"
+                                        onclick="openNoteModal(this)"></td>
                                     <td>
                                         <button class="btn btn-primary btn-sm" th:data-id="${arr.id}"
                                             th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
@@ -902,6 +904,72 @@
                 });
             });
         })();
+    </script>
+
+    <!-- ===== Notes Full-View Modal ===== -->
+    <div id="noteViewModal" onclick="if(event.target===this)closeNoteModal()"
+         style="display:none; position:fixed; inset:0; z-index:9999;
+                background:rgba(0,0,0,.55); backdrop-filter:blur(3px);
+                align-items:center; justify-content:center;">
+        <div style="background:#1e1e2e; border:1px solid #3f3f5a; border-radius:14px;
+                    max-width:520px; width:90%; padding:28px 28px 22px;
+                    box-shadow:0 20px 60px rgba(0,0,0,.6); position:relative;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <span style="font-size:13px; font-weight:700; letter-spacing:.8px;
+                             text-transform:uppercase; color:#a0a0c0;">Ghi chú đặt phòng</span>
+                <button onclick="closeNoteModal()"
+                        style="background:none; border:none; cursor:pointer;
+                               color:#a0a0c0; font-size:20px; line-height:1;
+                               padding:0; transition:color .15s;"
+                        onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#a0a0c0'"
+                        aria-label="Đóng">&times;</button>
+            </div>
+            <div id="noteViewContent"
+                 style="color:#e2e2f0; font-size:14.5px; line-height:1.7;
+                        white-space:pre-wrap; word-break:break-word;
+                        max-height:340px; overflow-y:auto;
+                        padding-right:4px;"></div>
+        </div>
+    </div>
+
+    <style>
+        .notes-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #9ca3af;
+            font-style: italic;
+        }
+        .notes-cell.has-note {
+            cursor: pointer;
+            color: #c4b5fd;
+            font-style: normal;
+            transition: color .15s;
+        }
+        .notes-cell.has-note:hover {
+            color: #a78bfa;
+            text-decoration: underline dotted;
+        }
+    </style>
+
+    <script>
+        function openNoteModal(cell) {
+            const note = cell.getAttribute('data-full-note');
+            if (!note || note.trim() === '') return;
+            document.getElementById('noteViewContent').textContent = note;
+            const modal = document.getElementById('noteViewModal');
+            modal.style.display = 'flex';
+            // Close on Escape
+            document.addEventListener('keydown', _noteEscHandler);
+        }
+        function closeNoteModal() {
+            document.getElementById('noteViewModal').style.display = 'none';
+            document.removeEventListener('keydown', _noteEscHandler);
+        }
+        function _noteEscHandler(e) {
+            if (e.key === 'Escape') closeNoteModal();
+        }
     </script>
 </body>
 

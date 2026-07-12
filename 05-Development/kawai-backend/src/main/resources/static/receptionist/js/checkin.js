@@ -747,7 +747,7 @@ function addDependentRow(name, cccd, dob, gender, dependentId, assignedPhysicalR
         <td style="padding: 12px 16px;">
             <button type="button" class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #c7d2fe; background: #eef2ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="FaceID" onclick="openEnrollModal('DEPENDENT', ${depIdArg}, '${name}')"><i class="fa-solid fa-camera"></i></button>
             <button type="button" class="btn btn-outline btn-sm" style="color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; padding: 6px 10px; margin-right: 6px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="Edit" onclick="editDependentRow(this, '${name}', '${cccd}', '${dob}', '${gender}', ${depIdArg}, ${roomIdArg}, ${isPrimary})"><i class="fa-solid fa-pen"></i></button>
-            <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="Delete" onclick="this.closest('tr').remove()"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="Delete" onclick="removeDependentRow(this, ${depIdArg})"><i class="fa-solid fa-trash"></i></button>
         </td>
     `;
     tbody.appendChild(tr);
@@ -793,6 +793,35 @@ function editDependentRow(btn, name, cccd, dob, gender, depId, roomId, isPrimary
 
     const addBtn = document.querySelector('button[onclick="addDependent()"]');
     if (addBtn) addBtn.innerHTML = '<i class="fa-solid fa-check"></i> Cập nhật';
+}
+
+function removeDependentRow(btn, depId) {
+    if (!depId || String(depId).startsWith('NEW_')) {
+        btn.closest('tr').remove();
+        return;
+    }
+
+    if (confirm('Bạn có chắc chắn muốn xóa khách đi kèm này? Hành động này không thể hoàn tác và sẽ xóa trực tiếp trên hệ thống.')) {
+        fetch('/receptionist/api/room-guests/by-dependent/' + depId, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]') ? document.querySelector('meta[name="_csrf"]').getAttribute('content') : ''
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                btn.closest('tr').remove();
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Lỗi kết nối khi xóa khách đi kèm.', 'error');
+        });
+    }
 }
 
 function toggleDependentsList() {

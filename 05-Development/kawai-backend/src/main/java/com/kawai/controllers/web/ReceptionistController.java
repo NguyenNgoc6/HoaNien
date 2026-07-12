@@ -91,7 +91,8 @@ public class ReceptionistController {
                         if (t.getRoom() != null) {
                             if ("Maintenance".equalsIgnoreCase(t.getOperationalType())) {
                                 roomsWithMaintenance.add(t.getRoom().getId());
-                            } else if ("URGENT_CLEAN".equalsIgnoreCase(t.getOperationalType())) {
+                            } else if ("URGENT_CLEAN".equalsIgnoreCase(t.getOperationalType()) ||
+                                      ("CHECKOUT_CLEAN".equalsIgnoreCase(t.getOperationalType()) && "Lễ tân báo dọn khẩn".equalsIgnoreCase(t.getPriority()))) {
                                 roomsWithUrgentClean.add(t.getRoom().getId());
                             }
                         }
@@ -969,5 +970,41 @@ public class ReceptionistController {
             response.add(map);
         }
         return org.springframework.http.ResponseEntity.ok(response);
+    }
+    /**
+     * API xóa một slot RoomGuest (khách đi kèm) trước khi hoàn tất check-in.
+     * Điều kiện:
+     *   - Slot không phải isPrimaryContact (không được xóa người đứng đầu).
+     *   - detailStatus của booking detail CHƯA phải "Checked_In" / "CHECKED_IN"
+     *     (tức là vẫn đang trong quá trình khai báo, chưa chốt).
+     */
+    @DeleteMapping("/api/room-guests/by-dependent/{dependentId}")
+    @ResponseBody
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_WALKIN')")
+    public org.springframework.http.ResponseEntity<Map<String, String>> deleteRoomGuest(
+            @PathVariable Long dependentId) {
+        com.kawai.models.RoomGuest guest = roomGuestRepository.findFirstByDependentId(dependentId).orElse(null);
+        if (guest == null) {
+            return org.springframework.http.ResponseEntity.status(404)
+                    .body(Map.of("status", "error", "message", "Không tìm thấy khách đi kèm với dependentId=" + dependentId));
+        }
+        // Bảo vệ: không được xóa primary contact
+        if (Boolean.TRUE.equals(guest.getIsPrimaryContact())) {
+            return org.springframework.http.ResponseEntity.status(400)
+                    .body(Map.of("status", "error", "message", "Không thể xóa người đứng đầu phòng."));
+        }
+        // Bảo vệ: không được xóa sau khi đã check-in xong
+        String detailStatus = guest.getRoomBookingDetail() != null
+                ? guest.getRoomBookingDetail().getDetailStatus() : null;
+        if (detailStatus != null &&
+                (detailStatus.equalsIgnoreCase("Checked_In") ||
+                 detailStatus.equalsIgnoreCase("CHECKED_IN"))) {
+            return org.springframework.http.ResponseEntity.status(400)
+                    .body(Map.of("status", "error", "message",
+                            "Phòng đã check-in xong, không thể xóa khách."));
+        }
+        roomGuestRepository.delete(guest);
+        return org.springframework.http.ResponseEntity.ok(
+                Map.of("status", "success", "message", "Đã xóa khách đi kèm."));
     }
 }
