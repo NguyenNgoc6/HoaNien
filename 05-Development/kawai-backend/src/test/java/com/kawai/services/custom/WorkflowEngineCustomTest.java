@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -51,6 +52,8 @@ public class WorkflowEngineCustomTest {
     private EmailService emailService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -68,7 +71,9 @@ public class WorkflowEngineCustomTest {
                 promotionRepository,
                 bookingRepository,
                 objectMapper,
-                eventPublisher);
+                eventPublisher,
+                emailService,
+                messagingTemplate);
 
         authService = new AuthServiceImpl();
         ReflectionTestUtils.setField(authService, "accountRepository", accountRepository);

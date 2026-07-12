@@ -26,6 +26,10 @@ spring:
         format_sql: true
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
+        id:
+          optimizer:
+            pooled:
+              preferred: pooled-lo
 
   thymeleaf:
     cache: false
@@ -34,6 +38,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+      location: ${java.io.tmpdir}
 
   # ─── Email (SMTP Gmail) ───────────────────────────────────────────
   # Để gửi email, anh cần:

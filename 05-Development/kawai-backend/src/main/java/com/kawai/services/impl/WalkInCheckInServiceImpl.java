@@ -103,6 +103,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
     private final com.kawai.services.interfaces.FolioService folioService;
     private final PasswordEncoder passwordEncoder;
     private final com.kawai.services.interfaces.CheckinService checkinService;
+    private final com.kawai.repositories.MaintenanceRequestRepository maintenanceRequestRepo;
     private final com.kawai.services.interfaces.EmailService emailService;
 
     public WalkInCheckInServiceImpl(
@@ -118,6 +119,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             MembershipTierRepository membershipTierRepository,
             com.kawai.services.interfaces.FolioService folioService,
             PasswordEncoder passwordEncoder,
+            com.kawai.repositories.MaintenanceRequestRepository maintenanceRequestRepo,
             @Lazy com.kawai.services.interfaces.CheckinService checkinService,
             com.kawai.services.interfaces.EmailService emailService) {
         this.roomRepository = roomRepository;
@@ -132,6 +134,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         this.membershipTierRepository = membershipTierRepository;
         this.folioService = folioService;
         this.passwordEncoder = passwordEncoder;
+        this.maintenanceRequestRepo = maintenanceRequestRepo;
         this.checkinService = checkinService;
         this.emailService = emailService;
     }
@@ -375,12 +378,12 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         if (keyword == null || keyword.isBlank())
             return java.util.Optional.empty();
 
-        java.util.Optional<Customer> byPhone = customerRepository.findByPhone(keyword);
+        java.util.Optional<Customer> byPhone = customerRepository.findFirstByPhone(keyword);
         if (byPhone.isPresent())
             return byPhone;
 
         try {
-            return customerRepository.findByCccdPassportEncrypted(EncryptionUtils.encrypt(keyword));
+            return customerRepository.findFirstByCccdPassportEncrypted(EncryptionUtils.encrypt(keyword));
         } catch (Throwable e) {
             return java.util.Optional.empty();
         }
@@ -452,6 +455,17 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             throw new BusinessException("MOD2-UC14-006",
                     "Selected room is not available for check-in. Current status: " + room.getRoomStatus());
         }
+
+        boolean hasPendingMaintenance = maintenanceRequestRepo.existsByRoomIdAndStatusInAndOperationalTypeIn(
+                roomId,
+                java.util.Arrays.asList("Pending", "InProgress"),
+                java.util.Arrays.asList("MAINTENANCE", "DAMAGE_CHECK")
+        );
+        if (hasPendingMaintenance) {
+            throw new BusinessException("MOD2-UC14-017",
+                    "Selected room has a pending maintenance/damage check task. Cannot check in.");
+        }
+
         return room;
     }
 
@@ -550,7 +564,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         }
 
         String encryptedCccd = EncryptionUtils.encrypt(req.getCccd());
-        return customerRepository.findByCccdPassportEncrypted(encryptedCccd)
+        return customerRepository.findFirstByCccdPassportEncrypted(encryptedCccd)
                 .map(existing -> {
                     boolean updated = false;
                     if (req.getDateOfBirth() != null && !req.getDateOfBirth().equals(existing.getBirthDate())) {
@@ -593,7 +607,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             }
         }
         if (req.getPhone() != null && !req.getPhone().isBlank()) {
-            if (customerRepository.findByPhone(req.getPhone()).isPresent()) {
+            if (customerRepository.findFirstByPhone(req.getPhone()).isPresent()) {
                 throw new BusinessException("MOD2-UC14-011",
                         "Số điện thoại '" + req.getPhone() + "' đã được đăng ký cho một tài khoản khác. "
                                 + "Vui lòng sử dụng chức năng tìm kiếm (Check Existing) hoặc dùng số khác.");
