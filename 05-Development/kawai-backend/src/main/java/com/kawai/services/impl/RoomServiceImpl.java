@@ -265,6 +265,7 @@ public class RoomServiceImpl implements RoomService {
             dto.setHasBalcony(cat.getHasBalcony());
             dto.setComplimentaryServices(cat.getComplimentaryServices());
             dto.setHasFreeBreakfast(cat.getHasFreeBreakfast());
+            dto.setCoverImgUrl(cat.getCoverImgUrl());
         }
         return dto;
     }
