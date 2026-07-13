@@ -134,6 +134,10 @@ class WalkInCheckInServiceUC14Test {
         private PasswordEncoder passwordEncoder;
         @Mock
         private com.kawai.repositories.MembershipTierRepository membershipTierRepository;
+        @Mock
+        private com.kawai.repositories.MaintenanceRequestRepository maintenanceRequestRepo;
+        @Mock
+        private com.kawai.services.interfaces.EmailService emailService;
 
         // ?????? Test Data Constants (SYNTHETIC) ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????
         private static final String CCCD_NEW_GUEST = "001234567890"; // TC-M2-021
@@ -265,7 +269,7 @@ class WalkInCheckInServiceUC14Test {
                 // Arrange
                 when(roomRepository.findByIdWithPessimisticLock(ROOM_301))
                                 .thenReturn(Optional.of(buildRoom(ROOM_301, "R301", "Vacant_Clean", 2)));
-                when(customerRepository.findByCccdPassportEncrypted(anyString()))
+                when(customerRepository.findFirstByCccdPassportEncrypted(anyString()))
                                 .thenReturn(Optional.empty());
 
                 WalkInCheckInRequest request = buildRequest(CCCD_NEW_GUEST, ROOM_301, 1);
@@ -442,7 +446,7 @@ class WalkInCheckInServiceUC14Test {
         void TC_M2_025_runtimeException_throwsMOD2UC14005_eventNotPublished() {
                 when(roomRepository.findByIdWithPessimisticLock(ROOM_305))
                                 .thenReturn(Optional.of(buildRoom(ROOM_305, "R305", "Vacant_Clean", 2)));
-                when(customerRepository.findByCccdPassportEncrypted(anyString()))
+                when(customerRepository.findFirstByCccdPassportEncrypted(anyString()))
                                 .thenReturn(Optional.empty());
                 when(accountRepository.save(any(Account.class)))
                                 .thenThrow(new RuntimeException("Simulated account creation failure"));
@@ -488,10 +492,14 @@ class WalkInCheckInServiceUC14Test {
                                 .thenReturn(Optional.of(buildRoom(ROOM_308, "R308", "Vacant_Clean", 2)));
 
                 Customer existing = buildExistingCustomer(CUSTOMER_ID_99, "Nguyen Van Existing");
-                when(customerRepository.findByCccdPassportEncrypted(anyString()))
+                existing.setBirthDate(LocalDate.of(1990, 5, 15));
+                when(customerRepository.findFirstByCccdPassportEncrypted(anyString()))
                                 .thenReturn(Optional.of(existing));
 
                 WalkInCheckInRequest request = buildRequest(CCCD_EXISTING, ROOM_308, 1);
+                request.setFullName(existing.getFullName());
+                request.setEmail(existing.getEmail());
+                request.setPhone(existing.getPhone());
 
                 WalkInCheckInResponse response = walkInCheckInService.createWalkInBookingAndCheckIn(request);
 
@@ -540,7 +548,7 @@ class WalkInCheckInServiceUC14Test {
         void TC_M2_029_accompaniedGuest_dependentRecordCreated() {
                 when(roomRepository.findByIdWithPessimisticLock(ROOM_309))
                                 .thenReturn(Optional.of(buildRoom(ROOM_309, "R309", "Vacant_Clean", 3)));
-                when(customerRepository.findByCccdPassportEncrypted(anyString()))
+                when(customerRepository.findFirstByCccdPassportEncrypted(anyString()))
                                 .thenReturn(Optional.empty());
 
                 DependentRegistrationDTO companion = new DependentRegistrationDTO();
@@ -727,7 +735,7 @@ class WalkInCheckInServiceUC14Test {
         void TC_M2_031_newGuest_accountAutoCreated_linkedToReservation() {
                 when(roomRepository.findByIdWithPessimisticLock(ROOM_312))
                                 .thenReturn(Optional.of(buildRoom(ROOM_312, "R312", "Vacant_Clean", 2)));
-                when(customerRepository.findByCccdPassportEncrypted(anyString()))
+                when(customerRepository.findFirstByCccdPassportEncrypted(anyString()))
                                 .thenReturn(Optional.empty());
 
                 WalkInCheckInRequest request = buildRequest(CCCD_NEW_ACCOUNT, ROOM_312, 1);

@@ -68,6 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const savePermsBtn = document.getElementById("btn-save-permissions");
     if (savePermsBtn) savePermsBtn.addEventListener("click", handleSavePermissions);
 
+    // Reset permissions button
+    const resetPermsBtn = document.getElementById("btn-reset-permissions");
+    if (resetPermsBtn) resetPermsBtn.addEventListener("click", handleResetPermissions);
+
     // Entity form submit
     const entityForm = document.getElementById("entity-form");
     if (entityForm) entityForm.addEventListener("submit", handleFormSubmit);
@@ -126,10 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // UX: Bấm vào bất kỳ đâu trên dòng
     // - Role Management: click thẳng vào row → mở modal chỉnh sửa (không cần nhấn nút)
-    // - Các tab khác: click row → toggle chọn (bulk action)
+    // - Các tab khác hỗ trợ bulk delete: click row → toggle chọn (bulk action)
     document.querySelectorAll("tbody tr[data-id]").forEach(tr => {
-        tr.style.cursor = 'pointer';
-        tr.style.transition = 'background-color 0.2s ease';
+        if (activeTab === 'Role Management' || allowedBulkTabs.includes(activeTab)) {
+            tr.style.cursor = 'pointer';
+            tr.style.transition = 'background-color 0.2s ease';
+        }
+
         tr.addEventListener("click", (e) => {
             // Không trigger nếu bấm vào button, input hoặc thẻ a
             if (e.target.closest('button') || e.target.closest('a') || e.target.tagName === 'INPUT') return;
@@ -140,6 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (rowId) openEditModal(rowId);
                 return;
             }
+
+            // Nếu tab không nằm trong danh sách hỗ trợ bulk, bỏ qua không có hiệu ứng chọn
+            if (!allowedBulkTabs.includes(activeTab)) return;
 
             const isSelected = tr.classList.toggle('row-selected');
             if (isSelected) {
@@ -419,7 +429,12 @@ function wireTableButtons() {
         btn.addEventListener("click", () => openDeleteConfirm(btn.dataset.id));
     });
     document.querySelectorAll(".btn-permissions").forEach(btn => {
-        btn.addEventListener("click", () => openPermissionsModal(btn.dataset.id, btn.dataset.name, btn.dataset.role));
+        btn.addEventListener("click", () => openPermissionsModal(
+            btn.dataset.id,
+            btn.dataset.name,
+            btn.dataset.role,
+            btn.dataset.hasCustom === 'true'
+        ));
     });
 }
 
@@ -437,6 +452,81 @@ function openAddModal() {
         form.reset();
         form.dataset.action = '';
         form.dataset.method = 'POST';
+    }
+
+    if (activeTab === "Room Categories") {
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        if (previewContainer) previewContainer.innerHTML = "";
+    } else {
+        const singlePreview = form ? form.querySelector('.image-preview') : null;
+        const singlePlaceholder = form ? form.querySelector('.upload-placeholder') : null;
+        if (singlePreview && singlePlaceholder) {
+            singlePreview.src = '';
+            singlePreview.style.display = 'none';
+            singlePlaceholder.style.display = 'flex';
+        }
+    }
+
+    if (form) {
+        switch(activeTab) {
+            case 'Room Categories':
+                if (form.elements['name']) form.elements['name'].value = 'Phòng Standard';
+                if (form.elements['rooms']) form.elements['rooms'].value = '10';
+                if (form.elements['price']) form.elements['price'].value = '1500000';
+                if (form.elements['baseAdults']) form.elements['baseAdults'].value = '2';
+                if (form.elements['baseChildren']) form.elements['baseChildren'].value = '0';
+                if (form.elements['maxAdults']) form.elements['maxAdults'].value = '2';
+                if (form.elements['maxChildren']) form.elements['maxChildren'].value = '1';
+                if (form.elements['extraAdultSurcharge']) form.elements['extraAdultSurcharge'].value = '300000';
+                if (form.elements['extraChildSurcharge']) form.elements['extraChildSurcharge'].value = '150000';
+                if (form.elements['description']) form.elements['description'].value = 'Phòng nghỉ tiêu chuẩn với đầy đủ tiện nghi cơ bản.';
+                break;
+            case 'Rooms':
+                if (form.elements['name']) form.elements['name'].value = 'P.101';
+                break;
+            case 'Pricing Management':
+                if (form.elements['price']) form.elements['price'].value = '1500000';
+                break;
+            case 'Menu Categories':
+                if (form.elements['name']) form.elements['name'].value = 'Món chính';
+                if (form.elements['items']) form.elements['items'].value = '0';
+                break;
+            case 'Restaurant Menu':
+                if (form.elements['name']) form.elements['name'].value = 'Cơm chiên hải sản';
+                if (form.elements['price']) form.elements['price'].value = '50000';
+                if (form.elements['description']) form.elements['description'].value = 'Ngon và bổ dưỡng';
+                break;
+            case 'Tour Categories':
+                if (form.elements['name']) form.elements['name'].value = 'Tour Biển';
+                if (form.elements['description']) form.elements['description'].value = 'Khám phá vẻ đẹp của biển';
+                break;
+            case 'Tours':
+                if (form.elements['name']) form.elements['name'].value = 'Tour Ngắm San Hô';
+                if (form.elements['price']) form.elements['price'].value = '500000';
+                if (form.elements['duration']) form.elements['duration'].value = '1 ngày';
+                break;
+            case 'Tour Schedules':
+                if (form.elements['guideName']) form.elements['guideName'].value = 'HDV Nguyễn Văn A';
+                if (form.elements['maxParticipants']) form.elements['maxParticipants'].value = '20';
+                break;
+            case 'Account Management':
+                if (form.elements['name']) form.elements['name'].value = 'Nhân viên mới';
+                if (form.elements['username']) form.elements['username'].value = 'staff_new';
+                if (form.elements['password']) form.elements['password'].value = '123456';
+                if (form.elements['email']) form.elements['email'].value = 'staff@kawai.com';
+                if (form.elements['phone']) form.elements['phone'].value = '0123456789';
+                if (form.elements['salary']) form.elements['salary'].value = '5000000';
+                break;
+            case 'Role Management':
+                if (form.elements['name']) form.elements['name'].value = 'Role_Moi';
+                if (form.elements['description']) form.elements['description'].value = 'Quyền hạn cơ bản';
+                break;
+            case 'Promotions':
+                if (form.elements['code']) form.elements['code'].value = 'SUMMER2026';
+                if (form.elements['rawValue']) form.elements['rawValue'].value = '10';
+                if (form.elements['maxUses']) form.elements['maxUses'].value = '100';
+                break;
+        }
     }
 
     // Gắn sự kiện hiển thị loại tài khoản nếu ở tab Account Management
@@ -600,6 +690,42 @@ function openEditModal(id) {
             }
         }
 
+        if (activeTab === "Room Categories") {
+            const previewContainer = document.getElementById("imagePreviewContainer");
+            const hiddenInput = document.getElementById("hiddenCoverImgUrl");
+            if (previewContainer && hiddenInput) {
+                previewContainer.innerHTML = "";
+                if (hiddenInput.value) {
+                    const urls = hiddenInput.value.split(',');
+                    urls.forEach(url => {
+                        const img = document.createElement("img");
+                        img.src = url.trim();
+                        img.style.width = "80px";
+                        img.style.height = "80px";
+                        img.style.objectFit = "cover";
+                        img.style.borderRadius = "4px";
+                        img.style.border = "1px solid #ddd";
+                        previewContainer.appendChild(img);
+                    });
+                }
+            }
+        } else {
+            const singlePreview = form.querySelector('.image-preview');
+            const singlePlaceholder = form.querySelector('.upload-placeholder');
+            const hiddenUrl = entityData['imageUrl'] || entityData['coverImgUrl'];
+            if (singlePreview && singlePlaceholder) {
+                if (hiddenUrl) {
+                    singlePreview.src = hiddenUrl;
+                    singlePreview.style.display = 'block';
+                    singlePlaceholder.style.display = 'none';
+                } else {
+                    singlePreview.src = '';
+                    singlePreview.style.display = 'none';
+                    singlePlaceholder.style.display = 'flex';
+                }
+            }
+        }
+
         // After populating all fields, filter permission checkboxes for Role Management
         if (activeTab === 'Role Management') {
             const nameInput = form.querySelector('[name="name"]');
@@ -706,8 +832,10 @@ function handleFormSubmit(event) {
 
         // HACK: Xử lý Upload Ảnh trước khi đẩy Data lên Server
         const imageFileInput = form.querySelector('input[name="imageFile"]');
+        const roomCatImagesInput = form.querySelector('input[name="roomCatImages"]');
         let uploadPromise = Promise.resolve();
 
+        // 1. Upload ảnh đơn (Menu, Tour, ...)
         if (imageFileInput && imageFileInput.files && imageFileInput.files.length > 0) {
             submitBtn.textContent = 'Đang tải ảnh lên...';
             const fileData = new FormData();
@@ -722,14 +850,52 @@ function handleFormSubmit(event) {
                 return res.json();
             })
             .then(data => {
-                // Đè URL ảnh nội bộ vào trường imageUrl để lưu Database
                 payload.imageUrl = data.url;
             });
+        } 
+        // 2. Upload nhiều ảnh (Room Categories)
+        else if (roomCatImagesInput) {
+            const files = roomCatImagesInput.files;
+            
+            // Validate số lượng ảnh (Bắt buộc >= 3 ảnh nếu là thêm mới, hoặc nếu sửa mà có chọn file)
+            if (!isEdit && files.length < 3) {
+                alert("Vui lòng chọn tối thiểu 3 ảnh cho Hạng phòng.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Lưu';
+                return;
+            }
+            if (isEdit && files.length > 0 && files.length < 3) {
+                alert("Khi chọn lại ảnh mới, vui lòng chọn tối thiểu 3 ảnh.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Lưu';
+                return;
+            }
+
+            if (files && files.length >= 3) {
+                submitBtn.textContent = 'Đang tải ảnh lên...';
+                const uploadPromises = Array.from(files).map(file => {
+                    const fileData = new FormData();
+                    fileData.append('file', file);
+                    return fetch('/api/v1/upload', {
+                        method: 'POST',
+                        body: fileData
+                    }).then(res => {
+                        if (!res.ok) throw new Error('Lỗi khi tải ảnh lên Server');
+                        return res.json();
+                    }).then(data => data.url);
+                });
+
+                uploadPromise = Promise.all(uploadPromises)
+                    .then(urls => {
+                        payload.coverImgUrl = urls.join(',');
+                    });
+            }
         }
 
         uploadPromise.then(() => {
             // Loại bỏ các Object File ra khỏi payload để tránh lỗi khi Convert JSON
             delete payload.imageFile;
+            delete payload.roomCatImages;
             delete payload.galleryImages;
             
             submitBtn.textContent = 'Đang lưu dữ liệu...';
@@ -972,58 +1138,135 @@ function initAccountFormToggles() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PERMISSION_LABELS = {
-    dashboard: "Dashboard Panel",
-    masterData: "Master Data Management",
-    auditLog: "Audit Log Monitor",
-    reviews: "Review Management",
-    booking: "Booking Management",
-    fnb: "F&B Management",
-    housekeeping: "Housekeeping",
-    maintenance: "Maintenance Panel"
+    "OP_DASHBOARD": "Bảng điều khiển (Dashboard)",
+    "OP_MASTER_DATA": "Cấu hình dữ liệu gốc",
+    "OP_ROOM": "Quản lý Phòng",
+    "OP_FNB": "Quản lý Nhà hàng & F&B",
+    "OP_TOUR": "Quản lý Tour",
+    "OP_CRM": "Quản lý Khách hàng",
+    "OP_PROMOTIONS": "Chương trình Khuyến mãi",
+    "OP_AUDIT_LOG": "Nhật ký hệ thống (Audit Log)",
+    "OP_REVIEWS": "Quản lý Đánh giá (Reviews)",
+    "OP_WORKFLOW": "Quản lý Quy trình (Workflow)",
+    "OP_RECEPTION_CHECKIN": "Lễ tân: Check-in",
+    "OP_RECEPTION_CHECKOUT": "Lễ tân: Check-out",
+    "OP_RECEPTION_WALKIN": "Lễ tân: Khách lẻ (Walk-in)",
+    "OP_RECEPTION_INHOUSE": "Lễ tân: Quản lý khách lưu trú",
+    "OP_NIGHT_AUDIT": "Kiểm toán đêm (Night Audit)",
+    "OP_HOUSEKEEPING": "Quản lý Buồng phòng",
+    "OP_ANALYTICS": "Báo cáo Thống kê"
 };
+
+/**
+ * Định nghĩa tập quyền tối đa mà mỗi role được phép có (Ceilings).
+ * Dùng chung cho cả Role Management và User Permissions Modal.
+ */
+const ROLE_CEILINGS = {
+    admin:        Object.keys(PERMISSION_LABELS).map(k => k.replace('OP_','')),
+    manager:      ['DASHBOARD','ANALYTICS'],
+    receptionist: ['DASHBOARD', 'RECEPTION_CHECKIN', 'RECEPTION_CHECKOUT', 'RECEPTION_WALKIN', 'RECEPTION_INHOUSE'],
+    'lễ tân':     ['DASHBOARD', 'RECEPTION_CHECKIN', 'RECEPTION_CHECKOUT', 'RECEPTION_WALKIN', 'RECEPTION_INHOUSE'],
+    'pos':        ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
+    'thu ngân':   ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
+    kitchen:      ['DASHBOARD','FNB', 'FNB_ORDER'],
+    'bếp':        ['DASHBOARD','FNB', 'FNB_ORDER'],
+    'f&b':        ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'], // Fallback cuối cùng
+    housekeeping: ['DASHBOARD','HOUSEKEEPING'],
+    'buồng phòng':['DASHBOARD','HOUSEKEEPING'],
+    maintainer:   ['DASHBOARD','MAINTENANCE'],
+    maintenance:  ['DASHBOARD','MAINTENANCE'],
+    'bảo trì':    ['DASHBOARD','MAINTENANCE'],
+    tourguide:    ['DASHBOARD','TOUR'],
+    'tour guide': ['DASHBOARD','TOUR'],
+    'tour':       ['DASHBOARD','TOUR'],
+};
+
+/**
+ * Trả về danh sách OP_ keys được phép cho role này.
+ * Hàm này dùng cho modal Cấp quyền nhân viên.
+ */
+function getAllowedScopeForRole(roleName) {
+    const name = (roleName || '').toLowerCase().trim();
+    let ceiling = null;
+    for (const [key, perms] of Object.entries(ROLE_CEILINGS)) {
+        if (name.includes(key)) {
+            ceiling = perms;
+            break;
+        }
+    }
+    if (!ceiling) ceiling = ["DASHBOARD"];
+    
+    // UI đang dùng key có prefix OP_, nên ta phải prepend vào mảng trả về
+    return ceiling.map(p => p.startsWith("OP_") ? p : "OP_" + p);
+}
 
 let localPermissions = {};
 
-function openPermissionsModal(id, name, role) {
+function openPermissionsModal(id, name, role, hasCustom) {
     permissionsUserId = id;
 
-    const titleEl = document.getElementById("permissions-modal-title");
-    const descEl = document.getElementById("permissions-desc");
+    const titleEl = document.querySelector("#permissions-modal .adm-modal-title");
+    const descEl = document.querySelector("#permissions-modal .adm-modal-desc");
     if (titleEl) titleEl.innerText = `Cấp quyền - ${name}`;
     if (descEl) descEl.innerHTML = `Quản lý quyền truy cập cho nhân viên <strong>${name}</strong> (Vai trò: ${role})`;
 
-    // Default permissions based on role — computed from role value (server logic simulated client-side)
-    localPermissions = {
-        dashboard: true,
-        masterData: role === "Admin" || role === "Manager",
-        auditLog: role === "Admin" || role === "Manager",
-        reviews: true,
-        booking: role !== "Housekeeping",
-        fnb: role === "F&B" || role === "Admin" || role === "Manager",
-        housekeeping: role === "Housekeeping" || role === "Admin" || role === "Manager",
-        maintenance: role === "Admin" || role === "Manager"
-    };
+    // Hiện/ẩn nút Reset tùy theo có custom perms hay không
+    const resetBtn = document.getElementById("btn-reset-permissions");
+    if (resetBtn) resetBtn.style.display = hasCustom ? "inline-flex" : "none";
 
-    renderPermissionsList();
-    openModal("permissions-modal");
+    // Tính scope được phép dựa theo role
+    const allowedScope = getAllowedScopeForRole(role);
+
+    // Gọi API để lấy danh sách quyền hiện tại
+    fetch(`/admin/api/v1/accounts/${id}/permissions`)
+        .then(res => res.json())
+        .then(perms => {
+            localPermissions = {};
+            // Khởi tạo CHỈ các quyền trong scope của role → false
+            allowedScope.forEach(k => localPermissions[k] = false);
+
+            // Set true cho các quyền đang có VÀ nằm trong scope
+            if (Array.isArray(perms)) {
+                perms.forEach(p => {
+                    const opKey = p.startsWith("OP_") ? p : "OP_" + p;
+                    if (localPermissions.hasOwnProperty(opKey)) localPermissions[opKey] = true;
+                });
+            }
+
+            renderPermissionsList();
+            openModal("permissions-modal");
+        })
+        .catch(err => {
+            console.error("Lỗi khi tải quyền:", err);
+            if (typeof showToast === "function") showToast("Lỗi khi tải danh sách quyền", "error");
+        });
 }
 
+
 function renderPermissionsList() {
-    const container = document.getElementById("permissions-list");
+    const container = document.getElementById("permissions-checkboxes");
     if (!container) return;
     container.innerHTML = "";
 
     Object.entries(localPermissions).forEach(([key, value]) => {
         const label = document.createElement("label");
-        label.className = "flex items-center gap-3.5 px-4 py-3 rounded-lg bg-[#2C2A1E]/4 cursor-pointer hover:bg-primary/8 transition-colors";
+        label.className = "adm-form-label";
+        label.style.display = "flex";
+        label.style.alignItems = "center";
+        label.style.gap = "8px";
+        label.style.cursor = "pointer";
+        label.style.margin = "0";
+        label.style.fontWeight = "normal";
+
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = value;
         checkbox.className = "w-4 h-4 cursor-pointer";
         checkbox.addEventListener("change", () => { localPermissions[key] = checkbox.checked; });
+        
         const span = document.createElement("span");
-        span.className = "font-sans text-[14px] text-[#2C2A1E] flex-1";
         span.innerText = PERMISSION_LABELS[key] || key;
+        
         label.appendChild(checkbox);
         label.appendChild(span);
         container.appendChild(label);
@@ -1031,11 +1274,83 @@ function renderPermissionsList() {
 }
 
 function handleSavePermissions() {
-    // TODO: POST permissions to backend when API ready
-    closeModal("permissions-modal");
-    permissionsUserId = null;
-    if (typeof showToast === "function") showToast("Lưu phân quyền thành công!", "success");
+    if (!permissionsUserId) return;
+    
+    // Lọc ra các quyền được tick
+    const selectedPerms = Object.entries(localPermissions)
+        .filter(([key, val]) => val)
+        .map(([key, val]) => key);
+
+    // ⚠️ Cảnh báo khi không tick quyền nào
+    if (selectedPerms.length === 0) {
+        if (!confirm("⚠️ Bạn chưa chọn bất kỳ quyền nào.\n\nNhân viên này sẽ không thể truy cập bất kỳ chức năng nào sau khi lưu.\n\nBạn có chắc chắn muốn tiếp tục không?")) {
+            return;
+        }
+    }
+
+    const btn = document.getElementById("btn-save-permissions");
+    const originalText = btn.innerText;
+    btn.innerText = "Đang lưu...";
+    btn.disabled = true;
+
+    fetch(`/admin/api/v1/accounts/${permissionsUserId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selectedPerms)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Lỗi API");
+        return res.json();
+    })
+    .then(data => {
+        closeModal("permissions-modal");
+        permissionsUserId = null;
+        if (typeof showToast === "function") showToast("Lưu phân quyền thành công! Nhân viên cần đăng xuất để áp dụng.", "success");
+        setTimeout(() => window.location.reload(), 1500);
+    })
+    .catch(err => {
+        console.error("Lỗi lưu quyền:", err);
+        if (typeof showToast === "function") showToast("Có lỗi xảy ra khi lưu quyền", "error");
+    })
+    .finally(() => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
 }
+
+function handleResetPermissions() {
+    if (!permissionsUserId) return;
+    if (!confirm("Đặt lại về quyền mặc định của vai trò gốc?\n\nThao tác này sẽ xóa mọi tùy chỉnh quyền riêng của nhân viên này.")) return;
+
+    const btn = document.getElementById("btn-reset-permissions");
+    btn.disabled = true;
+    btn.innerText = "Đang đặt lại...";
+
+    // Gọi API DELETE để xóa custom role và trả về role gốc
+    fetch(`/admin/api/v1/accounts/${permissionsUserId}/permissions`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Lỗi API");
+        return res.json();
+    })
+    .then(() => {
+        closeModal("permissions-modal");
+        permissionsUserId = null;
+        if (typeof showToast === "function") showToast("Đã đặt lại quyền về mặc định! Nhân viên cần đăng xuất để áp dụng.", "success");
+        setTimeout(() => window.location.reload(), 1500);
+    })
+    .catch(err => {
+        console.error("Lỗi reset quyền:", err);
+        if (typeof showToast === "function") showToast("Có lỗi xảy ra khi đặt lại quyền", "error");
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "↩ Đặt lại mặc định";
+    });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ACCOUNT TOGGLE STATUS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1043,7 +1358,7 @@ function handleSavePermissions() {
 function applyToggleUI(btn, next) {
     btn.dataset.value = String(next);
 
-    btn.innerHTML = `<i data-lucide="${next ? 'toggle-right' : 'toggle-left'}" class="w-[22px] h-[22px] ${next ? 'text-[#C9A96E]' : 'text-[#8B7355]'}"></i>`;
+    btn.innerHTML = `<i data-lucide="${next ? 'toggle-right' : 'toggle-left'}" style="width:22px; height:22px; color:${next ? '#C9A96E' : '#8B7355'}"></i>`;
     if (typeof lucide !== "undefined") lucide.createIcons();
 
     // Đồng bộ data-value trên <td> để edit modal đọc đúng
@@ -1205,24 +1520,8 @@ function removeGalleryItem(btn, inputId, fileIndex) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Bộ quyền TỐI ĐA mà từng loại vai trò được phép có.
- * Admin có thể tước bớt, nhưng KHÔNG được cấp vượt trần này.
+ * Đã hợp nhất ROLE_CEILINGS lên phía trên (Dòng 1003)
  */
-const ROLE_CEILINGS = {
-    admin:        ['DASHBOARD','MASTER_DATA','AUDIT_LOG','REVIEWS','BOOKING','FNB','HOUSEKEEPING','MAINTENANCE','WORKFLOW','CRM','PROMOTIONS','NIGHT_AUDIT','TOUR','ANALYTICS', 'RECEPTION_CHECKIN', 'RECEPTION_CHECKOUT', 'RECEPTION_WALKIN', 'RECEPTION_INHOUSE', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
-    manager:      ['DASHBOARD','ANALYTICS'],
-    receptionist: ['DASHBOARD','BOOKING','NIGHT_AUDIT','REVIEWS', 'RECEPTION_CHECKIN', 'RECEPTION_CHECKOUT', 'RECEPTION_WALKIN', 'RECEPTION_INHOUSE'],
-    'f&b':        ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
-    fnb:          ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
-    kitchen:      ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
-    'thu ngan':   ['DASHBOARD','FNB', 'FNB_ORDER', 'FNB_TABLE', 'FNB_ROOM_SERVICE', 'FNB_REPORT'],
-    housekeeping: ['DASHBOARD','HOUSEKEEPING'],
-    maintainer:   ['DASHBOARD','MAINTENANCE'],
-    maintenance:  ['DASHBOARD','MAINTENANCE'],
-    tourguide:    ['DASHBOARD','TOUR'],
-    'tour guide': ['DASHBOARD','TOUR'],
-    'tour':       ['DASHBOARD','TOUR'],
-};
 
 /**
  * Quyền mặc định được CHECKED sẵn khi tạo role mới.
@@ -1298,11 +1597,14 @@ function filterPermissionsByRole(roleName) {
 /**
  * Nút "Gợi ý tự động" — đọc tên role, check tất cả quyền trong ceiling.
  */
-function suggestPermissions() {
+function suggestPermissions(silent = false) {
     const nameInput = document.getElementById('role-name-input');
     if (!nameInput) return;
     const name = nameInput.value.trim();
-    if (!name) { alert('Vui lòng nhập tên vai trò trước!'); return; }
+    if (!name) { 
+        if (!silent) alert('Vui lòng nhập tên vai trò trước!'); 
+        return; 
+    }
 
     // Filter trước để ẩn/khóa quyền không phù hợp
     filterPermissionsByRole(name);
@@ -1316,7 +1618,7 @@ function suggestPermissions() {
         }
     });
 
-    if (typeof showToast === 'function') {
+    if (!silent && typeof showToast === 'function') {
         showToast('Đã gợi ý ' + count + ' quyền cho vai trò "' + name + '"!', 'success');
     }
 }
@@ -1349,6 +1651,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             }, 100);
+        });
+    }
+
+    // Auto-tick quyền khi tạo role (khi người dùng gõ xong tên Role và click ra ngoài - blur)
+    const roleNameInput = document.getElementById('role-name-input');
+    if (roleNameInput) {
+        roleNameInput.addEventListener('blur', function() {
+            suggestPermissions(true);
+        });
+        
+        // Real-time filter: ẩn các checkbox không phù hợp ngay khi đang gõ
+        roleNameInput.addEventListener('input', function() {
+            const name = this.value.trim();
+            if (name) {
+                filterPermissionsByRole(name);
+            }
+        });
+    }
+
+    // Hiển thị preview cho nhiều ảnh (Room Categories)
+    const roomCatImagesInput = document.getElementById('roomCatImages');
+    if (roomCatImagesInput) {
+        roomCatImagesInput.addEventListener('change', function() {
+            const previewContainer = document.getElementById("imagePreviewContainer");
+            if (previewContainer) {
+                previewContainer.innerHTML = "";
+                Array.from(this.files).forEach(file => {
+                    const url = URL.createObjectURL(file);
+                    const img = document.createElement("img");
+                    img.src = url;
+                    img.style.width = "80px";
+                    img.style.height = "80px";
+                    img.style.objectFit = "cover";
+                    img.style.borderRadius = "4px";
+                    img.style.border = "1px solid #ddd";
+                    previewContainer.appendChild(img);
+                });
+            }
         });
     }
 });

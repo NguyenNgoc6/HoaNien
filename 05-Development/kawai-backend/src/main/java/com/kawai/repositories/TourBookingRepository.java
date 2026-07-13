@@ -25,7 +25,8 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, Long> 
 
     List<TourBooking> findBySchedule(TourSchedule schedule);
 
-    List<TourBooking> findByCustomer(com.kawai.models.Customer customer);
+    @org.springframework.data.jpa.repository.Query("SELECT tb FROM TourBooking tb WHERE tb.customer.id = :customerId")
+    java.util.List<TourBooking> findTourBookingsByCustomerId(@org.springframework.data.repository.query.Param("customerId") Long customerId);
 
     /**
      * Lấy các TourBookings đã đặt cho một RoomBooking nhưng CHƯA được phân bổ vào

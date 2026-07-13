@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -66,22 +66,24 @@
                         <span class="nav-sub-text">Quản lý khách in-house</span>
                     </div>
                 </a>
-                <!--
-                <a href="/receptionist/night-audit" class="nav-item active">
+                <a href="/receptionist/night-audit" class="nav-item">
                     <i class="fa-solid fa-moon"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Night Audit</span>
                         <span class="nav-sub-text">Giao ca & Báo cáo</span>
                     </div>
                 </a>
-                -->
             </nav>
 
-            <div class="sidebar-user">
-                <div class="user-avatar">MH</div>
+                        <div class="sidebar-user">
+                <div class="user-avatar"
+                    th:text="${staffName != null && staffName.length() >= 2 ? staffName.substring(0, 2).toUpperCase() : 'NV'}">
+                    NV</div>
                 <div class="user-info">
-                    <div class="user-name">Minh Hoàng</div>
-                    <div class="user-role">Receptionist</div>
+                    <div class="user-name" th:text="${staffName != null ? staffName : 'Nhân viên'}">
+                        Nhân viên</div>
+                    <div class="user-role" th:text="${staffRole != null ? staffRole : 'Receptionist'}">
+                        Receptionist</div>
                 </div>
                 <div class="user-status"></div>
             </div>
@@ -101,15 +103,15 @@
                 </div>
 
                 <div class="header-actions">
-                    <button class="notification-btn">
-                        <i class="fa-regular fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
                     <button class="user-profile-btn">
                         <i class="fa-solid fa-user"></i>
                         <span>Receptionist</span>
                     </button>
-                    <button class="logout-btn">
+<<<<<<< HEAD
+                    <button class="logout-btn" onclick="window.location.href='/auth/logout'">
+=======
+                    <button class="logout-btn" onclick="window.location.href='/logout'">
+>>>>>>> c7279fc1a141924a2db1d1ced8f7ae1baf01668d
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                         <span>Logout</span>
                     </button>
@@ -144,8 +146,32 @@
                         </div>
 
                         <div class="audit-action-area">
-                            <button class="btn btn-primary" onclick="alert('Night Audit Started!')">Run Night Audit & Roll Date</button>
+                            <button class="btn btn-primary" id="btnRunAudit" onclick="runNightAudit()">Run Night Audit & Roll Date</button>
                         </div>
+                        <script>
+                            function runNightAudit() {
+                                const btn = document.getElementById('btnRunAudit');
+                                btn.disabled = true;
+                                btn.innerText = 'Đang xử lý...';
+                                fetch('/api/v1/audit/night-audit', { method: 'POST' })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.status === 'SUCCESS') {
+                                            alert('Chốt sổ thành công! Đã sang ngày: ' + data.businessDate);
+                                            window.location.reload();
+                                        } else {
+                                            alert('Lỗi: ' + data.message);
+                                            btn.disabled = false;
+                                            btn.innerText = 'Run Night Audit & Roll Date';
+                                        }
+                                    })
+                                    .catch(err => {
+                                        alert('Lỗi kết nối tới server.');
+                                        btn.disabled = false;
+                                        btn.innerText = 'Run Night Audit & Roll Date';
+                                    });
+                            }
+                        </script>
                     </div>
 
                     <div class="audit-stats">
@@ -175,6 +201,97 @@
         </main>
     </div>
     <script src="/receptionist/js/dashboard.js"></script>
+
+                <!-- WebSocket integration for real-time task notifications -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        (function() {
+            var staffId = /*[[${staffId}]]*/ 0;
+
+            function showPersistentToast(notif) {
+                if (typeof Toastify === 'undefined') return;
+                Toastify({
+                    text: notif.text,
+                    duration: -1,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: notif.direct ? {
+                        background: "linear-gradient(to right, #FF416C, #FF4B2B)",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        fontFamily: "'Inter', sans-serif",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 15px rgba(255,65,108,0.4)"
+                    } : {
+                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        fontFamily: "'Inter', sans-serif",
+                        borderRadius: "8px"
+                    },
+                    callback: function() {
+                        var saved = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                        saved = saved.filter(function(n) { return n.id !== notif.id; });
+                        localStorage.setItem('kawai_notifs', JSON.stringify(saved));
+                    }
+                }).showToast();
+            }
+
+            try {
+                var pending = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                pending.forEach(function(n) { showPersistentToast(n); });
+            } catch(e) {}
+
+            function saveAndShow(text, direct) {
+                var notif = { id: Date.now() + '_' + Math.random(), text: text, direct: direct };
+                try {
+                    var saved = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                    saved.push(notif);
+                    localStorage.setItem('kawai_notifs', JSON.stringify(saved));
+                } catch(e) {}
+                showPersistentToast(notif);
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') {
+                    console.warn('[WS] SockJS or Stomp not loaded');
+                    return;
+                }
+
+                var socket = new SockJS('/ws-endpoint');
+                var stompClient = Stomp.over(socket);
+                stompClient.debug = null; 
+
+                stompClient.connect({}, function(frame) {
+                    console.log('[WS] Đã kết nối thành công | staffId=' + staffId);
+
+                    stompClient.subscribe('/topic/operations', function(msg) {
+                        try {
+                            var payload = JSON.parse(msg.body);
+                            console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
+                            saveAndShow('📢 THÔNG BÁO HỆ THỐNG: \n ' + payload.message, false);
+                        } catch(e) { console.error('[WS] parse error', e); }
+                    });
+
+                    if (staffId && staffId !== 0) {
+                        stompClient.subscribe('/topic/operations/' + staffId, function(msg) {
+                            try {
+                                var payload = JSON.parse(msg.body);
+                                console.log('[WS] Nhận tin nhắn từ kênh Đích danh (/topic/operations/' + staffId + '):', payload);
+                                saveAndShow('🔔 NHIỆM VỤ MỚI: \n ' + payload.message, true);
+                            } catch(e) { console.error('[WS] parse error', e); }
+                        });
+                        console.log('[WS] Đã đăng ký kênh riêng: /topic/operations/' + staffId);
+                    }
+
+                }, function(error) {
+                    console.error('[WS] Lỗi kết nối WebSocket:', error);
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
 

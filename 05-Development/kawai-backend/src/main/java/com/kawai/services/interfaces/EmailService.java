@@ -100,6 +100,11 @@ public interface EmailService {
     void sendTourFeedbackEmail(com.kawai.models.TourBooking booking, com.kawai.models.Customer customer);
 
     /**
+     * Gửi email thông báo khi có phản hồi đánh giá từ tour tới khách hàng.
+     */
+    void sendFeedbackReplyEmail(com.kawai.models.Review review, com.kawai.models.Customer customer);
+
+    /**
      * Gửi email thông báo khởi hành tour kèm lịch trình hoạt động chi tiết.
      */
     void sendTourDepartureEmail(com.kawai.models.TourBooking booking, com.kawai.models.Customer customer,
@@ -119,4 +124,9 @@ public interface EmailService {
      * Gửi email xác nhận Walk-in check-in.
      */
     void sendWalkInCheckInEmail(com.kawai.models.RoomBooking booking, com.kawai.models.RoomBookingDetail detail, com.kawai.models.Customer customer, boolean isNewAccount, String username, String password);
+
+    /**
+     * Gửi email thông báo lịch làm việc hàng tuần cho nhân viên.
+     */
+    void sendWeeklyScheduleEmail(String toEmail, String employeeName, java.util.List<com.kawai.models.StaffSchedule> schedules);
 }

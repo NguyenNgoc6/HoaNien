@@ -20,6 +20,10 @@ public interface RoomBookingDetailRepository extends JpaRepository<RoomBookingDe
 
     List<RoomBookingDetail> findByDetailStatusIn(List<String> statuses);
 
+    List<RoomBookingDetail> findByRoomBooking_CheckInDateAndDetailStatus(java.time.LocalDate date, String status);
+    
+    long countByRoomBooking_CheckOutDateAndDetailStatus(java.time.LocalDate date, String status);
+
         @org.springframework.data.jpa.repository.Query("SELECT rbd FROM RoomBookingDetail rbd " +
                         "WHERE rbd.roomBooking.customer.account.id = :userId " +
                         "AND rbd.roomBooking.bookingStatus IN ('Confirmed', 'Checked_In')")
@@ -53,6 +57,7 @@ public interface RoomBookingDetailRepository extends JpaRepository<RoomBookingDe
                 "SELECT rbd.room.roomNumber, rbd.roomBooking.customer.fullName " +
                 "FROM RoomBookingDetail rbd " +
                 "WHERE rbd.room IS NOT NULL AND rbd.room.roomStatus = 'Vacant_Clean' " +
+                "AND rbd.roomBooking.checkOutDate >= CURRENT_DATE " +
                 "AND (" +
                 "  (UPPER(rbd.detailStatus) = 'CONFIRMED' AND rbd.roomBooking.checkInDate <= CURRENT_DATE) " +
                 "  OR " +

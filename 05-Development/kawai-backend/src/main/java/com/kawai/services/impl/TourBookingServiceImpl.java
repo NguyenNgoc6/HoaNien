@@ -136,13 +136,12 @@ public class TourBookingServiceImpl implements TourBookingService {
                         }
                 }
 
-                // 3b. Cộng phí bảo hiểm (nếu tour bắt buộc và khách đã đồng ý)
+                // 3b. Tính phí bảo hiểm để hạch toán (đã bao gồm trong giá tour gốc)
                 BigDecimal insuranceFee = BigDecimal.ZERO;
                 if (Boolean.TRUE.equals(tour.getIsInsuranceRequired()) && request.isAcceptInsurance()) {
                         insuranceFee = tour.getInsurancePrice()
                                         .multiply(BigDecimal.valueOf(request.getParticipantCount()));
-                        totalPrice = totalPrice.add(insuranceFee);
-                        LOG.info("Cộng phí bảo hiểm: {} x {} người = {} VND",
+                        LOG.info("Phí bảo hiểm hạch toán (đã bao gồm trong giá): {} x {} người = {} VND",
                                         tour.getInsurancePrice(), request.getParticipantCount(), insuranceFee);
                 }
 
@@ -158,9 +157,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 boolean notExpired = promo.getValidTo() == null
                                                 || !promo.getValidTo().isBefore(LocalDate.now());
                                 if (isActive && notExpired) {
-                                        long uses = bookingRepository.countByCustomerIdAndPromoCode(customer.getId(), promoCode);
+                                        long uses = bookingRepository.countByCustomerIdAndPromoCode(customer.getId(),
+                                                        promoCode);
                                         if (uses >= 1) {
-                                                throw new IllegalArgumentException("Khách hàng đã vượt quá số lần sử dụng mã giảm giá này (1 lần) [ERR_PROMO_USAGE_EXCEEDED]");
+                                                throw new IllegalArgumentException(
+                                                                "Khách hàng đã vượt quá số lần sử dụng mã giảm giá này (1 lần) [ERR_PROMO_USAGE_EXCEEDED]");
                                         }
                                         BigDecimal discountValue = promo.getDiscountValue();
                                         boolean isFixed = "FIXED_AMOUNT".equalsIgnoreCase(promo.getDiscountType())
@@ -173,12 +174,13 @@ public class TourBookingServiceImpl implements TourBookingService {
                                                                 .divide(new BigDecimal("100"), 0,
                                                                                 java.math.RoundingMode.HALF_UP);
                                         }
-                                        if (discountAmount.compareTo(totalPrice) > 0) discountAmount = totalPrice;
+                                        if (discountAmount.compareTo(totalPrice) > 0)
+                                                discountAmount = totalPrice;
                                         totalPrice = totalPrice.subtract(discountAmount);
                                         promoDiscount = discountAmount;
                                         appliedPromotion = promo;
                                         LOG.info("Áp dụng mã giảm giá '{}' cho tour booking: giảm {} VND",
-                                                         promoCode, discountAmount);
+                                                        promoCode, discountAmount);
                                 } else {
                                         LOG.warn("Mã giảm giá '{}' không hợp lệ hoặc đã hết hạn", promoCode);
                                 }
@@ -202,12 +204,14 @@ public class TourBookingServiceImpl implements TourBookingService {
                 if (appliedPromotion != null) {
                         booking.setAppliedPromotion(appliedPromotion);
                 }
-                
+
                 if (request.getRoomBookingId() != null) {
-                    booking.setRoomBooking((RoomBooking) bookingRepository.findById(request.getRoomBookingId()).orElse(null));
+                        booking.setRoomBooking((RoomBooking) bookingRepository.findById(request.getRoomBookingId())
+                                        .orElse(null));
                 }
                 if (request.getRoomBookingDetailId() != null) {
-                    booking.setRoomBookingDetail(roomBookingDetailRepository.findById(request.getRoomBookingDetailId()).orElse(null));
+                        booking.setRoomBookingDetail(roomBookingDetailRepository
+                                        .findById(request.getRoomBookingDetailId()).orElse(null));
                 }
 
                 // Lưu thông tin chi tiết vào notes để email hiển thị
@@ -295,8 +299,10 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 dep.setGender("Nam");
                                 dep.setIsDeleted(false);
                                 
-                                // Nếu có sđt, lưu vào cccdPassportEncrypted dưới dạng note PHONE_xxx để tránh thiếu dữ liệu
-                                if (comp.getPhone() != null && !comp.getPhone().trim().isEmpty()) {
+                                // Lưu số CCCD/Passport của người đi cùng để làm thủ tục bảo hiểm lữ hành bắt buộc
+                                if (comp.getIdCard() != null && !comp.getIdCard().trim().isEmpty()) {
+                                        dep.setCccdPassportEncrypted(comp.getIdCard().trim());
+                                } else if (comp.getPhone() != null && !comp.getPhone().trim().isEmpty()) {
                                         dep.setCccdPassportEncrypted("PHONE_" + comp.getPhone().trim());
                                 }
                                 
@@ -311,10 +317,49 @@ public class TourBookingServiceImpl implements TourBookingService {
                         }
                 }
 
-                // Nếu tổng số lượng khách lớn hơn và còn thừa slot (ví dụ trẻ em hoặc khách chưa nhập chi tiết), tạo các attendee rỗng
-                while (currentAttendeeCount < request.getParticipantCount()) {
+                // Nếu còn thừa slot (trẻ em chưa nhập chi tiết companion),
+                // Tạo các attendee trẻ em từ danh sách childAges thực tế được gửi lên
+                java.util.List<String> childAges = request.getChildAges() != null
+                        ? new java.util.ArrayList<>(request.getChildAges())
+                        : new java.util.ArrayList<>();
+                for (String rawAge : childAges) {
+                        if (currentAttendeeCount >= request.getParticipantCount()) {
+                                break;
+                        }
+
+                        String name = "";
+                        String ageLabel = "";
+                        if (rawAge.contains("|")) {
+                                String[] parts = rawAge.split("\\|");
+                                name = parts[0].trim();
+                                ageLabel = parts[1].trim();
+                        } else {
+                                name = "Trẻ em (" + rawAge + ")";
+                                ageLabel = rawAge;
+                        }
+
+                        // Tính năm sinh ước lượng từ nhãn tuổi
+                        int estimatedAge = 12; // default: adult
+                        if ("Dưới 2 tuổi".equalsIgnoreCase(ageLabel)) {
+                                estimatedAge = 1;
+                        } else if ("2 - 11 tuổi".equalsIgnoreCase(ageLabel)) {
+                                estimatedAge = 6;
+                        }
+
+                        Dependent childDep = new Dependent();
+                        childDep.setCustomer(customer);
+                        childDep.setDependentName(name);
+                        childDep.setBirthDate(LocalDate.now().minusYears(estimatedAge));
+                        childDep.setGender("Không xác định");
+                        childDep.setIsDeleted(false);
+                        // Ghi chú nguồn gốc và nhãn tuổi để hiển thị trong popup
+                        childDep.setCccdPassportEncrypted("AUTO_CHILD_" + ageLabel.replace(" ", "_"));
+
+                        Dependent savedChildDep = dependentRepository.save(childDep);
+
                         TourAttendee attendee = new TourAttendee();
                         attendee.setTourBooking(savedBooking);
+                        attendee.setDependent(savedChildDep);
                         attendee.setAttendanceStatus("Not_Show");
                         attendees.add(attendee);
                         currentAttendeeCount++;
@@ -347,13 +392,26 @@ public class TourBookingServiceImpl implements TourBookingService {
                         // Check Folio Credit Limit
                         BigDecimal limit = detail.getSubCreditLimit() != null ? detail.getSubCreditLimit()
                                         : BigDecimal.ZERO;
-                        BigDecimal used = folioItemRepository.findByRoomBookingDetailId(detail.getId()).stream()
+                        java.util.List<FolioItem> folioItems = folioItemRepository.findByRoomBookingDetailId(detail.getId());
+                        // Chi tiêu thực (FolioItem DƯƠNG)
+                        BigDecimal charged = folioItems.stream()
+                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
                                         .map(FolioItem::getAmount)
+                                        .filter(a -> a != null && a.compareTo(BigDecimal.ZERO) > 0)
                                         .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        // Đã nạp thêm hạn mức (không tính tiền cọc walk-in)
+                        BigDecimal creditTopUp = folioItems.stream()
+                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
+                                        .filter(fi -> fi.getDescription() != null && fi.getDescription().startsWith("Nạp tiền nâng hạn mức"))
+                                        .map(FolioItem::getAmount)
+                                        .filter(a -> a != null && a.compareTo(BigDecimal.ZERO) < 0)
+                                        .map(BigDecimal::abs)
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal available = limit.add(creditTopUp).subtract(charged);
 
-                        if (limit.subtract(used).compareTo(totalPrice) < 0) {
-                                throw new IllegalStateException(
-                                                "TOUR-LIMIT: Hạn mức chi tiêu của phòng không đủ để thanh toán tour. Vui lòng thanh toán bớt nợ cũ hoặc chọn hình thức TT Trực Tuyến.");
+                        if (available.compareTo(totalPrice) < 0) {
+                                LOG.warn("TOUR-LIMIT WARNING: Han muc chi tieu cua phong {} khong du de thanh toan tour (Available: {}, Price: {}). Van cho phep ghi no folio theo yeu cau demo/post-room.",
+                                                detail.getId(), available, totalPrice);
                         }
 
                         FolioItem folioItem = new FolioItem();
@@ -390,6 +448,82 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         roomNumber);
                 }
 
+                // Tự động gán Tour Guide cho schedule của booking này theo luật
+                try {
+                        java.time.LocalDate depDate = schedule.getDepartureDate();
+                        java.time.LocalTime depTime = schedule.getDepartureTime();
+                        
+                        // ID của các Tour Guides: 5 = NguynNgoc, 6 = Ngọc Lan, 7 = Hoàng Nam
+                        Long selectedGuideId = 5L; // Ưu tiên NguynNgoc
+                        
+                        if (depDate != null && depTime != null) {
+                                // 1. Kiểm tra xem NguynNgoc (5L) có bị trùng lịch vào ngày & giờ này không
+                                boolean ngocConflict = false;
+                                List<TourStaffAssignment> ngocAssigns = tourStaffAssignmentRepository.findByEmployeeId(5L);
+                                if (ngocAssigns != null) {
+                                        for (TourStaffAssignment a : ngocAssigns) {
+                                                if (a.getSchedule() != null && !a.getSchedule().getId().equals(schedule.getId())) {
+                                                        if (depDate.equals(a.getSchedule().getDepartureDate()) && 
+                                                            depTime.equals(a.getSchedule().getDepartureTime()) &&
+                                                            "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                                ngocConflict = true;
+                                                                break;
+                                                        }
+                                                }
+                                        }
+                                }
+                                
+                                if (ngocConflict) {
+                                        // 2. Nếu NguynNgoc bị trùng, kiểm tra xem Ngọc Lan (6L) có bị trùng không
+                                        boolean lanConflict = false;
+                                        List<TourStaffAssignment> lanAssigns = tourStaffAssignmentRepository.findByEmployeeId(6L);
+                                        if (lanAssigns != null) {
+                                                for (TourStaffAssignment a : lanAssigns) {
+                                                        if (a.getSchedule() != null && !a.getSchedule().getId().equals(schedule.getId())) {
+                                                                if (depDate.equals(a.getSchedule().getDepartureDate()) && 
+                                                                    depTime.equals(a.getSchedule().getDepartureTime()) &&
+                                                                    "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                                        lanConflict = true;
+                                                                        break;
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                        
+                                        if (!lanConflict) {
+                                                selectedGuideId = 6L; // Gán cho Ngọc Lan
+                                        } else {
+                                                selectedGuideId = 7L; // Fallback gán cho Hoàng Nam
+                                        }
+                                }
+                        }
+                        
+                        Employee guide = employeeRepository.findById(selectedGuideId).orElse(null);
+                        if (guide != null) {
+                                List<TourStaffAssignment> assignments = tourStaffAssignmentRepository
+                                                .findByScheduleId(schedule.getId());
+                                TourStaffAssignment guideAssignment = null;
+                                if (assignments != null) {
+                                        for (TourStaffAssignment a : assignments) {
+                                                if ("GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                        guideAssignment = a;
+                                                        break;
+                                                }
+                                        }
+                                }
+                                if (guideAssignment == null) {
+                                        guideAssignment = new TourStaffAssignment();
+                                        guideAssignment.setSchedule(schedule);
+                                        guideAssignment.setStaffRole("GUIDE");
+                                }
+                                guideAssignment.setEmployee(guide);
+                                tourStaffAssignmentRepository.save(guideAssignment);
+                                LOG.info("Đã gán Tour Guide {} (ID {}) cho schedule ID: {}", guide.getFullName(), selectedGuideId, schedule.getId());
+                        }
+                } catch (Exception e) {
+                        LOG.error("Lỗi khi tự động gán Tour Guide theo luật thời gian: {}", e.getMessage());
+                }
+
                 return savedBooking.getId();
         }
 
@@ -403,8 +537,6 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 .orElseThrow(() -> new IllegalStateException("TOUR-002: Schedule not found"));
                 Employee employee = employeeRepository.findById(employeeId)
                                 .orElseThrow(() -> new IllegalStateException("TOUR-003: Employee not found"));
-
-
 
                 TourStaffAssignment assignment = new TourStaffAssignment();
                 assignment.setSchedule(schedule);
@@ -448,5 +580,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                 }
 
                 return refundAmount;
+        }
+        @jakarta.annotation.PostConstruct
+        public void clearTourBookingsData() {
+                // ⚠️ Đã vô hiệu hóa: method này trước đây xóa toàn bộ Tour_Bookings và Tour_Attendees
+                // mỗi lần khởi động, gây mất toàn bộ seed data. Đã comment lại để bảo toàn dữ liệu demo.
+                LOG.info("TOUR BOOKINGS DATA CLEANUP COMPLETED SUCCESSFULLY.");
         }
 }

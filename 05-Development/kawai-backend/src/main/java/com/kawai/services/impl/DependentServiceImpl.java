@@ -74,6 +74,7 @@ public class DependentServiceImpl implements DependentService {
     private final RoomGuestRepository roomGuestRepository;
     private final RoomSurchargeRepository roomSurchargeRepository;
     private final com.kawai.services.interfaces.CheckinService checkinService;
+    private final com.cloudinary.Cloudinary cloudinary;
 
     public DependentServiceImpl(
             DependentRepository dependentRepository,
@@ -82,7 +83,8 @@ public class DependentServiceImpl implements DependentService {
             RoomBookingDetailRepository roomBookingDetailRepository,
             RoomGuestRepository roomGuestRepository,
             RoomSurchargeRepository roomSurchargeRepository,
-            @Lazy com.kawai.services.interfaces.CheckinService checkinService) {
+            @Lazy com.kawai.services.interfaces.CheckinService checkinService,
+            com.cloudinary.Cloudinary cloudinary) {
         this.dependentRepository = dependentRepository;
         this.bookingRepository = bookingRepository;
         this.encryptionService = encryptionService;
@@ -90,6 +92,7 @@ public class DependentServiceImpl implements DependentService {
         this.roomGuestRepository = roomGuestRepository;
         this.roomSurchargeRepository = roomSurchargeRepository;
         this.checkinService = checkinService;
+        this.cloudinary = cloudinary;
     }
 
     /**
@@ -151,7 +154,7 @@ public class DependentServiceImpl implements DependentService {
     @Override
     @Transactional(readOnly = true)
     public List<DependentResponseDTO> getGuestListByBooking(Long bookingId) {
-        findBookingOrThrow(bookingId); // guard: ném MOD2-003 nếu không tồn tại
+        RoomBooking booking = findBookingOrThrow(bookingId); // guard: ném MOD2-003 nếu không tồn tại
 
         List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
         List<DependentResponseDTO> result = new ArrayList<>();
@@ -159,9 +162,11 @@ public class DependentServiceImpl implements DependentService {
         for (RoomBookingDetail detail : details) {
             List<RoomGuest> guests = roomGuestRepository.findByRoomBookingDetailId(detail.getId());
             for (RoomGuest guest : guests) {
-                // Bỏ qua Chủ đơn (Customer) — đã hiển thị ở phần thông tin chung
-                if (guest.getCustomer() != null)
+                // Bỏ qua Chủ đơn (Customer) vì đã hiển thị ở phần thông tin chung.
+                // Các Customer khác (ví dụ: người đi cùng đã được nâng cấp lên Customer) vẫn được lấy để hiển thị.
+                if (guest.getCustomer() != null && guest.getCustomer().getId().equals(booking.getCustomer().getId())) {
                     continue;
+                }
                 result.add(mapGuestToResponseDTO(guest, detail));
             }
         }
@@ -293,21 +298,17 @@ public class DependentServiceImpl implements DependentService {
         if (faceImageBase64 == null || faceImageBase64.isEmpty())
             return;
         try {
-            String[] parts = faceImageBase64.split(",");
-            String imgData = parts.length > 1 ? parts[1] : parts[0];
-            byte[] imgBytes = java.util.Base64.getDecoder().decode(imgData);
-
-            String fileName = "dep_" + saved.getId() + "_" + System.currentTimeMillis() + ".jpg";
-            java.nio.file.Path uploadPath = java.nio.file.Paths.get(FACE_UPLOAD_DIR);
-            if (!java.nio.file.Files.exists(uploadPath)) {
-                java.nio.file.Files.createDirectories(uploadPath);
-            }
-            java.nio.file.Files.write(uploadPath.resolve(fileName), imgBytes);
-
-            saved.setFaceImgUrl("/uploads/faces/" + fileName);
+            // Upload trực tiếp chuỗi Data URI (Base64) lên Cloudinary
+            java.util.Map<String, Object> uploadResult = cloudinary.uploader().upload(faceImageBase64, 
+                    com.cloudinary.utils.ObjectUtils.asMap(
+                            "folder", "kawai_faces",
+                            "public_id", "dep_" + saved.getId() + "_" + System.currentTimeMillis()
+                    ));
+            String publicUrl = uploadResult.get("secure_url").toString();
+            saved.setFaceImgUrl(publicUrl);
             dependentRepository.save(saved);
         } catch (Exception e) {
-            log.error("[UC16] Failed to save FaceID image for dependent {}: {}", saved.getId(), e.getMessage());
+            log.error("Failed to save FaceID image to Cloudinary for dependent {}", saved.getId(), e);
         }
     }
 
@@ -335,7 +336,7 @@ public class DependentServiceImpl implements DependentService {
             persistDetailAndBookingIfSurcharge(detail, booking, extraFee, saved.getId());
         } else {
             // Cập nhật thông tin khách đã có: kiểm tra có nâng cấp CHILD → ADULT không
-            Optional<RoomGuest> existingGuestOpt = roomGuestRepository.findByDependentId(saved.getId());
+            Optional<RoomGuest> existingGuestOpt = roomGuestRepository.findFirstByDependentId(saved.getId());
             if (existingGuestOpt.isPresent()) {
                 RoomGuest existingGuest = existingGuestOpt.get();
                 if (GUEST_TYPE_CHILD.equals(existingGuest.getGuestType()) && isAdultNow) {
@@ -464,7 +465,7 @@ public class DependentServiceImpl implements DependentService {
     private void saveOrUpdateRoomGuest(Dependent saved, DependentRegistrationDTO dto, RoomBookingDetail detail,
             int age) {
         RoomGuest rg = (dto.getDependentId() != null)
-                ? roomGuestRepository.findByDependentId(saved.getId()).orElse(new RoomGuest())
+                ? roomGuestRepository.findFirstByDependentId(saved.getId()).orElse(new RoomGuest())
                 : new RoomGuest();
 
         rg.setRoomBookingDetail(detail);
@@ -493,6 +494,8 @@ public class DependentServiceImpl implements DependentService {
      */
     private DependentResponseDTO mapGuestToResponseDTO(RoomGuest guest, RoomBookingDetail detail) {
         DependentResponseDTO dto = new DependentResponseDTO();
+        dto.setRoomBookingDetailId(detail.getId());
+        
         if (guest.getDependent() != null) {
             dto.setDependentId(guest.getDependent().getId());
             dto.setFullName(guest.getDependent().getDependentName());
@@ -506,7 +509,19 @@ public class DependentServiceImpl implements DependentService {
                     dto.setCccd(cccdEnc);
                 }
             }
-
+        } else if (guest.getCustomer() != null) {
+            dto.setDependentId(null); // Explicit null indicating this is an upgraded Customer, not a Dependent
+            dto.setFullName(guest.getCustomer().getFullName());
+            dto.setDateOfBirth(guest.getCustomer().getBirthDate());
+            dto.setGender(guest.getCustomer().getGender());
+            String cccdEnc = guest.getCustomer().getCccdPassportEncrypted();
+            if (cccdEnc != null && !cccdEnc.isBlank()) {
+                try {
+                    dto.setCccd(com.kawai.utils.EncryptionUtils.decrypt(cccdEnc));
+                } catch (Throwable e) {
+                    dto.setCccd(cccdEnc);
+                }
+            }
         }
         dto.setIsPrimaryContact(guest.getIsPrimaryContact());
         if (detail.getRoom() != null) {

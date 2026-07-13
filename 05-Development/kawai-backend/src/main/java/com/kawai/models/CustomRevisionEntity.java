@@ -6,7 +6,6 @@ import lombok.Data;
 import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
-
 import java.util.Date;
 
 @Entity

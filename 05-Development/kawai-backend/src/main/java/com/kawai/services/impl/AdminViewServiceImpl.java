@@ -30,6 +30,8 @@ public class AdminViewServiceImpl implements AdminViewService {
     private final AuditLogRepository auditLogRepository;
     private final ReviewRepository reviewRepository;
     private final RoomBookingDetailRepository roomBookingDetailRepository;
+    private final MaintenanceRequestRepository maintenanceRequestRepository;
+    private final TourScheduleRepository tourScheduleRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -87,40 +89,30 @@ public class AdminViewServiceImpl implements AdminViewService {
             String guestRequests = "";
             int guests = 0;
 
-            if ("Occupied".equalsIgnoreCase(dbStatus)) {
+            if (dbStatus.startsWith("Occupied")) {
                 status = "occupied";
-                guestName = "Guest " + r.getRoomNumber();
+                if (r.getCurrentBookingDetailId() != null) {
+                    RoomBookingDetail detail = roomBookingDetailRepository.findById(r.getCurrentBookingDetailId()).orElse(null);
+                    if (detail != null && detail.getRoomBooking() != null && detail.getRoomBooking().getCustomer() != null) {
+                        guestName = detail.getRoomBooking().getCustomer().getFullName();
+                    }
+                }
+                if (guestName == null || guestName.isEmpty()) {
+                    guestName = "Khách " + r.getRoomNumber();
+                }
                 guests = 2;
-            } else if ("Vacant_Dirty".equalsIgnoreCase(dbStatus)) {
+            } else if (dbStatus.endsWith("Dirty") || "Vacant_Dirty".equalsIgnoreCase(dbStatus)) {
                 status = "dirty";
             } else if ("Maintenance".equalsIgnoreCase(dbStatus)) {
                 status = "broken";
-                issue = "Hỏng khóa cửa";
+                Optional<HotelOperation> activeMaint = maintenanceRequestRepository.findAll().stream()
+                        .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(r.getId())
+                                && "Maintenance".equals(t.getOperationalType())
+                                && !"Completed".equals(t.getStatus()))
+                        .findFirst();
+                issue = activeMaint.map(HotelOperation::getNotes).orElse("Đang bảo trì");
             } else {
                 status = "vacant";
-            }
-
-            // Inject some mock broken rooms for rich operation hub preview
-            if ("103".equals(r.getRoomNumber())) {
-                status = "broken";
-                issue = "Hỏng điều hòa";
-                guestName = "";
-                guests = 0;
-            } else if ("207".equals(r.getRoomNumber())) {
-                status = "broken";
-                issue = "Hỏng vòi sen";
-                guestName = "";
-                guests = 0;
-            } else if ("201".equals(r.getRoomNumber())) {
-                status = "occupied";
-                guestName = "Trần Đình Trọng";
-                guests = 2;
-                guestRequests = "Khách yêu cầu thêm gối mềm và dọn phòng lúc 14h.";
-            } else if ("205".equals(r.getRoomNumber())) {
-                status = "occupied";
-                guestName = "Michael Smith";
-                guests = 1;
-                guestRequests = "Cần setup bàn là hơi nước.";
             }
 
             String category = r.getCategory() != null ? r.getCategory().getCategoryName() : "Standard";
@@ -292,6 +284,19 @@ public class AdminViewServiceImpl implements AdminViewService {
                 List<Map<String, String>> r = new ArrayList<>();
                 for (Tour tour : tourRepository.findAll()) {
                     String st = tour.getIsActive() != null && tour.getIsActive() ? "Active" : "Inactive";
+                    String img = tour.getImageUrl();
+                    if (img == null || img.isEmpty()) {
+                        img = "/AnhTour/" + (
+                                "doantu".equals(tour.getTourType()) ? "DoanTu.html" :
+                                "dongnoi".equals(tour.getTourType()) ? "DuAm.jpg" :
+                                "disan".equals(tour.getTourType()) ? "ThuCong.jpg" :
+                                "tinhlang".equals(tour.getTourType()) ? "ThapMuoi.jpg" :
+                                "z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg"
+                        );
+                        if (img.endsWith(".html")) {
+                            img = "/AnhTour/DuAm.jpg";
+                        }
+                    }
                     r.add(r("id", "T-" + tour.getId(), "name",
                             tour.getTourName() != null ? tour.getTourName() : "Tour #" + tour.getId(), "category",
                             tour.getTourType() != null ? tour.getTourType() : "Khác", "price",
@@ -299,7 +304,7 @@ public class AdminViewServiceImpl implements AdminViewService {
                             "__statusStyle", bs(st),
                             "description", tour.getDescription() != null ? tour.getDescription() : "",
                             "duration", tour.getDuration() != null ? tour.getDuration() : "",
-                            "imageUrl", tour.getImageUrl() != null ? tour.getImageUrl() : "",
+                            "imageUrl", img,
                             "maxCapacity", tour.getMaxCapacity() != null ? String.valueOf(tour.getMaxCapacity()) : "0",
                             "shortQuote", tour.getShortQuote() != null ? tour.getShortQuote() : ""));
                 }
@@ -363,9 +368,26 @@ public class AdminViewServiceImpl implements AdminViewService {
                 List<Map<String, String>> rows = new ArrayList<>();
                 try {
                     for (Employee e : employeeRepository.findAll()) {
-                        String rn = e.getAccount() != null && e.getAccount().getRole() != null
-                                ? e.getAccount().getRole().getRoleName()
-                                : "Nhân viên";
+                        // Nếu role là CUSTOM_ROLE_ thì lấy base role từ description, không hiện tên kỹ thuật
+                        String rn;
+                        boolean hasCustomPerms = false;
+                        if (e.getAccount() != null && e.getAccount().getRole() != null) {
+                            String roleName = e.getAccount().getRole().getRoleName();
+                            if (roleName.startsWith("CUSTOM_ROLE_")) {
+                                hasCustomPerms = true;
+                                // Lấy base role từ description: "Custom role for account X (Base: Lễ tân)"
+                                String desc = e.getAccount().getRole().getDescription();
+                                if (desc != null && desc.contains("Base: ")) {
+                                    rn = desc.substring(desc.indexOf("Base: ") + 6).replace(")", "").trim();
+                                } else {
+                                    rn = "Nhân viên";
+                                }
+                            } else {
+                                rn = roleName;
+                            }
+                        } else {
+                            rn = "Nhân viên";
+                        }
                         boolean isActive = e.getAccount() != null && e.getAccount().getIsActive();
                         rows.add(r("id", "E-" + e.getId(),
                                 "name", e.getFullName(),
@@ -373,6 +395,7 @@ public class AdminViewServiceImpl implements AdminViewService {
                                 "__typeStyle", bs("Nhân viên"),
                                 "role", rn,
                                 "__roleStyle", bs(rn),
+                                "hasCustomPerms", hasCustomPerms ? "true" : "false",
                                 "email", e.getEmail() != null ? e.getEmail() : "-",
                                 "status", isActive ? "Hoạt động" : "Ngừng hoạt động",
                                 "username", e.getAccount() != null ? e.getAccount().getUsername() : "",
@@ -497,10 +520,30 @@ public class AdminViewServiceImpl implements AdminViewService {
             }
             case "Tour Schedules" -> {
                 List<Map<String, String>> r = new ArrayList<>();
-                r.add(r("id", "TS-2001", "tour", "Khám phá văn hóa Tây Bắc", "date", "25/06/2026", "capacity", "18/30",
-                        "status", "Open", "__statusStyle", bs("Open")));
-                r.add(r("id", "TS-2002", "tour", "Trekking Dã ngoại", "date", "20/06/2026", "capacity", "20/20",
-                        "status", "Closed", "__statusStyle", bs("Closed")));
+                try {
+                    for (com.kawai.models.TourSchedule ts : tourScheduleRepository.findAll()) {
+                        String st = ts.getScheduleStatus() != null ? ts.getScheduleStatus() : "Open";
+                        String tourName = ts.getTour() != null ? ts.getTour().getTourName() : "N/A";
+                        String img = "";
+                        if (ts.getTour() != null) {
+                            img = ts.getTour().getImageUrl();
+                            if (img == null || img.isEmpty()) {
+                                img = "/AnhTour/" + (
+                                        "doantu".equals(ts.getTour().getTourType()) ? "DuAm.jpg" :
+                                        "dongnoi".equals(ts.getTour().getTourType()) ? "DuAm.jpg" :
+                                        "disan".equals(ts.getTour().getTourType()) ? "ThuCong.jpg" :
+                                        "tinhlang".equals(ts.getTour().getTourType()) ? "ThapMuoi.jpg" :
+                                        "z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg"
+                                );
+                            }
+                        }
+                        r.add(r("id", "TS-" + ts.getId(), "tour", tourName,
+                                "date", ts.getDepartureDate() != null ? ts.getDepartureDate().toString() : "",
+                                "capacity", (ts.getBookedSeats() != null ? ts.getBookedSeats() : 0) + "/" +
+                                        (ts.getTour() != null && ts.getTour().getMaxCapacity() != null ? ts.getTour().getMaxCapacity() : "0"),
+                                "status", st, "__statusStyle", bs(st), "imageUrl", img));
+                    }
+                } catch (Exception e) {}
                 yield r;
             }
             default -> Collections.emptyList();
@@ -531,7 +574,7 @@ public class AdminViewServiceImpl implements AdminViewService {
         opts.put("seasonTypes", List.of("Thường ngày", "Cuối tuần", "Cao điểm"));
         opts.put("staffRoles",
                 roleRepository.findAll().stream()
-                        .filter(r -> !r.getRoleName().startsWith("Khách") && !"Admin".equalsIgnoreCase(r.getRoleName()))
+                        .filter(r -> !r.getRoleName().startsWith("Khách") && !"Admin".equalsIgnoreCase(r.getRoleName()) && !r.getRoleName().startsWith("CUSTOM_ROLE_"))
                         .map(Role::getRoleName).collect(Collectors.toList()));
         opts.put("guestRoles", roleRepository.findAll().stream().filter(r -> r.getRoleName().startsWith("Khách"))
                 .map(Role::getRoleName).collect(Collectors.toList()));
@@ -616,7 +659,7 @@ public class AdminViewServiceImpl implements AdminViewService {
             /* empty */ }
         if (logs.isEmpty()) {
             logs.add(new AuditLogMock("--", "System", "SY", "System", "Hệ thống đang chạy", List.of("System"),
-                    "127.0.0.1", "normal", 0L, "", ""));
+                    "127.0.0.1", "normal", 0L, "", java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         }
         return logs;
     }

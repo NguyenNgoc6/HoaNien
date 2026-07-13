@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -9,13 +9,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/receptionist/css/dashboard.css">
     <link rel="stylesheet" href="/receptionist/css/pages.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          corePlugins: {
+            preflight: false,
+          },
+          theme: {
+            extend: {
+              colors: {
+                'linen-bg': '#fff8ef',
+                'gilded-gold': '#c5a059',
+                'deep-charcoal': '#28221B',
+                'soft-gray': '#f4f1ee',
+              },
+              fontFamily: {
+                serif: ['Playfair Display', 'serif'],
+                sans: ['Inter', 'sans-serif'],
+              },
+            }
+          }
+        }
+    </script>
     <style>
         .room-tabs-container {
             margin-top: 24px;
@@ -56,49 +80,60 @@
 
         .folio-container {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr 440px;
             gap: 24px;
             margin-top: 24px;
             align-items: start;
         }
 
         .folio-header-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr 440px;
+            gap: 24px;
             margin-bottom: 24px;
+            align-items: start;
         }
 
         .guest-profile {
             display: flex;
             align-items: center;
             gap: 16px;
+            background: #ffffff;
+            border: 1px solid #efebe4;
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03);
         }
 
         .guest-avatar {
             width: 56px;
             height: 56px;
-            background: #c19b6c;
-            color: white;
-            border-radius: 50%;
+            background: #f8f3ed;
+            border: 1px solid #e6ded4;
+            color: #787572;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             font-weight: 500;
+            font-family: 'Playfair Display', serif;
         }
 
         .guest-info h2 {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: #2c3e50;
+            font-size: 1.5rem;
+            color: #2c2a29;
             margin: 0 0 4px 0;
+            font-weight: 700;
         }
 
         .guest-info p {
-            color: #7f8c8d;
-            font-size: 0.95rem;
+            color: #8e8a86;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.825rem;
             margin: 0;
+            letter-spacing: 0.25px;
         }
 
         .status-pill {
@@ -125,34 +160,31 @@
         }
 
         .charge-card {
-            background: #fdfbf7;
-            border: 1px solid #e8e4db;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
+            background: #ffffff;
+            border: 1px solid #e6ded4;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: none;
         }
 
         .charge-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e8e4db;
-            padding-bottom: 16px;
-            margin-bottom: 16px;
+            background: #fbf9f6;
+            border-bottom: 1px solid #e6ded4;
+            padding: 12px 16px;
+            margin-bottom: 0;
         }
 
         .charge-title {
-            font-weight: 600;
-            color: #c19b6c;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #5a554f;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-        }
-
-        .charge-total {
-            font-weight: 600;
-            color: #7f8c8d;
-            font-size: 1.1rem;
         }
 
         .charge-table {
@@ -162,17 +194,23 @@
 
         .charge-table th {
             text-align: left;
-            color: #95a5a6;
-            font-weight: 500;
-            font-size: 0.85rem;
+            color: #8e8a86;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            padding-top: 12px;
             padding-bottom: 12px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e6ded4;
         }
 
         .charge-table td {
             padding: 12px 0;
-            color: #34495e;
-            border-bottom: 1px solid #f4f1ea;
+            color: #2c2a29;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f8f3ed;
         }
 
         .charge-table tr:last-child td {
@@ -181,14 +219,16 @@
 
         .charge-table td.amount {
             text-align: right;
-            font-weight: 600;
+            font-weight: 700;
+            color: #2c2a29;
         }
 
         .bill-summary-card {
-            background: #fdfbf7;
-            border: 1px solid #e8e4db;
-            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #efebe4;
+            border-radius: 16px;
             padding: 24px;
+            box-shadow: 0 6px 20px rgba(44, 42, 41, 0.04);
         }
 
         .folio-right {
@@ -198,89 +238,155 @@
         }
 
         .bill-summary-card h3 {
-            margin: 0 0 24px 0;
-            color: #2c3e50;
-            font-size: 1.2rem;
+            margin: 0 0 20px 0;
+            color: #2c2a29;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            border-bottom: 1px solid #f8f3ed;
+            padding-bottom: 16px;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 16px;
-            color: #7f8c8d;
+            margin-bottom: 12px;
+            color: #8e8a86;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .summary-row span:last-child {
+            font-weight: 700;
+            color: #2c2a29;
+            font-family: 'Inter', sans-serif;
         }
 
         .summary-row.total-row {
-            border-top: 1px solid #e8e4db;
-            padding-top: 16px;
-            margin-top: 16px;
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
         }
 
         .summary-row.outstanding-row {
+            background: #f8f3ed;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             margin-top: 24px;
+            border: none;
         }
 
         .summary-row.outstanding-row .label {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: #787572;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .summary-row.outstanding-row .amount {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            color: #c19b6c;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem;
+            color: #2c2a29;
+            font-weight: 700;
+            letter-spacing: 0;
         }
 
         .promo-input {
             display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .promo-input input {
             flex: 1;
-            padding: 10px 16px;
-            border: 1px solid #e8e4db;
-            border-radius: 6px;
-            background: #f4f1ea;
+            padding: 10px 14px;
+            border: 1px solid #efebe4;
+            border-radius: 8px;
+            background: #ffffff;
             outline: none;
-            color: #34495e;
+            color: #2c2a29;
+            font-size: 0.85rem;
+            margin-right: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .promo-input input:focus {
+            border-color: #c19b6c;
         }
 
         .btn-apply {
-            background: transparent;
-            border: 1px solid #c19b6c;
-            color: #c19b6c;
+            background: #f1f3f5;
+            border: none;
+            color: #2c2a29;
             padding: 10px 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
 
         .btn-apply:hover {
-            background: #c19b6c;
-            color: white;
+            background: #eaeaea;
+            color: #2a2725;
+        }
+
+        #prePaidAmount,
+        #roomPromoAmount,
+        #promoAmount,
+        #otherPaymentsAmount {
+            color: #e74c3c !important;
         }
 
         .btn-checkout {
             width: 100%;
-            background: #c19b6c;
+            background: #272320;
             color: white;
             border: none;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
             margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-checkout:hover {
-            background: #a8875d;
+            background: #181514;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            background: white;
+            color: #272320;
+            border: 1px solid #272320;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-secondary:hover {
+            background: #fcfbf9;
+            border-color: #705829;
+            color: #705829;
         }
 
         .btn-pay-partial {
@@ -302,18 +408,20 @@
         }
 
         .back-link {
-            color: #7f8c8d;
+            color: #5a554f;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 24px;
-            font-weight: 500;
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
             transition: color 0.2s;
         }
 
         .back-link:hover {
-            color: #c19b6c;
+            color: #2c2a29;
         }
 
         .item-settled {
@@ -399,81 +507,216 @@
         }
 
         /* Payment Modal */
-        .payment-modal-content {
-            background: white;
-            padding: 32px;
-            border-radius: 12px;
+        #paymentModal .payment-modal-content {
+            background-color: #fff8ef !important;
+            color: #1d1b16 !important;
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            border: 1px solid #d0c5b6 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 0 15px rgba(115, 91, 43, 0.03) !important;
             width: 450px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            padding: 32px;
+            box-sizing: border-box;
             text-align: left;
         }
 
         .payment-amount-display {
-            font-size: 2.5rem;
-            color: #c19b6c;
-            font-family: 'Playfair Display', serif;
-            text-align: center;
-            margin: 16px 0 24px;
-            font-weight: 700;
+            font-family: 'Playfair Display', serif !important;
+            font-variant-numeric: lining-nums !important;
+            font-feature-settings: "lnum" 1 !important;
+            white-space: nowrap !important;
         }
 
-        .payment-methods {
+        #paymentModal h3 {
+            font-family: 'Playfair Display', serif !important;
+            font-size: 32px !important;
+            font-weight: 500 !important;
+            color: #1d1b16 !important;
+            text-align: center;
+            margin-bottom: 8px !important;
+            margin-top: 0 !important;
+        }
+
+        #paymentModal .payment-amount-display {
+            font-family: 'Playfair Display', serif !important;
+            font-size: 48px !important;
+            font-weight: 500 !important;
+            color: #705829 !important;
+            text-align: center;
+            margin: 16px 0 32px !important;
+            font-variant-numeric: lining-nums !important;
+            font-feature-settings: "lnum" 1 !important;
+            white-space: nowrap !important;
+        }
+
+        #paymentModal label {
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            color: #4d463a !important;
+            margin-bottom: 12px !important;
+            display: block;
+        }
+
+        #paymentModal .payment-methods {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 24px;
         }
 
-        .method-btn {
-            padding: 12px;
-            border: 1px solid #e8e4db;
-            border-radius: 8px;
-            background: #faf9f7;
+        #paymentModal .method-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px !important;
+            border: 1px solid #d0c5b6 !important;
+            border-radius: 2px !important;
+            background: transparent !important;
             cursor: pointer;
             text-align: center;
-            font-weight: 500;
-            color: #34495e;
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            color: #4d463a !important;
             transition: all 0.2s;
+            box-shadow: none !important;
         }
 
-        .method-btn.active {
-            border-color: #c19b6c;
-            background: #fdfbf7;
-            color: #c19b6c;
-            box-shadow: 0 0 0 1px #c19b6c;
+        #paymentModal .method-btn:hover {
+            border-color: #705829 !important;
         }
 
-        .payment-input-group {
-            margin-bottom: 16px;
+        #paymentModal .method-btn.active {
+            border: 2px solid #705829 !important;
+            background: rgba(112, 88, 41, 0.05) !important;
+            color: #705829 !important;
         }
 
-        .payment-input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #7f8c8d;
+        #paymentModal .method-btn i, #paymentModal .method-btn span {
+            font-size: 16px;
         }
 
-        .payment-input-group input {
+        #paymentModal .payment-input-group {
+            margin-bottom: 24px;
+        }
+
+        #paymentModal .payment-input-group input {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e8e4db;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            background-color: #f9f3ea !important;
+            border: 1px solid #d0c5b6 !important;
+            border-radius: 2px !important;
+            padding: 16px !important;
+            font-family: 'Playfair Display', serif !important;
+            font-size: 32px !important;
+            font-weight: 500 !important;
+            font-variant-numeric: lining-nums !important;
+            font-feature-settings: "lnum" 1 !important;
+            color: #1d1b16 !important;
+            text-align: left !important;
             outline: none;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
 
-        .change-due {
+        #paymentModal .payment-input-group input::placeholder {
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 400 !important;
+            color: #8e8a86 !important;
+        }
+
+        #paymentModal .payment-input-group input:focus {
+            border-color: #705829 !important;
+            box-shadow: none !important;
+        }
+
+        #paymentModal .change-due {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 24px;
+            padding: 16px !important;
+            background-color: #ede7de !important;
+            border-radius: 2px !important;
+            margin-bottom: 32px !important;
+            font-family: 'Hanken Grotesk', sans-serif !important;
+        }
+
+        #paymentModal .change-due span:first-child {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            color: #4d463a !important;
+        }
+
+        #paymentModal .change-due span:last-child {
+            font-size: 18px !important;
             font-weight: 600;
-            font-size: 1.1rem;
+        }
+
+        #paymentModal .modal-actions {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 16px !important;
+            margin-top: 0 !important;
+            align-items: stretch !important;
+        }
+
+        #paymentModal .btn-apply {
+            background-color: #ede7de !important;
+            color: #1d1b16 !important;
+            border: none !important;
+            border-radius: 2px !important;
+            padding: 12px 16px !important;
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+        }
+
+        #paymentModal .btn-apply:hover {
+            background-color: #dfd9d0 !important;
+        }
+
+        #paymentModal .btn-checkout {
+            background-color: #705829 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 2px !important;
+            padding: 12px 16px !important;
+            font-family: 'Hanken Grotesk', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            width: 100%;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+        }
+
+        #paymentModal .btn-checkout:hover {
+            opacity: 0.9 !important;
         }
 
         /* Success Modal */
@@ -505,74 +748,153 @@
         }
 
         /* Print Styles */
+        @page {
+            margin: 0;
+        }
+
         @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+
             body>*:not(#printableInvoice) {
                 display: none !important;
             }
 
             #printableInvoice {
                 display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
+                position: relative !important;
+                width: 100% !important;
+                background: white !important;
+                padding: 1.5cm 2cm !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
             }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .no-print {
+            /* Standard styling */
+        }
+
+        .modal-overlay {
+            background-color: rgba(45, 41, 38, 0.4);
+            backdrop-filter: blur(4px);
+        }
+        .status-card {
+            background-color: #fcfaf7;
+            border: 1px solid #efeae4;
+        }
+
+        #successModal h1, #successModal h2, #successModal h3 {
+            font-family: 'Playfair Display', serif !important;
+            font-weight: 500 !important;
         }
     </style>
 </head>
 
 <body>
     <!-- Printable Invoice Structure -->
+    <!-- Printable Invoice Structure -->
     <div id="printableInvoice"
-        style="display: none; background: white; color: black; font-family: 'Times New Roman', serif; padding: 40px; font-size: 14px;">
-        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
-            <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px;">Hoanien Retreat</h1>
-            <p style="margin: 5px 0 0;">123 Nguyen Van Linh, Da Nang, Vietnam</p>
-            <p style="margin: 0;">Tel: +84 236 3123 456 | Email: info@hoanien.vn</p>
-            <h2 style="margin: 20px 0 0; font-size: 22px; letter-spacing: 1px;">GUEST INVOICE</h2>
+        style="display: none; background-color: #FFFFFF; padding: 40px; color: #2F1F17; font-family: 'Times New Roman', serif; max-width: 750px; margin: auto;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 24px; text-transform: uppercase;">HÒA NIÊN RETREAT RESORT & HUB</h1>
+            <p style="margin-top: 10px; margin-bottom: 5px; font-size: 13px; opacity: 0.8;">268 Minh Mạng, Phường Thủy
+                Xuân, Thành phố Huế, Tỉnh Thừa Thiên Huế.</p>
+            <p style="margin: 0; font-size: 13px; opacity: 0.8;">Mã số thuế: 3301234567</p>
+            <div
+                style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin: 20px 0; border-top: 1px solid #2F1F17; border-bottom: 1px solid #2F1F17; padding: 10px 0;">
+                HÓA ĐƠN KHÁCH HÀNG</div>
         </div>
 
-        <table style="width: 100%; margin-bottom: 30px; font-size: 14px;">
-            <tr>
-                <td style="width: 60%;"><strong>Guest Name:</strong> <span id="printGuestName">Customer</span></td>
-                <td style="width: 40%;"><strong>Invoice No:</strong> <span id="printInvoiceNumber"></span></td>
-            </tr>
-            <tr>
-                <td><strong>Room No:</strong> <span id="printRoomNumber"></span></td>
-                <td><strong>Date:</strong> <span id="printInvoiceDate"></span></td>
-            </tr>
-        </table>
+        <div
+            style="display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; line-height: 1.6;">
+            <div style="width: 60%;">
+                <strong>Tên khách hàng:</strong> <span id="printGuestName">Customer</span><br>
+                <strong>Số phòng:</strong> <span id="printRoomNumber">...</span> &nbsp;|&nbsp;
+                <strong>Số khách:</strong> <span id="printGuestCount">2</span><br>
+                <strong>Check-in:</strong> <span id="printArrivalDate">24/06/2026</span><br>
+                <strong>Check-out:</strong> <span id="printDepartureDate">26/06/2026</span>
+            </div>
+            <div style="width: 40%; text-align: right;">
+                <strong>Mã hóa đơn:</strong> <span id="printInvoiceNumber">INV-1756</span><br>
+                <strong>Ngày xuất:</strong> <span id="printInvoiceDate">26/06/2026</span>
+            </div>
+        </div>
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
-                <tr style="border-bottom: 1px solid #000;">
-                    <th style="text-align: left; padding: 10px 0;">Description</th>
-                    <th style="text-align: right; padding: 10px 0;">Amount</th>
+                <tr>
+                    <th
+                        style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: left; font-size: 14px; width: 15%;">
+                        Ngày</th>
+                    <th
+                        style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: left; font-size: 14px; width: 40%;">
+                        Mô tả</th>
+                    <th
+                        style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: center; font-size: 14px; width: 10%;">
+                        Số lượng</th>
+                    <th
+                        style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: right; font-size: 14px; width: 15%;">
+                        Đơn giá</th>
+                    <th
+                        style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: right; font-size: 14px; width: 20%;">
+                        Thành tiền (VNĐ)</th>
                 </tr>
             </thead>
             <tbody id="printInvoiceItems">
             </tbody>
-            <tfoot>
-                <tr style="border-top: 1px solid #000;">
-                    <td style="text-align: right; padding: 10px 0;"><strong>Subtotal:</strong></td>
-                    <td style="text-align: right; padding: 10px 0;" id="printSubtotal"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: right; padding: 5px 0;"><strong>VAT (10%):</strong></td>
-                    <td style="text-align: right; padding: 5px 0;" id="printVat"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: right; padding: 10px 0; font-size: 18px;"><strong>TOTAL:</strong></td>
-                    <td style="text-align: right; padding: 10px 0; font-size: 18px;"><strong id="printTotal"></strong>
-                    </td>
-                </tr>
-            </tfoot>
         </table>
 
-        <div style="text-align: center; margin-top: 50px; font-style: italic; color: #555;">
-            <p>Thank you for choosing Hoanien Retreat. We hope to welcome you back soon!</p>
-            <p style="font-size: 12px; margin-top: 20px;">Powered by Kawai PMS</p>
+        <div
+            style="display: flex; justify-content: space-between; margin-top: 30px; border-top: 1px solid #2F1F17; padding-top: 20px; align-items: flex-start;">
+            <div style="font-size: 14px; width: 45%; line-height: 1.5;">
+                <strong>PHƯƠNG THỨC THANH TOÁN:</strong><br>
+                <span id="printPaymentMethod">Tiền mặt (Cash)</span>
+            </div>
+            <div style="width: 45%; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; padding: 5px 0;">
+                    <span>Tạm tính:</span> <span id="printSubtotal">1.700.000</span>
+                </div>
+                <div id="printPromoRow"
+                    style="display: none; justify-content: space-between; font-weight: bold; padding: 5px 0; color: #e67e22;">
+                    <span>Khuyến mãi (<span id="printPromoLabel">0%</span>):</span> <span id="printPromoAmount">-0</span>
+                </div>
+                <div id="printServiceChargeRow"
+                    style="display: none; justify-content: space-between; font-weight: bold; padding: 5px 0;">
+                    <span>Phí phục vụ (5%):</span> <span id="printServiceCharge">85.000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; padding: 5px 0;">
+                    <span> VAT (10%):</span> <span id="printVat">178.500</span>
+                </div>
+                <div id="printDepositRow"
+                    style="display: none; justify-content: space-between; font-weight: bold; padding: 5px 0;">
+                    <span>Đã đặt cọc:</span> <span id="printDepositAmount">-170.000</span>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; font-weight: bold; padding: 5px 0; border-top: 1px solid #2F1F17; margin-top: 5px; padding-top: 5px;">
+                    <span>TỔNG CỘNG:</span> <span id="printTotal" style="font-size: 16px;">1.793.500</span>
+                </div>
+            </div>
+        </div>
+
+        <div
+            style="text-align: center; margin-top: 40px; font-size: 13px; line-height: 1.6; border-top: 1px solid #eee; padding-top: 20px;">
+            <p style="font-style: italic;">Cảm ơn Quý khách đã lựa chọn Hòa Niên Retreat Resort & Hub. Rất mong được đón
+                tiếp Quý khách trong những lần tới!</p>
+            <p>Hệ thống bởi Hòa Niên PMS</p>
+            <div style="font-size: 12px; margin-bottom: 15px; opacity: 0.8;">
+                ĐT: +84 236 3123 456 | Email: info@hoanien.vn
+            </div>
         </div>
     </div>
 
@@ -590,21 +912,24 @@
             <div class="sidebar-section-title">RECEPTIONIST</div>
 
             <nav class="sidebar-nav">
-                <a href="/receptionist/dashboard" class="nav-item" sec:authorize="hasAnyAuthority('OP_DASHBOARD', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                <a href="/receptionist/dashboard" class="nav-item"
+                    sec:authorize="hasAnyAuthority('OP_DASHBOARD', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-border-all"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Room Matrix</span>
                         <span class="nav-sub-text">Sơ đồ phòng</span>
                     </div>
                 </a>
-                <a href="/receptionist/walk-in" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_WALKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                <a href="/receptionist/walk-in" class="nav-item"
+                    sec:authorize="hasAnyAuthority('OP_RECEPTION_WALKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-person-walking-luggage"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Walk-In</span>
                         <span class="nav-sub-text">Khách vãng lai</span>
                     </div>
                 </a>
-                <a href="/receptionist/check-in" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_CHECKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                <a href="/receptionist/check-in" class="nav-item"
+                    sec:authorize="hasAnyAuthority('OP_RECEPTION_CHECKIN', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Check-in</span>
@@ -618,7 +943,8 @@
                         <span class="nav-sub-text">Trả phòng & Hóa đơn</span>
                     </div>
                 </a>
-                <a href="/receptionist/in-house" class="nav-item" sec:authorize="hasAnyAuthority('OP_RECEPTION_INHOUSE', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
+                <a href="/receptionist/in-house" class="nav-item"
+                    sec:authorize="hasAnyAuthority('OP_RECEPTION_INHOUSE', 'OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER')">
                     <i class="fa-solid fa-bed"></i>
                     <div class="nav-text">
                         <span class="nav-main-text">Khách lưu trú</span>
@@ -626,6 +952,19 @@
                     </div>
                 </a>
             </nav>
+
+            <div class="sidebar-user">
+                <div class="user-avatar"
+                    th:text="${staffName != null && staffName.length() >= 2 ? staffName.substring(0, 2).toUpperCase() : 'NV'}">
+                    NV</div>
+                <div class="user-info">
+                    <div class="user-name" th:text="${staffName != null ? staffName : 'Nhân viên'}">
+                        Nhân viên</div>
+                    <div class="user-role" th:text="${staffRole != null ? staffRole : 'Receptionist'}">
+                        Receptionist</div>
+                </div>
+                <div class="user-status"></div>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -643,8 +982,7 @@
             </header>
 
             <div class="dashboard-scroll-area" style="padding: 32px 40px;">
-                <a href="/receptionist/folio" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Folio
-                    List</a>
+                <a href="/receptionist/folio" class="back-link no-print">&larr; Back to Folio List</a>
 
                 <div class="folio-header-top" id="guestHeader" style="display: none; margin-top: 16px;">
                     <div class="guest-profile">
@@ -656,9 +994,14 @@
                                     id="stayDates">--</span></p>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-                        <button id="btnManagerRequest" style="background-color: #fff3e0; color: #e65100; border: 1px solid #ffcc80; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;" onclick="openManagerRequestModal()">
-                            <i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố / Yêu cầu Quản lý
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end; width: 100%;">
+                        <button id="btnManagerRequest"
+                            style="background-color: #ffffff; color: #332B22; border: 1px solid #e6ded4; padding: 12px 16px; border-radius: 12px; font-weight: 500; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03); transition: all 0.2s ease-in-out;"
+                            onmouseover="this.style.backgroundColor='#fcfbf9'; this.style.borderColor='#dcd3c7'; this.style.color='#332B22';"
+                            onmouseout="this.style.backgroundColor='#ffffff'; this.style.borderColor='#e6ded4'; this.style.color='#332B22';"
+                            onclick="openManagerRequestModal()">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #332B22; font-size: 13px;"></i>
+                            Báo cáo sự cố / Yêu cầu Quản lý
                         </button>
                         <div class="status-pill" id="bookerPill"
                             style="background-color: #f8f9fa; color: #2c3e50; border: 1px solid #e2e8f0; font-weight: 500; display: none;">
@@ -667,7 +1010,7 @@
                         <div class="status-pill" id="groupTotalPill"
                             style="background-color: #fff3e0; color: #d35400; border: 1px solid #ffe0b2; font-weight: 600; display: none;">
                             <i class="fa-solid fa-file-invoice-dollar"></i> Tổng nợ đoàn: <span id="groupTotalAmount">0
-                                ₫</span>
+                                VNĐ</span>
                         </div>
                     </div>
                 </div>
@@ -678,52 +1021,84 @@
                     </div>
 
                     <!-- BILL SUMMARY -->
-                    <div class="folio-right">
+                    <div class="folio-right" style="width: 380px;">
                         <!-- HÓA ĐƠN GỐC -->
                         <div class="bill-summary-card" id="originalBillCard">
-                            <h3 id="billTitle">Hóa đơn tổng</h3>
+                            <h3 id="billTitle" style="text-align: center;">Hóa đơn chính</h3>
                             <div id="originalBillDetails"></div>
 
-                            <div id="promoSection">
-                                <div style="font-size: 0.9rem; color: #7f8c8d; margin: 24px 0 8px 0;">Apply Promotion
-                                </div>
+                            <div class="summary-row" id="row-subtotal"
+                                style="border-top: 1px dashed #efebe4; margin-top: 16px; padding-top: 16px; font-weight: 600; color: #2c2a29;">
+                                <span>Tạm tính</span>
+                                <span id="invoiceSubtotalAmount">0 VNĐ</span>
+                            </div>
+
+                            <!-- Khối Áp dụng khuyến mãi dời lên đây, nằm trên dòng VAT -->
+                            <div id="promoSection"
+                                style="border-top: 1px dashed #efebe4; margin-top: 16px; padding-top: 16px;">
+                                <div
+                                    style="font-size: 11px; font-weight: bold; color: #8e8a86; letter-spacing: 0.5px; margin: 0 0 12px 0; text-transform: uppercase;">
+                                    Áp dụng khuyến mãi</div>
                                 <div class="promo-input">
-                                    <input type="text" placeholder="Voucher code" id="groupPromoInput">
-                                    <button class="btn-apply" onclick="applyGroupPromo()">Apply</button>
+                                    <input type="text" placeholder="Mã voucher" id="groupPromoInput">
+                                    <button class="btn-apply" onclick="applyGroupPromo()">Áp dụng</button>
                                 </div>
                             </div>
 
-                            <div class="summary-row total-row" id="row-promo"
-                                style="display: none; color: #e67e22; border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 12px;">
-                                <span>Khuyến mãi (<span id="promoLabel">0%</span>)</span>
-                                <span id="promoAmount">-0 ₫</span>
+                            <!-- Thông tin khuyến mãi chi tiết sau khi áp dụng -->
+                            <div class="summary-row" id="row-promo-display" style="display: none; color: #e67e22; margin-top: 8px;">
+                                <span>Khuyến mãi (<span id="promoLabelDisplay">0%</span>)</span>
+                                <span id="promoAmountDisplay">-0 VNĐ</span>
                             </div>
 
-                            <div class="summary-row total-row" id="row-deposit"
-                                style="display: none; color: #27ae60; border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 12px;">
-                                <span>Tiền cọc (Deposit)</span>
-                                <span id="prePaidAmount">-0 ₫</span>
+                            <!-- Dòng Phí phục vụ (Service Charge) -->
+                            <div class="summary-row" id="row-service-charge" style="display: none; color: #2c2a29; margin-top: 8px;">
+                                <span>Phí phục vụ (5%)</span>
+                                <span id="invoiceServiceChargeAmount">0 VNĐ</span>
                             </div>
 
-                            <div class="summary-row total-row" id="row-other-payments"
-                                style="display: none; color: #2980b9; padding-top: 8px;">
-                                <span>Đã thanh toán (Paid)</span>
-                                <span id="otherPaymentsAmount">-0 ₫</span>
+                            <!-- Dòng VAT -->
+                            <div class="summary-row" id="row-vat" style="color: #2c2a29; margin-top: 8px; border-top: 1px dashed #efebe4; padding-top: 8px;">
+                                <span>VAT (10%)</span>
+                                <span id="invoiceVatAmount">0 VNĐ</span>
                             </div>
 
-                            <div class="summary-row outstanding-row">
-                                <span class="label">Outstanding</span>
-                                <span class="amount" id="originalOutstandingAmount">0 ₫</span>
+                            <!-- Dòng Tổng cộng hóa đơn -->
+                            <div class="summary-row" id="row-invoice-total"
+                                style="border-top: 1px dashed #efebe4; margin-top: 16px; padding-top: 16px; font-weight: 600; color: #2c2a29;">
+                                <span>Tổng cộng hóa đơn</span>
+                                <span id="invoiceTotalAmount">0 VNĐ</span>
                             </div>
 
-                            <button class="btn-checkout" id="btnProceedOriginal"
-                                onclick="openPaymentModal(globalOriginalOutstanding, true)">Thanh toán HĐ Gốc</button>
+                            <!-- Các khoản trừ thanh toán trước/cọc -->
+                            <div id="originalBillAdjustments"
+                                style="border-top: 1px dashed #efebe4; margin-top: 16px; padding-top: 16px; display: none;">
+                                <div class="summary-row" id="row-deposit" style="display: none; color: #8e8a86;">
+                                    <span>Đã đặt cọc</span>
+                                    <span id="prePaidAmount">-0 VNĐ</span>
+                                </div>
+
+                                <div class="summary-row" id="row-other-payments" style="display: none; color: #8e8a86;">
+                                    <span>Đã thanh toán (Paid)</span>
+                                    <span id="otherPaymentsAmount">-0 VNĐ</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-row outstanding-row" style="border-top: 1px solid #2c2a29; margin-top: 16px; padding-top: 16px;">
+                                <span class="label">Tổng tiền cần thanh toán</span>
+                                <span class="amount" id="originalOutstandingAmount">0 VNĐ</span>
+                            </div>
+                            <button class="btn-checkout no-print" id="btnProceedOriginal"
+                                onclick="openPaymentModal(globalOriginalOutstanding, true)">Thanh toán toàn bộ</button>
+                            <button class="btn-secondary no-print" id="btnPrintOriginal"
+                                onclick="printInvoiceFromSummary()" disabled style="opacity: 0.5; pointer-events: none; cursor: not-allowed;">In hóa đơn</button>
                         </div>
-
                     </div>
+
                 </div>
             </div>
-        </main>
+    </div>
+    </main>
     </div>
     </div>
 
@@ -743,23 +1118,25 @@
                 <!-- dynamic content -->
             </div>
 
-            <div id="roomPromoSection">
-                <div style="font-size: 0.9rem; color: #7f8c8d; margin: 24px 0 8px 0;">Apply Promotion</div>
+            <div id="roomPromoSection" style="border-top: 1px dashed #efebe4; margin-top: 16px; padding-top: 16px;">
+                <div
+                    style="font-size: 11px; font-weight: bold; color: #8e8a86; letter-spacing: 0.5px; margin: 0 0 12px 0; text-transform: uppercase;">
+                    Áp dụng khuyến mãi</div>
                 <div class="promo-input">
-                    <input type="text" placeholder="Voucher code" id="roomPromoInput">
-                    <button class="btn-apply" onclick="applyRoomPromo()">Apply</button>
+                    <input type="text" placeholder="Mã voucher" id="roomPromoInput">
+                    <button class="btn-apply" onclick="applyRoomPromo()">Áp dụng</button>
                 </div>
             </div>
 
             <div class="summary-row total-row" id="row-room-promo"
                 style="display: none; color: #e67e22; border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 12px;">
                 <span>Khuyến mãi (<span id="roomPromoLabel">0%</span>)</span>
-                <span id="roomPromoAmount">-0 ₫</span>
+                <span id="roomPromoAmount">-0 VNĐ</span>
             </div>
 
             <div class="summary-row outstanding-row">
-                <span class="label">Outstanding</span>
-                <span class="amount" id="roomBillOutstandingAmount">0 ₫</span>
+                <span class="label">Tổng tiền cần thanh toán</span>
+                <span class="amount" id="roomBillOutstandingAmount">0 VNĐ</span>
             </div>
 
             <button class="btn-checkout" id="btnProceedRoomBill" style="width: 100%; margin-top: 16px;">Thanh toán phòng
@@ -770,65 +1147,124 @@
     <!-- Payment Modal -->
     <div id="paymentModal" class="split-modal-overlay" style="display: none;">
         <div class="payment-modal-content">
-            <h3 style="margin: 0; color: #2c3e50; text-align: center;">Xử lý Thanh toán</h3>
-            <div class="payment-amount-display" id="paymentTotalAmount">0 ₫</div>
+            <h3>Xử lý Thanh toán</h3>
+            <div class="payment-amount-display" id="paymentTotalAmount">0 <span style="font-size: 24px; font-family: 'Playfair Display', serif; font-weight: 500;">VNĐ</span></div>
 
-            <label style="display:block; margin-bottom: 8px; font-size: 0.9rem; color: #7f8c8d;">Phương thức thanh
-                toán</label>
+            <label>Phương thức thanh toán</label>
             <div class="payment-methods">
-                <div class="method-btn active" onclick="selectPaymentMethod('CASH')" id="btn-method-CASH"><i
-                        class="fa-solid fa-money-bill"></i> Tiền mặt</div>
-                <div class="method-btn" onclick="selectPaymentMethod('VNPAY')" id="btn-method-VNPAY"><i
-                        class="fa-solid fa-qrcode"></i> VNPay</div>
+                <div class="method-btn active" onclick="selectPaymentMethod('CASH')" id="btn-method-CASH">
+                    <span class="material-symbols-outlined">payments</span> Tiền mặt
+                </div>
+                <div class="method-btn" onclick="selectPaymentMethod('VNPAY')" id="btn-method-VNPAY">
+                    <span class="material-symbols-outlined">grid_view</span> VNPay
+                </div>
             </div>
 
             <div id="cashInputSection">
                 <div class="payment-input-group">
                     <label>Số tiền khách đưa (Tendered Amount)</label>
-                    <input type="number" id="tenderedAmount" placeholder="Nhập số tiền..." onkeyup="calculateChange()">
+                    <input type="number" id="tenderedAmount" placeholder="Nhập số tiền..." oninput="calculateChange()">
                 </div>
                 <div class="change-due">
                     <span>Tiền thừa trả khách:</span>
-                    <span id="changeDueAmount" style="color: #27ae60;">0 ₫</span>
+                    <span id="changeDueAmount" style="color: #ba1a1a;">Chưa đủ</span>
                 </div>
             </div>
 
-            <div class="modal-actions" style="margin-top: 0;">
-                <button class="btn-apply" style="flex:1;" onclick="closePaymentModal()">Hủy</button>
-                <button class="btn-checkout" id="btnConfirmPayment" style="margin: 0; flex:1;"
-                    onclick="processPayment()">Xác nhận Thanh toán</button>
+            <div class="modal-actions">
+                <button class="btn-apply" onclick="closePaymentModal()">Hủy</button>
+                <button class="btn-checkout" id="btnConfirmPayment" onclick="processPayment()">Xác nhận Thanh toán</button>
             </div>
         </div>
     </div>
 
     <!-- Success & Automation Modal -->
-    <div id="successModal" class="split-modal-overlay" style="display: none;">
-        <div class="split-modal-content" style="text-align: center;">
-            <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
-            <h3 style="margin-bottom: 8px; color: #2c3e50;">Thanh toán thành công</h3>
-            <p style="color: #7f8c8d; margin: 0;">Hóa đơn <strong id="successInvoiceId">#INV-XXX</strong></p>
-
-            <div class="automation-list">
-                <div
-                    style="font-weight: 600; margin-bottom: 12px; font-size: 0.85rem; text-transform: uppercase; color: #7f8c8d;">
-                    Hệ thống đã tự động xử lý:</div>
-                <div class="automation-item"><i class="fa-solid fa-check"></i> Dư nợ Folio đã quy về 0 ₫</div>
-                <div class="automation-item"><i class="fa-solid fa-check"></i> Trạng thái phòng cập nhật: Vacant_Dirty
-                </div>
-                <div class="automation-item"><i class="fa-solid fa-check"></i> Đã gửi e-Invoice tới email khách hàng
+    <div id="successModal" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4" style="display: none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden flex flex-col items-center p-8 text-center" data-purpose="modal-container">
+            <!-- BEGIN: SuccessIcon -->
+            <div class="mb-6 flex items-center justify-center w-20 h-20 rounded-full bg-linen-bg border border-gilded-gold/20" data-purpose="success-icon-container">
+                <div class="w-16 h-16 rounded-full bg-gilded-gold flex items-center justify-center shadow-lg shadow-gilded-gold/30">
+                    <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" stroke-width="3" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
                 </div>
             </div>
-
-            <div class="modal-actions">
-                <button class="btn-apply" onclick="window.print()"><i class="fa-solid fa-print"></i> In biên lai giấy</button>
-                <button class="btn-checkout" style="margin: 0;" onclick="closeSuccessModal()">Đóng</button>
+            <!-- END: SuccessIcon -->
+            
+            <!-- BEGIN: HeaderSection -->
+            <div class="mb-8">
+                <h1 class="font-serif text-3xl font-medium text-deep-charcoal mb-1">
+                    Thanh toán thành công
+                </h1>
+                <p class="text-sm tracking-widest text-gilded-gold uppercase font-medium">
+                    Hóa đơn <span class="font-sans" id="successInvoiceId">#INV-6234</span>
+                </p>
             </div>
+            <!-- END: HeaderSection -->
+            
+            <!-- BEGIN: StatusDetails -->
+            <div class="status-card w-full rounded-xl p-5 mb-8 text-left space-y-4" data-purpose="automated-actions-list">
+                <p class="text-[10px] tracking-[0.15em] text-gray-400 font-bold uppercase mb-4">
+                    Hệ thống đã tự động xử lý:
+                </p>
+                <!-- Action Item 1 -->
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5">
+                        <svg class="w-4 h-4 text-gilded-gold" fill="currentColor" viewbox="0 0 20 20">
+                            <path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-700 leading-tight">
+                        Dư nợ Folio đã quy về <span class="font-medium">0 VNĐ</span>
+                    </p>
+                </div>
+                <!-- Action Item 2 -->
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5">
+                        <svg class="w-4 h-4 text-gilded-gold" fill="currentColor" viewbox="0 0 20 20">
+                            <path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-700 leading-tight">
+                        Trạng thái phòng cập nhật: <br/>
+                        <span class="font-medium">Vacant_Dirty</span>
+                    </p>
+                </div>
+                <!-- Action Item 3 -->
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5">
+                        <svg class="w-4 h-4 text-gilded-gold" fill="currentColor" viewbox="0 0 20 20">
+                            <path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-700 leading-tight">
+                        Đã gửi e-Invoice tới email khách hàng
+                    </p>
+                </div>
+            </div>
+            <!-- END: StatusDetails -->
+            
+            <!-- BEGIN: ActionButtons -->
+            <div class="w-full no-print">
+                <!-- Close Button -->
+                <button onclick="closeSuccessModal()" class="w-full flex items-center justify-center py-3 px-4 rounded-xl bg-deep-charcoal text-white hover:bg-black transition-all shadow-lg active:scale-95 no-print" data-purpose="btn-close">
+                    <span class="text-sm font-medium">Đóng</span>
+                </button>
+            </div>
+            <!-- END: ActionButtons -->
         </div>
     </div>
 
     <script>
         function closeSuccessModal() {
             document.getElementById('successModal').style.display = 'none';
+        }
+
+        function printInvoiceFromSummary() {
+            const invoiceId = (bookingGroupData ? bookingGroupData.bookingGroupId || bookingGroupData.id : '') || Math.floor(Math.random() * 10000 + 1000);
+            showSuccessModal({ invoiceId: invoiceId, isSplit: false });
+            document.getElementById('successModal').style.display = 'none';
+            window.print();
         }
         let currentFolioData = null;
         let selectedItemIds = [];
@@ -842,9 +1278,22 @@
         let globalOriginalTotal = 0; // Thêm biến lưu tổng tiền hóa đơn tổng trước VAT
         let globalPrePaidDeposit = 0;
         let globalOtherPayments = 0;
+        let globalFolioResults = [];
         let appliedGroupPromoCode = null;
         let appliedGroupPromoType = null;
         let appliedGroupPromoDiscount = 0;
+        let globalOriginalSubtotal = 0;
+        let globalServiceChargeTotal = 0;
+
+        function isDamageOrMaintenanceItem(item) {
+            if (!item) return false;
+            const dep = (item.sourceDepartment || '').toLowerCase();
+            const desc = (item.description || '').toLowerCase();
+            const isMaintenance = dep === 'maintenance';
+            const isHousekeepingDamage = dep === 'housekeeping' && desc.includes('đền bù hỏng hóc');
+            return isMaintenance || isHousekeepingDamage || desc.includes('đền bù hỏng hóc');
+        }
+
 
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -858,6 +1307,21 @@
         });
 
         function fetchBookingGroup(id) {
+            // Reset global variables to prevent data leaks from previous guest views
+            bookingGroupData = null;
+            globalPrePaidDeposit = 0;
+            globalOtherPayments = 0;
+            appliedGroupPromoCode = null;
+            appliedGroupPromoType = null;
+            appliedGroupPromoDiscount = 0;
+            roomSummaryMap = {};
+            globalOriginalTotal = 0;
+            globalOriginalOutstanding = 0;
+            globalSplitOutstanding = 0;
+            if (typeof window.folioNegatives !== 'undefined') {
+                window.folioNegatives = 0;
+            }
+
             fetch(`/api/folios/booking-group/${id}`)
                 .then(res => res.json())
                 .then(data => {
@@ -865,7 +1329,7 @@
                         bookingGroupData = data;
 
                         if (data.rooms && data.rooms.length > 1) {
-                            const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+                            const formatCurrency = (val) => new Intl.NumberFormat('vi-VN').format(val) + ' VNĐ';
                             document.getElementById('groupTotalPill').style.display = 'none';
                         } else {
                             document.getElementById('groupTotalPill').style.display = 'none';
@@ -875,9 +1339,43 @@
                             fetch(`/api/folios/room/${room.id}`).then(res => res.json())
                         );
 
-                        Promise.all(promises).then(results => {
+                        Promise.all(promises).then(async (results) => {
+                            globalFolioResults = results;
+
+                            // Pre-fetch F&B details
+                            let fnbOrderIds = [];
+                            results.forEach(data => {
+                                if (data.success && data.items) {
+                                    data.items.forEach(item => {
+                                        let orderMatch = item.description ? item.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
+                                        if (orderMatch && orderMatch[1]) {
+                                            fnbOrderIds.push(orderMatch[1]);
+                                        }
+                                    });
+                                }
+                            });
+                            fnbOrderIds = [...new Set(fnbOrderIds)];
+                            window.fnbOrderDetailsMap = {};
+                            if (fnbOrderIds.length > 0) {
+                                try {
+                                    const fnbResults = await Promise.all(fnbOrderIds.map(orderId =>
+                                        fetch('/api/pos/orders/' + orderId + '/details')
+                                            .then(res => res.ok ? res.json() : null)
+                                            .catch(() => null)
+                                    ));
+                                    fnbResults.forEach((fnbData, idx) => {
+                                        if (fnbData && fnbData.status === 'success') {
+                                            window.fnbOrderDetailsMap[fnbOrderIds[idx]] = fnbData;
+                                        }
+                                    });
+                                } catch (err) {
+                                    console.error("Failed to pre-fetch F&B order details:", err);
+                                }
+                            }
+
+                            currentFolioData = results.find(r => r.id == currentRoomBookingDetailId) || results[0];
                             document.getElementById('folioContainer').style.display = 'grid';
-                            document.getElementById('guestHeader').style.display = 'flex';
+                            document.getElementById('guestHeader').style.display = 'grid';
 
                             const validResult = results.find(r => r.success);
                             if (validResult) {
@@ -901,13 +1399,60 @@
 
         // Keep this for fallback
         function fetchFolioData(id) {
+            // Reset global variables to prevent data leaks from previous guest views
+            bookingGroupData = null;
+            globalPrePaidDeposit = 0;
+            globalOtherPayments = 0;
+            appliedGroupPromoCode = null;
+            appliedGroupPromoType = null;
+            appliedGroupPromoDiscount = 0;
+            roomSummaryMap = {};
+            globalOriginalTotal = 0;
+            globalOriginalOutstanding = 0;
+            globalSplitOutstanding = 0;
+            if (typeof window.folioNegatives !== 'undefined') {
+                window.folioNegatives = 0;
+            }
+
             fetch(`/api/folios/room/${id}`)
                 .then(res => res.json())
-                .then(data => {
+                .then(async (data) => {
                     if (data.success) {
                         try {
+                            globalFolioResults = [data];
+
+                            // Pre-fetch F&B details
+                            let fnbOrderIds = [];
+                            if (data.items) {
+                                data.items.forEach(item => {
+                                    let orderMatch = item.description ? item.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
+                                    if (orderMatch && orderMatch[1]) {
+                                        fnbOrderIds.push(orderMatch[1]);
+                                    }
+                                });
+                            }
+                            fnbOrderIds = [...new Set(fnbOrderIds)];
+                            window.fnbOrderDetailsMap = {};
+                            if (fnbOrderIds.length > 0) {
+                                try {
+                                    const fnbResults = await Promise.all(fnbOrderIds.map(orderId =>
+                                        fetch('/api/pos/orders/' + orderId + '/details')
+                                            .then(res => res.ok ? res.json() : null)
+                                            .catch(() => null)
+                                    ));
+                                    fnbResults.forEach((fnbData, idx) => {
+                                        if (fnbData && fnbData.status === 'success') {
+                                            window.fnbOrderDetailsMap[fnbOrderIds[idx]] = fnbData;
+                                        }
+                                    });
+                                } catch (err) {
+                                    console.error("Failed to pre-fetch F&B order details:", err);
+                                }
+                            }
+
+                            currentFolioData = data;
                             document.getElementById('folioContainer').style.display = 'grid';
-                            document.getElementById('guestHeader').style.display = 'flex';
+                            document.getElementById('guestHeader').style.display = 'grid';
                             renderGuestInfo(data, 1);
                             renderGroupFolio([data]);
                         } catch (e) {
@@ -925,7 +1470,65 @@
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+            if (amount === undefined || amount === null) return "0 VNĐ";
+            return new Intl.NumberFormat('vi-VN').format(amount) + " VNĐ";
+        }
+
+        function parseMinibarDescription(desc, totalAmount) {
+            if (!desc || !desc.toLowerCase().includes('minibar')) return null;
+
+            const parts = desc.split(':');
+            if (parts.length < 2) return null;
+
+            const itemsPart = parts[1].trim();
+            const itemTokens = itemsPart.split(',');
+
+            const parsedItems = [];
+            const minibarPrices = {
+                'nước suối evian': 40000,
+                'coca cola': 45000,
+                'bia heineken': 80000,
+                'nước suối': 15000,
+                'pepsi': 25000,
+                'bia tiger': 40000,
+                'bia 333': 30000,
+                'snack khoai tây': 35000,
+                'khăn lạnh': 10000
+            };
+
+            let parsedTotal = 0;
+
+            for (let token of itemTokens) {
+                token = token.trim();
+                const match = token.match(/^(.*?)\s*\(x(\d+)\)$/);
+                if (match) {
+                    const name = match[1].trim();
+                    const qty = parseInt(match[2]);
+                    const price = minibarPrices[name.toLowerCase()] || 0;
+                    const amount = price * qty;
+                    parsedTotal += amount;
+                    parsedItems.push({
+                        name: name,
+                        qty: qty,
+                        price: price,
+                        amount: amount
+                    });
+                }
+            }
+
+            const zeroPriceItems = parsedItems.filter(i => i.price === 0);
+            if (zeroPriceItems.length === 1) {
+                const sumOther = parsedItems.filter(i => i.price > 0).reduce((sum, i) => sum + i.amount, 0);
+                const remaining = totalAmount - sumOther;
+                const item = zeroPriceItems[0];
+                item.price = Math.round(remaining / item.qty);
+                item.amount = remaining;
+            }
+
+            if (parsedItems.length > 0) {
+                return parsedItems;
+            }
+            return null;
         }
 
         function renderGuestInfo(data, roomCount) {
@@ -942,23 +1545,29 @@
             const roomNum = roomCount > 1 ? `${roomCount} phòng` : (data.roomNumber || "N/A");
             const checkIn = data.checkInDate || "N/A";
             const checkOut = data.checkOutDate || "N/A";
-            let subtitleHtml = `${roomNum} &nbsp;|&nbsp; ${checkIn} &rarr; ${checkOut}`;
+            let subtitleHtml = `${roomNum} | ${checkIn} ➔ ${checkOut}`;
 
             document.querySelector('.guest-info p').innerHTML = subtitleHtml;
         }
 
         function renderGroupFolio(results) {
-            let leftHtml = '';
+            let leftHtml = '<div style="font-family: \'Montserrat\', sans-serif; font-size: 11px; font-weight: 700; color: #8e8a86; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase;">DANH SÁCH PHÒNG</div>';
             let originalGroups = {};
             let originalTotal = 0;
             let splitTotal = 0;
+            let originalTaxable = 0;
+            let originalNonTaxable = 0;
+            window.folioNegatives = 0;
+            globalServiceChargeTotal = 0;
 
             results.forEach((data, index) => {
                 if (!data.success) return;
 
                 const items = data.items || [];
                 const allGroups = {};
-                let roomTotal = 0;
+                let roomTaxable = 0;
+                let roomNonTaxable = 0;
+                let roomDeposited = 0;
 
                 items.forEach(item => {
                     const dep = item.sourceDepartment || 'OTHER';
@@ -969,98 +1578,255 @@
                     if (item.amount > 0 && !isRoom) {
                         if (!allGroups[dep]) allGroups[dep] = { items: [] };
                         allGroups[dep].items.push(item);
-                        roomTotal += item.amount;
+                        if (isDamageOrMaintenanceItem(item)) {
+                            roomNonTaxable += item.amount;
+                        } else {
+                            roomTaxable += item.amount;
+                        }
                     }
 
                     // For Right Pane (aggregated) - Separate positive charges from negative deposits/payments
                     if (item.amount > 0) {
                         const isSettled = item.isSettledSeparately || (data.detailStatus === 'Checked_Out' && !isRoom);
                         if (!isSettled) {
+                            let orderMatch = item.description ? item.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
+                            let fnbServiceCharge = 0;
+                            if (orderMatch && orderMatch[1]) {
+                                const fnbOrderId = orderMatch[1];
+                                const fnbDetail = window.fnbOrderDetailsMap ? window.fnbOrderDetailsMap[fnbOrderId] : null;
+                                if (fnbDetail && fnbDetail.items) {
+                                    const itemsTotal = fnbDetail.items.reduce((sum, di) => sum + di.amount, 0);
+                                    const billedAmount = item.amount;
+                                    const diff = billedAmount - itemsTotal;
+                                    if (diff > 0 && Math.abs(diff) > 1) {
+                                        fnbServiceCharge = diff;
+                                    }
+                                }
+                            }
+
                             if (!originalGroups[dep]) originalGroups[dep] = { total: 0 };
-                            originalGroups[dep].total += item.amount;
-                            originalTotal += item.amount;
+                            originalGroups[dep].total += (item.amount - fnbServiceCharge);
+                            originalTotal += (item.amount - fnbServiceCharge);
+                            if (fnbServiceCharge > 0) {
+                                globalServiceChargeTotal += fnbServiceCharge;
+                            }
+
+                            if (isDamageOrMaintenanceItem(item)) {
+                                originalNonTaxable += (item.amount - fnbServiceCharge);
+                            } else {
+                                originalTaxable += (item.amount - fnbServiceCharge);
+                            }
                         }
                     } else {
                         // Negative amount represents deposit/payment
                         if (typeof window.folioNegatives === 'undefined') {
                             window.folioNegatives = 0;
                         }
-                        window.folioNegatives += Math.abs(item.amount);
+
+                        // CHỈ tính tiền cọc Nâng hạn mức (tránh bị double-count tiền cọc Walk-in)
+                        if (item.description && item.description.toLowerCase().includes('nạp tiền nâng hạn mức')) {
+                            window.folioNegatives += Math.abs(item.amount);
+                            roomDeposited += Math.abs(item.amount);
+                        }
                     }
                 });
 
                 // Add expected room charge to Left Pane and Right Pane if not already posted
                 const hasPostedRoomCharge = items.some(item => 'room' === (item.sourceDepartment || '').toLowerCase());
                 if (!hasPostedRoomCharge && data.roomCharge && data.roomCharge > 0) {
+                    let nights = 1;
+                    if (data.checkInDate && data.checkOutDate) {
+                        const ci = new Date(data.checkInDate);
+                        const co = new Date(data.checkOutDate);
+                        const diffTime = Math.abs(co - ci);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays > 0) nights = diffDays;
+                    }
+                    const expectedTotalCharge = data.roomCharge * nights;
+
                     const dep = 'Room';
                     // Right Pane
                     if (!originalGroups[dep]) originalGroups[dep] = { total: 0 };
-                    originalGroups[dep].total += data.roomCharge;
-                    originalTotal += data.roomCharge;
+                    originalGroups[dep].total += expectedTotalCharge;
+                    originalTotal += expectedTotalCharge;
 
-                    // DO NOT add Room Charge to Left Pane (individual room folio)
+                    originalTaxable += expectedTotalCharge;
+                    roomTaxable += expectedTotalCharge;
+
+                    // Left Pane (All rooms separate)
+                    if (!allGroups[dep]) allGroups[dep] = { total: 0, items: [] };
+                    allGroups[dep].total += expectedTotalCharge;
+                    allGroups[dep].items.push({
+                        description: `Tiền phòng (Dự kiến)`,
+                        amount: expectedTotalCharge,
+                        isSettledSeparately: false
+                    });
                 }
+
+                let roomTotalWithVat = roomTaxable * 1.1 + roomNonTaxable;
+                let roomSubtotalBeforeVat = roomTaxable + roomNonTaxable;
+                let roomVatAmount = roomTaxable * 0.1;
 
                 const roomId = data.roomBookingDetailId || index;
                 const isFirst = index === 0;
 
                 // Build Room Card HTML
                 leftHtml += `
-                <div style="background: white; border: none; border-radius: 16px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 30px rgba(0,0,0,0.13), 0 4px 10px rgba(0,0,0,0.07)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)'; this.style.transform='translateY(0)';">
-                    <div style="background: #f8fafc; padding: 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleRoomDetail('room-detail-${roomId}')">
-                         <div>
-                             <h4 style="margin: 0 0 4px 0; font-size: 1.1rem; color: #2c3e50;"><i class="fa-solid fa-door-open"></i> Phòng ${data.roomNumber || 'N/A'}</h4>
-                             <div style="font-size: 0.9rem; color: #7f8c8d;">
-                                 <i class="fa-solid fa-user" style="margin-right: 4px;"></i> Đại diện phòng: <strong style="color: #2c3e50;">${data.guestName || 'Unknown'}</strong>
-                                 ${data.detailStatus === 'Checked_Out' ? '<span class="status-badge" style="background-color: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-left: 8px; font-weight: 600;">Đã trả phòng (Checked-out)</span>' : ''}
+                <div style="background: #ffffff; border: 1px solid #e6ded4; border-radius: 12px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03); transition: all 0.2s ease-in-out;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(110, 101, 95, 0.08)'; this.style.borderColor='#dcd3c7';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(44, 42, 41, 0.03)'; this.style.borderColor='#e6ded4';">
+                    <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleRoomDetail('room-detail-${roomId}')">
+                         <div style="display: flex; align-items: center;">
+                             <div style="background: #f8f3ed; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-right: 16px; flex-shrink: 0;">
+                                 <i class="fa-solid fa-house" style="color: #6e655f; font-size: 16px;"></i>
+                             </div>
+                             <div style="display: flex; flex-direction: column; gap: 4px;">
+                                 <h4 style="margin: 0; font-size: 16px; color: #2c2a29; font-weight: 700; font-family: 'Inter', sans-serif;">Phòng ${data.roomNumber || 'N/A'}</h4>
+                                 <div style="font-size: 13px; color: #8e8a86; font-family: 'Inter', sans-serif;">
+                                     Đại diện: <span style="color: #2c2a29; font-weight: 500;">${data.guestName || 'Unknown'}</span>
+                                 </div>
+                                 <div style="font-size: 13px; color: #8e8a86; font-family: 'Inter', sans-serif;">
+                                     Loại phòng: <span style="color: #2c2a29; font-weight: 500;">${data.categoryName || 'N/A'}</span>
+                                 </div>
+                                 <div style="font-size: 13px; color: #8e8a86; font-family: 'Inter', sans-serif;">
+                                     Giá phòng: <span style="color: #2c2a29; font-weight: 500;">${formatCurrency(data.roomCharge)}</span>
+                                 </div>
+                                 ${data.detailStatus === 'Checked_Out' ? '<div style="margin-top: 2px;"><span class="status-badge" style="background-color: #e6e2db; color: #5a544f; padding: 4px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; display: inline-block; letter-spacing: 0.5px; text-transform: uppercase; font-family: \'Inter\', sans-serif;">Checked-Out</span></div>' : ''}
                              </div>
                          </div>
-                         <div style="display: flex; align-items: center; gap: 16px;">
-                             <span style="font-weight: 600; color: #c19b6c; font-size: 1.1rem;">${formatCurrency(roomTotal * 1.1)}</span>
-                             <button class="btn btn-secondary" style="margin: 0; padding: 6px 12px; font-size: 0.85rem; background: white; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
-                                 <i class="fa-solid fa-eye"></i> View Detail
+                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                             <span style="font-weight: 700; color: #2c2a29; font-size: 16px; font-family: 'Inter', sans-serif;">${formatCurrency(roomTotalWithVat)}</span>
+                             <button class="btn" style="background: transparent; border: none; padding: 0; margin: 0; color: #2c2a29; text-decoration: underline; font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#a18262';" onmouseout="this.style.color='#2c2a29';">
+                                 Xem chi tiết
                              </button>
                          </div>
                      </div>
-                     <div id="room-detail-${roomId}" style="padding: 16px 20px; display: none; background: #faf9f7;">
-                         <div style="margin-bottom: 16px; background: #fdfbf7; border: 1px solid #e8e4db; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #7f8c8d;">
-                             <i class="fa-solid fa-credit-card" style="color: #c19b6c;"></i>
-                             <span>Hạn mức chi tiêu (Credit Limit): <strong style="color: #2c3e50;">${formatCurrency(data.subCreditLimit || 0)}</strong></span>
-                         </div>`;
+                     <div id="room-detail-${roomId}" style="padding: 16px 20px; display: none; background: #fdfbf9; border-top: 1px solid #e6ded4;">`;
 
                 for (const [dep, group] of Object.entries(allGroups)) {
                     const availableItems = group.items.filter(i => !i.isSettledSeparately);
                     const depSafe = roomId + '_' + dep.replace(/[^a-zA-Z0-9]/g, '');
+                    const isMinibar = dep.toLowerCase().includes('minibar');
+                    const isFnb = dep.toLowerCase().includes('f&b') || dep.toLowerCase().includes('food');
+                    const isTour = dep.toLowerCase().includes('tour');
+                    const isSpecialDep = isFnb || isTour;
+                    const thPadding = isMinibar ? 'padding-left: 16px;' : '';
+                    const tableHeaders = isSpecialDep ? '' : `
+                                      <thead>
+                                          <tr>
+                                              <th style="width: 45%; text-align: left; ${thPadding}">Mô tả</th>
+                                              <th style="width: 10%; text-align: center;">Số Lượng</th>
+                                              <th style="width: 20%; text-align: right;">Đơn giá</th>
+                                              <th style="width: 25%; text-align: right;">Thành tiền</th>
+                                          </tr>
+                                      </thead>`;
 
                     leftHtml += `
-                         <div class="charge-card" style="box-shadow: none; border: 1px solid #edf2f7; margin-bottom: 16px;">
-                             <div class="charge-card-header" style="background: #fdfdfd; padding: 12px 16px; margin-bottom: 0;">
-                                 <div class="charge-title" style="display: flex; align-items: center; gap: 12px; text-transform: uppercase;">
-                                     ${dep} CHARGES
+                         <div class="charge-card">
+                             <div class="charge-card-header">
+                                 <div class="charge-title" style="display: flex; align-items: center; gap: 8px;">
+                                     <i class="fa-solid fa-receipt" style="color: #8e8a86; font-size: 11px;"></i> ${dep} CHARGES
                                  </div>
                              </div>
                              <div style="padding: 0 16px;">
                                  <table class="charge-table">
-                                     <thead>
-                                         <tr>
-                                             <th>DESCRIPTION</th>
-                                             <th style="text-align: right;">AMOUNT</th>
-                                         </tr>
-                                     </thead>
+                                     ${tableHeaders}
                                      <tbody>
                                          ${group.items.map(i => {
                         const isSplit = i.isSettledSeparately;
                         const trClass = isSplit ? 'item-settled' : '';
                         const dateStr = i.createdAt && i.createdAt.length >= 10 ? i.createdAt.substring(0, 10) : '';
-                        return `
-                                             <tr class="${trClass}">
-                                                 <td>
-                                                     ${i.description} 
-                                                     ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                     ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                 </td>
-                                                 <td class="amount">${formatCurrency(i.amount)}</td>
-                                             </tr>`;
+
+                        const minibarItems = parseMinibarDescription(i.description, i.amount);
+                        if (minibarItems) {
+                            let rowsHtml = '';
+                            minibarItems.forEach(item => {
+                                const formattedUnitPrice = new Intl.NumberFormat('vi-VN').format(item.price);
+                                const formattedAmount = new Intl.NumberFormat('vi-VN').format(item.amount) + ' VNĐ';
+                                rowsHtml += `
+                                    <tr class="${trClass}" style="color: #6e655f;">
+                                        <td style="padding-left: 16px; font-style: italic; text-align: left;">${item.name}</td>
+                                        <td style="text-align: center; font-style: italic;">${item.qty}</td>
+                                        <td style="text-align: right; font-style: italic;">${formattedUnitPrice}</td>
+                                        <td style="text-align: right; font-style: italic;">${formattedAmount}</td>
+                                    </tr>
+                                `;
+                            });
+                            rowsHtml += `
+                                <tr class="${trClass}" style="border-top: 1px dashed #efebe4; font-weight: 700;">
+                                    <td style="text-align: left;">TỔNG CỘNG (${dateStr})</td>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                </tr>
+                            `;
+                            return rowsHtml;
+                        } else {
+                            if (isTour && i.bookingId) {
+                                const tourBookingId = i.bookingId;
+                                return `
+                                                  <tr id="tour-booking-row-${tourBookingId}" class="tour-booking-placeholder ${trClass}" data-tour-booking="${tourBookingId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description}">
+                                                      <td colspan="3" style="text-align: left;">
+                                                          ${i.description} 
+                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                                          <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
+                                                              <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết tour...
+                                                          </div>
+                                                      </td>
+                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                                  </tr>`;
+                            } else if (isTour) {
+                                return `
+                                                  <tr class="${trClass}">
+                                                      <td colspan="3" style="text-align: left;">
+                                                          ${i.description} 
+                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                                      </td>
+                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                                  </tr>`;
+                            }
+
+                            let orderMatch = i.description ? i.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
+                            if (orderMatch && orderMatch[1]) {
+                                const fnbOrderId = orderMatch[1];
+                                return `
+                                                  <tr id="fnb-order-row-${fnbOrderId}" class="fnb-order-placeholder ${trClass}" data-fnb-order="${fnbOrderId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''}">
+                                                      <td colspan="3" style="text-align: left;">
+                                                          ${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''} 
+                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                                          <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
+                                                              <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết món ăn...
+                                                          </div>
+                                                      </td>
+                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                                  </tr>`;
+                            } else {
+                                if (isFnb) {
+                                    return `
+                                                      <tr class="${trClass}">
+                                                          <td colspan="3" style="text-align: left;">
+                                                              ${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''} 
+                                                              ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                              ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                                          </td>
+                                                          <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                                      </tr>`;
+                                } else {
+                                    return `
+                                                      <tr class="${trClass}">
+                                                          <td style="text-align: left;">
+                                                               ${i.description ? i.description.replace('[Đền bù hỏng hóc]', 'Phụ thu tài sản:') : ''} 
+                                                              ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                              ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                                          </td>
+                                                          <td style="text-align: center; color: #2c2a29;">1</td>
+                                                          <td style="text-align: right; color: #2c2a29;">${new Intl.NumberFormat('vi-VN').format(i.amount)}</td>
+                                                          <td class="amount">${formatCurrency(i.amount)}</td>
+                                                      </tr>`;
+                                }
+                            }
+                        }
                     }).join('')}
                                      </tbody>
                                  </table>
@@ -1070,69 +1836,119 @@
 
                 roomSummaryMap[roomId] = {
                     roomNumber: data.roomNumber || 'N/A',
-                    total: roomTotal * 1.1,
+                    total: roomTotalWithVat,
                     prePaidDeposit: data.prePaidDeposit || 0,
                     currentBalance: data.currentBalance || 0,
                     detailStatus: data.detailStatus || 'Checked_In',
                     summary: {},
                     appliedPromoCode: null,
                     appliedPromoType: null,
-                    appliedPromoDiscount: 0
+                    appliedPromoDiscount: 0,
+                    roomDeposited: roomDeposited
                 };
                 for (const [dep, group] of Object.entries(allGroups)) {
                     roomSummaryMap[roomId].summary[dep] = group.items.reduce((sum, i) => sum + i.amount, 0);
                 }
 
                 leftHtml += `
-                         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px;">
-                             <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #7f8c8d;">
-                                 <span>Subtotal (trước thuế):</span>
-                                 <span>${formatCurrency(roomTotal)}</span>
-                             </div>
-                             <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #7f8c8d;">
-                                 <span>VAT (10%):</span>
-                                 <span>${formatCurrency(roomTotal * 0.1)}</span>
-                             </div>
-                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">
-                                 <span style="font-weight: 600; color: #2c3e50; font-size: 1.1rem;">Tổng cộng phòng ${data.roomNumber || 'N/A'}:</span>
-                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
-                                     <span style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #c19b6c; font-weight: 700;">${formatCurrency(roomTotal * 1.1)}</span>
-                                     ${data.detailStatus !== 'Checked_Out' ? `
-                                     <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotal * 1.1})" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                         <i class="fa-solid fa-credit-card"></i> Thanh toán riêng phòng này
-                                     </button>
-                                     ` : `
-                                     <span style="color: #27ae60; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
-                                     `}
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-                 `;
+                          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; border-top: 1px solid #e6ded4; padding-top: 16px; margin-top: 16px;">
+                              <div style="display: flex; justify-content: space-between; font-size: 13px; font-family: 'Inter', sans-serif; color: #8e8a86;">
+                                  <span>Tổng tạm tính:</span>
+                                  <span style="font-weight: 500; color: #2c2a29;">${formatCurrency(roomSubtotalBeforeVat)}</span>
+                              </div>
+                              <div style="display: flex; justify-content: space-between; font-size: 13px; font-family: 'Inter', sans-serif; color: #8e8a86;">
+                                  <span>VAT (10%):</span>
+                                  <span style="font-weight: 500; color: #2c2a29;">${formatCurrency(roomVatAmount)}</span>
+                              </div>
+                              <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 8px; padding-top: 12px; border-top: 1px dashed #e6ded4;">
+                                  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                      <span style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #6e655f;">Tổng chi phí:</span>
+                                      <span style="font-family: 'Inter', sans-serif; font-size: 15px; color: #2c2a29; font-weight: 700;">${formatCurrency(roomTotalWithVat)}</span>
+                                  </div>
+                                  <div style="display: flex; justify-content: flex-end; width: 100%;">
+                                      ${data.detailStatus !== 'Checked_Out' ? `
+                                      <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                          Thanh toán Phòng ${data.roomNumber || 'N/A'}
+                                      </button>
+                                      ` : `
+                                      <span style="color: #27ae60; font-weight: 600; font-family: 'Inter', sans-serif; font-size: 13px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
+                                      `}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  `;
             });
 
             document.getElementById('allRoomsContainer').innerHTML = leftHtml;
+            fetchFnbOrderDetails();
+            fetchTourBookingDetails();
 
             // 2. Render Right Pane (Original Bill - Now Total Bill)
             let rightOriginalHtml = '';
+
+            // Build room charge breakdown details for Main Bill (grouped by categoryName & roomCharge)
+            let breakdownGroups = {};
+            results.forEach((data) => {
+                if (!data.success) return;
+                let nights = 1;
+                if (data.checkInDate && data.checkOutDate) {
+                    const ci = new Date(data.checkInDate);
+                    const co = new Date(data.checkOutDate);
+                    const diffTime = Math.abs(co - ci);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) nights = diffDays;
+                }
+
+                if (data.roomCharge && data.roomCharge > 0) {
+                    const key = `${data.categoryName || 'N/A'}_${data.roomCharge}`;
+                    if (!breakdownGroups[key]) {
+                        breakdownGroups[key] = {
+                            categoryName: data.categoryName || 'Room',
+                            roomCharge: data.roomCharge,
+                            nights: nights,
+                            roomCount: 0
+                        };
+                    }
+                    breakdownGroups[key].roomCount += 1;
+                    if (nights > breakdownGroups[key].nights) {
+                        breakdownGroups[key].nights = nights;
+                    }
+                }
+            });
+
+            let roomChargeBreakdown = [];
+            for (const key in breakdownGroups) {
+                const bg = breakdownGroups[key];
+                const formattedPrice = formatCurrency(bg.roomCharge);
+                roomChargeBreakdown.push(`↳ ${bg.categoryName} (${bg.roomCount} phòng &times; ${bg.nights} đêm) : ${formattedPrice}`);
+            }
+
             for (const [dep, group] of Object.entries(originalGroups)) {
+                let depLabel = dep;
+                if (dep.toLowerCase() === 'room') {
+                    depLabel = 'Tiền phòng';
+                } else if (dep.toLowerCase() === 'f&b') {
+                    depLabel = 'Dịch vụ F&B';
+                } else if (dep.toLowerCase() === 'tour') {
+                    depLabel = 'Dịch vụ Tour';
+                }
+                let subLabelHtml = '';
+                if (dep.toLowerCase() === 'room' && roomChargeBreakdown.length > 0) {
+                    subLabelHtml = roomChargeBreakdown.map(line => `<div style="font-size: 11.5px; color: #8e8a86; font-weight: 500; font-style: italic; margin-top: 4px; padding-left: 12px; line-height: 1.4;">${line}</div>`).join('');
+                }
                 rightOriginalHtml += `
-                    <div class="summary-row">
-                        <span>${dep}</span>
-                        <span>${formatCurrency(group.total)}</span>
+                    <div class="summary-row" style="flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; width: 100%;">
+                            <span>${depLabel}</span>
+                            <span>${formatCurrency(group.total)}</span>
+                        </div>
+                        ${subLabelHtml}
                     </div>
                 `;
             }
-            if (Object.keys(originalGroups).length > 0) {
-                const vatAmount = originalTotal * 0.1;
-                rightOriginalHtml += `
-                    <div class="summary-row" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px;">
-                        <span>VAT (10%)</span>
-                        <span>${formatCurrency(vatAmount)}</span>
-                    </div>
-                `;
-            } else {
+            if (Object.keys(originalGroups).length === 0) {
                 rightOriginalHtml = '<div class="summary-row" style="justify-content:center; color:#95a5a6;">Không có mục nào</div>';
             }
             document.getElementById('originalBillDetails').innerHTML = rightOriginalHtml;
@@ -1141,6 +1957,10 @@
             // Deposit from group API if available, else first result's deposit. (They all share same booking)
             globalPrePaidDeposit = bookingGroupData ? (bookingGroupData.prePaidDeposit || 0) : (results.length > 0 ? (results[0].prePaidDeposit || 0) : 0);
             globalOtherPayments = bookingGroupData ? (bookingGroupData.otherPayments || 0) : (results.length > 0 ? (results[0].otherPayments || 0) : 0);
+
+            if (typeof window.folioNegatives !== 'undefined' && window.folioNegatives > 0) {
+                globalOtherPayments += window.folioNegatives;
+            }
 
             if (globalPrePaidDeposit > 0) {
                 document.getElementById('row-deposit').style.display = 'flex';
@@ -1156,11 +1976,23 @@
                 document.getElementById('row-other-payments').style.display = 'none';
             }
 
-
-
-            globalOriginalTotal = originalTotal;
+            globalOriginalSubtotal = originalTaxable + originalNonTaxable;
             updateGroupOutstandingDisplay();
             globalSplitOutstanding = splitTotal;
+
+            // If redirecting from a successful VNPay payment, show the invoice success modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                // Clear the query parameter so refreshing doesn't keep showing it
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?id=" + (urlParams.get('id') || '');
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+
+                selectedPaymentMethod = 'VNPAY';
+                currentPaymentAmount = globalOriginalTotal; // VNPay is usually for full payment
+                showSuccessModal({
+                    invoiceId: urlParams.get('vnp_TxnRef') || Math.floor(Math.random() * 10000 + 1000)
+                });
+            }
         }
 
         function toggleRoomDetail(elementId) {
@@ -1187,10 +2019,19 @@
             let roomSubtotal = 0;
             for (const [dep, amt] of Object.entries(roomInfo.summary)) {
                 roomSubtotal += amt;
+                let depLabel = dep.toLowerCase() === 'room' ? 'Tiền phòng' : dep;
+                let subLabelHtml = '';
+                if (dep.toLowerCase() === 'room' && roomInfo.roomCharge > 0) {
+                    const formattedPrice = formatCurrency(roomInfo.roomCharge);
+                    subLabelHtml = `<div style="font-size: 11px; color: #8e8a86; font-weight: normal; font-style: italic; margin-top: 2px;">↳ (${roomInfo.nights} đêm) : ${formattedPrice}</div>`;
+                }
                 html += `
-                    <div class="summary-row">
-                        <span>${dep}</span>
-                        <span>${formatCurrency(amt)}</span>
+                    <div class="summary-row" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+                        <div style="display: flex; justify-content: space-between; width: 100%;">
+                            <span>${depLabel}</span>
+                            <span>${formatCurrency(amt)}</span>
+                        </div>
+                        ${subLabelHtml}
                     </div>
                 `;
             }
@@ -1206,7 +2047,14 @@
                 html = '<div class="summary-row" style="justify-content:center; color:#95a5a6;">Không có mục nào</div>';
             }
 
-
+            if (roomInfo.roomDeposited > 0) {
+                html += `
+                    <div class="summary-row total-row" style="color: #2980b9; padding-top: 8px; border-top: 1px dashed #cbd5e1; margin-top: 8px;">
+                        <span>Đã thanh toán (Paid/Deposit)</span>
+                        <span>-${formatCurrency(roomInfo.roomDeposited)}</span>
+                    </div>
+                `;
+            }
 
             document.getElementById('roomBillDetails').innerHTML = html;
 
@@ -1249,7 +2097,8 @@
                 currentPaymentRoomId = null;
             }
             currentPaymentAmount = amount;
-            document.getElementById('paymentTotalAmount').innerText = formatCurrency(amount);
+            const formattedVal = new Intl.NumberFormat('vi-VN').format(Math.round(amount));
+            document.getElementById('paymentTotalAmount').innerHTML = formattedVal + ' <span style="font-size: 24px; font-family: \'Playfair Display\', serif; font-weight: 500;">VNĐ</span>';
             document.getElementById('paymentModal').style.display = 'flex';
             selectPaymentMethod('CASH'); // default
             document.getElementById('tenderedAmount').value = '';
@@ -1281,26 +2130,84 @@
             const tendered = parseFloat(document.getElementById('tenderedAmount').value) || 0;
             const btnConfirm = document.getElementById('btnConfirmPayment');
 
-            if (tendered >= currentPaymentAmount || currentPaymentAmount === 0) {
-                const change = tendered - currentPaymentAmount;
+            const roundedPayment = Math.round(currentPaymentAmount);
+
+            if (tendered >= roundedPayment || roundedPayment === 0) {
+                const change = tendered - roundedPayment;
                 document.getElementById('changeDueAmount').innerText = formatCurrency(change);
                 document.getElementById('changeDueAmount').style.color = '#27ae60';
                 btnConfirm.disabled = false;
                 btnConfirm.style.opacity = '1';
             } else {
                 document.getElementById('changeDueAmount').innerText = "Chưa đủ";
-                document.getElementById('changeDueAmount').style.color = '#e74c3c';
+                document.getElementById('changeDueAmount').style.color = '#ba1a1a';
                 btnConfirm.disabled = true;
                 btnConfirm.style.opacity = '0.5';
             }
         }
 
+        function toggleAdjustmentsContainer() {
+            const rowDeposit = document.getElementById('row-deposit');
+            const rowOtherPayments = document.getElementById('row-other-payments');
+
+            const hasDeposit = rowDeposit && rowDeposit.style.display !== 'none';
+            const hasOther = rowOtherPayments && rowOtherPayments.style.display !== 'none';
+
+            const container = document.getElementById('originalBillAdjustments');
+            if (container) {
+                if (hasDeposit || hasOther) {
+                    container.style.display = 'block';
+                } else {
+                    container.style.display = 'none';
+                }
+            }
+        }
+
         function updateGroupOutstandingDisplay() {
-            let totalWithVat = globalOriginalTotal * 1.1;
-            let outstanding = totalWithVat - appliedGroupPromoDiscount - globalPrePaidDeposit - globalOtherPayments;
+            const subtotal = globalOriginalSubtotal;
+            const promoDiscount = appliedGroupPromoDiscount;
+            const serviceCharge = globalServiceChargeTotal;
+
+            // VAT (10% tính trên: Tạm tính - Khuyến mãi + Phí phục vụ)
+            const vatBase = Math.max(0, subtotal - promoDiscount + serviceCharge);
+            const vat = vatBase * 0.1;
+
+            // Tổng cộng hóa đơn = Tạm tính - Khuyến mãi + Phí phục vụ + VAT
+            const totalWithVat = subtotal - promoDiscount + serviceCharge + vat;
+
+            let outstanding = totalWithVat - globalPrePaidDeposit - globalOtherPayments;
             if (outstanding < 0) outstanding = 0;
+
+            globalOriginalTotal = totalWithVat;
             globalOriginalOutstanding = outstanding;
+
+            // Cập nhật lên giao diện
+            document.getElementById('invoiceSubtotalAmount').innerText = formatCurrency(subtotal);
+
+            if (promoDiscount > 0) {
+                document.getElementById('row-promo-display').style.display = 'flex';
+                document.getElementById('promoAmountDisplay').innerText = "-" + formatCurrency(promoDiscount);
+                if (appliedGroupPromoType === 'FIXED_AMOUNT') {
+                    document.getElementById('promoLabelDisplay').innerText = 'Cố định';
+                } else {
+                    document.getElementById('promoLabelDisplay').innerText = (window.appliedGroupPromoValue || 0) + '%';
+                }
+            } else {
+                document.getElementById('row-promo-display').style.display = 'none';
+            }
+
+            if (serviceCharge > 0) {
+                document.getElementById('row-service-charge').style.display = 'flex';
+                document.getElementById('invoiceServiceChargeAmount').innerText = formatCurrency(serviceCharge);
+            } else {
+                document.getElementById('row-service-charge').style.display = 'none';
+            }
+
+            document.getElementById('invoiceVatAmount').innerText = formatCurrency(vat);
+            document.getElementById('invoiceTotalAmount').innerText = formatCurrency(totalWithVat);
             document.getElementById('originalOutstandingAmount').innerText = formatCurrency(outstanding);
+
+            toggleAdjustmentsContainer();
 
             const btn = document.getElementById('btnProceedOriginal');
             if (btn) {
@@ -1309,7 +2216,7 @@
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
-                    btn.innerText = 'Hoàn tất Checkout';
+                    btn.innerHTML = 'Hoàn tất Checkout';
                     btn.onclick = function () {
                         currentPaymentRoomId = null;
                         currentPaymentAmount = 0;
@@ -1320,10 +2227,25 @@
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
-                    btn.innerText = 'Thanh toán HĐ Gốc';
+                    btn.innerHTML = 'Thanh toán toàn bộ';
                     btn.onclick = function () {
                         openPaymentModal(globalOriginalOutstanding, true);
                     };
+                }
+            }
+
+            const btnPrint = document.getElementById('btnPrintOriginal');
+            if (btnPrint) {
+                if (outstanding < 1) {
+                    btnPrint.disabled = false;
+                    btnPrint.style.opacity = '1';
+                    btnPrint.style.pointerEvents = 'auto';
+                    btnPrint.style.cursor = 'pointer';
+                } else {
+                    btnPrint.disabled = true;
+                    btnPrint.style.opacity = '0.5';
+                    btnPrint.style.pointerEvents = 'none';
+                    btnPrint.style.cursor = 'not-allowed';
                 }
             }
         }
@@ -1334,8 +2256,8 @@
                 alert("Vui lòng nhập mã giảm giá");
                 return;
             }
-            const totalWithVat = globalOriginalTotal * 1.1;
-            fetch(`/api/folios/promo/validate?code=${encodeURIComponent(code)}&amount=${totalWithVat}`)
+            const validationAmount = globalOriginalSubtotal;
+            fetch(`/api/folios/promo/validate?code=${encodeURIComponent(code)}&amount=${validationAmount}`)
                 .then(res => {
                     if (!res.ok) {
                         throw new Error("HTTP error " + res.status);
@@ -1347,14 +2269,7 @@
                         appliedGroupPromoCode = data.promoCode;
                         appliedGroupPromoType = data.discountType;
                         appliedGroupPromoDiscount = data.discountAmount;
-
-                        document.getElementById('row-promo').style.display = 'flex';
-                        if (data.discountType === 'FIXED_AMOUNT') {
-                            document.getElementById('promoLabel').innerText = 'Cố định';
-                        } else {
-                            document.getElementById('promoLabel').innerText = data.discountValue + '%';
-                        }
-                        document.getElementById('promoAmount').innerText = "-" + formatCurrency(data.discountAmount);
+                        window.appliedGroupPromoValue = data.discountValue;
 
                         updateGroupOutstandingDisplay();
                         alert("Áp dụng mã giảm giá thành công!");
@@ -1365,7 +2280,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("Lỗi khi kết nối hệ thống kiểm tra mã giảm giá (Có thể ứng dụng Spring Boot cần được khởi động lại)");
+                    alert("Lỗi khi kết nối hệ thống kiểm tra mã giảm giá");
                     resetGroupPromo();
                 });
         }
@@ -1374,7 +2289,8 @@
             appliedGroupPromoCode = null;
             appliedGroupPromoType = null;
             appliedGroupPromoDiscount = 0;
-            document.getElementById('row-promo').style.display = 'none';
+            window.appliedGroupPromoValue = 0;
+            document.getElementById('row-promo-display').style.display = 'none';
             document.getElementById('groupPromoInput').value = '';
             updateGroupOutstandingDisplay();
         }
@@ -1440,7 +2356,7 @@
             const roomInfo = roomSummaryMap[roomId];
             if (!roomInfo) return;
 
-            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount;
+            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount - (roomInfo.roomDeposited || 0);
             if (roomOutstanding < 0) roomOutstanding = 0;
 
             document.getElementById('roomBillOutstandingAmount').innerText = formatCurrency(roomOutstanding);
@@ -1504,7 +2420,7 @@
                         }
                     }
                 } else {
-                    alert("Lỗi: " + (data.message || "Không thể thanh toán"));
+                    alert("Lỗi: " + (data.message || data.error || "Không thể thanh toán"));
                     btnConfirm.innerHTML = 'Xác nhận Thanh toán';
                     btnConfirm.disabled = false;
                 }
@@ -1515,56 +2431,555 @@
             }
         }
 
+        function formatDateStr(dateStr) {
+            if (!dateStr) return 'N/A';
+            if (dateStr.includes('/')) return dateStr;
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
         function showSuccessModal(data) {
             const invoiceNo = "INV-" + (data.invoiceId || Math.floor(Math.random() * 10000 + 1000));
             document.getElementById('successInvoiceId').innerText = "#" + invoiceNo;
 
-            // Build Printable Invoice
+            // 1. Basic invoice metadata
             document.getElementById('printInvoiceNumber').innerText = invoiceNo;
             document.getElementById('printInvoiceDate').innerText = new Date().toLocaleDateString('vi-VN');
 
-            if (currentFolioData) {
-                const isSplit = (currentPaymentAmount === globalSplitOutstanding);
-                const itemsToPrint = isSplit ?
-                    currentFolioData.items.filter(i => selectedItemIds.includes(i.id)) :
-                    currentFolioData.items.filter(i => i.status !== 'Settled');
+            // 2. Guest Info
+            const guestName = (bookingGroupData && bookingGroupData.customerName) ||
+                (currentFolioData && (currentFolioData.bookerName || currentFolioData.guestName)) ||
+                "Khách hàng";
+            document.getElementById('printGuestName').innerText = guestName;
 
-                document.getElementById('printRoomNumber').innerText = itemsToPrint.length > 0 ? itemsToPrint[0].roomName : 'N/A';
+            const roomList = (bookingGroupData && bookingGroupData.rooms) ?
+                bookingGroupData.rooms.map(r => r.roomNumber).join(', ') :
+                (currentFolioData ? currentFolioData.roomNumber : 'N/A');
+            document.getElementById('printRoomNumber').innerText = roomList;
 
-                let tbodyHtml = '';
-                itemsToPrint.forEach(item => {
+            let guestCount = 0;
+            const isSplit = data.isSplit !== undefined ? data.isSplit : (currentPaymentRoomId !== null);
+            if (isSplit && currentFolioData) {
+                guestCount = (currentFolioData.numberOfAdults || 0) + (currentFolioData.numberOfChildren || 0);
+            } else if (globalFolioResults && globalFolioResults.length > 0) {
+                globalFolioResults.forEach(roomResult => {
+                    if (roomResult) {
+                        guestCount += (roomResult.numberOfAdults || 0) + (roomResult.numberOfChildren || 0);
+                    }
+                });
+            } else if (currentFolioData) {
+                guestCount = (currentFolioData.numberOfAdults || 0) + (currentFolioData.numberOfChildren || 0);
+            }
+            document.getElementById('printGuestCount').innerText = guestCount;
+
+            const checkInDateStr = (currentFolioData && currentFolioData.checkInDate) || "";
+            const checkOutDateStr = (currentFolioData && currentFolioData.checkOutDate) || "";
+            document.getElementById('printArrivalDate').innerText = formatDateStr(checkInDateStr);
+            document.getElementById('printDepartureDate').innerText = formatDateStr(checkOutDateStr);
+
+            // 3. Payment Method
+            let methodText = 'Tiền mặt (Cash)';
+            if (selectedPaymentMethod === 'VNPAY') {
+                methodText = 'VNPay (Chuyển khoản)';
+            }
+            document.getElementById('printPaymentMethod').innerText = methodText;
+
+            // 4. Calculate stay nights
+            let nights = 1;
+            if (checkInDateStr && checkOutDateStr) {
+                const inDate = new Date(checkInDateStr);
+                const outDate = new Date(checkOutDateStr);
+                const diffTime = Math.abs(outDate - inDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays > 0) {
+                    nights = diffDays;
+                }
+            }
+
+            // 5. Gather items to print
+            let itemsToPrint = [];
+            if (isSplit) {
+                itemsToPrint = currentFolioData.items.filter(i => selectedItemIds.includes(i.id));
+            } else {
+                // If payment was successful (or no unsettled items are left), gather ALL items for print.
+                // Otherwise, only gather unsettled items.
+                const hasUnsettled = globalFolioResults.some(roomResult => 
+                    roomResult && roomResult.items && roomResult.items.some(item => item.status !== 'Settled')
+                );
+                globalFolioResults.forEach(roomResult => {
+                    if (roomResult && roomResult.items) {
+                        roomResult.items.forEach(item => {
+                            if (!hasUnsettled || item.status !== 'Settled') {
+                                itemsToPrint.push(item);
+                            }
+                        });
+                    }
+                });
+            }
+
+            const formatNumber = (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val));
+
+            let printSubtotal = 0;
+            let printServiceCharge = 0;
+
+            // Group identical items together by description and unit price
+            let groupedItems = [];
+            itemsToPrint.forEach(item => {
+                const isRoom = (item.sourceDepartment || '').toLowerCase() === 'room';
+
+                let orderMatch = item.description ? item.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
+                if (orderMatch && orderMatch[1]) {
+                    const orderId = orderMatch[1];
+                    const fnbDetail = window.fnbOrderDetailsMap ? window.fnbOrderDetailsMap[orderId] : null;
+                    if (fnbDetail && fnbDetail.items && fnbDetail.items.length > 0) {
+                        const dishesTotal = fnbDetail.items.reduce((sum, di) => sum + di.amount, 0);
+                        const itemDate = (item.createdAt) ? formatDateStr(item.createdAt.substring(0, 10)) : new Date().toLocaleDateString('vi-VN');
+                        
+                        // Add parent F&B Order row
+                        groupedItems.push({
+                            description: `F&B CHARGES (Order #${orderId})`,
+                            qty: "",
+                            unitVal: "",
+                            amount: dishesTotal,
+                            itemDate: itemDate,
+                            isParentFnb: true,
+                            children: fnbDetail.items.map(dish => ({
+                                description: `- ${dish.name}`,
+                                qty: dish.quantity,
+                                unitVal: dish.price,
+                                amount: dish.amount,
+                                itemDate: "",
+                                isChildFnb: true
+                            }))
+                        });
+
+                        // Calculate F&B service charge
+                        const billedAmount = item.amount;
+                        const diff = billedAmount - dishesTotal;
+                        if (diff > 0 && Math.abs(diff) > 1) {
+                            printServiceCharge += diff;
+                        }
+                        return; // Done with F&B order
+                    }
+                }
+
+                // For normal items (Room, Tour, Minibar, etc.)
+                const qty = isRoom ? Number(nights) : 1;
+                const unitVal = isRoom ? (Number(item.amount) / Number(nights)) : Number(item.amount);
+                
+                // Clean description: remove "(Expected)" or "Expected" from description for guest presentation
+                let cleanDesc = item.description || '';
+                cleanDesc = cleanDesc.replace(/\s*\(Expected\)/gi, '').replace(/\s*Expected\s*/gi, '').trim();
+
+                const key = `${cleanDesc}_${unitVal}`;
+                const itemDate = (item.createdAt) ? formatDateStr(item.createdAt.substring(0, 10)) : new Date().toLocaleDateString('vi-VN');
+
+                let existing = groupedItems.find(g => g.key === key && !g.isParentFnb);
+                if (existing) {
+                    existing.qty += qty;
+                    existing.amount += Number(item.amount);
+                } else {
+                    groupedItems.push({
+                        key: key,
+                        description: cleanDesc,
+                        qty: qty,
+                        unitVal: unitVal,
+                        amount: Number(item.amount),
+                        itemDate: itemDate,
+                        isRoom: isRoom
+                    });
+                }
+            });
+
+            // Generate tbody rows with day grouping (cột thời gian rỗng nếu trùng ngày liên tiếp)
+            let tbodyHtml = '';
+            let lastDateStr = '';
+            groupedItems.forEach(g => {
+                const displayDate = (g.itemDate === lastDateStr) ? '' : g.itemDate;
+                if (g.itemDate) {
+                    lastDateStr = g.itemDate;
+                }
+
+                if (g.isParentFnb) {
+                    // Parent row: Bold description, blank qty and price, bold amount
                     tbodyHtml += `
                         <tr>
-                            <td style="padding: 8px 0; border-bottom: 1px dashed #ccc;">${item.description}</td>
-                            <td style="padding: 8px 0; border-bottom: 1px dashed #ccc; text-align: right;">${formatCurrency(item.amount)}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${displayDate}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${g.description}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: center;"></td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;"></td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.amount)}</td>
                         </tr>
                     `;
-                });
-                document.getElementById('printInvoiceItems').innerHTML = tbodyHtml;
+                    printSubtotal += g.amount;
 
-                const total = currentPaymentAmount;
-                const subtotal = total / 1.1;
-                const vat = total - subtotal;
+                    // Children rows: Indented, normal description, standard qty, price, and amount
+                    if (g.children) {
+                        g.children.forEach(c => {
+                            tbodyHtml += `
+                                <tr style="color: #2c2a29;">
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee;"></td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; padding-left: 20px;">${c.description}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: center;">${c.qty}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right;">${formatNumber(c.unitVal)}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right;">${formatNumber(c.amount)}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } else {
+                    // Normal row
+                    tbodyHtml += `
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${displayDate}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${g.description}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: center;">${g.qty}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.unitVal)}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.amount)}</td>
+                        </tr>
+                    `;
+                    printSubtotal += g.amount;
+                }
+            });
+            document.getElementById('printInvoiceItems').innerHTML = tbodyHtml;
 
-                document.getElementById('printSubtotal').innerText = formatCurrency(subtotal);
-                document.getElementById('printVat').innerText = formatCurrency(vat);
-                document.getElementById('printTotal').innerText = formatCurrency(total);
+            // 6. Calculate total values
+            const promoDiscount = currentPaymentRoomId === null ? appliedGroupPromoDiscount : (roomSummaryMap[currentPaymentRoomId] ? roomSummaryMap[currentPaymentRoomId].appliedPromoDiscount : 0);
+            const deposit = currentPaymentRoomId === null ? globalPrePaidDeposit : (roomSummaryMap[currentPaymentRoomId] ? roomSummaryMap[currentPaymentRoomId].roomDeposited || 0 : 0);
+
+            const vatBase = Math.max(0, printSubtotal - promoDiscount + printServiceCharge);
+            const vat = vatBase * 0.1;
+            const totalBill = printSubtotal - promoDiscount + printServiceCharge + vat;
+            const totalOutstanding = Math.max(0, totalBill - deposit);
+
+            // Update footer UI
+            document.getElementById('printSubtotal').innerText = formatNumber(printSubtotal);
+
+            // Promo display
+            const printPromoRow = document.getElementById('printPromoRow');
+            if (printPromoRow) {
+                if (promoDiscount > 0) {
+                    printPromoRow.style.display = 'flex';
+                    const promoLabel = currentPaymentRoomId === null ? 
+                        (appliedGroupPromoType === 'FIXED_AMOUNT' ? 'Cố định' : (window.appliedGroupPromoValue || 0) + '%') : 
+                        ((roomSummaryMap[currentPaymentRoomId] && roomSummaryMap[currentPaymentRoomId].appliedPromoType === 'FIXED_AMOUNT') ? 'Cố định' : (roomSummaryMap[currentPaymentRoomId] ? (roomSummaryMap[currentPaymentRoomId].appliedPromoValue || 0) + '%' : '0%'));
+                    document.getElementById('printPromoLabel').innerText = promoLabel;
+                    document.getElementById('printPromoAmount').innerText = "- " + formatNumber(promoDiscount);
+                } else {
+                    printPromoRow.style.display = 'none';
+                }
             }
+
+            // Service charge display
+            if (printServiceCharge > 0) {
+                document.getElementById('printServiceChargeRow').style.display = 'flex';
+                document.getElementById('printServiceCharge').innerText = formatNumber(printServiceCharge);
+            } else {
+                document.getElementById('printServiceChargeRow').style.display = 'none';
+            }
+
+            document.getElementById('printVat').innerText = formatNumber(vat);
+
+            if (deposit > 0) {
+                document.getElementById('printDepositRow').style.display = 'flex';
+                document.getElementById('printDepositAmount').innerText = "- " + formatNumber(deposit);
+            } else {
+                document.getElementById('printDepositRow').style.display = 'none';
+            }
+
+            document.getElementById('printTotal').innerText = formatNumber(totalOutstanding);
 
             document.getElementById('successModal').style.display = 'flex';
         }
+
+        async function fetchFnbOrderDetails() {
+            const placeholders = document.querySelectorAll('.fnb-order-placeholder');
+            for (const row of placeholders) {
+                const orderId = row.getAttribute('data-fnb-order');
+                const totalAmountStr = row.getAttribute('data-amount');
+                const dateStr = row.getAttribute('data-date') || '';
+                const isSplit = row.getAttribute('data-split') === 'true';
+                const originalDesc = row.getAttribute('data-desc');
+                const trClass = isSplit ? 'item-settled' : '';
+
+                // Helper function to restore the original single row display (Fallback)
+                const restoreOriginalRow = () => {
+                    row.innerHTML = `
+                        <td colspan="3" style="text-align: left;">
+                            ${originalDesc} 
+                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                        </td>
+                        <td class="amount" style="text-align: right;">${formatCurrency(parseFloat(totalAmountStr))}</td>
+                    `;
+                    row.classList.remove('fnb-order-placeholder');
+                };
+
+                try {
+                    // Set a 5-second timeout using AbortController
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch('/api/pos/orders/' + orderId + '/details', { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status === 'success' && data.items && data.items.length > 0) {
+                            // Tạo bảng con nằm lọt thỏm ngay bên dưới dòng cha
+                            let subTableHtml = `
+                                <tr class="fnb-child-row-${orderId} ${trClass}" style="display: none; background-color: #faf8f5;">
+                                    <td colspan="4" style="padding: 10px 16px; border-top: 1px dashed #efebe4;">
+                                        <table style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 12px; color: #6e655f;">
+                                            <thead>
+                                                <tr style="border-bottom: 1px dashed #e6ded4; color: #8e8a86; font-weight: 600;">
+                                                    <th style="text-align: left; padding: 6px 0; width: 45%;">TÊN MÓN</th>
+                                                    <th style="text-align: center; padding: 6px 0; width: 15%;">SỐ LƯỢNG</th>
+                                                    <th style="text-align: right; padding: 6px 0; width: 20%;">ĐƠN GIÁ</th>
+                                                    <th style="text-align: right; padding: 6px 0; width: 20%;">THÀNH TIỀN</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                            `;
+
+                            // 1. Render từng món ăn
+                            data.items.forEach(item => {
+                                const formattedUnitPrice = new Intl.NumberFormat('vi-VN').format(item.price);
+                                const formattedAmount = new Intl.NumberFormat('vi-VN').format(item.amount) + ' VNĐ';
+                                subTableHtml += `
+                                    <tr style="border-bottom: 1px dashed #f2eee8;">
+                                        <td style="text-align: left; padding: 6px 0; font-style: italic;">${item.name}</td>
+                                        <td style="text-align: center; padding: 6px 0; font-style: italic;">${item.quantity}</td>
+                                        <td style="text-align: right; padding: 6px 0; font-style: italic;">${formattedUnitPrice}</td>
+                                        <td style="text-align: right; padding: 6px 0; font-style: italic;">${formattedAmount}</td>
+                                    </tr>
+                                `;
+                            });
+
+                            // 2. Phí phục vụ tại phòng (nếu có chênh lệch giữa tổng bill và tổng giá trị các món ăn)
+                            const itemsTotal = data.items.reduce((sum, item) => sum + item.amount, 0);
+                            const billedAmount = parseFloat(totalAmountStr);
+                            const diff = billedAmount - itemsTotal;
+
+                            if (diff > 0 && Math.abs(diff) > 1) { // Lớn hơn 1 đồng sai số
+                                const formattedDiff = new Intl.NumberFormat('vi-VN').format(diff) + ' VNĐ';
+                                subTableHtml += `
+                                    <tr style="border-bottom: 1px dashed #f2eee8;">
+                                        <td style="text-align: left; padding: 6px 0; font-style: italic;">Phí dịch vụ (5%)</td>
+                                        <td style="text-align: center; padding: 6px 0; font-style: italic;"></td>
+                                        <td style="text-align: right; padding: 6px 0; font-style: italic;"></td>
+                                        <td style="text-align: right; padding: 6px 0; font-style: italic;">${formattedDiff}</td>
+                                    </tr>
+                                `;
+                            }
+
+                            // 3. Dòng Tổng cộng chi tiết đơn hàng
+                            subTableHtml += `
+                                                <tr style="font-weight: 700;">
+                                                    <td style="text-align: left; padding: 8px 0;">Tổng cộng chi tiết đơn hàng</td>
+                                                    <td style="text-align: center; padding: 8px 0;"></td>
+                                                    <td style="text-align: right; padding: 8px 0;"></td>
+                                                    <td style="text-align: right; padding: 8px 0; color: #2c2a29;">${formatCurrency(billedAmount)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            `;
+
+                            row.insertAdjacentHTML('afterend', subTableHtml);
+
+                            // Phục hồi dòng cha (Parent Row) và biến nó thành nút bấm toggle (chỉ gồm Tên Bill bên trái và Tổng tiền bên phải)
+                            row.id = 'fnb-parent-row-' + orderId;
+                            row.style.cursor = 'pointer';
+                            row.onclick = () => window.toggleFnbOrder(orderId);
+                            row.innerHTML = `
+                                <td colspan="3" style="text-align: left; font-weight: 600; padding: 12px 8px;">
+                                    <i id="fnb-toggle-icon-${orderId}" class="fa-solid fa-chevron-right" style="margin-right: 8px; color: #8e8a86; width: 12px; transition: transform 0.2s;"></i>
+                                    ${originalDesc}
+                                    ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6; margin-left: 20px; font-weight: normal; display: inline-block;">(${dateStr})</div>` : ''}
+                                    ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500; margin-left: 20px; font-weight: normal;">(Đã tách)</span>' : ''}
+                                </td>
+                                <td class="amount" style="text-align: right; font-weight: 600; padding: 12px 8px;">${formatCurrency(billedAmount)}</td>
+                            `;
+                            row.classList.remove('fnb-order-placeholder');
+                        } else {
+                            restoreOriginalRow();
+                        }
+                    } else {
+                        restoreOriginalRow();
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch F&B order details for order ID " + orderId + ". Falling back to collapsed row.", e);
+                    restoreOriginalRow();
+                }
+            }
+        }
+
+        window.toggleFnbOrder = function (orderId) {
+            const childRows = document.querySelectorAll('.fnb-child-row-' + orderId);
+            const icon = document.getElementById('fnb-toggle-icon-' + orderId);
+            if (!childRows || childRows.length === 0) return;
+
+            const isCollapsed = childRows[0].style.display === 'none';
+            childRows.forEach(row => {
+                row.style.display = isCollapsed ? 'table-row' : 'none';
+            });
+
+            if (icon) {
+                if (isCollapsed) {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                    icon.style.transform = 'rotate(0deg)'; // reset rotation if any or just standard
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                }
+            }
+        };
+
+        async function fetchTourBookingDetails() {
+            const placeholders = document.querySelectorAll('.tour-booking-placeholder');
+            for (const row of placeholders) {
+                const bookingId = row.getAttribute('data-tour-booking');
+                const totalAmountStr = row.getAttribute('data-amount');
+                const dateStr = row.getAttribute('data-date') || '';
+                const isSplit = row.getAttribute('data-split') === 'true';
+                const originalDesc = row.getAttribute('data-desc');
+                const trClass = isSplit ? 'item-settled' : '';
+
+                const restoreOriginalRow = () => {
+                    row.innerHTML = `
+                        <td colspan="3" style="text-align: left;">
+                            ${originalDesc} 
+                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                        </td>
+                        <td class="amount" style="text-align: right;">${formatCurrency(parseFloat(totalAmountStr))}</td>
+                    `;
+                    row.classList.remove('tour-booking-placeholder');
+                };
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch('/api/tour-bookings/' + bookingId, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.tourName) {
+                            const participantCount = data.participantCount || 1;
+                            const tourCharge = data.tourCharge || parseFloat(totalAmountStr);
+                            const departureDate = data.departureDate || '';
+                            const departureTime = data.departureTime || '';
+
+                            const basePrice = tourCharge / participantCount;
+                            const formattedBasePrice = new Intl.NumberFormat('vi-VN').format(basePrice);
+                            const formattedAmount = new Intl.NumberFormat('vi-VN').format(tourCharge) + ' VNĐ';
+
+                            let subTableHtml = `
+                                <tr class="tour-child-row-${bookingId} ${trClass}" style="display: none; background-color: #faf8f5;">
+                                    <td colspan="4" style="padding: 10px 16px; border-top: 1px dashed #efebe4;">
+                                        <table style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 12px; color: #6e655f;">
+                                            <thead>
+                                                <tr style="border-bottom: 1px dashed #e6ded4; color: #8e8a86; font-weight: 600;">
+                                                    <th style="text-align: left; padding: 6px 0; width: 45%;">TÊN TOUR</th>
+                                                    <th style="text-align: center; padding: 6px 0; width: 15%;">SỐ LƯỢNG (PAX)</th>
+                                                    <th style="text-align: right; padding: 6px 0; width: 20%;">GIÁ VÉ</th>
+                                                    <th style="text-align: right; padding: 6px 0; width: 20%;">THÀNH TIỀN</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr style="border-bottom: 1px dashed #f2eee8;">
+                                                    <td style="text-align: left; padding: 6px 0; font-style: italic;">
+                                                        ${data.tourName}
+                                                        <div style="font-size: 0.75rem; color: #95a5a6; margin-top: 2px;">Khởi hành: ${departureTime} - ${departureDate}</div>
+                                                    </td>
+                                                    <td style="text-align: center; padding: 6px 0; font-style: italic;">${participantCount}</td>
+                                                    <td style="text-align: right; padding: 6px 0; font-style: italic;">${formattedBasePrice}</td>
+                                                    <td style="text-align: right; padding: 6px 0; font-style: italic;">${formattedAmount}</td>
+                                                </tr>
+                                                <tr style="font-weight: 700;">
+                                                    <td style="text-align: left; padding: 8px 0;">Tổng cộng chi tiết tour</td>
+                                                    <td style="text-align: center; padding: 8px 0;"></td>
+                                                    <td style="text-align: right; padding: 8px 0;"></td>
+                                                    <td style="text-align: right; padding: 8px 0; color: #2c2a29;">${formatCurrency(tourCharge)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            `;
+
+                            row.insertAdjacentHTML('afterend', subTableHtml);
+
+                            row.id = 'tour-parent-row-' + bookingId;
+                            row.style.cursor = 'pointer';
+                            row.onclick = () => window.toggleTourBooking(bookingId);
+                            row.innerHTML = `
+                                <td colspan="3" style="text-align: left; font-weight: 600; padding: 12px 8px;">
+                                    <i id="tour-toggle-icon-${bookingId}" class="fa-solid fa-chevron-right" style="margin-right: 8px; color: #8e8a86; width: 12px; transition: transform 0.2s;"></i>
+                                    ${originalDesc}
+                                    ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6; margin-left: 20px; font-weight: normal; display: inline-block;">(${dateStr})</div>` : ''}
+                                    ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500; margin-left: 20px; font-weight: normal;">(Đã tách)</span>' : ''}
+                                </td>
+                                <td class="amount" style="text-align: right; font-weight: 600; padding: 12px 8px;">${formatCurrency(tourCharge)}</td>
+                            `;
+                            row.classList.remove('tour-booking-placeholder');
+                        } else {
+                            restoreOriginalRow();
+                        }
+                    } else {
+                        restoreOriginalRow();
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch tour booking details for booking ID " + bookingId, e);
+                    restoreOriginalRow();
+                }
+            }
+        }
+
+        window.toggleTourBooking = function (bookingId) {
+            const childRows = document.querySelectorAll('.tour-child-row-' + bookingId);
+            const icon = document.getElementById('tour-toggle-icon-' + bookingId);
+            if (!childRows || childRows.length === 0) return;
+
+            const isCollapsed = childRows[0].style.display === 'none';
+            childRows.forEach(row => {
+                row.style.display = isCollapsed ? 'table-row' : 'none';
+            });
+
+            if (icon) {
+                if (isCollapsed) {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                }
+            }
+        };
     </script>
     <!-- Manager Request Modal -->
     <div id="managerRequestModal" class="split-modal-overlay" style="display: none;">
         <div class="split-modal-content" style="max-width: 500px; padding: 24px; text-align: left;">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3 style="margin: 0; color: #2c3e50;">Báo cáo sự cố & Yêu cầu Quản lý</h3>
-                <button class="close-btn" onclick="closeManagerRequestModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <button class="close-btn" onclick="closeManagerRequestModal()"
+                    style="background: none; border: none; font-size: 1.2rem; cursor: pointer;"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500;">Loại yêu cầu</label>
-                    <select id="mgrRequestType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="mgrRequestType"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="Manager_Approval">Giảm giá / Đền bù sự cố</option>
                         <option value="Late_Checkout_Waiver">Miễn phụ thu trả phòng trễ</option>
                         <option value="Cancellation_Fee_Waiver">Miễn phí phạt hủy phòng</option>
@@ -1573,12 +2988,15 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500;">Lý do / Mô tả chi tiết</label>
-                    <textarea id="mgrRequestDesc" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Ví dụ: Khách phàn nàn máy lạnh ồn, xin giảm giá 10%..."></textarea>
+                    <textarea id="mgrRequestDesc" rows="4"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"
+                        placeholder="Ví dụ: Khách phàn nàn máy lạnh ồn, xin giảm giá 10%..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeManagerRequestModal()">Hủy</button>
-                <button class="btn btn-primary" onclick="submitManagerRequest()" style="background-color: #e65100; border-color: #e65100;">Gửi yêu cầu</button>
+                <button class="btn btn-primary" onclick="submitManagerRequest()"
+                    style="background-color: #e65100; border-color: #e65100;">Gửi yêu cầu</button>
             </div>
         </div>
     </div>
@@ -1595,7 +3013,7 @@
             const desc = document.getElementById('mgrRequestDesc').value;
 
             if (!desc.trim()) {
-                alert('Vui lòng nhập lý do/mô tả chi tiết!');
+                alert('Please enter reason/description!');
                 return;
             }
 
@@ -1610,21 +3028,116 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeManagerRequestModal();
-                    alert('Yêu cầu đã được gửi đến Quản lý.');
-                } else {
-                    alert(data.message || 'Lỗi khi gửi yêu cầu');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Lỗi kết nối máy chủ');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeManagerRequestModal();
+                        alert('Yêu cầu đã được gửi đến Quản lý.');
+                    } else {
+                        alert(data.message || 'Lỗi khi gửi yêu cầu');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Lỗi kết nối máy chủ');
+                });
         }
     </script>
+
+                <!-- WebSocket integration for real-time task notifications -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        (function() {
+            var staffId = /*[[${staffId}]]*/ 0;
+
+            function showPersistentToast(notif) {
+                if (typeof Toastify === 'undefined') return;
+                Toastify({
+                    text: notif.text,
+                    duration: -1,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    style: notif.direct ? {
+                        background: "linear-gradient(to right, #FF416C, #FF4B2B)",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        fontFamily: "'Inter', sans-serif",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 15px rgba(255,65,108,0.4)"
+                    } : {
+                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        fontFamily: "'Inter', sans-serif",
+                        borderRadius: "8px"
+                    },
+                    callback: function() {
+                        var saved = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                        saved = saved.filter(function(n) { return n.id !== notif.id; });
+                        localStorage.setItem('kawai_notifs', JSON.stringify(saved));
+                    }
+                }).showToast();
+            }
+
+            try {
+                var pending = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                pending.forEach(function(n) { showPersistentToast(n); });
+            } catch(e) {}
+
+            function saveAndShow(text, direct) {
+                var notif = { id: Date.now() + '_' + Math.random(), text: text, direct: direct };
+                try {
+                    var saved = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
+                    saved.push(notif);
+                    localStorage.setItem('kawai_notifs', JSON.stringify(saved));
+                } catch(e) {}
+                showPersistentToast(notif);
+            }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') {
+                    console.warn('[WS] SockJS or Stomp not loaded');
+                    return;
+                }
+
+                var socket = new SockJS('/ws-endpoint');
+                var stompClient = Stomp.over(socket);
+                stompClient.debug = null; 
+
+                stompClient.connect({}, function(frame) {
+                    console.log('[WS] Đã kết nối thành công | staffId=' + staffId);
+
+                    stompClient.subscribe('/topic/operations', function(msg) {
+                        try {
+                            var payload = JSON.parse(msg.body);
+                            console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
+                            saveAndShow(`📢 THÔNG BÁO HỆ THỐNG:\n` + payload.message, false);
+                        } catch(e) { console.error('[WS] parse error', e); }
+                    });
+
+                    if (staffId && staffId !== 0) {
+                        stompClient.subscribe('/topic/operations/' + staffId, function(msg) {
+                            try {
+                                var payload = JSON.parse(msg.body);
+                                console.log('[WS] Nhận tin nhắn từ kênh Đích danh (/topic/operations/' + staffId + '):', payload);
+                                saveAndShow(`🔔 NHIỆM VỤ MỚI:\n` + payload.message, true);
+                            } catch(e) { console.error('[WS] parse error', e); }
+                        });
+                        console.log('[WS] Đã đăng ký kênh riêng: /topic/operations/' + staffId);
+                    }
+
+                }, function(error) {
+                    console.error('[WS] Lỗi kết nối WebSocket:', error);
+                });
+            });
+        })();
+    </script>
 </body>
+
+</html>
 
 </html>

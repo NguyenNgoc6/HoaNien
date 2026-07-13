@@ -55,6 +55,9 @@ public class ProfileController {
     private RoomBookingRepository roomBookingRepository;
 
     @Autowired
+    private com.kawai.repositories.BookingRepository bookingRepository;
+
+    @Autowired
     private TourBookingRepository tourBookingRepository;
 
     @Autowired
@@ -68,6 +71,12 @@ public class ProfileController {
 
     @Autowired
     private com.kawai.repositories.RoomGuestRepository roomGuestRepository;
+
+    @Autowired
+    private com.kawai.services.interfaces.TourBookingService tourBookingService;
+
+    @Autowired
+    private com.kawai.services.interfaces.EmailService emailService;
 
     @Autowired
     private com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
@@ -95,6 +104,53 @@ public class ProfileController {
             customer.setMembershipTier(defaultTier);
         }
         model.addAttribute("customer", customer);
+        
+        // Safe calculations for Membership Tier, Loyalty Points and UI Progress to avoid Thymeleaf translation exceptions
+        String tierName = "REGULAR";
+        int pts = 0;
+        int maxPts = 1000;
+        int percent = 0;
+        String nextTierInfo = "Max Tier Reached!";
+        String avatarInitial = "G";
+
+        if (customer != null) {
+            try {
+                if (customer.getMembershipTier() != null) {
+                    tierName = customer.getMembershipTier().getTierName();
+                }
+            } catch (Exception e) {
+                tierName = "REGULAR";
+            }
+            if (customer.getLoyaltyPoints() != null) {
+                pts = customer.getLoyaltyPoints();
+            }
+            if (customer.getFullName() != null && !customer.getFullName().trim().isEmpty()) {
+                avatarInitial = customer.getFullName().trim().substring(0, 1).toUpperCase();
+            }
+        }
+
+        if (pts < 1000) {
+            maxPts = 1000;
+            nextTierInfo = (1000 - pts) + " pts to Silver";
+        } else if (pts < 5000) {
+            maxPts = 5000;
+            nextTierInfo = (5000 - pts) + " pts to Gold";
+        } else if (pts < 10000) {
+            maxPts = 10000;
+            nextTierInfo = (10000 - pts) + " pts to Platinum";
+        } else {
+            maxPts = pts;
+            nextTierInfo = "Hạng thẻ cao nhất!";
+        }
+
+        percent = maxPts > 0 ? (pts * 100 / maxPts) : 0;
+        if (percent > 100) percent = 100;
+
+        model.addAttribute("tierName", tierName != null ? tierName.toUpperCase() : "REGULAR");
+        model.addAttribute("loyaltyPoints", pts);
+        model.addAttribute("progressPercent", percent);
+        model.addAttribute("nextTierInfo", nextTierInfo);
+        model.addAttribute("avatarInitial", avatarInitial);
 
         if (customer != null) {
             // Get bookings where customer is master
@@ -117,10 +173,6 @@ public class ProfileController {
                             return false;
                         }
 
-                        if (status.startsWith("CANCEL")) {
-                            return paymentTransactionRepository.existsByBookingIdAndStatus(b.getId(),
-                                    com.kawai.models.PaymentStatus.SUCCESS);
-                        }
                         return true;
                     })
                     .sorted((b1, b2) -> b2.getId().compareTo(b1.getId()))
@@ -130,8 +182,16 @@ public class ProfileController {
 
             java.util.Map<Long, List<RoomBookingDetail>> visibleDetailsMap = new java.util.HashMap<>();
             java.util.Map<Long, java.math.BigDecimal> remainingLimits = new java.util.HashMap<>();
+            
+            java.util.Map<Long, List<com.kawai.models.FolioItem>> folioItemsMap = new java.util.HashMap<>();
+            java.util.Map<Long, List<com.kawai.models.RoomGuest>> roomGuestsMap = new java.util.HashMap<>();
+            List<RoomBooking> activeStays = new java.util.ArrayList<>();
 
             for (RoomBooking rb : roomBookings) {
+                if ("CHECKED_IN".equalsIgnoreCase(rb.getBookingStatus())) {
+                    activeStays.add(rb);
+                }
+
                 List<RoomBookingDetail> allDetails = roomBookingDetailRepository.findByRoomBookingId(rb.getId());
                 List<RoomBookingDetail> visibleDetails;
 
@@ -150,6 +210,10 @@ public class ProfileController {
                             : java.math.BigDecimal.ZERO;
                     List<com.kawai.models.FolioItem> folioItems = folioItemRepository
                             .findByRoomBookingDetailId(d.getId());
+                            
+                    folioItemsMap.put(d.getId(), folioItems);
+                    roomGuestsMap.put(d.getId(), roomGuestRepository.findByRoomBookingDetailId(d.getId()));
+
                     java.math.BigDecimal spent = folioItems.stream()
                             .filter(f -> !Boolean.TRUE.equals(f.getIsSettledSeparately()))
                             .map(com.kawai.models.FolioItem::getAmount)
@@ -159,8 +223,13 @@ public class ProfileController {
             }
             model.addAttribute("visibleDetailsMap", visibleDetailsMap);
             model.addAttribute("remainingLimits", remainingLimits);
+            model.addAttribute("folioItemsMap", folioItemsMap);
+            model.addAttribute("roomGuestsMap", roomGuestsMap);
+            model.addAttribute("activeStays", activeStays);
 
-            List<TourBooking> tourBookings = tourBookingRepository.findByCustomer(customer).stream()
+            List<TourBooking> tourBookings = bookingRepository.findByCustomerId(customer.getId()).stream()
+                    .filter(b -> b instanceof TourBooking)
+                    .map(b -> (TourBooking) b)
                     .filter(tb -> {
                         String status = tb.getBookingStatus() != null ? tb.getBookingStatus().toUpperCase() : "";
 
@@ -168,10 +237,6 @@ public class ProfileController {
                             return false;
                         }
 
-                        if (status.startsWith("CANCEL")) {
-                            return paymentTransactionRepository.existsByBookingIdAndStatus(tb.getId(),
-                                    com.kawai.models.PaymentStatus.SUCCESS);
-                        }
                         return true;
                     })
                     .collect(java.util.stream.Collectors.toList());
@@ -409,5 +474,60 @@ public class ProfileController {
             }
         }
         return "redirect:/profile";
+    }
+
+    @PostMapping("/tours/cancel/{bookingId}")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> cancelTour(
+            @PathVariable Long bookingId,
+            Authentication authentication) {
+        if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("status", "error", "message", "Vui lòng đăng nhập để thực hiện thao tác!"));
+        }
+
+        String username = extractUsername(authentication);
+        Customer customer = customerRepository.findByAccount_Username(username)
+                .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
+
+        if (customer == null) {
+            return org.springframework.http.ResponseEntity.badRequest()
+                    .body(java.util.Map.of("status", "error", "message", "Không tìm thấy thông tin khách hàng!"));
+        }
+
+        TourBooking booking = tourBookingRepository.findById(bookingId).orElse(null);
+        if (booking == null) {
+            return org.springframework.http.ResponseEntity.badRequest()
+                    .body(java.util.Map.of("status", "error", "message", "Không tìm thấy đơn đặt tour!"));
+        }
+
+        // Kiểm tra quyền sở hữu đơn đặt tour
+        if (!booking.getCustomer().getId().equals(customer.getId())) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(java.util.Map.of("status", "error", "message", "Bạn không có quyền hủy đơn đặt tour này!"));
+        }
+
+        // Kiểm tra trạng thái hiện tại (Chỉ cho phép hủy nếu là CONFIRMED hoặc PENDING)
+        String status = booking.getBookingStatus() != null ? booking.getBookingStatus().toUpperCase() : "";
+        if (!"CONFIRMED".equals(status) && !"PENDING".equals(status)) {
+            return org.springframework.http.ResponseEntity.badRequest()
+                    .body(java.util.Map.of("status", "error", "message", "Đơn tour này không thể hủy (Trạng thái hiện tại: " + booking.getBookingStatus() + ")!"));
+        }
+
+        try {
+            // Hủy tour (false có nghĩa là khách hàng tự hủy)
+            java.math.BigDecimal refundAmount = tourBookingService.cancelTour(bookingId, false);
+
+
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
+                    "status", "success",
+                    "message", "Đã hủy đơn đặt tour thành công!",
+                    "refundAmount", refundAmount
+            ));
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("status", "error", "message", "Lỗi hệ thống khi hủy tour: " + e.getMessage()));
+        }
     }
 }
