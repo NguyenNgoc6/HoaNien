@@ -126,7 +126,7 @@ public class DependentServiceImpl implements DependentService {
 
         // Step 6: Duplicate check (ADR-002)
         if (isNewRegistration(dto)) {
-            assertNoDuplicateCccd(bookingId, cccdEncrypted);
+            assertNoDuplicateCccd(bookingId, booking, cccdEncrypted);
         }
 
         // Lưu lại ngày sinh CŨ TRƯỚC KHI ghi đè — dùng để hoàn phụ thu trẻ em nếu bị nâng cấp lên ADULT
@@ -240,11 +240,28 @@ public class DependentServiceImpl implements DependentService {
         return dto.getDependentId() == null;
     }
 
-    /** Kiểm tra không có CCCD trùng trong cùng booking. (ADR-002, MOD2-016) */
-    private void assertNoDuplicateCccd(Long bookingId, String cccdEncrypted) {
-        if (cccdEncrypted != null && dependentRepository.countDuplicateInBooking(bookingId, cccdEncrypted) > 0) {
+    /**
+     * Kiểm tra không có CCCD trùng trong cùng booking. (ADR-002, MOD2-016)
+     *
+     * Phạm vi check (trong 1 đơn booking):
+     *   1. Dependent khác đã được link vào booking này (qua RoomGuest)
+     *   2. Customer đứng đầu booking
+     */
+    private void assertNoDuplicateCccd(Long bookingId, RoomBooking booking, String cccdEncrypted) {
+        if (cccdEncrypted == null) return;
+
+        // Check 1: trùng với dependent khác trong cùng booking
+        if (dependentRepository.countDuplicateInBooking(bookingId, cccdEncrypted) > 0) {
             throw new BusinessException("MOD2-016",
                     "Căn cước bị trùng với người khác trong cùng một đơn đặt phòng [MOD2-016]");
+        }
+
+        // Check 2: trùng với CCCD của customer đứng đầu booking
+        String customerCccd = booking.getCustomer() != null
+                ? booking.getCustomer().getCccdPassportEncrypted() : null;
+        if (customerCccd != null && customerCccd.equals(cccdEncrypted)) {
+            throw new BusinessException("MOD2-016",
+                    "Căn cước bị trùng với người đặt phòng chính trong cùng một đơn đặt phòng [MOD2-016]");
         }
     }
 
