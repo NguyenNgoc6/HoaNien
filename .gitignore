@@ -25,6 +25,8 @@ replay_pid*
 
 # Maven
 target/
+**/target/
+04-Implement/kawai-backend/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -46,10 +48,11 @@ yarn-error.log
 .idea/
 *.iml
 *.iws
-.vscode/
-.settings/
-.project
-.classpath
+# Keep Eclipse/VSCode project config for JDT LS compatibility
+!.vscode/
+!.settings/
+!.project
+!.classpath
 
 # OS generated files
 .DS_Store
@@ -59,3 +62,43 @@ yarn-error.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Build artifacts (should never be committed)
+BOOT-INF/
+
+# Sensitive data
+cookies.txt
+
+# Python AI service
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Gemini Agent (không cần track)
+.gemini/
+
+# Thư mục cũ (đã di chuyển sang cấu trúc mới)
+03_sourcecode/
+04_testing/
+Template_Test/
+Design_Skill/
+01_SRS/
+01_UseCaseDiagram/
+AGENTS_MEMORIES.md
+All_Diagram.drawio
+EDS_TEMPLATE_V2.0.md
+TDD_TEMPLATE_V1.md
+UseCase_Diagram_Ngoc.md
+index.html
+
+# Maven build output
+05-Development/kawai-backend/target/
+
+# Embedded Maven binaries
+05-Development/kawai-backend/apache-maven-*/
+05-Development/kawai-backend/*.zip
+
+# Test logs and temp files
+05-Development/kawai-backend/*.txt
+05-Development/kawai-backend/*.jpg

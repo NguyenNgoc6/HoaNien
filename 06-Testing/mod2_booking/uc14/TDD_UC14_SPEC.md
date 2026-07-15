@@ -1,0 +1,617 @@
+# TEST-DRIVEN DEVELOPMENT SPECIFICATION
+
+## UC-14: Walk-in Guest Check-in — Đặc tả Kiểm thử Hướng Phát triển
+
+| Field                  | Value                       |
+| ---------------------- | --------------------------- |
+| **Document ID**  | `KAWAI-TDD-MOD2-UC14-001` |
+| **Version**      | 1.2                         |
+| **Date**         | 2026-06-19                  |
+| **Status**       | Approved                    |
+| **Standard**     | ISO/IEC/IEEE 29119-3:2021   |
+| **Author**       | Chu Xuân Dũng             |
+| **Reviewed by**  | Nguyễn Xuân Lưu          |
+| **DPO Sign-off** |                             |
+| **Approved by**  | [ ] Pending                 |
+| **Based on EDS** | v2.0                        |
+
+> **Quy ước TDD:** Tài liệu này mô tả test cases TRƯỚC khi viết production code.
+> Thứ tự bắt buộc: viết test (`.java`) → chạy → xác nhận FAIL 🔴 → implement → PASS 🟢 → refactor 🔵.
+
+---
+
+### CHANGELOG
+
+| Ngày      | Người thực hiện | Nội dung thay đổi                                                                                                                   |
+| ---------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-21 | Chu Xuân Dũng               | **v1.2** — Loai bo TC-M2-023/2 (CCCD null — tre em khong bat buoc co CCCD), TC-M2-023/3 (fullName — Bean Validation o Controller), TC-M2-026 (Concurrency — DB-level lock), TC-M2-032 (covered by TC-M2-028). Gop TC-M2-030 thanh @ParameterizedTest. Tong con **10 test case**. |
+| 2026-06-19 | Chu Xuân Dũng     | Refactor scope: xóa TC-M2-022 (trùng TC-M2-021), chuyển TC-M2-027 sang Security Suite, thu gọn E2E, bổ sung TC-M2-031/032/033/034 |
+| 2026-06-19 | Chu Xuân Dũng     |  Khởi tạo tài liệu TDD cho UC-14 (Walk-in Guest Check-in)                                                                         |
+
+---
+
+### MỤC LỤC
+
+1. [Thông tin Module](#1-thong-tin-module)
+2. [Logic Issues Resolved](#2-logic-issues-resolved)
+3. [Test Design Specification (TDS)](#3-test-design-specification-tds)
+4. [Test Case Specification](#4-test-case-specification)
+5. [Red-Green-Refactor Tracker](#5-red-green-refactor-tracker)
+6. [Entry / Exit Criteria](#6-entry--exit-criteria)
+7. [Rollback Plan](#7-rollback-plan)
+
+---
+
+### 1. Thông tin Module
+
+| Field                         | Value                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| **Feature / Gap ID**    | `GAP-MOD2-UC14`                                                               |
+| **Use Case**            | UC-14 — Walk-in Guest Check-in                                                 |
+| **Module**              | MOD2 — Đặt phòng & Tiền sảnh vận hành                                   |
+| **Priority**            | 🔴 P0 — Critical                                                               |
+| **Sprint**              | S2 (2026-06-19 → 2026-07-03)                                                   |
+| **Milestone**           | M3 Alpha — 2026-07-11                                                          |
+| **Data Classification** | Sensitive-PII (CCCD, Hộ chiếu, Ngày sinh)                                    |
+| **Compliance Scope**    | Luật cư trú 2020, Luật du lịch Việt Nam 2017, Nghị định 13/2023/NĐ-CP |
+| **Primary Actor**       | Receptionist                                                                    |
+| **Secondary Actor**     | System / Customer                                                               |
+
+---
+
+### 2. Logic Issues Resolved
+
+| #  | Spec gốc (sai / thiếu)                                             | Thực tế (schema / policy)                                                                           | Fix áp dụng trong test                                                                            |
+| -- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| L1 | Walk-in không cần kiểm tra phòng trước khi tạo booking        | Phải kiểm tra phòng Vacant_Clean TRƯỚC khi tạo Booking để tránh race condition               | Test concurrency: 2 lễ tân chọn cùng phòng walk-in → 1 thành công, 1 thất bại (TC-M2-026) |
+| L2 | Walk-in tạo booking với status gì?                                | SRS: tạo booking status =`Confirmed` và NGAY LẬP TỨC chuyển sang `Checked_In`                | TC-M2-021 kiểm tra state transition trong cùng 1 happy-path assertion block                       |
+| L3 | Deposit/Credit Limit cho Walk-in chưa rõ                           | Walk-in phải thiết lập Credit Limit và thu tiền tại quầy (không qua VNPay)                    | TC-M2-021 xác nhận `creditLimit` được gán giá trị hợp lệ sau check-in thành công      |
+| L4 | PII encryption là trách nhiệm của UC-14 hay CustomerService?     | PII encryption là responsibility của CustomerService / Security Module — không phải UC-14        | TC-M2-027 tách ra khỏi UC-14, chuyển sang `CustomerServicePIISecurityTest.java`                |
+| L5 | Phòng DIRTY/MAINTENANCE có thể walk-in không?                    | Tuyệt đối không — chỉ `Vacant_Clean` mới hợp lệ                                            | TC-M2-030: chọn phòng Dirty/Maintenance → hệ thống trả lỗi                                   |
+| L6 | Nếu khách đã có account → xử lý thế nào?                   | Tái sử dụng Customer profile, KHÔNG tạo duplicate; System auto-link Reservation vào account cũ | TC-M2-032: reuse account cũ, tạo booking mới liên kết customer_id cũ                          |
+| L7 | Walk-in có auto-tạo Customer Account không? (BR-08, BR-09, BR-10) | Có — hệ thống tự sinh account với default password; khách nhận thông báo sau                | TC-M2-031: verify account được tạo và link với Reservation                                    |
+| L8 | Số lượng khách vượt capacity phòng → hành vi?               | Hệ thống phải reject; không tạo Reservation                                                      | TC-M2-033: numberOfGuests > roomCapacity → 400 validation error                                    |
+
+---
+
+### 3. Test Design Specification (TDS)
+
+#### TDS-01 — Scope / Phạm vi
+
+```
+Walk-in Check-in Service Backend — Spring Boot
+├── Controller  : ReceptionistController.processWalkInCheckIn()
+├── Service     : WalkInCheckInService.createWalkInBookingAndCheckIn()
+├── Repository  : RoomRepository, BookingRepository, CustomerRepository, DependentRepository
+└── Event       : WalkInCheckInCompletedEvent, RoomCheckedInEvent (ApplicationEventPublisher)
+
+NGOÀI PHẠM VI UC-14 (test riêng):
+  ✖ AES-256 Encryption Algorithm  → CustomerServicePIISecurityTest.java
+  ✖ POS / Post-to-Room            → POSIntegrationTest.java
+  ✖ Finance Debt / Folio Balance  → FolioServiceTest.java
+  ✖ Checkout Workflow             → CheckoutServiceUC15Test.java
+```
+
+#### TDS-02 — Test Basis / Cơ sở Kiểm thử
+
+| Source                | Items Derived                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| SRS §2.1.14 UC-14    | Normal Flow (16 bước), AF-01/02/03, E-01/02/03                                   |
+| BR-01 → BR-10 (UC14) | Nhận dạng, phòng trống, trạng thái, PII storage, cư trú, account, capacity |
+| EDS ADR-UC14-001      | PII phải mã hóa — kiểm tra ở Customer module level, không ở UC-14          |
+| EDS ADR-UC14-002      | Pessimistic Lock chống overbooking Walk-in                                        |
+| EDS ADR-UC14-003      | ACID Transaction Boundary cho toàn bộ Walk-in flow                               |
+
+
+#### TDS-03 — Test Techniques
+
+| Kỹ thuật                              | Áp dụng cho Test Case                                               |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| **Equivalence Partitioning**      | TC-M2-021 (dữ liệu hợp lệ), TC-M2-023 (dữ liệu không hợp lệ) |
+| **Boundary Value Analysis**       | TC-M2-023 (CCCD sai format), TC-M2-033 (capacity)                   |
+| **State Transition**              | TC-M2-021 (Vacant_Clean → OCCUPIED, Booking → CHECKED_IN)           |
+| **Parameterized Test**            | TC-M2-030 (DIRTY + MAINTENANCE — @ParameterizedTest)                 |
+| **Negative Test**                 | TC-M2-023, TC-M2-024, TC-M2-025, TC-M2-030, TC-M2-033               |
+
+#### TDS-04 — Test Conditions and Coverage Items
+
+| Condition ID    | SRS Coverage                        | Test Condition                                                              | Test Case |
+| --------------- | ----------------------------------- | --------------------------------------------------------------------------- | --------- |
+| TC-COND-UC14-01 | Normal Flow (toàn bộ)             | Walk-in happy path: dữ liệu hợp lệ, phòng Vacant_Clean                 | TC-M2-021 |
+| TC-COND-UC14-02 | E-01                                | CCCD sai format → từ chối; dateOfBirth null → từ chối              | TC-M2-023 |
+| TC-COND-UC14-03 | AF-01                               | Không có phòng trống → báo lỗi                                        | TC-M2-024 |
+| TC-COND-UC14-04 | E-03                                | Transaction rollback khi lỗi giữa chừng                                  | TC-M2-025 |
+| TC-COND-UC14-05 | AF-02                               | Khách đã có profile → reuse, không tạo duplicate                     | TC-M2-028 |
+| TC-COND-UC14-06 | AF-03, BR-07                        | Thêm khách đi kèm → đăng ký tạm trú, lưu Dependent               | TC-M2-029 |
+| TC-COND-UC14-07 | E-02, BR-02                         | Phòng DIRTY/MAINTENANCE → Walk-in bị chặn (@ParameterizedTest)       | TC-M2-030 |
+| TC-COND-UC14-08 | Normal Flow Step 11-13, BR-08/09/10 | Walk-in tự động tạo Customer Account cho khách mới                    | TC-M2-031 |
+| TC-COND-UC14-09 | Normal Flow Step 5, BR-02           | numberOfGuests vượt capacity phòng → reject validation                  | TC-M2-033 |
+
+
+> [!NOTE]
+> **TC-M2-022 ĐÃ XÓA:** State transition đã được kiểm tra trong TC-M2-021. Không cần test case riêng.
+>
+> **TC-M2-023/2 ĐÃ XÓA (v1.2):** CCCD null — trẻ em có thể không có CCCD, không phải hard rule.
+>
+> **TC-M2-023/3 ĐÃ XÓA (v1.2):** fullName rỗng — Bean Validation (@NotBlank) ở Controller layer, không phải business logic UC-14.
+>
+> **TC-M2-026 ĐÃ XÓA (v1.2):** Concurrency/Pessimistic Lock là DB-level mechanism. Không thể verify bằng Mockito unit test. Thuộc về Integration Test với Testcontainers.
+>
+> **TC-M2-027 ĐÃ CHUYỂN:** AES-256 encryption → `CustomerServicePIISecurityTest.java`.
+>
+> **TC-M2-030 ĐÃ GỘP (v1.2):** DIRTY và MAINTENANCE gộp thành 1 @ParameterizedTest — logic giống hệt nhau.
+>
+> **TC-M2-032 ĐÃ XÓA (v1.2):** Covered by TC-M2-028 (reuse Customer) + TC-M2-031 (auto-create Account). Nếu khách đã có cả Customer+Account, receptionist không tạo Account mới.
+
+---
+
+### 4. Test Case Specification
+
+---
+
+#### `TC-M2-021` — Walk-in Check-in thành công: Booking + Room OCCUPIED + Folio khởi tạo
+
+**Severity:** 🔴 CRITICAL
+**Feature Under Test:** UC-14 Normal Flow (toàn bộ 16 bước)
+**SRS Coverage:** Normal Flow, BR-01, BR-02, BR-03, BR-04, BR-05, BR-06
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Phòng `R301` trạng thái `Vacant_Clean`, capacity = 2, hạng `Standard`.
+- Không có Customer nào có CCCD `001234567890` trong hệ thống.
+- Receptionist đã đăng nhập, có quyền `ROLE_RECEPTIONIST`.
+
+**Test Steps:**
+
+1. Lễ tân gọi `POST /api/v1/reception/walk-in` với payload hợp lệ:
+   ```json
+   {
+     "fullName": "Nguyen Van Test",
+     "dateOfBirth": "1990-05-15",
+     "cccd": "001234567890",
+     "phone": "0901234567",
+     "checkInDate": "2026-06-19",
+     "checkOutDate": "2026-06-21",
+     "numberOfGuests": 1,
+     "roomId": 301,
+     "creditLimit": 5000000
+   }
+   ```
+2. Assert HTTP response status = `201 Created`.
+3. Assert response body chứa `bookingId` (not null), `roomNumber = "R301"`, `status = "CHECKED_IN"`.
+4. **[State Transition]** Truy vấn DB: `rooms.room_status = "OCCUPIED"` cho room R301.
+5. **[State Transition]** Truy vấn DB: `room_bookings.booking_status = "CHECKED_IN"` cho booking vừa tạo.
+6. **[State Transition]** Truy vấn DB: `room_booking_details.detail_status = "CHECKED_IN"` cho detail vừa tạo.
+7. Truy vấn DB: Customer mới tồn tại với `full_name = "Nguyen Van Test"` (không cần verify cipher — đó là trách nhiệm CustomerService test).
+8. **[Folio Init]** Truy vấn DB: `folio_items` có record liên kết với `bookingId` vừa tạo; `folioId` trong response không null.
+9. **[Credit Limit]** Truy vấn DB: `room_bookings.credit_limit = 5000000`.
+10. Assert sự kiện `WalkInCheckInCompletedEvent` được publish (kiểm tra qua mock EventPublisher).
+
+**Expected Result (PASS):**
+
+- API trả về `201 Created` kèm `bookingId`, `roomNumber`, `status = CHECKED_IN`.
+- Room R301: `OCCUPIED`. Booking: `CHECKED_IN`. Detail: `CHECKED_IN`.
+- Folio được khởi tạo (folioId not null); không kiểm tra balance hay debt logic.
+- Customer mới tồn tại trong DB.
+- `creditLimit` = 5,000,000 được gán đúng.
+- `WalkInCheckInCompletedEvent` được publish.
+
+**Expected Result (FAIL):**
+
+- Phòng không chuyển `OCCUPIED` sau khi tạo booking.
+- Booking status = `CONFIRMED` mà không chuyển sang `CHECKED_IN`.
+- Folio không được khởi tạo (folioId null hoặc không tồn tại record).
+- Partial commit: Customer được lưu nhưng Booking không tồn tại.
+
+---
+
+#### `TC-M2-023` — E-01: CCCD/Passport không hợp lệ → từ chối tạo Walk-in
+
+**Severity:** 🟠 HIGH
+**Feature Under Test:** UC-14 Step 4, E-01
+**SRS Coverage:** BR-01 (Identification required and valid)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**CWE:** CWE-20 — Improper Input Validation
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Phòng `R301` trạng thái `Vacant_Clean`.
+
+> [!NOTE]
+> **v1.2:** Sub-test CCCD=null và fullName=rỗng đã bị loại bỏ.
+> - CCCD=null: trẻ em có thể không có CCCD — không phải hard rule.
+> - fullName rỗng: Bean Validation (@NotBlank) ở Controller layer — không phải business logic UC-14.
+
+**Test Steps:**
+
+1. **Sub-test 1 (CCCD sai format):** Gọi API với `cccd = "INVALID_12"`.
+   - Assert HTTP 400, mã lỗi `MOD2-UC14-003`, message: `"Invalid identification document"`.
+2. **Sub-test 2 (dateOfBirth null):** Gọi API với `dateOfBirth = null`.
+   - Assert HTTP 400, message chứa `"Date of birth is required"`.
+3. Truy vấn DB: Không có Customer, Booking nào được tạo trong cả 2 sub-test.
+
+**Expected Result (PASS):**
+
+- Hệ thống từ chối với mã lỗi chính xác cho 2 sub-test.
+- Không có side effect nào trong DB.
+
+---
+
+#### `TC-M2-024` — AF-01: Không có phòng trống → Walk-in bị chặn
+
+**Severity:** 🟠 HIGH
+**Feature Under Test:** UC-14 AF-01 (No Available Room)
+**SRS Coverage:** BR-02 (Check-in only if room available)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Tất cả phòng đều có trạng thái `OCCUPIED`, `DIRTY`, hoặc `MAINTENANCE`.
+- Không có phòng nào `Vacant_Clean`.
+
+**Test Steps:**
+
+1. Gọi `GET /api/v1/reception/walk-in/rooms` → Assert response `availableRooms = []`, `totalAvailable = 0`.
+2. Gọi `POST /api/v1/reception/walk-in` (không chỉ định `roomId`, để hệ thống tự tìm).
+3. Assert HTTP 409, mã lỗi `MOD2-UC14-004`, message: `"No available rooms for the requested stay period"`.
+4. Truy vấn DB: Không có Booking nào được tạo.
+
+**Expected Result (PASS):**
+
+- Hệ thống từ chối Walk-in khi không có phòng trống.
+- Không có Booking nào được tạo.
+
+---
+
+#### `TC-M2-025` — E-03: Transaction Rollback khi lỗi giữa chừng trong Walk-in
+
+**Severity:** 🔴 CRITICAL
+**Feature Under Test:** UC-14 E-03, ADR-UC14-003
+**SRS Coverage:** E-03 (Reservation Creation Failure — Transaction rolled back)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Phòng `R305` trạng thái `Vacant_Clean`.
+- Mock `folioService.initializeFolio()` để throw `RuntimeException` sau khi Booking đã được save().
+
+**Test Steps:**
+
+1. Gọi service walk-in check-in với data hợp lệ, roomId = R305.
+2. Xác nhận `folioService.initializeFolio()` throw RuntimeException.
+3. Assert HTTP 500, mã lỗi `MOD2-UC14-005`, message: `"Walk-in check-in failed. Transaction rolled back"`.
+4. Truy vấn DB:
+   - `SELECT COUNT(*) FROM room_bookings WHERE room_id = 305` → phải = 0.
+   - `SELECT COUNT(*) FROM customers WHERE full_name = 'TC-M2-025-Guest'` → phải = 0 (nếu khách mới).
+   - `SELECT room_status FROM rooms WHERE id = 305` → phải = `"Vacant_Clean"` (không đổi).
+
+**Expected Result (PASS):**
+
+- `@Transactional` rollback toàn bộ: không Booking, không Customer mới, phòng giữ `Vacant_Clean`.
+- Đây là kiểm tra tính ACID của toàn bộ Walk-in flow.
+
+**Expected Result (FAIL):**
+
+- Booking được lưu partial mà Folio không được tạo — partial commit nghiêm trọng.
+
+---
+
+> [!NOTE]
+> **TC-M2-026 ĐÃ XÓA (v1.2):** Pessimistic Lock là DB-level mechanism (`SELECT ... FOR UPDATE`).
+> Không thể verify bằng Mockito unit test vì mock không implement actual DB locking.
+> Test thực sự cần Integration Test với Testcontainers + MySQL real DB.
+> Xem: `WalkInCheckInConcurrencyIntegrationTest.java` (tạo trong bước Integration Test).
+
+---
+
+#### `TC-M2-028` — AF-02: Khách đã có Customer Profile → Reuse Profile, tạo Booking mới
+
+**Severity:** 🟡 MEDIUM
+**Feature Under Test:** UC-14 AF-02 (Existing Guest Record Found)
+**SRS Coverage:** AF-02, BR-06 (PII security — không duplicate)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Customer `customer_id = 99` đã tồn tại trong DB (CCCD `001200009999` đã được mã hóa và lưu).
+- Phòng `R308` trạng thái `Vacant_Clean`.
+
+**Test Steps:**
+
+1. Gọi Walk-in API với `cccd = "001200009999"` (khách đã có profile trong DB).
+2. Assert HTTP 201 — check-in thành công.
+3. Truy vấn DB: `SELECT COUNT(*) FROM customers WHERE id = 99` → phải = 1 (không tạo Customer mới).
+4. Truy vấn DB: `SELECT customer_id FROM room_bookings WHERE [bookingId]` → phải = 99 (reuse).
+5. Truy vấn DB: Phòng R308 có `room_status = "OCCUPIED"`.
+
+**Expected Result (PASS):**
+
+- Hệ thống tái sử dụng Customer profile cũ.
+- Không tạo Customer mới — không duplicate.
+- Booking mới liên kết đúng `customer_id = 99`.
+
+**Expected Result (FAIL):**
+
+- Tạo Customer thứ 2 với cùng CCCD → Duplicate data, vi phạm BR-06.
+
+---
+
+#### `TC-M2-029` — AF-03: Thêm khách đi kèm trong lúc Walk-in Check-in
+
+**Severity:** 🟡 MEDIUM
+**Feature Under Test:** UC-14 AF-03 (Additional Guests Registered)
+**SRS Coverage:** BR-07 (Temporary residence compliance — all guests)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Phòng `R309` trạng thái `Vacant_Clean`, capacity = 3.
+
+**Test Steps:**
+
+1. Gọi Walk-in API với `accompaniedGuests`:
+   ```json
+   {
+     "fullName": "Nguyen Van A",
+     "cccd": "001234567892",
+     "checkInDate": "2026-06-19",
+     "checkOutDate": "2026-06-21",
+     "numberOfGuests": 2,
+     "roomId": 309,
+     "accompaniedGuests": [
+       { "fullName": "Nguyen Thi B", "dateOfBirth": "1995-03-20", "cccd": "001234567893" }
+     ]
+   }
+   ```
+2. Assert HTTP 201 — check-in thành công.
+3. Truy vấn DB: Bảng `dependents` có 1 record liên kết `primary_customer_id` của khách chính.
+4. Truy vấn DB: `dependents.dependent_name = "Nguyen Thi B"`.
+5. Assert `accompaniedGuestCount = 1` trong response body.
+
+**Expected Result (PASS):**
+
+- Khách đi kèm được đăng ký đúng theo BR-07 (temporary residence compliance).
+- Dependent record liên kết với Customer chính.
+
+---
+
+#### `TC-M2-030` — E-02: Phòng DIRTY / MAINTENANCE → Walk-in bị chặn
+
+**Severity:** 🟠 HIGH
+**Feature Under Test:** UC-14 Step 7-8, E-02 (Room Becomes Unavailable)
+**SRS Coverage:** BR-02 (room must be available for check-in)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Phòng `R310` trạng thái `DIRTY`.
+- Phòng `R311` trạng thái `MAINTENANCE`.
+
+**Test Steps:**
+
+1. **Sub-test 1:** Gọi API với `roomId = 310` (DIRTY).
+   - Assert HTTP 409, mã lỗi `MOD2-UC14-006`, message: `"Selected room is not available for check-in"`.
+2. **Sub-test 2:** Gọi API với `roomId = 311` (MAINTENANCE).
+   - Assert HTTP 409, mã lỗi `MOD2-UC14-006`, message giống sub-test 1.
+3. Truy vấn DB: Không có Booking nào được tạo cho cả 2 sub-test.
+
+**Expected Result (PASS):**
+
+- Hệ thống chặn check-in vào phòng không Vacant_Clean theo ADR-UC14-002.
+
+---
+
+#### `TC-M2-031` — Normal Flow Step 11-13: Auto-Create Customer Account cho khách Walk-in mới
+
+**Severity:** 🟠 HIGH
+**Feature Under Test:** UC-14 Normal Flow Step 11 (System creates reservation), Step 12-13
+**SRS Coverage:** BR-08 (System auto-generates account), BR-09 (Default password policy), BR-10 (Account linked to Reservation)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+
+- Không có Customer nào có CCCD `001999888777` trong hệ thống.
+- Phòng `R312` trạng thái `Vacant_Clean`.
+
+**Test Steps:**
+
+1. Gọi Walk-in API với `cccd = "001999888777"`, `phone = "0912345678"` (khách hoàn toàn mới).
+2. Assert HTTP 201 — check-in thành công.
+3. Truy vấn DB: `SELECT id FROM customers WHERE full_name = 'TC-M2-031-Guest'` → tồn tại 1 record (customer_id = X).
+4. **[BR-08]** Truy vấn DB: `SELECT id FROM accounts WHERE customer_id = X` → tồn tại 1 account record.
+5. **[BR-09]** Truy vấn DB: `accounts.password_hash` không null, không rỗng (default password đã được gán và hash).
+6. **[BR-10]** Truy vấn DB: `room_bookings.customer_id = X` → Reservation liên kết đúng account mới.
+7. Assert response `isNewCustomer = true`.
+
+**Expected Result (PASS):**
+
+- Account mới được tạo tự động (BR-08).
+- Default password được gán và lưu dạng hash (BR-09) — không kiểm tra cipher algorithm.
+- Reservation liên kết đúng Customer Account (BR-10).
+
+**Expected Result (FAIL):**
+
+- Account không được tạo sau walk-in.
+- Reservation không liên kết account.
+- `password_hash` null.
+
+---
+
+> [!NOTE]
+> **TC-M2-032 ĐÃ XÓA (v1.2):** Covered by TC-M2-028 (reuse Customer profile) + TC-M2-031 (auto-create Account cho khách mới).
+> Nếu khách đã có Customer + Account, receptionist biết không cần tạo mới — đây là flow hiển nhiên.
+> TC-M2-028 đã verify `customerRepository.save()` không được gọi khi khách cũ.
+
+---
+
+#### `TC-M2-033` — Soft Capacity: numberOfGuests vượt base capacity nhưng trong giới hạn max → Chấp nhận + Phụ thu
+
+**Severity:** 🟡 MEDIUM
+**Feature Under Test:** UC-14 Normal Flow Step 5 (Enter stay details — Number of guests)
+**SRS Coverage:** Phụ thu quá người
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+- Phòng `R314` thuộc category có `baseAdults = 2`, `maxAdults = 4`, `extraAdultSurcharge = 500000`.
+- Khách điền 3 người lớn (1 người đặt chính + 2 đi kèm > 18 tuổi).
+
+**Test Steps:**
+1. Gọi Walk-in API với `roomId = 314`, kèm danh sách 2 `accompaniedGuests` trên 18 tuổi.
+2. Assert HTTP 201 Created.
+3. Assert Booking tạo thành công, status `CHECKED_IN`.
+4. Truy vấn `RoomBookingDetail`: `extraSurcharge` phải được set là 500,000 (phụ thu cho 1 người lớn dôi ra).
+
+**Expected Result (PASS):**
+- Hệ thống tự động phân loại người lớn / trẻ em (>= 18 tuổi là người lớn).
+- Tính phụ thu đúng cho số người vượt `baseCapacity`.
+
+---
+
+#### `TC-M2-035` — Hard Capacity: numberOfGuests vượt max capacity → Reject
+
+**Severity:** 🟡 MEDIUM
+**Feature Under Test:** UC-14 Normal Flow Step 5
+**SRS Coverage:** BR-02 (room availability includes capacity validation)
+**TDD Phase:** 🟢 GREEN
+**Test File:** `WalkInCheckInServiceUC14Test.java`
+**Test Data Classification:** SYNTHETIC
+
+**Preconditions:**
+- Phòng `R314` thuộc category có `maxAdults = 4`.
+- Khách điền 5 người lớn.
+
+**Test Steps:**
+1. Gọi Walk-in API với `roomId = 314` kèm danh sách 4 `accompaniedGuests` trên 18 tuổi.
+2. Assert HTTP 400, mã lỗi `MOD2-UC14-009`, message: `"Number of guests exceeds maximum room capacity"`.
+3. Không có Booking nào được tạo.
+
+**Expected Result (PASS):**
+- Hệ thống reject với lỗi validation nếu vượt quá giới hạn nhồi nhét tối đa của phòng.
+
+---
+
+
+
+### 5. Red-Green-Refactor Tracker
+
+> **Format 3-phase:** Mỗi test case ghi đầy đủ trạng thái 🔴 RED, 🟢 GREEN, 🔵 REFACTOR kèm commit hash + ngày thực hiện.
+
+| UC    | TC ID     | Mô tả ngắn                                                              | Test File                             | 🔴 RED | 🔴 Commit | 🔴 Date | 🟢 GREEN | 🟢 Commit | 🟢 Date | 🔵 REFACTOR | 🔵 Commit | 🔵 Note |
+| ----- | --------- | ------------------------------------------------------------------------ | ------------------------------------- | ------ | --------- | ------- | -------- | --------- | ------- | ----------- | --------- | ------- |
+| UC-14 | TC-M2-021 | Walk-in thành công: Booking + OCCUPIED + Account tạo mới              | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-023 | E-01: CCCD sai format → từ chối; dateOfBirth null → từ chối        | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-024 | AF-01: Không có phòng trống → Walk-in bị chặn                      | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-025 | E-03: Transaction Rollback khi lỗi giữa chừng                          | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-028 | AF-02: Khách đã có profile → Reuse profile, không tạo duplicate      | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-029 | AF-03: Thêm khách đi kèm → Dependent record                          | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-030 | E-02: Phòng DIRTY/MAINTENANCE → Walk-in bị chặn (@ParameterizedTest) | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-031 | Auto-Create Account cho khách mới (BR-08/09/10)                        | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-033 | Soft Capacity: vượt base capacity → Check-in + Phụ thu                 | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+| UC-14 | TC-M2-035 | Hard Capacity: vượt maxAdults → Reject MOD2-UC14-009                  | `WalkInCheckInServiceUC14Test.java` | [x]    | —         | 2026-06-22 | [x]   | —         | 2026-06-22 | [ ]         |           |         |
+
+
+
+---
+
+### 6. Entry / Exit Criteria
+
+#### Entry Criteria (Điều kiện bắt đầu)
+
+- [ ] Môi trường test sẵn sàng (DB test, Testcontainers MySQL).
+- [ ] `TDD_UC14_SPEC.md` và `EDS_UC14_SPEC.md` đã được Tech Lead review và approve.
+- [ ] DPO đã sign-off (module xử lý PII: CCCD, Passport — TC-M2-028, TC-M2-029).
+
+- [ ] Test data synthetic đã chuẩn bị: phòng R301 → R315, customer mẫu.
+
+#### Exit Criteria — Definition of Done (DoD)
+
+- [ ] Tất cả **10 test case** (TC-M2-021, 023, 024, 025, 028, 029, 030, 031, 033, 034) phải ở trạng thái 🟢 GREEN.
+- [ ] TC-M2-025 (ACID Rollback) PASS bắt buộc trước khi merge.
+- [ ] TC-M2-030 (@ParameterizedTest DIRTY + MAINTENANCE) cả 2 case PASS.
+- [ ] TC-M2-031 (Auto Account) PASS với BR-08/09/10 đầy đủ.
+- [x] `mvn test -Dtest="WalkInCheckInServiceUC14Test"` chạy không có failure. **✅ DONE 2026-06-22 (12/12 PASS)**
+- [ ] Coverage cho `WalkInCheckInService` đạt >= **85% line coverage**.
+- [ ] Không có TODO/FIXME còn lại trong production code.
+- [ ] PII security được verify bởi `CustomerServicePIISecurityTest.java` (test suite riêng, chạy trong CI).
+
+#### SRS Coverage Checklist cuối cùng
+
+| SRS Item    | Covered By                        | Status |
+| ----------- | --------------------------------- | ------ |
+| Normal Flow | TC-M2-021                         | [x]    |
+| AF-01       | TC-M2-024                         | [x]    |
+| AF-02       | TC-M2-028                         | [x]    |
+| AF-03       | TC-M2-029                         | [x]    |
+| E-01        | TC-M2-023                         | [x]    |
+| E-02        | TC-M2-030                         | [x]    |
+| E-03        | TC-M2-025                         | [x]    |
+| BR-01       | TC-M2-023                         | [x]    |
+| BR-02       | TC-M2-024, TC-M2-030, TC-M2-033   | [x]    |
+| BR-03       | TC-M2-021                         | [x]    |
+| BR-04       | TC-M2-021                         | [x]    |
+| BR-05       | TC-M2-021                         | [x]    |
+| BR-06       | TC-M2-028 (no duplicate)          | [x]    |
+| BR-07       | TC-M2-029                         | [x]    |
+| BR-08       | TC-M2-031                         | [x]    |
+| BR-09       | TC-M2-031                         | [x]    |
+| BR-10       | TC-M2-031                         | [x]    |
+
+---
+
+### 7. Rollback Plan
+
+Nếu phát hiện lỗi critical sau khi deploy:
+
+```bash
+# Bước 1: Revert về phiên bản ổn định
+git checkout tags/v[previous-stable-tag]
+mvn clean package -DskipTests
+java -jar target/kawai-backend-1.0.jar
+
+# Bước 2: Kiểm tra health
+curl -X GET http://localhost:8080/actuator/health
+# Expected: {"status":"UP"}
+
+# Bước 3: Kiểm tra DB không có overbooking Walk-in
+SELECT room_id, COUNT(*) as cnt
+FROM room_booking_details
+WHERE detail_status = 'CHECKED_IN'
+GROUP BY room_id HAVING cnt > 1;
+-- Expected: 0 rows (không có double booking)
+
+# Bước 4: Kiểm tra partial commit
+SELECT rb.id FROM room_bookings rb
+LEFT JOIN folio_items fi ON fi.booking_id = rb.id
+WHERE rb.booking_source = 'WALK_IN' AND fi.id IS NULL
+AND rb.created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR);
+-- Expected: 0 rows (không có Booking thiếu Folio)
+```
+
+**Notification Protocol:**
+
+- **Ngay khi phát hiện:** Slack `#incident` → `"🚨 [UC14-WALKIN] Double booking / Partial commit detected"`
+- **Trong 30 phút:** Email DPO nếu PII bị rò rỉ theo Nghị định 13/2023.
+
+---
+
+*Commit convention: `feat(mod2-uc14): implement walk-in check-in and pass TC-M2-021,023,024,025,028,029,030,031,033,034`*
+*TDD Spec v1.2 — Module 2 — UC-14 Walk-in Guest Check-in*
