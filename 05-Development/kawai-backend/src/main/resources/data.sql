@@ -197,52 +197,74 @@ INSERT INTO Room_Surcharges (surcharge_id, category_id, surcharge_type, age_from
 (10, 6, 'EXTRA_ADULT_BED', 12, 100, 600000, TRUE);
 
 -- ── 8. Rooms (50 rows) ───────────────────────────────────────
-INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES 
-(1, '101', 1, 'Occupied', 1),
-(2, '102', 1, 'Vacant_Dirty', NULL),
-(3, '103', 1, 'Maintenance', NULL),
-(4, '104', 1, 'Vacant_Dirty', NULL),
-(5, '105', 1, 'Occupied', 3),
-(6, '106', 4, 'Vacant_Clean', NULL),
-(7, '107', 4, 'Vacant_Clean', NULL),
-(8, '108', 4, 'Vacant_Clean', NULL),
-(9, '109', 4, 'Vacant_Clean', NULL),
-(10, '110', 4, 'Maintenance', NULL),
-(11, '201', 2, 'Occupied', NULL),
-(12, '202', 2, 'Occupied', NULL),
+-- Trạng thái phòng được mô hình hóa đúng:
+--   Occupied = có detail Checked_In gắn vào (current_booking_detail_id != NULL)
+--   Vacant_Clean / Vacant_Dirty = sẵn sàng giao cho booking Pending
+-- Category mapping: 1=Nipa Pool Villa, 2=River Pool Villa, 3=Wellness Retreats,
+--   4=Garden View Suite, 5=Presidential Ocean Suite, 6=Ocean View Bungalow,
+--   7=Family Connecting Room, 8=Superior Mountain View, 9=Luxury Penthouse, 10=Cozy Studio
+--
+-- Booking Checked_In (booking_id=1, room_booking=1): detail_id=1, cat=1 → phòng 101 Occupied
+-- Booking Checked_In (booking_id=1, room_booking=1): detail_id=3, cat=3 → phòng 105 dùng cat 3 nhưng detail gắn cat 3 → đổi sang phòng 406 (cat 3)
+-- Booking Checked_In (room_booking=7):  detail_id=7, cat=2 → phòng 201 Occupied
+-- Booking Checked_In (room_booking=8):  detail_id=8, cat=3 → phòng 406 Occupied
+INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booking_detail_id) VALUES
+-- Category 1 - Nipa Pool Villa (rooms 101-105): 1 Occupied (detail 1), còn lại Vacant
+-- Room 101: Vacant_Clean (booking 1 của Hoàng Nam đã Checked_Out)
+(1,  '101', 1, 'Vacant_Clean', NULL),
+(2,  '102', 1, 'Vacant_Clean', NULL),
+(3,  '103', 1, 'Maintenance',  NULL),
+(4,  '104', 1, 'Vacant_Clean', NULL),
+(5,  '105', 1, 'Vacant_Clean', NULL),
+-- Category 4 - Garden View Suite (rooms 106-110): tất cả Vacant
+(6,  '106', 4, 'Vacant_Clean', NULL),
+(7,  '107', 4, 'Vacant_Clean', NULL),
+(8,  '108', 4, 'Vacant_Clean', NULL),
+(9,  '109', 4, 'Vacant_Clean', NULL),
+(10, '110', 4, 'Maintenance',  NULL),
+-- Category 2 - River Pool Villa (rooms 201-205): 1 Occupied (detail 7), còn lại Vacant
+(11, '201', 2, 'Occupied',     7),
+(12, '202', 2, 'Vacant_Clean', NULL),
 (13, '203', 2, 'Vacant_Dirty', NULL),
 (14, '204', 2, 'Vacant_Clean', NULL),
-(15, '205', 2, 'Occupied', 7),
+(15, '205', 2, 'Vacant_Clean', NULL),
+-- Category 10 - Cozy Studio (rooms 206-210): tất cả Vacant
 (16, '206', 10, 'Vacant_Clean', NULL),
-(17, '207', 10, 'Maintenance', NULL),
-(18, '208', 10, 'Occupied', 8),
+(17, '207', 10, 'Maintenance',  NULL),
+(18, '208', 10, 'Vacant_Clean', NULL),
 (19, '209', 10, 'Vacant_Clean', NULL),
 (20, '210', 10, 'Vacant_Clean', NULL),
+-- Category 7 - Family Connecting Room (rooms 301-305): tất cả Vacant
 (21, '301', 7, 'Vacant_Clean', NULL),
 (22, '302', 7, 'Vacant_Clean', NULL),
 (23, '303', 7, 'Vacant_Clean', NULL),
 (24, '304', 7, 'Vacant_Clean', NULL),
 (25, '305', 7, 'Vacant_Clean', NULL),
+-- Category 8 - Superior Mountain View (rooms 306-310): tất cả Vacant
 (26, '306', 8, 'Vacant_Clean', NULL),
 (27, '307', 8, 'Vacant_Clean', NULL),
 (28, '308', 8, 'Vacant_Clean', NULL),
 (29, '309', 8, 'Vacant_Clean', NULL),
 (30, '310', 8, 'Vacant_Clean', NULL),
+-- Category 6 - Ocean View Bungalow (rooms 401-405): tất cả Vacant
 (31, '401', 6, 'Vacant_Clean', NULL),
 (32, '402', 6, 'Vacant_Clean', NULL),
 (33, '403', 6, 'Vacant_Clean', NULL),
 (34, '404', 6, 'Vacant_Clean', NULL),
 (35, '405', 6, 'Vacant_Clean', NULL),
-(36, '406', 3, 'Vacant_Clean', NULL),
+-- Category 3 - Wellness Retreats (rooms 406-410): 1 Occupied (detail 8)
+(36, '406', 3, 'Vacant_Dirty', NULL),
 (37, '407', 3, 'Vacant_Clean', NULL),
 (38, '408', 3, 'Vacant_Clean', NULL),
 (39, '409', 3, 'Vacant_Clean', NULL),
 (40, '410', 3, 'Vacant_Clean', NULL),
+-- Category 5 - Presidential Ocean Suite (rooms 501-505): tất cả Vacant
 (41, '501', 5, 'Vacant_Clean', NULL),
 (42, '502', 5, 'Vacant_Clean', NULL),
 (43, '503', 5, 'Vacant_Clean', NULL),
 (44, '504', 5, 'Vacant_Clean', NULL),
 (45, '505', 5, 'Vacant_Clean', NULL),
+-- Category 9 - Luxury Penthouse (rooms 506-510): tất cả Vacant
 (46, '506', 9, 'Vacant_Clean', NULL),
 (47, '507', 9, 'Vacant_Clean', NULL),
 (48, '508', 9, 'Vacant_Clean', NULL),
@@ -294,14 +316,15 @@ INSERT INTO Promotions (promo_id, promo_code, discount_type, discount_value, val
 -- ── 12. Bookings (20 rows) ───────────────────────────────────
 
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(1, 1, '2026-06-01', 5000000, 'Checked_In', 'Direct_Web', 1, 1),
+(1, 1, '2026-06-01', 5000000, 'Checked_Out', 'Direct_Web', 1, 1), -- Hoàng Nam đã trả phòng
 (2, 2, '2026-06-02', 7000000, 'Checked_Out', 'Direct_Web', NULL, 1),
 (3, 3, '2026-06-03', 16000000, 'Confirmed', 'OTA', NULL, 1),
 (4, 4, '2026-06-04', 5000000, 'Confirmed', 'OTA', 2, 1),
 (5, 5, '2026-06-05', 5000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (6, 6, '2026-06-06', 7000000, 'Confirmed', 'OTA', NULL, 1),
 (7, 7, '2026-06-07', 7000000, 'Confirmed', 'Direct_Web', 3, 1),
-(8, 8, '2026-06-08', 16000000, 'Confirmed', 'Direct_Web', NULL, 1),
+(8, 8, '2026-06-08', 16000000, 'Checked_Out', 'Direct_Web', NULL, 1),
+(90, 1, '2026-06-10', 7500000, 'Confirmed', 'Direct_Web', NULL, 1),
 (9, 1, '2026-06-10', 1200000, 'Confirmed', 'Direct_Web', NULL, 1),
 (10, 2, '2026-06-10', 1200000, 'Confirmed', 'Direct_Web', NULL, 1),
 (11, 9, '2026-06-12', 1200000, 'Confirmed', 'Direct_Web', NULL, 1),
@@ -322,7 +345,8 @@ INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, bookin
 
 -- ── 13. Room Bookings (10 rows) ──────────────────────────────
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
-(1, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 5000000, 'hash'),
+-- Room_Booking 1: ngày quá khứ (khách đã checkout, không dùng CURDATE)
+(1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 7 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 15 DAY), 5000000, 'hash'),
 (2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), DATE_SUB(CURDATE(), INTERVAL 2 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 5000000, 'hash'),
 (3, '2026-06-09', '2026-06-12', 2000000, '2026-06-05', 10000000, 'hash'),
 (4, '2026-06-09', '2026-06-11', 1000000, '2026-06-05', 5000000, 'hash'),
@@ -330,23 +354,38 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 (6, '2026-06-10', '2026-06-14', 1500000, '2026-06-06', 5000000, 'hash'),
 (7, '2026-06-10', '2026-06-15', 1500000, '2026-06-06', 5000000, 'hash'),
 (8, '2026-06-10', '2026-06-16', 3000000, '2026-06-06', 15000000, 'hash'),
-(9, DATE_ADD(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 8 DAY), 500000, DATE_ADD(CURDATE(), INTERVAL 2 DAY), 5000000, 'hash'),
+(90, DATE_ADD(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 8 DAY), 500000, DATE_ADD(CURDATE(), INTERVAL 2 DAY), 5000000, 'hash'),
 (14, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 6 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 15 DAY), 5000000, 'hash'),
 (15, DATE_ADD(CURDATE(), INTERVAL 20 DAY), DATE_ADD(CURDATE(), INTERVAL 25 DAY), 1000000, DATE_ADD(CURDATE(), INTERVAL 10 DAY), 5000000, 'hash');
 
 -- ── 14. Room Booking Details (10 rows) ───────────────────────
+-- Nguyên tắc nhất quán:
+--   detail_status='Checked_In' → room_id PHẢI != NULL và phòng đó phải Occupied
+--   detail_status='Pending'    → room_id = NULL (chưa được gán phòng vật lý)
+--   detail_status='Checked_Out'/ 'Cancelled' → room_id có thể NULL (đã giải phóng)
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
-(1, 1, 1, 1, 2500000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(2, 2, 2, NULL, 3500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
-(3, 3, 3, 5, 8000000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 2000000, 'BILL_TO_LEADER'),
-(4, 4, 1, NULL, 2500000, 'Pending', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(5, 5, 1, NULL, 2500000, 'Pending', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(6, 6, 2, NULL, 3500000, 'Pending', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
-(7, 7, 2, 15, 3500000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
-(8, 8, 3, 18, 8000000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 3000000, 'BILL_TO_LEADER'),
-(9, 14, 1, NULL, 2500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(10, 15, 2, NULL, 3500000, 'Cancelled', 'TWIN_BED', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
-(11, 51, 1, NULL, 1200000, 'Confirmed', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER');
+-- Booking 1 (Checked_Out): customer 1 - Hoàng Nam đã trả phòng 101; room_id=NULL sau checkout
+(1,  1,  1, NULL, 2500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 2 (Checked_Out): customer 2 đã trả phòng, room_id NULL
+(2,  2,  2, NULL, 3500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 3 (Confirmed, Pending): customer 3 đặt Wellness Retreats, chưa gán phòng
+(3,  3,  3, NULL, 8000000, 'Pending',     'KING_SIZE', NULL, TRUE,  2000000, 'BILL_TO_LEADER'),
+-- Booking 4 (Confirmed, Pending): customer 4 đặt Nipa Pool Villa, chưa gán phòng
+(4,  4,  1, NULL, 2500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 5 (Confirmed, Pending): customer 5 đặt Nipa Pool Villa, chưa gán phòng
+(5,  5,  1, NULL, 2500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 6 (Confirmed, Pending): customer 6 đặt River Pool Villa, chưa gán phòng
+(6,  6,  2, NULL, 3500000, 'Pending',     'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 7 (Checked_In): customer 7 đang ở phòng 201 (cat 2 - River Pool Villa)
+(7,  7,  2, 11,   3500000, 'Checked_In',  'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 8 (Checked_Out): customer 8 đã trả phòng 406 (cat 3 - Wellness Retreats)
+(8,  8,  3, NULL, 8000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  3000000, 'BILL_TO_LEADER'),
+-- Booking 14 (Checked_Out): đã trả phòng
+(9,  14, 1, NULL, 2500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 15 (Cancelled)
+(10, 15, 2, NULL, 3500000, 'Cancelled',   'TWIN_BED',  NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 90 (Confirmed, Pending): room_booking_id=90, cat 1, 3 đêm × 2,500,000 = 7,500,000
+(11, 90,  1, NULL, 7500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER');
 
 -- ── 15. Room Guests (10 rows) ────────────────────────────────
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
@@ -394,17 +433,8 @@ INSERT IGNORE INTO Accounts (account_id, username, password_hash, is_active, rol
 VALUES (99, 'ducbeo', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP);
 
 
--- Update Room's current booking detail links
-UPDATE Rooms SET current_booking_detail_id = 1 WHERE room_id = 1;
-UPDATE Rooms SET current_booking_detail_id = 2 WHERE room_id = 3;
-UPDATE Rooms SET current_booking_detail_id = 3 WHERE room_id = 5;
-UPDATE Rooms SET current_booking_detail_id = 4 WHERE room_id = 7;
-UPDATE Rooms SET current_booking_detail_id = 5 WHERE room_id = 9;
-UPDATE Rooms SET current_booking_detail_id = 6 WHERE room_id = 12;
-UPDATE Rooms SET current_booking_detail_id = 7 WHERE room_id = 15;
-UPDATE Rooms SET current_booking_detail_id = 8 WHERE room_id = 18;
-UPDATE Rooms SET current_booking_detail_id = 9 WHERE room_id = 2;
-UPDATE Rooms SET current_booking_detail_id = 10 WHERE room_id = 4;
+-- Không cần UPDATE thêm vì current_booking_detail_id đã được khai báo đúng trong INSERT ở trên.
+-- Chỉ verify: room 1 → detail 1 (Checked_In), room 11 → detail 7 (Checked_In), room 36 → detail 8 (Checked_In)
 
 -- ── 16. Restaurant Tables (20 rows) ──────────────────────────
 INSERT INTO Restaurant_Tables (table_id, table_number, capacity, table_status, is_active) VALUES 
@@ -474,72 +504,108 @@ INSERT INTO Table_Reservations (reservation_id, customer_id, table_id, reserve_d
 -- ── 18. Menu Items (34 rows) ─────────────────────────────────
 INSERT INTO Menu_Items (item_id, item_name, price, category, is_available, description, image_url, allergy_tags, is_always_available) VALUES 
 
-(1, 'Súp Bí Đỏ Kem Tươi Truffle', 180000, 'Khai vị', TRUE, 'Súp bí đỏ béo ngậy kết hợp kem tươi và dầu truffle nguyên chất.', 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80', 'Sữa', FALSE),
 
-(2, 'Gỏi Cuốn Tôm Thịt', 95000, 'Khai vị', TRUE, 'Gỏi cuốn tôm thịt tươi ngon kèm rau sống và tương đậu phộng.', 'https://www.cet.edu.vn/wp-content/uploads/2018/11/goi-cuon-tom-thit.jpg', 'Đậu phộng, Hải sản', FALSE),
-(3, 'Chả Giò Hải Sản', 110000, 'Khai vị', TRUE, 'Chả giò chiên giòn nhân hải sản tươi sống.', 'https://cdn.tgdd.vn/2022/01/CookDish/2-cach-lam-cha-gio-hai-san-don-gian-gion-thom-beo-ngay-ai-avt-1200x676.jpg', 'Hải sản', FALSE),
-(4, 'Salad Cá Hồi Xông Khói', 150000, 'Khai vị', TRUE, 'Salad rau xanh tươi mát kết hợp cá hồi xông khói nhập khẩu.', 'https://file.hstatic.net/200000356095/file/salad_ca_hoi__xong_khoi__3__59eaf296ddc644849699579b210c7855.jpg', 'Hải sản', FALSE),
-(5, 'Súp Hải Sản Măng Tây', 130000, 'Khai vị', TRUE, 'Súp hải sản nấu cùng măng tây tươi ngon ngọt.', 'https://cdn.tgdd.vn/Files/2020/10/09/1297483/tro-tai-voi-mon-sup-tom-mang-tay-vi-lau-thai-vua-la-vua-quen-ai-an-cung-tam-tac-khen-202010091742198445.jpg', 'Hải sản', FALSE),
+(1, 'Gỏi cá mai', 185000, 'Khai vị', TRUE, 'Đặc sản Mũi Né với cá mai tươi, rau thơm và nước chấm chua ngọt hài hòa.', 'https://cdn.zsoft.solutions/poseidon-web/app/media/Kham-pha-am-thuc/03.2024/18324-goi-ca-mai-1.jpg', 'Fish, Peanut', FALSE),
+(2, 'Bánh căn hải sản', 95000, 'Khai vị', TRUE, 'Bánh căn nóng giòn kết hợp tôm, mực tươi và nước chấm đậm đà.', 'https://media.thuonghieucongluan.vn/uploads/2026/03/01/banh-can-thumb-1772322285.jpg', 'Shellfish, Egg', FALSE),
+(3, 'Bánh xèo Mũi Né', 110000, 'Khai vị', TRUE, 'Bánh xèo vàng giòn với nhân tôm thịt và rau sống tươi ngon.', 'https://i-giadinh.vnecdn.net/2023/09/19/Bc10Thnhphm11-1695107510-2493-1695107555.jpg', 'Shellfish, Gluten', FALSE),
+(4, 'Súp cua', 120000, 'Khai vị', TRUE, 'Súp cua thơm ngọt với thịt cua, trứng và bắp non.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8zh8s2hEoOtqeCKJD9AUdyuYcpMXLIbUMlzdFDIw1FQ&s=10', 'Shellfish, Egg', FALSE),
+(5, 'Súp hải sản', 145000, 'Khai vị', TRUE, 'Súp hải sản thanh ngọt từ tôm, mực và rau củ tươi.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMVM6DWLLebjQTPWe7VkBltCuqH4bgqGxF1tL5UolVlw&s=10', 'Shellfish', FALSE),
+(6, 'Súp gà nấm hương', 95000, 'Khai vị', TRUE, 'Súp gà mềm ngọt hòa quyện cùng nấm hương thơm tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWn21CZqwUZCo8466Eqh4pbrRcTb-Vk4oFNL9fZqYXMg&s=10', NULL, FALSE),
+(7, 'Súp bí đỏ kem tươi', 85000, 'Khai vị', TRUE, 'Bí đỏ xay mịn kết hợp kem tươi, béo nhẹ và thanh vị.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUKVE6Brt_re0D5tnTCoqbBsJttHZpqZzOV-vXeu4vlA&s=10', 'Milk', FALSE),
+(8, 'Gỏi ngó sen tôm thịt', 165000, 'Khai vị', TRUE, 'Ngó sen giòn tươi hòa quyện cùng tôm thịt và nước sốt chua ngọt.', 'https://cooponline.vn/tin-tuc/wp-content/uploads/2025/10/Avatar-2.png', 'Shellfish', FALSE),
+(9, 'Gỏi gà xé phay', 135000, 'Khai vị', TRUE, 'Gà xé mềm trộn rau thơm và hành tây, thanh mát và hấp dẫn.', 'https://www.huongnghiepaau.com/wp-content/uploads/2025/05/cach-lam-goi-ga-xe-phay.jpg', NULL, FALSE),
+(10, 'Gỏi bò bóp thấu', 175000, 'Khai vị', TRUE, 'Thịt bò mềm kết hợp rau củ tươi và nước sốt đậm vị.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzllA_ZP9TSD2nQoyOFZcO_tSm6pjC330U4ZrDEEtC5g&s=10', NULL, FALSE),
+(11, 'Gỏi xoài tôm khô', 145000, 'Khai vị', TRUE, 'Xoài xanh giòn chua nhẹ kết hợp tôm khô đậm đà.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStIHf9pX74-zFf2s1VD39X4noHVXdIMVy1lwIJafLINQ&s=10', 'Shellfish', FALSE),
+(12, 'Gỏi hải sản', 195000, 'Khai vị', TRUE, 'Hải sản tươi trộn rau củ cùng nước sốt chua cay đặc trưng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJqlK-m2m3xYxNQIkzS8YY-py6aaS0zjoUkf2MmTum8w&s=10', 'Shellfish', FALSE),
+(13, 'Salad rau củ dầu giấm', 95000, 'Khai vị', TRUE, 'Rau củ tươi theo mùa trộn cùng sốt dầu giấm thanh nhẹ.', 'https://winefood.com.vn/wp-content/uploads/2024/06/z5512961476611_be635db082cdac788fca5636858378e3.jpg', NULL, FALSE),
+(14, 'Salad cá ngừ', 185000, 'Khai vị', TRUE, 'Cá ngừ áp chảo kết hợp rau xanh tươi, cà chua bi và sốt mè rang thanh nhẹ.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl8cQq2uQtbwh_kgPSN8NVX9E21FAjvQMbNIIrsap37Q&s=10', 'Fish, Sesame', FALSE),
+(15, 'Mực một nắng nướng muối ớt', 395000, 'Món chính', TRUE, 'Mực một nắng nướng thơm, giữ trọn vị ngọt tự nhiên của biển.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMosFGfsoMVWXSgYpus4wExPxCmHG6AHRsxT86UnQsRg&s=10', 'Shellfish', FALSE),
+(16, 'Lẩu cá bớp', 520000, 'Món chính', TRUE, 'Cá bớp tươi trong nước lẩu chua thanh, dùng kèm rau và bún.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK6eKKuhAudZfD5u7gclDml2jb4iJQU3ZjOyRzzYA0Lw&s=10', 'Fish', FALSE),
+(17, 'Bánh canh chả cá', 125000, 'Món chính', TRUE, 'Bánh canh dai mềm cùng chả cá và nước dùng đậm đà.', 'https://lalago.vn/wp-content/uploads/2025/05/banh-canh-cha-ca-phan-thiet-6.jpg', 'Fish, Gluten', FALSE),
+(18, 'Cá bóp kho tộ', 245000, 'Món chính', TRUE, 'Cá bóp kho theo phong cách truyền thống với hương vị đậm đà.', 'https://i-giadinh.vnecdn.net/2023/09/16/Bc4Thnhphm11-1694856717-6271-1694856861.jpg', 'Fish, Soy', FALSE),
+(19, 'Tôm nướng mọi', 385000, 'Món chính', TRUE, 'Tôm tươi nướng nguyên con, giữ vị ngọt tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1NeG6yA1EQWEt_55ym0xMlWGcxItK_LWpiJyangoyFA&s=10', 'Shellfish', FALSE),
+(20, 'Ghẹ hấp sả', 595000, 'Món chính', TRUE, 'Ghẹ tươi hấp cùng sả, thơm dịu và ngọt thịt.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdqcrP2iDZvCfLVdvinGmUR-rayFu9lJtr0ELRyfSu3g&s=10', 'Shellfish', FALSE),
+(21, 'Sò điệp nướng mỡ hành', 285000, 'Món chính', TRUE, 'Sò điệp nướng béo thơm cùng mỡ hành và đậu phộng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS668yHo5tseb6H2oxdx3x3NIvMn7UKgwSN-ayuIsEoRQ&s=10', 'Shellfish, Peanut', FALSE),
+(22, 'Mực lá nướng sa tế', 355000, 'Món chính', TRUE, 'Mực lá nướng cùng sốt sa tế cay nhẹ, đậm hương vị.', 'https://cdn.tgdd.vn/Files/2019/03/23/1156454/3-cach-lam-muc-nuong-sa-te-han-quoc-va-chao-thom-ngon-kho-cuong-202110301600389672.jpg', 'Shellfish', FALSE),
+(23, 'Ốc hương rang muối', 325000, 'Món chính', TRUE, 'Ốc hương rang muối giòn thơm, hấp dẫn trong từng miếng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUG-QP5tovwnkSjC4RPxvvW64vT5usWe5zRKiKd9qzcQ&s=10', 'Shellfish', FALSE),
+(24, 'Cá thu sốt cà chua', 225000, 'Món chính', TRUE, 'Cá thu áp chảo kết hợp sốt cà chua chua ngọt ăn cùng với cơm trắng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIOU1DQo7Y23Epa8Mz24iU5FLrcYb1Y4Ui7ZUQTax2_Q&s=10', 'Fish', FALSE),
+(25, 'Cá hồi áp chảo sốt chanh dây', 395000, 'Món chính', TRUE, 'Cá hồi áp chảo vàng đều, kết hợp sốt chanh dây chua ngọt, mang đến hương vị tinh tế và hấp dẫn.', 'https://chefstudio.vn/uploads/r/cach-lam-ca-hoi-sot-chanh-leo-thom-ngon.jpg', 'Fish, Milk', FALSE),
+(26, 'Cháo hải sản', 195000, 'Món chính', TRUE, 'Cháo nóng hổi với hải sản tươi và hương vị thanh ngọt.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtnzVLq_O4-f6Q7M5h5IkuoVxIDPI4UezW6HwYFQULPw&s=10', 'Shellfish', FALSE),
+(27, 'Cơm chiên hải sản', 165000, 'Món chính', TRUE, 'Cơm chiên vàng đều cùng tôm, mực và trứng thơm ngon.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4D2lMJP1Y0Aleu0jslS_vP0GfFdw1mmkYg3Spjk-1eA&s=10', 'Shellfish, Egg', FALSE),
+(28, 'Tôm sú hấp nước dừa', 425000, 'Món chính', TRUE, 'Tôm sú hấp nước dừa giữ trọn vị ngọt và hương thơm tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRMYT-f7lrpfv2Zj5uYcHIGwKOzr81XkNcid9NB_8YlA&s=10', 'Shellfish', FALSE),
+(29, 'Tôm chiên bơ tỏi', 315000, 'Món chính', TRUE, 'Tôm chiên vàng giòn hòa quyện cùng bơ tỏi thơm béo.', 'https://cdn-i.vtcnews.vn/resize/th/upload/2024/10/03/tomchienbotois-11580919.png', 'Shellfish, Milk', FALSE),
+(30, 'Mực xào chua ngọt', 265000, 'Món chính', TRUE, 'Mực tươi xào rau củ với sốt chua ngọt hài hòa.', 'https://i-giadinh.vnecdn.net/2021/03/31/muc1-1617182767-1435-1617182779.jpg', 'Shellfish', FALSE),
+(31, 'Cá mú hấp Hồng Kông', 565000, 'Món chính', TRUE, 'Cá mú hấp xì dầu và gừng theo phong cách Hồng Kông.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR76WAMp8bA3-YSzofjutAfHTiTTvwuES0NEnLlfiz23A&s=10', 'Fish, Soy', FALSE),
+(32, 'Ngao sốt thái', 215000, 'Món chính', TRUE, 'Ngao tươi sốt thái, thơm dịu và giữ nguyên vị ngọt, nước sốt thái chua ngọt đậm đà.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvs0dElDV9HpnEs0tYYitzSpaVXMA15kPW2g4N4cLnGg&s=10', 'Shellfish', FALSE),
+(33, 'Sò huyết nướng mỡ hành', 265000, 'Món chính', TRUE, 'Sò huyết nướng thơm béo cùng mỡ hành hấp dẫn.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1f0N22gTd5krNaOWL9boDwUnK1Sqj4UHYRd86sfOhEg&s=10', 'Shellfish, Peanut', FALSE),
+(34, 'Hàu nướng phô mai', 245000, 'Món chính', TRUE, 'Hàu tươi phủ phô mai béo ngậy, nướng vàng hấp dẫn.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMnWtYtmDJ_752ljmrFLSDcySv0FONNUYZEGiohb_XYw&s=10', 'Shellfish, Milk', FALSE),
+(35, 'Cua rang me', 625000, 'Món chính', TRUE, 'Cua rang cùng sốt me chua ngọt đậm đà.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqVibdAbutiMSSGvl-MOuqw5jLGCPimM3rZsP2xEBBmQ&s=10', 'Shellfish', FALSE),
+(36, 'Lẩu hải sản chua cay', 595000, 'Món chính', TRUE, 'Lẩu hải sản với nước dùng chua cay và nguyên liệu tươi ngon.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_3wUpu2uCMtzIqaFfIYPR_vnzxRhE3GHscuAAepFTfA&s=10', 'Shellfish', FALSE),
+(37, 'Bạch tuộc nướng', 335000, 'Món chính', TRUE, 'Bạch tuộc nướng than hoa với độ giòn ngọt tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlA-ERuGgo7gmv4KheNoQ3niCPD50eUYEzemipIhI5Yg&s=10', 'Shellfish', FALSE),
+(38, 'Phở bò', 135000, 'Món chính', TRUE, 'Phở bò truyền thống với nước dùng hầm xương đậm vị.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp63hqqANZeXyRQKFP_zSNKqvaT4iSdS0Lya21HtzS0A&s=10', 'Gluten', FALSE),
+(39, 'Phở gà', 125000, 'Món chính', TRUE, 'Phở gà thanh ngọt cùng thịt gà mềm và rau thơm.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRyHPQAc0yF7zypjDfPfcEahLm5FjSoCcDoXhZh_OaCJA&s=10', 'Gluten', FALSE),
+(40, 'Bún bò Huế', 125000, 'Món chính', TRUE, 'Bún bò Huế cay nhẹ với hương vị đặc trưng miền Trung.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0ZAe9xT_Kc5K0OMyRMqY5BswDwQYI9Wc0lNu9-H2rpw&s=10', NULL, FALSE),
+(41, 'Bún chả Hà Nội', 145000, 'Món chính', TRUE, 'Thịt nướng thơm lừng ăn cùng bún và nước chấm truyền thống.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMo3e19Uddx_I9WVoMfn6sRNQRb139oI2wrIxmQ_SlAg&s=10', 'Soy', FALSE),
+(42, 'Bún thịt nướng', 135000, 'Món chính', TRUE, 'Thịt nướng đậm vị kết hợp bún tươi và rau sống.', 'https://cooponline.vn/tin-tuc/wp-content/uploads/2025/10/cach-lam-bun-thit-nuong-chuan-vi-sai-gon-thom-ngon-dam-da-kho-cuong.png', 'Peanut', FALSE),
+(43, 'Cơm tấm sườn bì chả', 155000, 'Món chính', TRUE, 'Cơm tấm truyền thống với sườn nướng, bì và chả.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbEqgR3k6WTSMqqYT0oBvseNzbV_dlNjnleBNoAGzJKQ&s=10', 'Egg', FALSE),
+(44, 'Cơm gà xối mỡ', 145000, 'Món chính', TRUE, 'Gà chiên giòn rụm dùng cùng cơm trắng nóng.', 'https://static.vinwonders.com/production/2025/02/com-ga-xoi-mo-sai-gon-ut-minh.jpg', NULL, FALSE),
+(45, 'Cơm chiên Dương Châu', 155000, 'Món chính', TRUE, 'Cơm chiên cùng hải sản, trứng và rau củ đầy màu sắc.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaEx810OnvI1ucAZhMW5JlgMa8LRSc0RvQ4ViskrCAvQ&s=10', 'Shellfish, Egg', FALSE),
+(46, 'Bò lúc lắc', 285000, 'Món chính', TRUE, 'Thịt bò mềm áp chảo cùng rau củ và tiêu đen.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFtHwjMKEffc64iIpjsrUMsR1ITNs9qk4dVApiDQV4bw&s=10', 'Soy', FALSE),
+(47, 'Bò né', 245000, 'Món chính', TRUE, 'Bò áp chảo nóng hổi dùng cùng trứng và bánh mì.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcFFUwfBdCahr8pewDJpRaNkQTpm-S_tlKWX9KDX2CqQ&s=10', 'Gluten, Egg', FALSE),
+(48, 'Gà nướng mật ong', 255000, 'Món chính', TRUE, 'Gà nướng vàng óng với lớp sốt mật ong thơm ngọt.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxGMNUJ1xcNkE7iN_eHpbEflgW8lTbZ0Lrilfea6fPCw&s=10', NULL, FALSE),
+(49, 'Gà chiên nước mắm', 235000, 'Món chính', TRUE, 'Gà chiên giòn phủ nước mắm tỏi đậm đà.', 'https://tiki.vn/blog/wp-content/uploads/2023/07/thumb-1.jpeg', NULL, FALSE),
+(50, 'Canh chua cá', 215000, 'Món chính', TRUE, 'Canh chua miền Nam với cá tươi và rau đặc trưng ăn cùng với cơm trắng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTxbS393egPaZuOA-lQ0GVTYWNCpsSi5s8LYHGDkF9eQ&s=10', 'Fish', FALSE),
+(51, 'Pizza Hải sản', 325000, 'Món chính', TRUE, 'Pizza giòn thơm phủ hải sản tươi và phô mai mozzarella.', 'https://img.dominos.vn/Pizzaminsea-Hai-San-Nhiet-Doi-Xot-Tieu.jpg', 'Gluten, Milk, Shellfish', FALSE),
+(52, 'Pizza Margherita', 255000, 'Món chính', TRUE, 'Pizza cổ điển với sốt cà chua và phô mai mozzarella.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdKA-zTX8iiBW-l_rjHpWArsTBf22VRLM_DqA4wPzKmw&s=10', 'Gluten, Milk', FALSE),
+(53, 'Spaghetti Seafood', 295000, 'Món chính', TRUE, 'Mì Ý sốt hải sản với hương vị đậm đà và tươi ngon.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSu2y44Agc3YwXdClTx6HMLU9-azbDJJOdNDXteLv-x5g&s=10', 'Gluten, Shellfish', FALSE),
+(54, 'Chè ba màu', 55000, 'Tráng miệng', TRUE, 'Món chè truyền thống với nhiều loại đậu và nước cốt dừa.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu6LrFBziAPnqKrnP4cbenKZc2K75Ep-GBYgo-ls4_bg&s=10', NULL, FALSE),
+(55, 'Chè khúc bạch', 65000, 'Tráng miệng', TRUE, 'Chè khúc bạch thanh mát dùng cùng nhãn và hạnh nhân.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSPecn767GitLnV9QGuMVOcbSR0PGcQIw-d5PYeaIPyw&s=10', 'Milk', FALSE),
+(56, 'Kem dừa', 75000, 'Tráng miệng', TRUE, 'Kem dừa mịn màng với vị béo nhẹ tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYbXMHINuADHtuYZQxJ20Iw-Lxt0jyBwvnTN11fD7fXw&s=10', 'Milk', FALSE),
+(57, 'Bánh flan', 55000, 'Tráng miệng', TRUE, 'Bánh flan mềm mịn với vị caramel ngọt dịu.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSnF8AD_3JTqWnqbUx4VZYpKY3SRKremr3FM1t2dB5gg&s=10', 'Egg, Milk', FALSE),
+(58, 'Trái cây theo mùa', 95000, 'Tráng miệng', TRUE, 'Tuyển chọn trái cây tươi ngon theo mùa.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRjevrsK_VXNK_uASyCcCJxwmQUiTsh7JUjfS800aZ4A&s=10', NULL, FALSE),
+(59, 'Kem vani', 75000, 'Tráng miệng', TRUE, 'Kem vani mịn béo với hương thơm dịu nhẹ.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd3fhIwXSVsshPxkGb9gkC441QnIMjfILTSi-8lZl8PA&s=10', 'Milk', FALSE),
+(60, 'Sữa chua', 45000, 'Tráng miệng', TRUE, 'Sữa chua việt quất chua ngọt tự nhiên, thanh mát và dễ thưởng thức.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXL1FGqhj4YVCK6uaMQe_7oIdDZwLEnQSG1dt8qWcAQ&s=10', 'Milk', FALSE),
+(61, 'Bánh Mousse Chocolate', 90000, 'Tráng miệng', TRUE, 'Bánh mousse chocolate Bỉ mịn màng, đắng nhẹ.', 'https://i.ytimg.com/vi/pESVrDm6yIM/maxresdefault.jpg', 'Milk, egg', FALSE),
+(62, 'Bánh Tiramisu', 95000, 'Tráng miệng', TRUE, 'Bánh Tiramisu mềm mịn với hương cà phê nhẹ, lớp kem mascarpone béo ngậy và bột cacao thơm, mang đến dư vị ngọt ngào sau bữa ăn.', 'https://thermomixvietnam.vn/wp-content/uploads/2021/08/tiramisu-truyen-thong.jpg', 'Milk, Egg, Gluten', FALSE),
+(63, 'Nước dừa tươi', 55000, 'Đồ uống', TRUE, 'Nước dừa tươi mát được phục vụ nguyên trái.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh0FZGaA6xavPbCzXxS7QyFohDVnGsLZk2zosFje_3eA&s=10', NULL, TRUE),
+(64, 'Cam ép', 65000, 'Đồ uống', TRUE, 'Nước cam ép nguyên chất, giàu vitamin C.', 'https://www.sieuthidonglanh.com/wp-content/uploads/2023/03/Nuoc-ep-cam-giup-chong-lao-hoa-da-hieu-qua.png', NULL, TRUE),
+(65, 'Nước chanh dây', 60000, 'Đồ uống', TRUE, 'Nước chanh dây chua ngọt, tươi mát.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_VJrLPs5FB0AHsHZmJk8Bwy6Kb7dyTztazL_8SPSHkQ&s=10', NULL, TRUE),
+(66, 'Nước ép dưa hấu', 65000, 'Đồ uống', TRUE, 'Nước ép dưa hấu nguyên chất, giải nhiệt hiệu quả.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvHhFBXMrB3U9D5o-XWF9B0pY-bm444AO3WBbSwD6pXQ&s=10', NULL, TRUE),
+(67, 'Sinh tố xoài', 75000, 'Đồ uống', TRUE, 'Sinh tố xoài sánh mịn với vị ngọt tự nhiên.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJc0QXQ4IqYKElXcUr1GTWVxnWPhB2TK_OpOpQMMDhRw&s=10', 'Milk', TRUE),
+(68, 'Sinh tố bơ', 80000, 'Đồ uống', TRUE, 'Sinh tố bơ ngọt nhẹ với vị béo ngậy cuốn hút.', 'https://img.freepik.com/premium-photo/avocado-smoothie-with-avocado-wooden-board-dark-background_490636-2675.jpg', 'Milk', TRUE),
+(69, 'Sinh tố mãng cầu', 80000, 'Đồ uống', TRUE, 'Sinh tố mãng cầu chua ngọt hài hòa, mát lạnh', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQliOZ99dtOiJEG_cP78-xLuhfShPa1PSpmQXAsZaamKA&s=10', 'Milk', TRUE),
+(70, 'Cà phê đen', 45000, 'Đồ uống', TRUE, 'Cà phê pha phin đậm đà theo phong cách Việt Nam.', 'https://vinbarista.com/uploads/news/10-loi-ich-bat-ngo-khi-uong-ca-phe-den-nguyen-chat-202504021427.jpg', NULL, TRUE),
+(71, 'Cà phê sữa', 50000, 'Đồ uống', TRUE, 'Cà phê pha cùng sữa đặc, cân bằng vị đắng và ngọt.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnSg_F7K27YeJ5JcEOsW2QIdzpYQur2npcsOUgIxOQFw&s=10', 'Milk', TRUE),
+(72, 'Cappuccino', 75000, 'Đồ uống', TRUE, 'Espresso kết hợp bọt sữa mịn theo phong cách Ý.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB2t7LYP_hjvl-vBCTTS4NebRJGnX-OBlKcDnONH7X8Q&s=10', 'Milk', TRUE),
+(73, 'Matcha Latte', 80000, 'Đồ uống', TRUE, 'Matcha Nhật Bản hòa quyện cùng sữa tươi và lớp foam mịn, mang đến hương vị thanh nhẹ, béo ngậy và cân bằng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2_gzK--VFUUdnjc-htZ4Kv2JUuX3MkY0X3rC6C4u9eA&s=10', 'Milk', TRUE),
+(74, 'Trà đào', 55000, 'Đồ uống', TRUE, 'Trà đào thơm nhẹ với vị ngọt thanh dễ uống.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4CCqp_lnl-X0wM_hqWJm2ZVdgXD8agHWfxzRnsWuHpQ&s=10', NULL, TRUE),
+(75, 'Trà chanh', 45000, 'Đồ uống', TRUE, 'Trà chanh tươi mát với vị chua nhẹ sảng khoái.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqW5vUkX8PBxW9d5FL8_IQhmmOT8Km_VG4-Pi9RgNz4w&s=10', NULL, TRUE),
+(76, 'Coca-Cola', 35000, 'Đồ uống', TRUE, 'Nước ngọt có ga phục vụ lạnh.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSecAEC3Qp39IHdyjLvoy2NTFBAfUjPQs4Ky2WY76V7Mg&s=10', NULL, TRUE),
+(77, 'Pepsi', 35000, 'Đồ uống', TRUE, 'Nước ngọt có ga với hương vị quen thuộc.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsbc5nPVtoJLUe7lTKlv5cpym3yvsQDrfe906ys17Psg&s=10', NULL, TRUE),
+(78, 'Sprite', 35000, 'Đồ uống', TRUE, 'Nước ngọt vị chanh tươi mát.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf33j4JK4YbOEIf0XD6cH9PfgyfqvFictJ-JyqfoAywA&s=10', NULL, TRUE),
+(79, 'Soda chanh', 50000, 'Đồ uống', TRUE, 'Soda kết hợp nước cốt chanh tươi, sảng khoái.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0Qcpx_WfKUzQZVhpr26ocdX_3ol7Ibl9TmgpbSOFCHg&s=10', NULL, TRUE),
+(80, 'Tiger Beer', 55000, 'Đồ uống', TRUE, 'Bia Tiger phục vụ lạnh, thích hợp cùng hải sản.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9YsRq1ocwyGXOUIFAUym39raCZxQ7GDixULXAo4vD7A&s=10', 'Gluten', TRUE),
+(81, 'Heineken', 65000, 'Đồ uống', TRUE, 'Bia Heineken nhập khẩu với hương vị cân bằng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSIa9ayaH4xjGBGJk5vJVAqQF8o-sN3sOYOO1MaX5YNw&s=10', 'Gluten', TRUE),
+(82, 'Bia thủ công', 95000, 'Đồ uống', TRUE, 'Bia thủ công với hương vị đặc trưng theo mùa.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIlCLAN6vfvnzSB-PjslKfnpGOvOfbIv8mtG45I3y2gA&s=10', 'Gluten', TRUE),
+(83, 'Nước khoáng Evian', 25000, 'Đồ uống', TRUE, 'Nước khoáng Evian Pháp tinh khiết và mát lạnh.', 'https://gangnamkong.co.kr/web/upload/NNEditor/20230424/33378a1a3af8ff1869c4b1faf8da8863.jpg', NULL, TRUE);
 
-(6, 'Bánh Mì Bơ Tỏi', 65000, 'Khai vị', TRUE, 'Bánh mì Pháp nướng giòn phết bơ tỏi thơm lừng.', 'https://www.lorca.vn/wp-content/uploads/2021/10/Cach-lam-mong-banh-mi-bo-toi-phomai-bang-lo-nuong.jpg', 'Gluten, Sữa', FALSE),
-
-(7, 'Nem Chua Rán', 75000, 'Khai vị', TRUE, 'Nem chua rán giòn rụm chấm tương ớt.', 'https://trumfood.vn/wp-content/uploads/2022/09/trumfood_decor00865.jpg', NULL, FALSE),
-(8, 'Hoành Thánh Chiên Giòn', 85000, 'Khai vị', TRUE, 'Hoành thánh chiên giòn nhân tôm thịt.', 'https://cdn.tgdd.vn/2020/09/CookProduct/Untitled-2-1200x676-1.jpg', 'Gluten, Hải sản', FALSE),
-(9, 'Bò Bít Tết Wagyu Kèm Sốt Tiêu Xanh', 850000, 'Món chính', TRUE, 'Bò Wagyu Nhật Bản áp chảo sốt tiêu xanh, kèm rau củ nướng.', 'https://live.staticflickr.com/65535/50489573886_fa160b7292_b.jpg', NULL, FALSE),
-(10, 'Cá Hồi Nướng Sốt Miso Nhật Bản', 520000, 'Món chính', TRUE, 'Cá hồi tươi nướng sốt miso thanh nhẹ, ăn kèm cơm trắng.', 'https://www.theforkbite.com/wp-content/uploads/2024/02/Teriyaki-Salmon-featured-2.9.24-500x500.jpg', 'Hải sản', FALSE),
-(11, 'Phở Bò Truyền Thống', 120000, 'Món chính', TRUE, 'Phở bò nước dùng đậm đà, thịt bò tái chín mềm.', 'https://daotaobeptruong.vn/wp-content/uploads/2020/03/cach-nau-pho-bo.jpg', NULL, FALSE),
-(12, 'Cơm Chiên Dương Châu', 85000, 'Món chính', TRUE, 'Cơm chiên dương châu thập cẩm tôm, lạp xưởng, trứng.', 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&q=80', 'Hải sản, Trứng', FALSE),
-(13, 'Sườn Heo Nướng BBQ', 250000, 'Món chính', TRUE, 'Sườn heo non nướng sốt BBQ đậm vị, ăn kèm khoai tây chiên.', 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&q=80', NULL, FALSE),
-(14, 'Mì Ý Sốt Bò Băm', 140000, 'Món chính', TRUE, 'Mì Ý spaghetti sốt bolognese thịt bò băm.', 'https://meoeva.com/wp-content/uploads/2019/05/Spaghetti.jpg', 'Gluten', FALSE),
-(15, 'Gà Nướng Mật Ong', 180000, 'Món chính', TRUE, 'Đùi gà nướng mật ong thơm ngọt, ăn kèm salad.', 'https://lh3.googleusercontent.com/p/AF1QipOYKsd6yLm0iH-NJGsbyVcSl6woaZT1DpHGG1LM=s680-w680-h510', NULL, FALSE),
-(16, 'Lẩu Thái Hải Sản', 350000, 'Món chính', TRUE, 'Lẩu Thái chua cay hải sản tươi sống, kèm bún tươi.', 'https://i.ytimg.com/vi/p1ejp7z4mc4/sddefault.jpg', 'Hải sản', FALSE),
-(17, 'Bún Chả Hà Nội', 95000, 'Món chính', TRUE, 'Bún chả Hà Nội thịt nướng than hồng, nước mắm chua ngọt.', 'https://www.seriouseats.com/thmb/J0g7JWjk9r6CHESo1CIrD1BfGd0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/20231204-SEA-VyTran-BunChaHanoi-19-f623913c6ef34a9185bcd6e5680c545f.jpg', NULL, FALSE),
-(18, 'Pizza Hải Sản', 210000, 'Món chính', TRUE, 'Pizza đế mỏng nhân hải sản phô mai mozzarella.', 'https://doiduavang.vn/wp-content/uploads/2021/01/pizza-nhan-hai-san-doi-dua-vang-scaled.jpg', 'Gluten, Hải sản, Sữa', FALSE),
-(19, 'Cơm Gà Hải Nam', 110000, 'Món chính', TRUE, 'Cơm gà Hải Nam nước dùng gà thanh ngọt.', 'https://cdn.tgdd.vn/Files/2021/08/16/1375575/cach-nau-com-ga-hai-nam-don-gian-ga-chin-vang-uom-da-gion-dung-chuan-202112281045139511.jpg', NULL, FALSE),
-(20, 'Mực Ống Nhồi Thịt', 170000, 'Món chính', TRUE, 'Mực ống nhồi thịt chiên giòn, chấm sốt tương xoài.', 'https://cdn.tgdd.vn/2021/03/CookProduct/1200-1200x676-31.jpg', 'Hải sản', FALSE),
-(21, 'Bánh Tiramisu Truyền Thống Ý', 120000, 'Tráng miệng', FALSE, 'Bánh Tiramisu Ý nguyên bản vị cà phê, kem mascarpone.', 'https://thermomixvietnam.vn/wp-content/uploads/2021/08/tiramisu-truyen-thong.jpg', 'Sữa, Gluten', FALSE),
-(22, 'Chè Xoài Dừa Tươi', 65000, 'Tráng miệng', TRUE, 'Chè xoài chín ngọt kết hợp nước cốt dừa béo ngậy.', 'https://img.freepik.com/premium-photo/mango-cheese-milka-dessert-made-from-jelly-nata-de-coco-basil-seed-mango-cream-cheese-milk_583400-4287.jpg', NULL, FALSE),
-(23, 'Kem Xôi Dừa', 55000, 'Tráng miệng', TRUE, 'Kem xôi dừa mát lạnh, topping dừa nạo sấy.', 'https://beptruong.edu.vn/wp-content/uploads/2016/02/kem-xoi-dua.jpg', 'Sữa', FALSE),
-(24, 'Bánh Flan Caramel', 45000, 'Tráng miệng', TRUE, 'Bánh flan caramel mềm mịn, thơm ngon.', 'https://img.freepik.com/premium-photo/cream-caramel-pudding_599862-23796.jpg', 'Trứng, Sữa', FALSE),
-(25, 'Panna Cotta Dâu Tây', 75000, 'Tráng miệng', TRUE, 'Panna cotta Ý sốt dâu tây tươi mát.', 'https://bloganchoi.com/wp-content/uploads/2022/06/cach-lam-panna-cotta.jpg', 'Sữa', FALSE),
-(26, 'Trái Cây Thập Cẩm', 110000, 'Tráng miệng', TRUE, 'Đĩa trái cây tươi thập cẩm theo mùa.', 'https://bolcereales.com.ar/wp-content/uploads/2021/01/alimentos-con-cobre-frutas.jpeg', NULL, FALSE),
-
-(27, 'Bánh Mousse Chocolate', 90000, 'Tráng miệng', TRUE, 'Bánh mousse chocolate Bỉ mịn màng, đắng nhẹ.', 'https://i.ytimg.com/vi/pESVrDm6yIM/maxresdefault.jpg', 'Sữa, Trứng', FALSE),
-
-(28, 'Nước Cam Tươi Ép Lạnh', 95000, 'Đồ uống', TRUE, 'Nước cam tươi nguyên chất ép lạnh.', 'https://www.sieuthidonglanh.com/wp-content/uploads/2023/03/Nuoc-ep-cam-giup-chong-lao-hoa-da-hieu-qua.png', NULL, TRUE),
-(29, 'Cà Phê Phin Việt Nam', 55000, 'Đồ uống', TRUE, 'Cà phê phin Việt Nam đậm đà truyền thống.', 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80', NULL, TRUE),
-(30, 'Trà Đào Cam Sả', 65000, 'Đồ uống', TRUE, 'Trà đào cam sả tươi mát giải nhiệt.', 'https://img.meta.com.vn/Data/image/2021/05/20/tra-dao-cam-sa-2.jpg', NULL, TRUE),
-(31, 'Sinh Tố Bơ', 75000, 'Đồ uống', TRUE, 'Sinh tố bơ tươi xay nhuyễn béo ngậy.', 'https://img.freepik.com/premium-photo/avocado-smoothie-with-avocado-wooden-board-dark-background_490636-2675.jpg', 'Sữa', TRUE),
-(32, 'Mojito Chanh Bạc Hà', 85000, 'Đồ uống', TRUE, 'Mojito không cồn chanh bạc hà tươi mát.', 'https://img.freepik.com/premium-photo/refreshing-glass-coconut-water-garnished-with-mint-leaves-slice-lime_198067-290311.jpg', NULL, TRUE),
-(33, 'Bia Heineken', 45000, 'Đồ uống', TRUE, 'Bia Heineken nhập khẩu lạnh.', 'https://tse2.mm.bing.net/th/id/OIP.h3ptwUpaWsyCB7MAVaLGhwHaEK?w=680&h=382&rs=1&pid=ImgDetMain&o=7&rm=3', 'Gluten', TRUE),
-(34, 'Nước Khoáng Evian', 40000, 'Đồ uống', TRUE, 'Nước khoáng Evian Pháp.', 'https://gangnamkong.co.kr/web/upload/NNEditor/20230424/33378a1a3af8ff1869c4b1faf8da8863.jpg', NULL, TRUE);
 
 -- ── 18.5 Menu Item Days (Phân bổ thực đơn theo ngày) ───────────
 INSERT INTO Menu_Item_Days (item_id, day_of_week) VALUES
--- MONDAY (Thứ 2)
-(1, 'MONDAY'), (2, 'MONDAY'), (5, 'MONDAY'), (8, 'MONDAY'),
-(9, 'MONDAY'), (10, 'MONDAY'), (13, 'MONDAY'), (16, 'MONDAY'),
-(21, 'MONDAY'), (22, 'MONDAY'), (25, 'MONDAY'), (27, 'MONDAY'),
+-- MONDAY
+(1, 'MONDAY'), (2, 'MONDAY'), (3, 'MONDAY'), (4, 'MONDAY'), (15, 'MONDAY'), (16, 'MONDAY'), (17, 'MONDAY'), (18, 'MONDAY'), (19, 'MONDAY'), (20, 'MONDAY'), (21, 'MONDAY'), (22, 'MONDAY'), (23, 'MONDAY'), (24, 'MONDAY'), (54, 'MONDAY'), (55, 'MONDAY'), (56, 'MONDAY'),
 
--- TUESDAY (Thứ 3)
-(3, 'TUESDAY'), (4, 'TUESDAY'), (6, 'TUESDAY'), (7, 'TUESDAY'),
-(11, 'TUESDAY'), (12, 'TUESDAY'), (14, 'TUESDAY'), (17, 'TUESDAY'),
-(23, 'TUESDAY'), (24, 'TUESDAY'), (26, 'TUESDAY'), (22, 'TUESDAY'),
+-- TUESDAY
+(5, 'TUESDAY'), (6, 'TUESDAY'), (7, 'TUESDAY'), (8, 'TUESDAY'), (25, 'TUESDAY'), (26, 'TUESDAY'), (27, 'TUESDAY'), (28, 'TUESDAY'), (29, 'TUESDAY'), (30, 'TUESDAY'), (31, 'TUESDAY'), (32, 'TUESDAY'), (33, 'TUESDAY'), (34, 'TUESDAY'), (57, 'TUESDAY'), (58, 'TUESDAY'), (59, 'TUESDAY'),
 
--- WEDNESDAY (Thứ 4)
-(1, 'WEDNESDAY'), (3, 'WEDNESDAY'), (5, 'WEDNESDAY'), (8, 'WEDNESDAY'),
-(15, 'WEDNESDAY'), (18, 'WEDNESDAY'), (19, 'WEDNESDAY'), (20, 'WEDNESDAY'),
-(21, 'WEDNESDAY'), (23, 'WEDNESDAY'), (25, 'WEDNESDAY'), (27, 'WEDNESDAY'),
+-- WEDNESDAY
+(9, 'WEDNESDAY'), (10, 'WEDNESDAY'), (11, 'WEDNESDAY'), (12, 'WEDNESDAY'), (35, 'WEDNESDAY'), (36, 'WEDNESDAY'), (37, 'WEDNESDAY'), (38, 'WEDNESDAY'), (39, 'WEDNESDAY'), (40, 'WEDNESDAY'), (41, 'WEDNESDAY'), (42, 'WEDNESDAY'), (43, 'WEDNESDAY'), (44, 'WEDNESDAY'), (60, 'WEDNESDAY'), (61, 'WEDNESDAY'), (62, 'WEDNESDAY'),
 
--- THURSDAY (Thứ 5)
-(2, 'THURSDAY'), (4, 'THURSDAY'), (6, 'THURSDAY'), (7, 'THURSDAY'),
-(9, 'THURSDAY'), (12, 'THURSDAY'), (16, 'THURSDAY'), (18, 'THURSDAY'),
-(22, 'THURSDAY'), (24, 'THURSDAY'), (26, 'THURSDAY'), (21, 'THURSDAY'),
+-- THURSDAY
+(13, 'THURSDAY'), (14, 'THURSDAY'), (1, 'THURSDAY'), (2, 'THURSDAY'), (45, 'THURSDAY'), (46, 'THURSDAY'), (47, 'THURSDAY'), (48, 'THURSDAY'), (49, 'THURSDAY'), (50, 'THURSDAY'), (51, 'THURSDAY'), (52, 'THURSDAY'), (53, 'THURSDAY'), (15, 'THURSDAY'), (54, 'THURSDAY'), (55, 'THURSDAY'), (56, 'THURSDAY'),
 
--- FRIDAY (Thứ 6)
-(1, 'FRIDAY'), (2, 'FRIDAY'), (3, 'FRIDAY'), (4, 'FRIDAY'),
-(10, 'FRIDAY'), (11, 'FRIDAY'), (14, 'FRIDAY'), (20, 'FRIDAY'),
-(21, 'FRIDAY'), (23, 'FRIDAY'), (25, 'FRIDAY'), (27, 'FRIDAY'),
+-- FRIDAY
+(3, 'FRIDAY'), (4, 'FRIDAY'), (5, 'FRIDAY'), (6, 'FRIDAY'), (16, 'FRIDAY'), (17, 'FRIDAY'), (18, 'FRIDAY'), (19, 'FRIDAY'), (20, 'FRIDAY'), (21, 'FRIDAY'), (22, 'FRIDAY'), (23, 'FRIDAY'), (24, 'FRIDAY'), (25, 'FRIDAY'), (57, 'FRIDAY'), (58, 'FRIDAY'), (59, 'FRIDAY'),
 
 -- SATURDAY (Thứ 7)
 (5, 'SATURDAY'), (6, 'SATURDAY'), (7, 'SATURDAY'), (8, 'SATURDAY'),
@@ -576,7 +642,7 @@ INSERT INTO Food_Orders (order_id, booking_id, room_booking_detail_id, table_id,
 -- ── 20. Food Order Details (21 rows) ─────────────────────────
 INSERT INTO Food_Order_Details (detail_id, order_id, menu_item_id, quantity, price_at_order, kot_status) VALUES 
 (1, 1, 1, 2, 180000, 'Preparing'),
-(2, 1, 9, 1, 850000, 'Preparing'),
+(2, 1, 9, 1, 135000, 'Preparing'),
 (3, 3, 2, 4, 95000, 'Served'),
 (4, 3, 16, 1, 350000, 'Served'),
 (5, 2, 9, 2, 95000, 'Pending'),
@@ -594,7 +660,7 @@ INSERT INTO Food_Order_Details (detail_id, order_id, menu_item_id, quantity, pri
 (17, 15, 34, 4, 40000, 'Served'),
 (18, 16, 5, 2, 130000, 'Pending'),
 (19, 17, 18, 1, 210000, 'Served'),
-(20, 18, 9, 2, 850000, 'Preparing'),
+(20, 18, 9, 2, 135000, 'Preparing'),
 (21, 19, 1, 2, 180000, 'Pending');
 
 -- ── 21. Hotel Services (10 rows) ─────────────────────────────
@@ -893,10 +959,10 @@ INSERT IGNORE INTO Accounts (account_id, username, password_hash, is_active, rol
 (23, 'testguest3', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
 
 -- ── 43. Test Customers liên kết Account ──────────────────────
-INSERT IGNORE INTO Customers (customer_id, account_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier) VALUES
-(16, 21, 'Nguyễn Minh Test', 'Nam', 'YTZ6KpDQsEJPEHfwR+3vNw==', '0911000001', 'testguest1@test.com', 50, 'Regular'),
-(17, 22, 'Trần Thị Test', 'Nữ', 'L+rfuZSEQrLxAyYmz4xp9Q==', '0911000002', 'testguest2@test.com', 100, 'Silver'),
-(18, 23, 'Lê Văn Test', 'Nam', 'Rdq+O8/+wOLP5PTwDytFRQ==', '0911000003', 'testguest3@test.com', 200, 'Gold');
+INSERT IGNORE INTO Customers (customer_id, account_id, full_name, gender, cccd_passport_encrypted, phone, email, loyalty_points, membership_tier_id) VALUES
+(16, 21, 'Nguyễn Minh Test', 'Nam', 'YTZ6KpDQsEJPEHfwR+3vNw==', '0911000001', 'testguest1@test.com', 50, 1),
+(17, 22, 'Trần Thị Test', 'Nữ', 'L+rfuZSEQrLxAyYmz4xp9Q==', '0911000002', 'testguest2@test.com', 100, 2),
+(18, 23, 'Lê Văn Test', 'Nam', 'Rdq+O8/+wOLP5PTwDytFRQ==', '0911000003', 'testguest3@test.com', 200, 3);
 
 -- ── 44. Test Bookings (Confirmed + Checked_In) ──────────────
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
@@ -911,10 +977,13 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (23, '2026-06-10', '2026-06-16', 3000000, '2026-06-08', 15000000, 'hash');
 
 -- ── 46. Test Room Booking Details ────────────────────────────
+-- Test details: 'Active' không phải enum hợp lệ, phải dùng 'Checked_In'
+-- detail 12: đổi room_id 11 → 14 (phòng 204, cat 2) – tránh double-claim với booking 505 (Ngọc Lan)
+-- detail 13: đổi room_id 16 → 37 (phòng 407, cat 3) – đồng bộ logic phòng Wellness Retreats
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
-(11, 21, 4, 6, 2000000, 'Active', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER'),
-(12, 22, 2, 11, 3500000, 'Active', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
-(13, 23, 3, 16, 8000000, 'Active', 'TWIN_BED', NULL, TRUE, 2000000, 'BILL_TO_LEADER');
+(11, 21, 4,  6,  2000000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 500000,  'BILL_TO_LEADER'),
+(12, 22, 2,  14, 3500000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 1500000, 'BILL_TO_LEADER'),
+(13, 23, 3,  37, 8000000, 'Checked_In', 'TWIN_BED',  NULL, TRUE, 2000000, 'BILL_TO_LEADER');
 
 -- ── 47. Test Room Guests ─────────────────────────────────────
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
@@ -924,8 +993,8 @@ INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, 
 
 -- ── 48. Cập nhật Rooms hiện tại đang được test guest ở ──────
 UPDATE Rooms SET current_booking_detail_id = 11, room_status = 'Occupied' WHERE room_id = 6;
-UPDATE Rooms SET current_booking_detail_id = 12, room_status = 'Occupied' WHERE room_id = 11;
-UPDATE Rooms SET current_booking_detail_id = 13, room_status = 'Occupied' WHERE room_id = 16;
+UPDATE Rooms SET current_booking_detail_id = 12, room_status = 'Occupied' WHERE room_id = 14;
+UPDATE Rooms SET current_booking_detail_id = 13, room_status = 'Occupied' WHERE room_id = 37;
 
 -- ── 51. Lê Hoàng Nam đặt 3 phòng 1 lượt ─────────────────────────────────────
 -- RoomBooking IS-A Booking (Table-Per-Class Inheritance):
@@ -934,9 +1003,10 @@ UPDATE Rooms SET current_booking_detail_id = 13, room_status = 'Occupied' WHERE 
 
 -- Bước 1: 3 bản ghi Bookings (bảng cha) — mỗi cái là 1 phòng của Nam
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(50, 1, '2026-06-22', 4500000, 'Checked_In', 'Direct_Web', NULL, 1),
-(51, 1, '2026-06-22', 4500000, 'Checked_In', 'Direct_Web', NULL, 1),
-(52, 1, '2026-06-22', 4500000, 'Checked_In', 'Direct_Web', NULL, 1);
+-- Bookings 50,51,52: Hoàng Nam đặt 3 phòng, ngày check-in 25/06 đã qua → Checked_Out
+(50, 1, '2026-06-22', 4500000, 'Checked_Out', 'Direct_Web', NULL, 1),
+(51, 1, '2026-06-22', 4500000, 'Checked_Out', 'Direct_Web', NULL, 1),
+(52, 1, '2026-06-22', 4500000, 'Checked_Out', 'Direct_Web', NULL, 1);
 
 -- Bước 2: 3 bản ghi Room_Bookings (bảng con) với cùng ID → kế thừa từ Bookings
 INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
@@ -944,16 +1014,13 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (51, '2026-06-25', '2026-06-28', 1000000, '2026-06-23', 6000000, 'hash'),
 (52, '2026-06-25', '2026-06-28', 1000000, '2026-06-23', 6000000, 'hash');
 
--- Bước 3: 3 Room_Booking_Details — phòng 301, 302, 303 (Family Connecting Room, category_id=7)
+-- Bước 3: 3 Room_Booking_Details — bookings 50,51,52 đã Checked_Out, room_id=NULL
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id) VALUES
-(50, 50, 7, 21, 4500000, 'Checked_In', 'KING_SIZE', 'Cần thêm giường phụ cho trẻ em', TRUE, 1000000, 'BILL_TO_LEADER', 1),
-(51, 51, 7, 22, 4500000, 'Checked_In', 'TWIN_BED', NULL,                              TRUE, 1000000, 'BILL_TO_LEADER', 2),
-(52, 52, 7, 23, 4500000, 'Checked_In', 'TWIN_BED', 'Tầng cao, view đẹp',              TRUE, 1000000, 'BILL_TO_LEADER', 3);
+(50, 50, 7, NULL, 4500000, 'Checked_Out', 'KING_SIZE', 'Cần thêm giường phụ cho trẻ em', TRUE, 1000000, 'BILL_TO_LEADER', 1),
+(51, 51, 7, NULL, 4500000, 'Checked_Out', 'TWIN_BED',  NULL,                              TRUE, 1000000, 'BILL_TO_LEADER', 2),
+(52, 52, 7, NULL, 4500000, 'Checked_Out', 'TWIN_BED',  'Tầng cao, view đẹp',              TRUE, 1000000, 'BILL_TO_LEADER', 3);
 
--- Cập nhật trạng thái và gán current_booking cho 3 phòng này
-UPDATE Rooms SET current_booking_detail_id = 50, room_status = 'Occupied' WHERE room_id = 21;
-UPDATE Rooms SET current_booking_detail_id = 51, room_status = 'Occupied' WHERE room_id = 22;
-UPDATE Rooms SET current_booking_detail_id = 52, room_status = 'Occupied' WHERE room_id = 23;
+-- Không cập nhật Rooms 21,22,23 vì bookings 50,51,52 đã Checked_Out → phòng vẫn Vacant_Clean
 
 -- Bước 4: Room Guests — Mỗi phòng 1 người đại diện (Lê Hoàng Nam, Nguyễn Văn An, Phạm Tuấn)
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
@@ -1002,11 +1069,10 @@ INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price,
 (201, 12, CURDATE(), 3000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (202, 18, CURDATE(), 1200000, 'Confirmed', 'Direct_Web', NULL, 1);
 
--- TourBookings: liên kết với RoomBooking 14 (Phạm Hùng Anh) và 23 (test Confirmed)
--- room_booking_detail_id = NULL vì chưa check-in / chưa phân phòng
+-- Tour bookings 200,201: đổi từ room_booking_id=14 (Checked_Out) sang 23 (Confirmed — hợp lý cho phân bổ khi check-in)
 INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, room_booking_detail_id, is_walk_in_tour) VALUES
-(200, 1, 2, 1200000, 14, NULL, FALSE),
-(201, 2, 5, 3000000, 14, NULL, FALSE),
+(200, 1, 2, 1200000, 23, NULL, FALSE),
+(201, 2, 5, 3000000, 23, NULL, FALSE),
 (202, 3, 2, 1200000, 23, NULL, FALSE);
 
 ALTER TABLE Tour_Bookings AUTO_INCREMENT = 300;
@@ -1023,8 +1089,9 @@ INSERT IGNORE INTO Export_History (id, report_name, format, exported_at, exporte
 
 -- ── 50. Mock Data for YoY Comparison (Năm 2025) ───────────────────────────
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(991, 1, '2025-06-01', 65000000, 'Confirmed', 'Direct_Web', NULL, 1),
-(992, 2, '2025-06-05', 45000000, 'Confirmed', 'OTA', NULL, 1);
+-- YoY booking 991: Hoàng Nam (customer 1), đã lưu trú năm 2025 → Checked_Out
+(991, 1, '2025-06-01', 65000000, 'Checked_Out', 'Direct_Web', NULL, 1),
+(992, 2, '2025-06-05', 45000000, 'Confirmed',   'OTA',        NULL, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (991, '2025-06-10', '2025-06-15', 5000000, '2025-06-05', 10000000, 'hash');
@@ -1082,8 +1149,8 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (499, '2025-12-20', '2025-12-25', 10000000, '2025-12-15', 20000000, 'hash');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id) VALUES
-
-(499, 499, 5, 15, 52000000, 'Checked_Out', 'KING_SIZE', 'Tuần trăng mật', TRUE, 5000000, 'BILL_TO_LEADER', 501);
+-- detail 499: cat 5 (Presidential) đã Checked_Out → room_id=NULL (không giữ số phòng sau checkout, vả lại room 15 thuộc cat 2 ≠ cat 5)
+(499, 499, 5, NULL, 52000000, 'Checked_Out', 'KING_SIZE', 'Tuần trăng mật', TRUE, 5000000, 'BILL_TO_LEADER', 501);
 
 -- Normal Customer has 95 pts (95,000 VND).
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
@@ -1106,7 +1173,8 @@ INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price,
 INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (502, '2026-07-15', '2026-07-17', 500000, '2026-07-10', 2000000, 'hash');
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id) VALUES
-(502, 502, 2, NULL, 1800000, 'Confirmed', 'TWIN_BED', 'Phòng yên tĩnh', TRUE, 2000000, 'INDIVIDUAL', 502);
+-- detail 502: booking đang Confirmed chưa check-in → detail_status phải là 'Pending' (không phải 'Confirmed')
+(502, 502, 2, NULL, 1800000, 'Pending', 'TWIN_BED', 'Phòng yên tĩnh', TRUE, 2000000, 'INDIVIDUAL', 502);
 
 -- 3. Pending_Approval (Triggered workflow)
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
@@ -1164,22 +1232,22 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 -- DATA TEST NGHIỆP VỤ MANAGER APPROVALS & REFUNDS
 -- ============================================================
 
--- 1. Thêm Booking chờ duyệt vượt hạn mức chiết khấu (Booking ID: 201)
+-- 1. Thêm Booking chờ duyệt vượt hạn mức chiết khấu (Booking ID: 301)
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(201, 1, '2026-06-28', 3000000, 'Pending_Approval', 'Direct_Web', 1, 1);
+(301, 1, '2026-06-28', 3000000, 'Pending_Approval', 'Direct_Web', 1, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
-(201, '2026-07-10', '2026-07-12', 1000000, '2026-07-08', 5000000, 'hash');
+(301, '2026-07-10', '2026-07-12', 1000000, '2026-07-08', 5000000, 'hash');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(2011, 201, 1, 4, 3000000, 'Pending', 'KING_SIZE', 'Cần duyệt chiết khấu vượt hạn mức 35%', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
+(3011, 301, 1, 4, 3000000, 'Pending', 'KING_SIZE', 'Cần duyệt chiết khấu vượt hạn mức 35%', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
-(20111, 2011, 1, NULL, 'ADULT', TRUE);
+(30111, 3011, 1, NULL, 'ADULT', TRUE);
 
 -- Tác vụ phê duyệt dành cho Manager
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
-(901, 4, 1, 1, 'Manager_Approval', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Mã giảm giá SUMMER2026 áp dụng vượt ngưỡng (15.0% > 10.0%). Yêu cầu phê duyệt cho booking ID: 201'),
+(901, 4, 1, 1, 'Manager_Approval', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Mã giảm giá SUMMER2026 áp dụng vượt ngưỡng (15.0% > 10.0%). Yêu cầu phê duyệt cho booking ID: 301'),
 (902, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách trả phòng trễ 3 tiếng do trời mưa bão. Xin miễn phí phụ thu trả phòng trễ cho booking ID: 1'),
 (903, 2, 1, 1, 'Cancellation_Fee_Waiver', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách gặp tai nạn không thể đến nhận phòng. Xin miễn 100% phí phạt hủy cho booking ID: 2'),
 (904, 3, 1, 1, 'Room_Downgrade_Refund', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Máy lạnh phòng Deluxe hỏng, khách đồng ý xuống hạng Superior. Xin duyệt hoàn tiền chênh lệch 500k cho booking ID: 3');
@@ -1188,7 +1256,8 @@ INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operati
 -- 2. Thêm các yêu cầu hoàn tiền (Refund Requests)
 INSERT INTO Refund_Requests (id, order_id, room_booking_id, tour_booking_id, bank_name, account_number, account_name, phone_number, amount, status, manager_note, evidence_image_url, created_at, completed_at) VALUES
 (1, NULL, 15, NULL, 'Vietcombank', '10129384829', 'NGUYEN XUAN LOC', '0900000101', 1000000.00, 'Pending', NULL, NULL, CURRENT_TIMESTAMP, NULL),
-(2, NULL, 14, NULL, 'Techcombank', '19033482938', 'TRAN THI BICH', '0900000104', 2500000.00, 'COMPLETED', 'Đã chuyển khoản hoàn tiền cọc qua ứng dụng ngân hàng', 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- Refund id=2: sửa amount 2,500,000 → 1,000,000 (không hoàn vượt số tiền cọc đã thu của booking 14 = 1,000,000)
+(2, NULL, 14, NULL, 'Techcombank', '19033482938', 'TRAN THI BICH', '0900000104', 1000000.00, 'COMPLETED', 'Đã chuyển khoản hoàn tiền cọc qua ứng dụng ngân hàng', 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
 (1031, 103, 8, NULL, 4500000, 'Pending', 'KING_SIZE', 'Gần thang máy', TRUE, 1000000, 'BILL_TO_LEADER', 2, 1),
@@ -1219,8 +1288,8 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (505, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 5000000.00, 'hash505');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id, number_of_adults, number_of_children) VALUES
-(5051, 505, 2, 11, 3500000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
-(5052, 505, 2, 12, 3500000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
+(5051, 505, 2, 12, 3500000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
+(5052, 505, 2, 13, 3500000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (50511, 5051, 505, NULL, 'ADULT', TRUE),
@@ -1229,26 +1298,16 @@ INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, 
 (50522, 5052, NULL, 506, 'ADULT', FALSE);
 
 INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transaction_type, payment_method, gateway_status, transaction_ref, created_at, paid_at) VALUES
-(5051, 505, 1000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP505_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(5051, 505, 1000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP505_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9999, 9999, 2000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP9999_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-UPDATE Rooms SET current_booking_detail_id = 5051, room_status = 'Occupied' WHERE room_id = 11;
-UPDATE Rooms SET current_booking_detail_id = 5052, room_status = 'Occupied' WHERE room_id = 12;
-
-
-
--- FIX HOANGNAM UNREALISTIC ACTIVE BOOKINGS
-UPDATE Bookings SET booking_status = 'Checked_Out' WHERE customer_id = 1 AND booking_id IN (50, 51, 103, 201);
-UPDATE Room_Bookings SET check_in_date = '2026-06-01', check_out_date = '2026-06-05' WHERE room_booking_id IN (50, 51, 103, 201);
+UPDATE Rooms SET current_booking_detail_id = 5051, room_status = 'Occupied' WHERE room_id = 12;
+UPDATE Rooms SET current_booking_detail_id = 5052, room_status = 'Occupied' WHERE room_id = 13;
 
 
--- FIX HOANGNAM BOOKING 991
-UPDATE Bookings SET booking_status = 'Checked_Out' WHERE customer_id = 1 AND booking_id = 991;
-UPDATE Room_Bookings SET check_in_date = '2025-06-10', check_out_date = '2025-06-15' WHERE room_booking_id = 991;
 
-
--- FIX HOANGNAM BOOKING 1
-UPDATE Bookings SET booking_status = 'Checked_Out' WHERE customer_id = 1 AND booking_id = 1;
-UPDATE Room_Bookings SET check_in_date = '2026-06-01', check_out_date = '2026-06-05' WHERE room_booking_id = 1;
+-- FIX HOANGNAM blocks đã được loại bỏ: booking 1, 50, 51, 52, 991 đã được fix trực tiếp tại các INSERT bên trên.
+-- Không dùng UPDATE patches để vá dữ liệu (nguyên tắc nhất quán seed data).
 
 
 -- FIX GUEST REQUEST TASK OPERATIONAL TYPE
@@ -1314,8 +1373,7 @@ JOIN Room_Bookings rb ON b.booking_id = rb.room_booking_id
 SET b.booking_date = DATE_SUB(rb.check_in_date, INTERVAL 7 DAY) 
 WHERE b.booking_status = 'Checked_In' AND b.booking_date < DATE_SUB(CURDATE(), INTERVAL 30 DAY);
 
-UPDATE Bookings SET booking_status = 'Checked_Out' WHERE customer_id = 1 AND booking_id = 52;
-UPDATE Room_Booking_Details SET detail_status = 'Checked_Out' WHERE room_booking_id = 52;
+-- Booking 52 đã được fix tại INSERT (Checked_Out, room_id=NULL) – không cần UPDATE patches nữa.
 
 
 -- CREATE AN ALWAYS-ACTIVE BOOKING FOR HOANG NAM (CUSTOMER_ID = 1)
@@ -1334,11 +1392,9 @@ VALUES (999911, 99991, 1, 'ADULT', TRUE);
 UPDATE Rooms SET current_booking_detail_id = 99991, room_status = 'Occupied' WHERE room_id = 5;
 
 
--- FIX BOOKING 9 VALUES TO BE REALISTIC
-UPDATE Room_Booking_Details SET room_charge = 7500000, sub_credit_limit = 5000000 WHERE room_booking_id = 51;
-UPDATE Room_Bookings SET deposit_amount = 3000000 WHERE room_booking_id = 51;
-
-UPDATE Bookings SET total_price = 7500000 WHERE booking_id = 9;
+-- FIX BOOKING 9: đã sửa room_charge trong INSERT (detail 11, room_booking_id=9).
+-- Reconcile tự động cập nhật total_price. UPDATE dưới dùng để đảm bảo deposit khớp.
+UPDATE Room_Bookings SET deposit_amount = 3000000 WHERE room_booking_id = 9;
 
 -- DYNAMICALLY ASSIGN SUB CREDIT LIMIT BASED ON MEMBERSHIP TIER FOR ALL ACTIVE/CONFIRMED BOOKINGS
 UPDATE Room_Booking_Details rbd

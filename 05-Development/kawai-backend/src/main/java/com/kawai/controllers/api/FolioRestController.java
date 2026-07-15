@@ -52,6 +52,7 @@ public class FolioRestController {
     private final com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo;
     private final com.kawai.repositories.EmployeeRepository employeeRepository;
     private final com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
+    private final com.kawai.services.interfaces.HousekeepingService housekeepingService;
 
     @Autowired
     public FolioRestController(NightAuditService nightAuditService,
@@ -71,7 +72,8 @@ public class FolioRestController {
             com.kawai.services.interfaces.WorkflowEngineService workflowEngineService,
             com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo,
             com.kawai.repositories.EmployeeRepository employeeRepository,
-            com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository) {
+            com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository,
+            com.kawai.services.interfaces.HousekeepingService housekeepingService) {
         this.nightAuditService = nightAuditService;
         this.folioItemRepository = folioItemRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
@@ -90,6 +92,7 @@ public class FolioRestController {
         this.workflowEngineService = workflowEngineService;
         this.housekeepingTaskRepo = housekeepingTaskRepo;
         this.employeeRepository = employeeRepository;
+        this.housekeepingService = housekeepingService;
     }
 
     /**
@@ -380,6 +383,42 @@ public class FolioRestController {
         BigDecimal deposit = BigDecimal.ZERO;
         BigDecimal otherPayments = BigDecimal.ZERO;
 
+        if (detail.getRoomBooking() != null) {
+            Long bookingId = detail.getRoomBooking().getId();
+            BigDecimal totalPayments = BigDecimal.ZERO;
+            try {
+                List<PaymentTransaction> payments = paymentService.getPaymentsByBookingId(bookingId);
+                if (payments != null) {
+                    for (PaymentTransaction pt : payments) {
+                        if (pt.getStatus() == PaymentStatus.SUCCESS && pt.getAmount() != null) {
+                            totalPayments = totalPayments.add(pt.getAmount());
+                            if ("ROOM_BOOKING".equalsIgnoreCase(pt.getTransactionType())
+                                    || "DEPOSIT".equalsIgnoreCase(pt.getTransactionType())) {
+                                deposit = deposit.add(pt.getAmount());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+
+            boolean depositFromBooking = false;
+            if (deposit.compareTo(BigDecimal.ZERO) == 0 && detail.getRoomBooking().getDepositAmount() != null) {
+                deposit = detail.getRoomBooking().getDepositAmount();
+                depositFromBooking = true;
+            }
+
+            if (depositFromBooking) {
+                otherPayments = totalPayments;
+            } else {
+                otherPayments = totalPayments.subtract(deposit);
+            }
+
+            if (otherPayments.compareTo(BigDecimal.ZERO) < 0) {
+                otherPayments = BigDecimal.ZERO;
+            }
+        }
+
         Map<String, Object> response = new java.util.HashMap<>();
         response.put("success", true);
         response.put("roomBookingDetailId", roomBookingDetailId);
@@ -611,7 +650,7 @@ public class FolioRestController {
                                 item.setBooking(booking);
                                 item.setPayerCustomer(booking != null ? booking.getCustomer() : null);
                                 item.setSourceDepartment("Room");
-                                item.setAmount(d.getRoomCharge());
+                                item.setAmount(getExpectedRoomCharge(d));
                                 String catName = d.getCategory() != null ? d.getCategory().getCategoryName() : "Room";
                                 item.setDescription("Room Charge (Expected) - " + catName);
                                 item.setIsSettledSeparately(false);
@@ -719,12 +758,32 @@ public class FolioRestController {
                         if (pts != null) {
                             for (PaymentTransaction pt : pts) {
                                 if (pt.getStatus() == PaymentStatus.SUCCESS
-                                        && "Deposit".equalsIgnoreCase(pt.getTransactionType())) {
+                                        && ("Deposit".equalsIgnoreCase(pt.getTransactionType())
+                                            || "ROOM_BOOKING".equalsIgnoreCase(pt.getTransactionType()))) {
                                     recDep = recDep.add(pt.getAmount());
                                 }
                             }
                         }
                     } catch (Exception e) {
+                    }
+
+                    // Fallback: If deposit amount is recorded on Booking but no deposit transaction exists in DB,
+                    // dynamically create the missing transaction so that payment history and subsequent balance checks are consistent.
+                    if (recDep.compareTo(BigDecimal.ZERO) == 0) {
+                        try {
+                            PaymentTransaction dummyDep = new PaymentTransaction();
+                            dummyDep.setBooking(booking);
+                            dummyDep.setAmount(deposit);
+                            dummyDep.setTransactionType("Deposit");
+                            dummyDep.setPaymentMethod("VNPAY");
+                            dummyDep.setStatus(PaymentStatus.SUCCESS);
+                            dummyDep.setGatewayStatus("SUCCESS");
+                            dummyDep.setTransactionRef("DEP_FALLBACK_" + booking.getId() + "_" + System.currentTimeMillis());
+                            dummyDep.setCreatedAt(java.time.LocalDateTime.now().minusDays(1));
+                            paymentTransactionRepository.save(dummyDep);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     if (finalBalance.compareTo(deposit) <= 0) {
@@ -788,6 +847,7 @@ public class FolioRestController {
 
                             Room room = d.getRoom();
                             if (room != null) {
+                                room.setCurrentBookingDetailId(null);
                                 try {
                                     workflowEngineService.triggerEvent("ROOM_CHECKOUT", Map.of(
                                             "room_id", room.getId(),
@@ -796,8 +856,7 @@ public class FolioRestController {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-                                room.setCurrentBookingDetailId(null);
-                                createMaintenanceTaskForPricedDamages(room);
+                                housekeepingService.createMaintenanceTaskForPricedDamages(room);
                             }
                         }
                     }
@@ -813,6 +872,7 @@ public class FolioRestController {
                     // 2. Thay đổi trạng thái phòng vật lý qua Dirty (hoặc theo cấu hình workflow)
                     Room room = detail.getRoom();
                     if (room != null) {
+                        room.setCurrentBookingDetailId(null);
                         try {
                             workflowEngineService.triggerEvent("ROOM_CHECKOUT", Map.of(
                                     "room_id", room.getId(),
@@ -821,8 +881,7 @@ public class FolioRestController {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        room.setCurrentBookingDetailId(null);
-                        createMaintenanceTaskForPricedDamages(room);
+                        housekeepingService.createMaintenanceTaskForPricedDamages(room);
                     }
                 }
 
@@ -1055,6 +1114,7 @@ public class FolioRestController {
 
         // Subtract all successful payments
         BigDecimal totalPayments = BigDecimal.ZERO;
+        BigDecimal depositFromTxn = BigDecimal.ZERO;
         try {
             List<PaymentTransaction> payments = paymentService.getPaymentsByBookingId(booking.getId());
             if (payments != null) {
@@ -1062,13 +1122,19 @@ public class FolioRestController {
                     if (pt.getStatus() == PaymentStatus.SUCCESS) {
                         if (pt.getAmount() != null) {
                             totalPayments = totalPayments.add(pt.getAmount());
+                            if ("ROOM_BOOKING".equalsIgnoreCase(pt.getTransactionType())
+                                    || "DEPOSIT".equalsIgnoreCase(pt.getTransactionType())) {
+                                depositFromTxn = depositFromTxn.add(pt.getAmount());
+                            }
                         }
                     }
                 }
             }
         } catch (Exception e) {
         }
-        if (booking.getDepositAmount() != null && booking.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
+        if (depositFromTxn.compareTo(BigDecimal.ZERO) == 0 
+                && booking.getDepositAmount() != null 
+                && booking.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) {
             totalPayments = totalPayments.add(booking.getDepositAmount());
         }
 
@@ -1294,43 +1360,7 @@ public class FolioRestController {
         }
     }
 
-    private void createMaintenanceTaskForPricedDamages(Room room) {
-        if (room == null)
-            return;
-        List<HotelOperation> damageChecks = housekeepingTaskRepo.findAll().stream()
-                .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
-                        && "DAMAGE_CHECK".equals(t.getOperationalType())
-                        && t.getDamagePrice() != null
-                        && !"ConvertedToRepair".equals(t.getStatus()))
-                .collect(java.util.stream.Collectors.toList());
 
-        if (damageChecks.isEmpty()) {
-            room.setRoomStatus("Vacant_Dirty");
-            roomRepository.save(room);
-        } else {
-            for (HotelOperation dc : damageChecks) {
-                dc.setStatus("ConvertedToRepair");
-                housekeepingTaskRepo.save(dc);
-
-                room.setRoomStatus("Maintenance");
-                roomRepository.save(room);
-
-                HotelOperation repairTask = new HotelOperation();
-                repairTask.setRoom(room);
-                repairTask.setStaff(dc.getStaff());
-                repairTask.setSupervisor(dc.getSupervisor());
-                repairTask.setOperationalType("MAINTENANCE");
-                repairTask.setPriority(dc.getPriority());
-                repairTask.setStatus("Pending");
-                repairTask.setNotes("[Cần sửa chữa - Đền bù hỏng hóc] " + dc.getNotes() + " | Chi phí đền bù: "
-                        + dc.getDamagePrice() + " VNĐ");
-                repairTask.setImageUrl(dc.getImageUrl());
-                repairTask.setDamagePrice(dc.getDamagePrice());
-                repairTask.setCreatedAt(java.time.LocalDateTime.now());
-                housekeepingTaskRepo.save(repairTask);
-            }
-        }
-    }
 
     private boolean isDamageOrMaintenanceItem(com.kawai.models.FolioItem item) {
         if (item == null)

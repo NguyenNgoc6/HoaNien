@@ -47,7 +47,7 @@ public class PosApiController {
             if (order == null) {
                 return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Order not found"));
             }
-            
+
             java.util.List<Map<String, Object>> itemsList = new java.util.ArrayList<>();
             if (order.getDetails() != null) {
                 for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
@@ -58,23 +58,24 @@ public class PosApiController {
                     if (price == null) {
                         price = java.math.BigDecimal.ZERO;
                     }
-                    
+
                     Map<String, Object> itemMap = new java.util.HashMap<>();
                     itemMap.put("name", detail.getMenuItem() != null ? detail.getMenuItem().getItemName() : "Món ăn");
                     itemMap.put("quantity", detail.getQuantity());
                     itemMap.put("price", price);
-                    itemMap.put("amount", price.multiply(new java.math.BigDecimal(detail.getQuantity() != null ? detail.getQuantity() : 1)));
+                    itemMap.put("amount", price.multiply(
+                            new java.math.BigDecimal(detail.getQuantity() != null ? detail.getQuantity() : 1)));
                     itemsList.add(itemMap);
                 }
             }
-            
+
             Map<String, Object> response = new java.util.HashMap<>();
             response.put("status", "success");
             response.put("orderId", order.getId());
             response.put("orderType", order.getOrderType());
             response.put("paymentType", order.getPaymentType());
             response.put("items", itemsList);
-            
+
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,6 +157,36 @@ public class PosApiController {
         try {
             posService.cancelOrder(id, dto);
             return ResponseEntity.ok().body(Map.of("status", "success", "message", "Cập nhật trạng thái thành công"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(400).body(Map.of(
+                    "error", e.getClass().getName(),
+                    "message", e.getMessage() != null ? e.getMessage() : "null message"));
+        }
+    }
+
+    /**
+     * Endpoint hủy đơn dành riêng cho Khách hàng (Tách biệt ngữ cảnh với Nhân viên).
+     * Yêu cầu ROLE_GUEST hoặc ROLE_CUSTOMER. 
+     * Logic xác thực quyền sở hữu đơn hàng (ngăn IDOR) được ủy nhiệm (delegate) cho Service xử lý.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_GUEST', 'ROLE_CUSTOMER')")
+    @PostMapping("/guest/orders/{id}/cancel")
+    public ResponseEntity<?> guestCancelOrder(@PathVariable Long id,
+            @RequestBody(required = false) com.kawai.dtos.CancelOrderRequestDTO dto,
+            java.security.Principal principal) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(401).body(Map.of("message", "Quý khách cần đăng nhập để thao tác"));
+            }
+            String identifier = principal.getName();
+            if (principal instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+                org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken oauthToken = (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) principal;
+                identifier = oauthToken.getPrincipal().getAttribute("email");
+            }
+
+            posService.cancelOrderByGuest(id, dto, identifier);
+            return ResponseEntity.ok().body(Map.of("status", "success", "message", "Gửi yêu cầu hủy đơn thành công"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(400).body(Map.of(

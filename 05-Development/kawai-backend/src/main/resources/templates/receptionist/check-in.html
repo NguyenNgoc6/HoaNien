@@ -784,15 +784,19 @@
     <!-- Toastify -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="/receptionist/js/checkin.js"></script>
+    <!-- roomInventory phải được khai báo TRƯỚC checkin.js để các function trong checkin.js có thể dùng -->
     <script th:inline="javascript">
+        // Inject dữ liệu phòng từ server-side vào biến global
+        // QUAN TRỌNG: script này phải nằm TRƯỚC <script src="checkin.js">
         const roomInventory = /*[[${roomInventory}]]*/ {};
-        const assignedRooms = [];
 
         // Hiển thị thông báo nếu có từ redirectAttributes
         const successMessage = /*[[${successMessage}]]*/ null;
         const errorMessage = /*[[${errorMessage}]]*/ null;
-
+    </script>
+    <script src="/receptionist/js/checkin.js"></script>
+    <script>
+        // Hiển thị toast sau khi checkin.js load xong
         if (successMessage) {
             Toastify({
                 text: successMessage,
@@ -854,8 +858,13 @@
 
             try {
                 var pending = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
-                pending.forEach(function (n) { showPersistentToast(n); });
-            } catch (e) { }
+                pending = pending.filter(function(n) {
+                    var t = n.text || '';
+                    return !t.includes('khẩn cấp') && !t.includes('Yêu cầu dọn') && !t.includes('Yêu cầu sửa');
+                });
+                localStorage.setItem('kawai_notifs', JSON.stringify(pending));
+                pending.forEach(function(n) { showPersistentToast(n); });
+            } catch(e) {}
 
             function saveAndShow(text, direct) {
                 var notif = { id: Date.now() + '_' + Math.random(), text: text, direct: direct };
@@ -884,7 +893,15 @@
                         try {
                             var payload = JSON.parse(msg.body);
                             console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
-                            saveAndShow('📢 THÔNG BÁO HỆ THỐNG: \n ' + payload.message, false);
+                            if (payload.type === 'NEW_TASK') return;
+                            if (payload.type === 'ROOM_CLEANED') {
+                                if (typeof pollCleanTasksDone === 'function') pollCleanTasksDone();
+                                if (typeof pollPendingWalkInRooms === 'function') pollPendingWalkInRooms();
+                                if (typeof pollCleanedRooms === 'function') pollCleanedRooms();
+                                // KHÔNG auto-reload ở màn này để tránh mất dữ liệu khách đang nhập dở
+                                return;
+                            }
+                            saveAndShow('📢 THÔNG BÁO HỆ THỐNG: \n' + payload.message, false);
                         } catch (e) { console.error('[WS] parse error', e); }
                     });
 

@@ -15,6 +15,7 @@ import com.kawai.repositories.WorkflowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +52,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     private final MaintenanceRequestRepository maintenanceRequestRepo;
     private final RoomRepository roomRepo;
     private final EmployeeRepository employeeRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     public HousekeepingServiceImpl(HousekeepingTaskRepository housekeepingTaskRepo,
@@ -58,13 +60,15 @@ public class HousekeepingServiceImpl implements HousekeepingService {
             RoomRepository roomRepo,
             EmployeeRepository employeeRepo,
             WorkflowEngineService workflowEngineService,
-            WorkflowRepository workflowRepository) {
+            WorkflowRepository workflowRepository,
+            SimpMessagingTemplate messagingTemplate) {
         this.housekeepingTaskRepo = housekeepingTaskRepo;
         this.maintenanceRequestRepo = maintenanceRequestRepo;
         this.roomRepo = roomRepo;
         this.employeeRepo = employeeRepo;
         this.workflowEngineService = workflowEngineService;
         this.workflowRepository = workflowRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     // ========================================================================
@@ -111,8 +115,10 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         HotelOperation task = findTaskById(taskId);
         Room room = task.getRoom();
         String currentStatus = room.getRoomStatus();
-        if ("Occupied_Dirty".equalsIgnoreCase(currentStatus)) {
-            room.setRoomStatus("Occupied_Clean");
+        boolean isOccupied = currentStatus != null && currentStatus.toLowerCase().contains("occupied");
+
+        if (isOccupied) {
+            room.setRoomStatus("Occupied");
         } else {
             room.setRoomStatus(STATUS_VACANT_CLEAN);
         }
@@ -125,6 +131,17 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         roomRepo.save(room);
         housekeepingTaskRepo.save(task);
+        try {
+            String wsMessage = isOccupied
+                    ? "Phòng " + room.getRoomNumber() + " (đang có khách) đã được dọn dẹp sạch sẽ!"
+                    : "Phòng " + room.getRoomNumber() + " đã được dọn dẹp sạch sẽ và sẵn sàng đón khách!";
+
+            messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of(
+                    "message", wsMessage,
+                    "type", "ROOM_CLEANED"));
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket message", e);
+        }
 
         return room;
     }
@@ -132,12 +149,6 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     // ========================================================================
     // UC13.3: Lễ tân xem danh sách yêu cầu dọn/sửa phòng
     // ========================================================================
-
-    /**
-     * Lấy danh sách các yêu cầu dọn phòng/bảo trì đang chờ xử lý (Pending).
-     *
-     * @return Danh sách HotelOperation
-     */
     @Override
     public List<HotelOperation> getPendingOperations() {
         return housekeepingTaskRepo.findPendingTasksSorted(STATUS_PENDING);
@@ -225,9 +236,11 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         String type;
         if (isEmergency || room.getCurrentBookingDetailId() == null) {
-            // Cập nhật trạng thái phòng → Maintenance
-            room.setRoomStatus(STATUS_MAINTENANCE);
-            roomRepo.save(room);
+            if (room.getCurrentBookingDetailId() == null) {
+                // Cập nhật trạng thái phòng → Maintenance (chỉ khi không có khách đang thuê)
+                room.setRoomStatus(STATUS_MAINTENANCE);
+                roomRepo.save(room);
+            }
             type = OPERATION_MAINTENANCE;
         } else {
             // Khách chưa checkout và không khẩn cấp -> Tạo phiếu DAMAGE_CHECK và giữ nguyên
@@ -296,6 +309,47 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         task.setCreatedAt(LocalDateTime.now());
         task.setNotes(notes);
         return task;
+    }
+
+    @Override
+    @Transactional
+    public void createMaintenanceTaskForPricedDamages(Room room) {
+        if (room == null)
+            return;
+        List<HotelOperation> damageChecks = maintenanceRequestRepo.findAll().stream()
+                .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
+                        && "DAMAGE_CHECK".equals(t.getOperationalType())
+                        && t.getDamagePrice() != null
+                        && !"ConvertedToRepair".equals(t.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (damageChecks.isEmpty()) {
+            room.setRoomStatus("Vacant_Dirty");
+            roomRepo.save(room);
+        } else {
+            for (HotelOperation dc : damageChecks) {
+                dc.setStatus("ConvertedToRepair");
+                maintenanceRequestRepo.save(dc);
+
+                room.setRoomStatus("Maintenance");
+                roomRepo.save(room);
+
+                HotelOperation repairTask = new HotelOperation();
+                repairTask.setRoom(room);
+                repairTask.setStaff(dc.getStaff());
+                repairTask.setSupervisor(dc.getSupervisor());
+                repairTask.setOperationalType("MAINTENANCE");
+                repairTask.setPriority(dc.getPriority());
+                repairTask.setStatus("Pending");
+                repairTask.setNotes("[Cần sửa chữa - Đền bù hỏng hóc] " + (dc.getNotes() != null ? dc.getNotes() : "")
+                        + " | Chi phí đền bù: "
+                        + dc.getDamagePrice() + " VNĐ");
+                repairTask.setImageUrl(dc.getImageUrl());
+                repairTask.setDamagePrice(dc.getDamagePrice());
+                repairTask.setCreatedAt(java.time.LocalDateTime.now());
+                maintenanceRequestRepo.save(repairTask);
+            }
+        }
     }
 
     private Room findRoomById(Long id) {
