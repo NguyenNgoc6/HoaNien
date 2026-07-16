@@ -62,6 +62,9 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
 
     private boolean evaluateConditions(String conditionsJson, Map<String, Object> payload, String eventType) {
         if (conditionsJson == null || conditionsJson.trim().isEmpty() || "{}".equals(conditionsJson.trim())) {
+            if ("PROMOTION_EXCEEDED".equals(eventType)) {
+                return false; // Không có cấu hình ngưỡng -> Không tự động chuyển chờ duyệt
+            }
             return true;
         }
 
@@ -77,6 +80,7 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
                         return inputVal.doubleValue() > thresholdVal.doubleValue();
                     }
                 }
+                return false; // Không chứa điều kiện so sánh ngưỡng -> Không chặn
             }
             // For general check, match any key-value in conditions with payload
             for (Map.Entry<String, Object> entry : conditions.entrySet()) {
