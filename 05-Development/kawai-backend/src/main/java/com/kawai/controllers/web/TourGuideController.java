@@ -498,14 +498,8 @@ public class TourGuideController {
                 mappedStatus = "cancelled";
             } else if (dbStatus != null && "ongoing".equalsIgnoreCase(dbStatus)) {
                 mappedStatus = "ongoing";
-            } else if (depDate2 != null && depDate2.isBefore(today2)) {
-                // Ngày khởi hành đã qua → Đã hoàn thành
-                mappedStatus = "completed";
-            } else if (depDate2 != null && depDate2.isEqual(today2)) {
-                // Hôm nay → Đang diễn ra
-                mappedStatus = "ongoing";
             } else {
-                // Tương lai → Sắp diễn ra
+                // Tương lai/chưa bắt đầu → Sắp diễn ra
                 mappedStatus = "upcoming";
             }
             map.put("status", mappedStatus);

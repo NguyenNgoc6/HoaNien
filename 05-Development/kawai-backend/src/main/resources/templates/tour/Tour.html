@@ -330,6 +330,8 @@
                         <button onclick="filterTours('completed', this)"
                             class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Hoàn
                             thành</button>
+                        <button onclick="filterTours('cancelled', this)"
+                            class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-primary-container/20 font-label-md text-label-md transition-all">Đã hủy</button>
                     </div>
                 </div>
             </div>
@@ -778,6 +780,8 @@
                     matchesFilter = (status === 'ongoing');
                 } else if (activeTourFilter === 'completed') {
                     matchesFilter = (status === 'completed');
+                } else if (activeTourFilter === 'cancelled') {
+                    matchesFilter = (status === 'cancelled');
                 }
 
                 // 2. Check date filter
@@ -839,6 +843,8 @@
                         msg = "Không có tour nào đang diễn ra trong danh sách của bạn.";
                     } else if (activeTourFilter === 'completed') {
                         msg = "Không có tour nào đã hoàn thành trong danh sách của bạn.";
+                    } else if (activeTourFilter === 'cancelled') {
+                        msg = "Không có tour nào đã hủy trong danh sách của bạn.";
                     }
                     if (selectedDateFilter) {
                         const parts = selectedDateFilter.split('-');
@@ -902,6 +908,9 @@
             } else if (tour.status === 'ongoing') {
                 statusBg = 'bg-amber-500/10 text-amber-600 border-amber-500/20';
                 statusText = 'Đang diễn ra';
+            } else if (tour.status === 'cancelled') {
+                statusBg = 'bg-red-500/10 text-red-600 border-red-500/20';
+                statusText = 'Đã hủy';
             }
 
             return `
