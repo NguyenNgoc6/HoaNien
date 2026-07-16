@@ -1,5 +1,14 @@
+let currentGuestRefundType = 'FOOD';
+
 function openGuestRefundModal(orderId) {
     document.getElementById('guestRefundOrderId').value = orderId;
+    currentGuestRefundType = 'FOOD';
+    document.getElementById('guestRefundModal').style.display = 'flex';
+}
+
+function openRefundModal(orderId, type) {
+    document.getElementById('guestRefundOrderId').value = orderId;
+    currentGuestRefundType = type;
     document.getElementById('guestRefundModal').style.display = 'flex';
 }
 
@@ -27,7 +36,14 @@ function submitGuestRefundForm(event) {
     btn.disabled = true;
     btn.innerText = 'Đang xử lý...';
     
-    fetch('/api/pos/orders/' + orderId + '/cancel', {
+    let apiUrl = '/api/pos/orders/' + orderId + '/cancel';
+    if (currentGuestRefundType === 'ROOM') {
+        apiUrl = '/api/bookings/' + orderId + '/cancel';
+    } else if (currentGuestRefundType === 'TOUR') {
+        apiUrl = '/profile/tours/cancel/' + orderId;
+    }
+    
+    fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -35,11 +51,11 @@ function submitGuestRefundForm(event) {
         body: JSON.stringify(payload)
     })
     .then(res => {
-        if(!res.ok) return res.json().then(e => { throw new Error(e.message) });
+        if(!res.ok) return res.json().then(e => { throw new Error(e.message || 'Lỗi xử lý hoàn tiền') });
         return res.json();
     })
     .then(data => {
-        alert('Đã tạo yêu cầu hoàn tiền và hủy đơn thành công!');
+        alert(data.message || 'Đã tạo yêu cầu hoàn tiền và hủy đơn thành công!');
         window.location.reload();
     })
     .catch(err => {

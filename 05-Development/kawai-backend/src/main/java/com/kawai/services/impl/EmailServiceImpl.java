@@ -1162,6 +1162,28 @@ public class EmailServiceImpl implements EmailService {
             e.printStackTrace();
         }
     }
+    @org.springframework.scheduling.annotation.Async
+    @Override
+    public void sendProfileUpdateEmail(com.kawai.models.Customer customer) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            logger.warn("Bỏ qua gửi email cập nhật hồ sơ: customer {} không có email", customer != null ? customer.getId() : "null");
+            return;
+        }
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
+            ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            String htmlContent = templateEngine.process("email/profile-update", ctx);
+            sendEmail(customer.getEmail(), "Cập nhật hồ sơ thành công | Hoa Niên Retreat & Resort", htmlContent);
+        } catch (Exception e) {
+            logger.error("Lỗi khi gửi email cập nhật hồ sơ cho KH {}: {}", customer.getId(), e.getMessage());
+        }
+    }
+
+    @org.springframework.scheduling.annotation.Async
     @Override
     public void sendWeeklyScheduleEmail(String toEmail, String employeeName, java.util.List<com.kawai.models.StaffSchedule> schedules) {
         try {

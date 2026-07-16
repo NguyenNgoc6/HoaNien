@@ -581,6 +581,57 @@ public class TourBookingServiceImpl implements TourBookingService {
 
                 return refundAmount;
         }
+
+        @Override
+        public BigDecimal cancelTourByCustomer(Long bookingId, Long customerId, com.kawai.dto.CancelBookingRequestDTO dto) {
+                TourBooking booking = tourBookingRepository.findById(bookingId)
+                                .orElseThrow(() -> new IllegalStateException("TOUR-002: Booking not found"));
+
+                if (!booking.getCustomer().getId().equals(customerId)) {
+                        throw new IllegalStateException("TOUR-003: Không có quyền hủy booking này");
+                }
+
+                BigDecimal refundAmount = BigDecimal.ZERO;
+                String newStatus = "Cancelled_Forfeited";
+
+                // Quy tắc theo yêu cầu: > 24h => hoàn 50%, <= 24h => hoàn 0%
+                if (booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null) {
+                        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                        // Assume departure time is 07:00 if not specified
+                        java.time.LocalTime depTime = booking.getSchedule().getDepartureTime() != null 
+                                        ? booking.getSchedule().getDepartureTime() 
+                                        : java.time.LocalTime.of(7, 0);
+                        java.time.LocalDateTime departureDateTime = booking.getSchedule().getDepartureDate().atTime(depTime);
+                        long hoursUntilDeparture = java.time.temporal.ChronoUnit.HOURS.between(now, departureDateTime);
+
+                        if (hoursUntilDeparture > 24) {
+                                // Hoàn 50%
+                                refundAmount = booking.getTotalPrice().multiply(new BigDecimal("0.5"));
+                                newStatus = "Cancelled";
+                                
+                                // Nếu có DTO ngân hàng thì lưu lại (có thể tạo RefundRequest nếu có module đó)
+                                if (dto != null && dto.getBankName() != null && !dto.getBankName().isEmpty()) {
+                                        String refundInfo = String.format("[YÊU CẦU HOÀN TIỀN] Ngân hàng: %s, STK: %s, Chủ thẻ: %s", 
+                                                dto.getBankName(), dto.getAccountNumber(), dto.getAccountName());
+                                        String currentNotes = booking.getNotes() != null ? booking.getNotes() : "";
+                                        booking.setNotes(currentNotes + "\n" + refundInfo);
+                                }
+                        }
+                }
+
+                booking.setBookingStatus(newStatus);
+                tourBookingRepository.save(booking);
+
+                LOG.info("Customer {} cancelled booking {}, hours left, refund={}, status={}",
+                                customerId, bookingId, refundAmount, newStatus);
+
+                if (emailService != null && booking.getCustomer() != null) {
+                        emailService.sendCancellationNotice(booking, booking.getCustomer(), refundAmount, false);
+                }
+
+                return refundAmount;
+        }
+
         @jakarta.annotation.PostConstruct
         public void clearTourBookingsData() {
                 // ⚠️ Đã vô hiệu hóa: method này trước đây xóa toàn bộ Tour_Bookings và Tour_Attendees
