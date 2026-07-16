@@ -357,7 +357,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                         childDep.setCustomer(customer);
                         childDep.setDependentName(name);
                         childDep.setBirthDate(LocalDate.now().minusYears(estimatedAge));
-                        childDep.setGender("KhÃ´ng xÃ¡c Ä‘á»‹nh");
+                        childDep.setGender("Other");
                         childDep.setIsDeleted(false);
                         // Ghi chÃº nguá»“n gá»‘c vÃ  nhÃ£n tuá»•i Ä‘á»ƒ hiá»ƒn thá»‹ trong popup
                         childDep.setCccdPassportEncrypted("AUTO_CHILD_" + ageLabel.replace(" ", "_"));

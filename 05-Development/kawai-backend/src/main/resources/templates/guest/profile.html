@@ -395,7 +395,9 @@
                                     th:text="${dep.dependentName != null and !#strings.isEmpty(dep.dependentName) ? dep.dependentName : 'Khách chưa cập nhật tên'}">
                                     Name</p>
                                 <p class="text-[11px] opacity-60"
-                                    th:text="${(dep.gender == 'Male' ? 'Nam' : (dep.gender == 'Female' ? 'Nữ' : (dep.gender != null ? dep.gender : 'Chưa cập nhật'))) + ' | ' + (dep.birthDate != null ? #temporals.format(dep.birthDate, 'dd/MM/yyyy') : 'Chưa cập nhật')}">
+                                    th:with="genderLabel=${dep.gender == 'Male' ? 'Nam' : (dep.gender == 'Female' ? 'Nữ' : (dep.gender == 'Other' ? 'Khác' : (dep.gender != null and !#strings.isEmpty(dep.gender) ? 'Khác' : 'Chưa cập nhật')))},
+                                             cccdVal=${dep.cccdPassportEncrypted != null and !#strings.startsWith(dep.cccdPassportEncrypted, 'AUTO_CHILD_') ? T(com.kawai.utils.EncryptionUtils).decrypt(dep.cccdPassportEncrypted) : ''}"
+                                    th:text="${genderLabel + ' | ' + (dep.birthDate != null ? #temporals.format(dep.birthDate, 'dd/MM/yyyy') : 'Chưa cập nhật') + (!#strings.isEmpty(cccdVal) ? ' | CCCD/Passport: ' + cccdVal : '')}">
                                     Male | 2000-01-01</p>
                             </div>
                             <form th:action="@{/profile/dependents/delete/{id}(id=${dep.id})}" method="POST"

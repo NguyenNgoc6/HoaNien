@@ -566,10 +566,11 @@
                                                     th:text="${#strings.length(custName) >= 2 ? #strings.substring(custName, 0, 2).toUpperCase() : custName.toUpperCase()}"
                                                     th:data-name="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
                                                     th:data-id="'#EVN-00' + ${attendee.id}"
-                                                    th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
-                                                    th:data-email="${attendee.customer?.email ?: '--'}"
+                                                    th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.customer?.phone ?: '--')}"
+                                                    th:data-email="${attendee.customer?.email ?: (attendee.dependent?.customer?.email ?: '--')}"
                                                     th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                     th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
+                                                    th:data-cccd="${attendee.customer?.cccdPassportEncrypted != null ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.customer.cccdPassportEncrypted) : (attendee.dependent?.cccdPassportEncrypted != null and !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.dependent.cccdPassportEncrypted) : '--')}"
                                                     onclick="showCustomerContactModal(this)">
                                                     NM
                                                 </div>
@@ -578,10 +579,11 @@
                                                         th:text="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
                                                         th:data-name="${attendee.customer?.fullName ?: attendee.dependent?.dependentName}"
                                                         th:data-id="'#EVN-00' + ${attendee.id}"
-                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted,'PHONE_') ? #strings.substring(attendee.dependent.cccdPassportEncrypted,6) : '--')}"
-                                                        th:data-email="${attendee.customer?.email ?: '--'}"
+                                                        th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.customer?.phone ?: '--')}"
+                                                        th:data-email="${attendee.customer?.email ?: (attendee.dependent?.customer?.email ?: '--')}"
                                                         th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                         th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
+                                                        th:data-cccd="${attendee.customer?.cccdPassportEncrypted != null ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.customer.cccdPassportEncrypted) : (attendee.dependent?.cccdPassportEncrypted != null and !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.dependent.cccdPassportEncrypted) : '--')}"
                                                         onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
@@ -897,6 +899,13 @@
                         <div>
                             <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Phân loại</p>
                             <p class="font-body-md text-on-surface" id="modal-customer-detail">Regular</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-lg bg-primary/5">
+                        <span class="material-symbols-outlined text-primary">badge</span>
+                        <div>
+                            <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold">CCCD / Passport</p>
+                            <p class="font-body-md text-on-surface" id="modal-customer-cccd">--</p>
                         </div>
                     </div>
                 </div>
@@ -1382,6 +1391,7 @@
             const email = element.getAttribute('data-email');
             const detail = element.getAttribute('data-membership');
             const room = element.getAttribute('data-room');
+            const cccd = element.getAttribute('data-cccd') || '--';
 
             document.getElementById('modal-customer-name').textContent = name;
             document.getElementById('modal-customer-id').textContent = id;
@@ -1389,6 +1399,7 @@
             document.getElementById('modal-customer-email').textContent = email;
             document.getElementById('modal-customer-room').textContent = room;
             document.getElementById('modal-customer-detail').textContent = detail;
+            document.getElementById('modal-customer-cccd').textContent = cccd;
 
             // Extract initials from name
             const nameParts = name.trim().split(/\s+/);
