@@ -1,6 +1,13 @@
-function openGuestRefundModal(orderId) {
-    document.getElementById('guestRefundOrderId').value = orderId;
+let currentRefundType = 'FOOD';
+
+function openRefundModal(id, type = 'FOOD') {
+    currentRefundType = type;
+    document.getElementById('guestRefundOrderId').value = id;
     document.getElementById('guestRefundModal').style.display = 'flex';
+}
+
+function openGuestRefundModal(orderId) {
+    openRefundModal(orderId, 'FOOD');
 }
 
 function closeGuestRefundModal() {
@@ -27,8 +34,12 @@ function submitGuestRefundForm(event) {
     btn.disabled = true;
     btn.innerText = 'Đang xử lý...';
     
-    // Sử dụng endpoint dành riêng cho Khách hàng
-    fetch('/api/pos/guest/orders/' + orderId + '/cancel', {
+    // Sử dụng endpoint tùy theo loại hủy (ROOM hoặc FOOD)
+    const url = currentRefundType === 'ROOM'
+        ? '/api/bookings/' + orderId + '/cancel'
+        : '/api/pos/guest/orders/' + orderId + '/cancel';
+
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
