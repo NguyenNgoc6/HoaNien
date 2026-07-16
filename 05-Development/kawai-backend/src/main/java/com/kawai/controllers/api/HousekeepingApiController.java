@@ -13,6 +13,7 @@ import com.kawai.repositories.FolioItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -43,7 +44,7 @@ public class HousekeepingApiController {
     private com.kawai.services.interfaces.HousekeepingService housekeepingService;
 
     @Autowired
-    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/housekeeping/save-minibar-only")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_HOUSEKEEPING', 'ROLE_HOUSEKEEPING')")
@@ -81,6 +82,7 @@ public class HousekeepingApiController {
                 item.setCreatedAt(LocalDateTime.now());
                 Employee staff = employeeRepository.findAll().stream().findFirst().orElse(null);
                 item.setCreatedByStaff(staff);
+                item.setRevenueCode("FB_MINIBAR");
                 folioItemRepository.save(item);
             }
 
@@ -128,6 +130,7 @@ public class HousekeepingApiController {
                 item.setDescription("Phí sử dụng Minibar (Phòng " + room.getRoomNumber() + ")");
                 item.setCreatedAt(LocalDateTime.now());
                 item.setCreatedByStaff(task.getStaff());
+                item.setRevenueCode("FB_MINIBAR");
                 folioItemRepository.save(item);
             }
 
@@ -142,6 +145,7 @@ public class HousekeepingApiController {
                 item.setDescription("Phí đền bù hỏng hóc (Phòng " + room.getRoomNumber() + ")");
                 item.setCreatedAt(LocalDateTime.now());
                 item.setCreatedByStaff(task.getStaff());
+                item.setRevenueCode("OTH_MISC");
                 folioItemRepository.save(item);
             }
 
@@ -175,11 +179,9 @@ public class HousekeepingApiController {
                     .body(Map.of("success", false, "message", "Lỗi cấu hình hệ thống (không có nhân viên)."));
         }
 
-        // Fetch existing pending/inprogress housekeeping tasks for this room
-        List<String> hkTypes = List.of("CHECKOUT_CLEAN", "URGENT_CLEAN", "ROOM_CHECK", "GUEST_REQUEST");
+        // Fetch existing pending/inprogress tasks for this room
         List<HotelOperation> existingTasks = housekeepingTaskRepo.findAll().stream()
                 .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
-                        && hkTypes.contains(t.getOperationalType())
                         && ("Pending".equals(t.getStatus()) || "InProgress".equals(t.getStatus())))
                 .toList();
 
@@ -198,6 +200,7 @@ public class HousekeepingApiController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             return ResponseEntity
                     .ok(Map.of("success", true, "message", "Đã nâng độ ưu tiên dọn khẩn cấp cho phòng này."));
         }
@@ -213,7 +216,6 @@ public class HousekeepingApiController {
         task.setNotes("Lễ tân yêu cầu dọn phòng khẩn cấp.");
 
         housekeepingTaskRepo.save(task);
-
         try {
             messagingTemplate.convertAndSend("/topic/operations", Map.of(
                     "message", "Yêu cầu dọn khẩn cấp phòng " + room.getRoomNumber() + "!",
@@ -249,10 +251,8 @@ public class HousekeepingApiController {
             if (notes == null || notes.trim().isEmpty()) {
                 notes = "Lễ tân báo hỏng hóc khẩn cấp cần sửa chữa ngay.";
             }
-            String finalNotes = "[Lễ tân báo khẩn] " + notes;
             com.kawai.models.HotelOperation maintenanceTask = housekeepingService
-
-                    .createMaintenanceRequest(room.getId(), staff.getId(), finalNotes, true);
+                    .createMaintenanceRequest(room.getId(), staff.getId(), notes, true);
 
             // Gửi WebSocket tin nhắn kênh chung để các màn hình auto-reload
             try {

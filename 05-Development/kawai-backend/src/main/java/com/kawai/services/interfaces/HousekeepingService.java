@@ -61,9 +61,5 @@ public interface HousekeepingService {
      */
     Room completeMaintenance(Long taskId);
 
-    /**
-     * Tạo phiếu sửa chữa (Maintenance) cho các sự cố đã được báo giá sau khi checkout
-     * hoặc tự động khi định giá cho phòng trống.
-     */
     void createMaintenanceTaskForPricedDamages(Room room);
 }

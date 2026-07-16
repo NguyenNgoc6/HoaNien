@@ -103,6 +103,8 @@ public class FolioServiceImpl implements FolioService {
             item.setAmount(detail.getRoomCharge());
             item.setDescription("Tiền phòng đêm " + businessDate);
             item.setCreatedAt(LocalDateTime.now());
+            long roomCount = roomBookingDetailRepository.findByRoomBookingId(detail.getRoomBooking().getId()).size();
+            item.setRevenueCode(roomCount > 1 ? "ROOM_GROUP" : "ROOM_TRANSIENT");
             folioItemRepository.save(item);
         }
 
@@ -140,7 +142,6 @@ public class FolioServiceImpl implements FolioService {
         // 2. Update Room status -> trigger workflow & unbind ID
         Room room = detail.getRoom();
         if (room != null) {
-            room.setCurrentBookingDetailId(null);
             try {
                 workflowEngineService.triggerEvent("ROOM_CHECKOUT", Map.of(
                         "room_id", room.getId(),
@@ -151,6 +152,7 @@ public class FolioServiceImpl implements FolioService {
             } catch (Exception e) {
                 System.err.println("Failed to trigger checkout workflow in service: " + e.getMessage());
             }
+            room.setCurrentBookingDetailId(null);
             roomRepository.save(room);
         }
 

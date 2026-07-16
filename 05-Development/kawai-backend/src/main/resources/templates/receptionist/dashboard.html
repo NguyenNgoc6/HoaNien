@@ -600,6 +600,7 @@
                     return !t.includes('khẩn cấp') && !t.includes('Yêu cầu dọn') && !t.includes('Yêu cầu sửa');
                 });
                 localStorage.setItem('kawai_notifs', JSON.stringify(pending));
+
                 pending.forEach(function (n) { showPersistentToast(n); });
             } catch (e) { }
 
@@ -638,14 +639,7 @@
                                 setTimeout(function () { window.location.reload(); }, 3500);
                                 return;
                             }
-                            Toastify({
-                                text: '📢 THÔNG BÁO HỆ THỐNG: \n' + payload.message,
-                                duration: 5000,
-                                close: true,
-                                gravity: "top",
-                                position: "right",
-                                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)"
-                            }).showToast();
+                            saveAndShow('THÔNG BÁO HỆ THỐNG: \n' + payload.message, false);
                         } catch (e) { console.error('[WS] parse error', e); }
                     });
 
@@ -655,7 +649,7 @@
                                 var payload = JSON.parse(msg.body);
                                 console.log('[WS] Nhận tin nhắn từ kênh Đích danh (/topic/operations/' + staffId + '):', payload);
                                 Toastify({
-                                    text: '🔔 NHIỆM VỤ MỚI: \n ' + payload.message,
+                                    text: 'NHIỆM VỤ MỚI: \n ' + payload.message,
                                     duration: 5000,
                                     close: true,
                                     gravity: "top",
@@ -664,11 +658,11 @@
                                 }).showToast();
                             } catch (e) { console.error('[WS] parse error', e); }
                         });
-                        console.log('[WS] Đã đăng ký kênh riêng: /topic/operations/' + staffId);
+                        console.log(' Đã đăng ký kênh riêng: /topic/operations/' + staffId);
                     }
 
                 }, function (error) {
-                    console.error('[WS] Lỗi kết nối WebSocket:', error);
+                    console.error(' Lỗi kết nối WebSocket:', error);
                 });
             });
         })();

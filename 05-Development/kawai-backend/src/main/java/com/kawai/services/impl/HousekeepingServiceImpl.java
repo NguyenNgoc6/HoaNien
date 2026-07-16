@@ -100,15 +100,6 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     // ========================================================================
     // UC13.2: Housekeeping cập nhật phòng DIRTY → CLEAN
     // ========================================================================
-
-    /**
-     * Housekeeping đánh dấu phòng đã được dọn sạch.
-     * Cập nhật phòng thành Vacant_Clean và Task thành Completed (BR-FO-04).
-     *
-     * @param taskId ID của yêu cầu dọn phòng
-     * @param notes  Ghi chú khi hoàn thành
-     * @return Phòng đã cập nhật trạng thái sạch
-     */
     @Override
     @Transactional
     public Room updateRoomToClean(Long taskId, String notes) {
@@ -131,6 +122,19 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         roomRepo.save(room);
         housekeepingTaskRepo.save(task);
+        try {
+            String wsMessage = isOccupied
+                    ? "Phòng " + room.getRoomNumber() + " (đang có khách) đã được dọn dẹp sạch sẽ!"
+                    : "Phòng " + room.getRoomNumber() + " đã được dọn dẹp sạch sẽ và sẵn sàng đón khách!";
+
+            messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of(
+                    "message", wsMessage,
+                    "type", "ROOM_CLEANED"));
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket message", e);
+        }
+
+        // Gửi thông báo WebSocket cho RoomMatrix (Receptionist) để auto-reload
         try {
             String wsMessage = isOccupied
                     ? "Phòng " + room.getRoomNumber() + " (đang có khách) đã được dọn dẹp sạch sẽ!"
@@ -236,11 +240,9 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         String type;
         if (isEmergency || room.getCurrentBookingDetailId() == null) {
-            if (room.getCurrentBookingDetailId() == null) {
-                // Cập nhật trạng thái phòng → Maintenance (chỉ khi không có khách đang thuê)
-                room.setRoomStatus(STATUS_MAINTENANCE);
-                roomRepo.save(room);
-            }
+            // Cập nhật trạng thái phòng → Maintenance
+            room.setRoomStatus(STATUS_MAINTENANCE);
+            roomRepo.save(room);
             type = OPERATION_MAINTENANCE;
         } else {
             // Khách chưa checkout và không khẩn cấp -> Tạo phiếu DAMAGE_CHECK và giữ nguyên
