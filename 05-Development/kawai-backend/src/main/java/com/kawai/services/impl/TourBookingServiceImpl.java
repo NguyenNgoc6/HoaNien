@@ -34,6 +34,7 @@ import java.util.UUID;
  * (TC-M4-003, TC-M4-004, TC-M4-005).
  */
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class TourBookingServiceImpl implements TourBookingService {
 
         private static final Logger LOG = LoggerFactory.getLogger(TourBookingServiceImpl.class);

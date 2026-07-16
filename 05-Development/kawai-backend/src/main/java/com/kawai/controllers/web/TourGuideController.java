@@ -491,11 +491,14 @@ public class TourGuideController {
             java.time.LocalDate today2 = java.time.LocalDate.now();
             java.time.LocalDate depDate2 = sched.getDepartureDate();
 
-            if (dbStatus != null && ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus)
+            if (dbStatus != null && "cancelled".equalsIgnoreCase(dbStatus)) {
+                mappedStatus = "cancelled";
+            } else if (dbStatus != null && ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus)
                     || "done".equalsIgnoreCase(dbStatus))) {
                 mappedStatus = "completed";
-            } else if (dbStatus != null && "cancelled".equalsIgnoreCase(dbStatus)) {
-                mappedStatus = "cancelled";
+            } else if (depDate2 != null && depDate2.isBefore(today2)) {
+                // Ngày khởi hành đã qua → Đã hoàn thành (Trừ khi đã bị hủy)
+                mappedStatus = "completed";
             } else if (dbStatus != null && "ongoing".equalsIgnoreCase(dbStatus)) {
                 mappedStatus = "ongoing";
             } else {
