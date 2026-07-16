@@ -240,22 +240,13 @@ public class EmailServiceImpl implements EmailService {
                     String cccd = "";
                     if (att.getCustomer() != null) {
                         name = att.getCustomer().getFullName();
-                        cccd = att.getCustomer().getCccdPassportEncrypted();
+                        cccd = com.kawai.utils.EncryptionUtils.decrypt(att.getCustomer().getCccdPassportEncrypted());
                     } else if (att.getDependent() != null) {
                         name = att.getDependent().getDependentName();
-                        cccd = att.getDependent().getCccdPassportEncrypted();
-                    }
-                    if (cccd != null && !cccd.isEmpty() && !cccd.startsWith("PHONE_") && !cccd.startsWith("AUTO_CHILD_")) {
-                        if (cccd.length() > 4) {
-                            cccd = cccd.substring(0, cccd.length() - 2) + "xx";
-                        } else {
-                            cccd = cccd + "xx";
-                        }
-                    } else {
-                        cccd = "";
+                        cccd = com.kawai.utils.EncryptionUtils.decrypt(att.getDependent().getCccdPassportEncrypted());
                     }
                     map.put("name", name != null ? name.toUpperCase() : "");
-                    map.put("cccd", cccd);
+                    map.put("cccd", cccd != null ? cccd : "");
                     formattedAttendees.add(map);
                 }
             }
