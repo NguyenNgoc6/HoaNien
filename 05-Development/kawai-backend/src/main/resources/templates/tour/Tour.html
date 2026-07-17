@@ -276,7 +276,7 @@
                 title="Thông tin cá nhân">
                 <div class="text-right">
                     <p id="logged-in-guide-name" class="font-label-md text-label-md text-on-surface leading-none"
-                        th:text="${employee?.fullName ?: 'NguynNgoc'}">NguynNgoc</p>
+                        th:text="${employee?.fullName ?: 'Nguyễn Ngọc'}">Nguyễn Ngọc</p>
                     <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                 </div>
                 <div
@@ -387,7 +387,7 @@
 
                                 <div th:data-guide="${tour.guide}" th:data-status="${tour.status}"
                                     th:data-date="${tour.date}" th:data-schedule-id="${tour.id}"
-                                    th:class="${tour.guide == (employee?.fullName ?: 'NguynNgoc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
+                                    th:class="${tour.guide == (employee?.fullName ?: 'Nguyễn Ngọc')} ? 'tour-card glass-surface glass-interactive rounded-lg p-6 glow-accent-primary relative group cursor-pointer overflow-hidden' : 'tour-card glass-surface glass-interactive rounded-lg p-6 relative group cursor-pointer border border-outline-variant/30'"
                                     onclick="handleViewDetails(this)">
                                     <div class="flex gap-6 flex-col md:flex-row">
                                         <div
@@ -636,7 +636,7 @@
                 id: 1,
                 name: "Hành trình Đoàn Tụ - Huế",
                 time: "08:00 - 13:00",
-                guide: "NguynNgoc",
+                guide: "Nguyễn Ngọc",
                 status: "upcoming",
                 date: "2026-06-26",
                 image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
@@ -666,7 +666,7 @@
                 id: 4,
                 name: "Tinh túy đồng nội - Quảng Nam",
                 time: "08:30 - 13:30",
-                guide: "NguynNgoc",
+                guide: "Nguyễn Ngọc",
                 status: "upcoming",
                 date: "2026-06-27",
                 image: "/AnhTour/Com.jpg",

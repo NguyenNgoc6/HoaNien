@@ -924,7 +924,7 @@ public class EmailServiceImpl implements EmailService {
             String tourName = "Hành trình trải nghiệm";
             String departureDate = "";
             String departureTime = "";
-            String guideName = "NguynNgoc";
+            String guideName = "Nguyễn Ngọc";
 
             if (booking.getSchedule() != null) {
                 com.kawai.models.TourSchedule sched = booking.getSchedule();
@@ -955,7 +955,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
+        if (sched == null) return "Nguyễn Ngọc";
         
         if (sched.getId() != null && sched.getId() < 100L) {
             return getPreferredGuide(sched);
@@ -965,11 +965,11 @@ public class EmailServiceImpl implements EmailService {
         java.time.LocalTime depTime = sched.getDepartureTime();
         
         if (depDate == null || depTime == null) {
-            return "NguynNgoc";
+            return "Nguyễn Ngọc";
         }
         
         if (tourScheduleRepository == null) {
-            return "NguynNgoc";
+            return "Nguyễn Ngọc";
         }
         
         java.util.List<com.kawai.models.TourSchedule> allSchedules = tourScheduleRepository.findAll();
@@ -1002,8 +1002,8 @@ public class EmailServiceImpl implements EmailService {
             }
             
             String g;
-            if (!taken.contains("NguynNgoc")) {
-                g = "NguynNgoc";
+            if (!taken.contains("Nguyễn Ngọc")) {
+                g = "Nguyễn Ngọc";
             } else if (!taken.contains("Ngọc Lan")) {
                 g = "Ngọc Lan";
             } else {
@@ -1017,7 +1017,7 @@ public class EmailServiceImpl implements EmailService {
             }
         }
         
-        return assigned != null ? assigned : "NguynNgoc";
+        return assigned != null ? assigned : "Nguyễn Ngọc";
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
@@ -1029,7 +1029,7 @@ public class EmailServiceImpl implements EmailService {
                 return "Hoàng Nam";
             }
         }
-        return "NguynNgoc";
+        return "Nguyễn Ngọc";
     }
 
     @Override

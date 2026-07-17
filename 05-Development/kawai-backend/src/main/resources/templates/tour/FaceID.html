@@ -355,7 +355,7 @@
                     title="Thông tin cá nhân">
                     <div class="text-right">
                         <p class="font-label-md text-label-md text-on-surface leading-none"
-                            th:text="${employee != null ? employee.fullName : 'NguynNgoc'}">NguynNgoc</p>
+                            th:text="${employee != null ? employee.fullName : 'Nguy\u1ec5n Ng\u1ecdc'}">Nguy\u1ec5n Ng\u1ecdc</p>
                         <p class="text-[10px] text-on-surface-variant/60">Hướng dẫn viên cao cấp</p>
                     </div>
                     <div
@@ -462,7 +462,7 @@
                                     </button>
                                     <!-- Bắt Đầu Tour: chỉ hiện khi chưa bắt đầu (Open) -->
                                     <form th:if="${scheduleStatus == 'Open' or scheduleStatus == null}"
-                                        th:action="@{/tourguide/start-tour}" method="post" class="inline"
+                                        th:action="@{/tourguide/start-tour}" method="post" class="inline-block"
                                         id="startTourForm">
                                         <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
                                         <button type="button" onclick="checkTourSafety(event)"
@@ -481,7 +481,7 @@
                                             Đang Diễn Ra
                                         </span>
                                         <span class="text-primary/30 select-none font-light">|</span>
-                                        <form th:action="@{/tourguide/finish-tour}" method="post" class="inline"
+                                        <form th:action="@{/tourguide/finish-tour}" method="post" class="inline-block"
                                             id="finishTourForm">
                                             <input type="hidden" name="scheduleId" th:value="${scheduleId}" />
                                             <button type="button" onclick="confirmFinishTour(event)"
@@ -513,6 +513,16 @@
                                             <span class="material-symbols-outlined text-base">undo</span>
                                             Hoàn Tác
                                         </button>
+                                    </div>
+
+                                    <!-- ══ TRẠNG THÁI: CANCELLED ══ -->
+                                    <div th:if="${scheduleStatus == 'cancelled'}"
+                                        class="flex items-center gap-3 p-1.5 bg-red-500/10 border-2 border-red-500/30 rounded-full shadow-md">
+                                        <span
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 text-red-600 font-bold text-sm border border-red-500/30 shadow-sm">
+                                            <span class="material-symbols-outlined text-base">cancel</span>
+                                            Đã Hủy Tour
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -568,7 +578,7 @@
                                                     th:data-id="'#EVN-00' + ${attendee.id}"
                                                     th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.customer?.phone ?: '--')}"
                                                     th:data-email="${attendee.customer?.email ?: (attendee.dependent?.customer?.email ?: '--')}"
-                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
+                                                    th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + attendee.dependent.cccdPassportEncrypted.substring(11).replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                     th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                     th:data-cccd="${attendee.customer?.cccdPassportEncrypted != null ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.customer.cccdPassportEncrypted) : (attendee.dependent?.cccdPassportEncrypted != null and !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.dependent.cccdPassportEncrypted) : '--')}"
                                                     onclick="showCustomerContactModal(this)">
@@ -581,14 +591,14 @@
                                                         th:data-id="'#EVN-00' + ${attendee.id}"
                                                         th:data-phone="${attendee.customer?.phone ?: (attendee.dependent?.customer?.phone ?: '--')}"
                                                         th:data-email="${attendee.customer?.email ?: (attendee.dependent?.customer?.email ?: '--')}"
-                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
+                                                        th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + attendee.dependent.cccdPassportEncrypted.substring(11).replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                         th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
                                                         th:data-cccd="${attendee.customer?.cccdPassportEncrypted != null ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.customer.cccdPassportEncrypted) : (attendee.dependent?.cccdPassportEncrypted != null and !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? T(com.kawai.utils.EncryptionUtils).decrypt(attendee.dependent.cccdPassportEncrypted) : '--')}"
                                                         onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
                                                     <p class="text-[12px] text-on-surface-variant/60"
-                                                        th:text="${attendee.customer != null ? (attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách hàng') : (attendee.dependent != null && attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng')}">
+                                                        th:text="${attendee.customer != null ? (attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : 'Khách hàng') : (attendee.dependent != null && attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + attendee.dependent.cccdPassportEncrypted.substring(11).replace('_', ' ') + ')' : 'Khách đi cùng')}">
                                                         Khách đi cùng</p>
                                                 </div>
                                             </div>

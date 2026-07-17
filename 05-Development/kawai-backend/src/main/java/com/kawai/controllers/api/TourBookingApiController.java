@@ -136,7 +136,7 @@ public class TourBookingApiController {
             String guideForNewTour = getGuideNameForTour(tour.getTourName());
             boolean isSpecialCustomer = "ngocnguyenthuy999@gmail.com".equalsIgnoreCase(email);
             if (isSpecialCustomer) {
-                guideForNewTour = "NguynNgoc";
+                guideForNewTour = "Nguyễn Ngọc";
             }
 
 
@@ -219,11 +219,10 @@ public class TourBookingApiController {
                     resolvedRooms.add(roomNum);
                 }
             } else {
-                // No room selected: auto-find an active booking detail for this customer
                 RoomBookingDetail autoDetail = null;
-                List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByAnyCustomerId(customer.getId());
                 for (RoomBookingDetail rbd : customerDetails) {
-                    if (("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
+                    if (rbd.getRoomBooking() != null && ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
                             || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus()))) {
                         LocalDate checkIn = rbd.getRoomBooking().getCheckInDate();
                         LocalDate checkOut = rbd.getRoomBooking().getCheckOutDate();
@@ -342,7 +341,7 @@ public class TourBookingApiController {
     }
 
     private String getGuideNameForTour(String tourName) {
-        if (tourName == null) return "NguynNgoc";
+        if (tourName == null) return "Nguyễn Ngọc";
         String tn = tourName.toLowerCase();
         if (tn.contains("tinh túy đồng nội") || tn.contains("tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
             return "Ngọc Lan";
@@ -351,7 +350,7 @@ public class TourBookingApiController {
         } else if (tn.contains("di sản") || tn.contains("disan")) {
             return "Ngọc Lan";
         }
-        return "NguynNgoc";
+        return "Nguyễn Ngọc";
     }
 
     private boolean scheduleHasSpecialCustomer(TourSchedule sched) {
@@ -396,9 +395,10 @@ public class TourBookingApiController {
                 detail = roomBookingDetailRepository.findById(room.getCurrentBookingDetailId()).orElse(null);
             }
             if (detail == null) {
-                List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByCustomer(customer);
+                List<RoomBookingDetail> customerDetails = roomBookingDetailRepository.findByAnyCustomerId(customer.getId());
                 for (RoomBookingDetail rbd : customerDetails) {
                     if (rbd.getRoom() != null && rbd.getRoom().getRoomNumber().equals(roomNum)
+                            && rbd.getRoomBooking() != null
                             && ("Confirmed".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus())
                                 || "Checked_In".equalsIgnoreCase(rbd.getRoomBooking().getBookingStatus()))) {
                         detail = rbd;
