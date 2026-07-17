@@ -24,6 +24,7 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, Long> 
     int countByScheduleAndBookingStatus(TourSchedule schedule, String bookingStatus);
 
     List<TourBooking> findBySchedule(TourSchedule schedule);
+    List<TourBooking> findByScheduleId(Long scheduleId);
 
     @org.springframework.data.jpa.repository.Query("SELECT tb FROM TourBooking tb WHERE tb.customer.id = :customerId")
     java.util.List<TourBooking> findTourBookingsByCustomerId(@org.springframework.data.repository.query.Param("customerId") Long customerId);
@@ -50,7 +51,7 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, Long> 
     java.math.BigDecimal revenueOnDate(
             @org.springframework.data.repository.query.Param("date") java.time.LocalDate date);
 
-    @org.springframework.data.jpa.repository.Query("SELECT SUM(b.totalPrice) FROM TourBooking b WHERE b.bookingDate >= :start AND b.bookingDate <= :end AND b.bookingStatus = 'Confirmed'")
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM TourBooking b WHERE b.bookingDate >= :start AND b.bookingDate <= :end AND b.bookingStatus = 'Confirmed'")
     java.math.BigDecimal revenueBetween(
             @org.springframework.data.repository.query.Param("start") java.time.LocalDate start,
             @org.springframework.data.repository.query.Param("end") java.time.LocalDate end);

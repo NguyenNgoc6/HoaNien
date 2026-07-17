@@ -3,7 +3,9 @@ package com.kawai.config;
 import com.kawai.services.AuditCleanupTask;
 import com.kawai.services.impl.BookingServiceImpl;
 import com.kawai.services.impl.WorkflowEngineServiceImpl;
+import com.kawai.schedulers.NightAuditJob;
 import com.kawai.services.jobs.ReservationCleanupTask;
+import com.kawai.services.interfaces.NightAuditService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,8 @@ public class DynamicJobManager {
     private final ReservationCleanupTask reservationCleanupTask;
     private final BookingServiceImpl bookingService;
     private final WorkflowEngineServiceImpl workflowEngineService;
+    private final NightAuditService nightAuditService;
+    private final com.kawai.services.jobs.RoomBookingCleanupTask roomBookingCleanupTask;
 
     public static class JobConfig {
         public String id;
@@ -72,10 +76,18 @@ public class DynamicJobManager {
                 new JobConfig("booking_cleanup", "Hủy Booking Pending quá hạn",
                         "Quét các Booking chờ thanh toán (Pending_Payment) quá hạn VNPay để giải phóng phòng.",
                         "0 * * * * *", bookingService::cleanupStaleHolds));
+        jobs.put("booking_no_show_cleanup",
+                new JobConfig("booking_no_show_cleanup", "Giải phóng phòng khách không đến (No-Show)",
+                        "Tự động quét các phòng khách không check-in quá ngày và chuyển trạng thái sang No-Show hoặc Cancelled.",
+                        "0 0 0 * * ?", roomBookingCleanupTask::cleanupNoShowRoomBookings));
         jobs.put("workflow_processor",
                 new JobConfig("workflow_processor", "Xử lý Workflow tự động",
                         "Quét và thực thi tự động các sự kiện Workflow Engine (VD: Duyệt chiết khấu).", "0 */1 * * * *",
                         workflowEngineService::scanSlaEscalations));
+        jobs.put("night_audit",
+                new JobConfig("night_audit", "Tính tiền phòng & Chốt ngày (Night Audit)",
+                        "Tự động chạy tiến trình kiểm toán đêm lúc 2:00 AM hằng ngày để chốt doanh thu phòng, cập nhật trạng thái no-show và cộng dồn phụ phí.",
+                        "0 0 2 * * ?", () -> nightAuditService.runNightAudit(java.time.LocalDate.now())));
 
         for (JobConfig config : jobs.values()) {
             scheduleJob(config.id, config.cron);

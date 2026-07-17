@@ -320,20 +320,64 @@ public class PosServiceImpl implements PosService {
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 if (limit.subtract(used).compareTo(totalAmount) >= 0) {
-                    FolioItem folioItem = new FolioItem();
-                    folioItem.setRoomBookingDetail(detailToCharge);
-                    folioItem.setBooking(activeBooking);
-                    folioItem.setSourceDepartment("F&B");
-                    folioItem.setAmount(totalAmount);
-                    folioItem.setDescription("Ký bill đồ ăn F&B (Order #" + savedOrder.getId() + ")");
                     Customer payer = null;
                     if (detailToCharge.getCustomer() != null) {
                         payer = detailToCharge.getCustomer();
                     } else if (activeBooking.getCustomer() != null) {
                         payer = activeBooking.getCustomer();
                     }
-                    folioItem.setPayerCustomer(payer);
-                    folioItemRepository.save(folioItem);
+
+                    if ("Room Service".equalsIgnoreCase(savedOrder.getOrderType())) {
+                        FolioItem folioItem = new FolioItem();
+                        folioItem.setRoomBookingDetail(detailToCharge);
+                        folioItem.setBooking(activeBooking);
+                        folioItem.setSourceDepartment("F&B");
+                        folioItem.setAmount(totalAmount);
+                        folioItem.setDescription("Ký bill Room Service F&B (Order #" + savedOrder.getId() + ")");
+                        folioItem.setPayerCustomer(payer);
+                        folioItem.setRevenueCode("FB_ROOMSERVICE");
+                        folioItemRepository.save(folioItem);
+                    } else {
+                        BigDecimal beverageAmount = BigDecimal.ZERO;
+                        if (savedOrder.getDetails() != null) {
+                            for (FoodOrderDetail detail : savedOrder.getDetails()) {
+                                if (detail.getMenuItem() != null && "Đồ uống".equalsIgnoreCase(detail.getMenuItem().getCategory())) {
+                                    BigDecimal price = detail.getPriceAtOrder() != null ? detail.getPriceAtOrder() : detail.getMenuItem().getPrice();
+                                    if (price != null) {
+                                        BigDecimal qty = BigDecimal.valueOf(detail.getQuantity() != null ? detail.getQuantity() : 0);
+                                        beverageAmount = beverageAmount.add(price.multiply(qty));
+                                    }
+                                }
+                            }
+                        }
+                        BigDecimal foodAmount = totalAmount.subtract(beverageAmount);
+                        if (foodAmount.compareTo(BigDecimal.ZERO) < 0) {
+                            foodAmount = BigDecimal.ZERO;
+                        }
+
+                        if (foodAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            FolioItem fItem = new FolioItem();
+                            fItem.setRoomBookingDetail(detailToCharge);
+                            fItem.setBooking(activeBooking);
+                            fItem.setSourceDepartment("F&B");
+                            fItem.setAmount(foodAmount);
+                            fItem.setDescription("Ký bill đồ ăn F&B (Order #" + savedOrder.getId() + ")");
+                            fItem.setPayerCustomer(payer);
+                            fItem.setRevenueCode("FB_FOOD");
+                            folioItemRepository.save(fItem);
+                        }
+                        if (beverageAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            FolioItem bItem = new FolioItem();
+                            bItem.setRoomBookingDetail(detailToCharge);
+                            bItem.setBooking(activeBooking);
+                            bItem.setSourceDepartment("F&B");
+                            bItem.setAmount(beverageAmount);
+                            bItem.setDescription("Ký bill đồ uống F&B (Order #" + savedOrder.getId() + ")");
+                            bItem.setPayerCustomer(payer);
+                            bItem.setRevenueCode("FB_BEV");
+                            folioItemRepository.save(bItem);
+                        }
+                    }
                 } else {
                     throw new BusinessException("POS-005", "Hạn mức tín dụng của phòng không đủ để thanh toán!");
                 }
@@ -430,7 +474,7 @@ public class PosServiceImpl implements PosService {
         folioItem.setSourceDepartment("POS");
         folioItem.setAmount(amount);
         folioItem.setDescription("Ký gửi hóa đơn từ nhà hàng");
-
+        folioItem.setRevenueCode("FB_FOOD");
         folioItemRepository.save(folioItem);
     }
 
@@ -583,41 +627,5 @@ public class PosServiceImpl implements PosService {
         }
 
         foodOrderRepository.save(order);
-    }
-
-    @Override
-    public void cancelOrderByGuest(Long orderId, com.kawai.dtos.CancelOrderRequestDTO dto, String username) {
-        // [AUTHORIZATION CHECK] Bước 1: Lấy thông tin Khách hàng (Customer) từ username hiện tại
-        Customer customer = customerRepository.findByAccount_Username(username)
-                .orElseGet(() -> customerRepository.findByEmail(username).orElse(null));
-        if (customer == null) {
-            throw new BusinessException("CUSTOMER_NOT_FOUND", "Không tìm thấy thông tin khách hàng");
-        }
-        
-        FoodOrder order = foodOrderRepository.findById(orderId)
-                .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
-
-        // [AUTHORIZATION CHECK] Bước 2: Xác thực quyền sở hữu (IDOR Protection)
-        // Chỉ cho phép hủy nếu đơn hàng này được đặt bởi đúng tài khoản Customer đang gửi request
-        boolean isOwner = false;
-        if (order.getBooking() != null && order.getBooking().getCustomer() != null
-                && order.getBooking().getCustomer().getId().equals(customer.getId())) {
-            // Đơn hàng gắn với Booking của chính khách này
-            isOwner = true;
-        } else if (order.getRoomBookingDetail() != null && order.getRoomBookingDetail().getRoomBooking() != null
-                && order.getRoomBookingDetail().getRoomBooking().getCustomer() != null
-                && order.getRoomBookingDetail().getRoomBooking().getCustomer().getId().equals(customer.getId())) {
-            // Đơn hàng gắn với 1 RoomBookingDetail của phòng thuộc Booking của chính khách này
-            isOwner = true;
-        }
-
-        if (!isOwner) {
-            // Chặn đứng nỗ lực gọi API hủy đơn của người khác
-            throw new BusinessException("ACCESS_DENIED", "Bạn không có quyền hủy đơn hàng này");
-        }
-
-        // [DELEGATION] Bước 3: Đã an toàn -> Chuyển tiếp (delegate) cho Core Logic xử lý.
-        // Tuyệt đối không lặp lại code hủy đơn (xử lý KOT, refund, v.v...) ở đây để đảm bảo DRY.
-        cancelOrder(orderId, dto);
     }
 }

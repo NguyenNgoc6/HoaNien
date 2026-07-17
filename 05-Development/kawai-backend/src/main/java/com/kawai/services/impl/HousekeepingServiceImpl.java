@@ -15,6 +15,7 @@ import com.kawai.repositories.WorkflowRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +52,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     private final MaintenanceRequestRepository maintenanceRequestRepo;
     private final RoomRepository roomRepo;
     private final EmployeeRepository employeeRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     public HousekeepingServiceImpl(HousekeepingTaskRepository housekeepingTaskRepo,
@@ -58,13 +60,15 @@ public class HousekeepingServiceImpl implements HousekeepingService {
             RoomRepository roomRepo,
             EmployeeRepository employeeRepo,
             WorkflowEngineService workflowEngineService,
-            WorkflowRepository workflowRepository) {
+            WorkflowRepository workflowRepository,
+            SimpMessagingTemplate messagingTemplate) {
         this.housekeepingTaskRepo = housekeepingTaskRepo;
         this.maintenanceRequestRepo = maintenanceRequestRepo;
         this.roomRepo = roomRepo;
         this.employeeRepo = employeeRepo;
         this.workflowEngineService = workflowEngineService;
         this.workflowRepository = workflowRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     // ========================================================================
@@ -96,23 +100,16 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     // ========================================================================
     // UC13.2: Housekeeping cập nhật phòng DIRTY → CLEAN
     // ========================================================================
-
-    /**
-     * Housekeeping đánh dấu phòng đã được dọn sạch.
-     * Cập nhật phòng thành Vacant_Clean và Task thành Completed (BR-FO-04).
-     *
-     * @param taskId ID của yêu cầu dọn phòng
-     * @param notes  Ghi chú khi hoàn thành
-     * @return Phòng đã cập nhật trạng thái sạch
-     */
     @Override
     @Transactional
     public Room updateRoomToClean(Long taskId, String notes) {
         HotelOperation task = findTaskById(taskId);
         Room room = task.getRoom();
         String currentStatus = room.getRoomStatus();
-        if ("Occupied_Dirty".equalsIgnoreCase(currentStatus)) {
-            room.setRoomStatus("Occupied_Clean");
+        boolean isOccupied = currentStatus != null && currentStatus.toLowerCase().contains("occupied");
+
+        if (isOccupied) {
+            room.setRoomStatus("Occupied");
         } else {
             room.setRoomStatus(STATUS_VACANT_CLEAN);
         }
@@ -125,6 +122,30 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         roomRepo.save(room);
         housekeepingTaskRepo.save(task);
+        try {
+            String wsMessage = isOccupied
+                    ? "Phòng " + room.getRoomNumber() + " (đang có khách) đã được dọn dẹp sạch sẽ!"
+                    : "Phòng " + room.getRoomNumber() + " đã được dọn dẹp sạch sẽ và sẵn sàng đón khách!";
+
+            messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of(
+                    "message", wsMessage,
+                    "type", "ROOM_CLEANED"));
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket message", e);
+        }
+
+        // Gửi thông báo WebSocket cho RoomMatrix (Receptionist) để auto-reload
+        try {
+            String wsMessage = isOccupied
+                    ? "Phòng " + room.getRoomNumber() + " (đang có khách) đã được dọn dẹp sạch sẽ!"
+                    : "Phòng " + room.getRoomNumber() + " đã được dọn dẹp sạch sẽ và sẵn sàng đón khách!";
+
+            messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of(
+                    "message", wsMessage,
+                    "type", "ROOM_CLEANED"));
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket message", e);
+        }
 
         return room;
     }
@@ -132,12 +153,6 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     // ========================================================================
     // UC13.3: Lễ tân xem danh sách yêu cầu dọn/sửa phòng
     // ========================================================================
-
-    /**
-     * Lấy danh sách các yêu cầu dọn phòng/bảo trì đang chờ xử lý (Pending).
-     *
-     * @return Danh sách HotelOperation
-     */
     @Override
     public List<HotelOperation> getPendingOperations() {
         return housekeepingTaskRepo.findPendingTasksSorted(STATUS_PENDING);
@@ -225,11 +240,9 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         String type;
         if (isEmergency || room.getCurrentBookingDetailId() == null) {
-            if (room.getCurrentBookingDetailId() == null) {
-                // Cập nhật trạng thái phòng → Maintenance (chỉ khi không có khách đang thuê)
-                room.setRoomStatus(STATUS_MAINTENANCE);
-                roomRepo.save(room);
-            }
+            // Cập nhật trạng thái phòng → Maintenance
+            room.setRoomStatus(STATUS_MAINTENANCE);
+            roomRepo.save(room);
             type = OPERATION_MAINTENANCE;
         } else {
             // Khách chưa checkout và không khẩn cấp -> Tạo phiếu DAMAGE_CHECK và giữ nguyên
@@ -283,6 +296,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         return room;
     }
 
+
     // ========================================================================
     // Private helpers
     // ========================================================================
@@ -300,7 +314,6 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         return task;
     }
 
-    @Override
     @Transactional
     public void createMaintenanceTaskForPricedDamages(Room room) {
         if (room == null)
@@ -330,7 +343,8 @@ public class HousekeepingServiceImpl implements HousekeepingService {
                 repairTask.setOperationalType("MAINTENANCE");
                 repairTask.setPriority(dc.getPriority());
                 repairTask.setStatus("Pending");
-                repairTask.setNotes("[Cần sửa chữa - Đền bù hỏng hóc] " + (dc.getNotes() != null ? dc.getNotes() : "") + " | Chi phí đền bù: "
+                repairTask.setNotes("[Cần sửa chữa - Đền bù hỏng hóc] " + (dc.getNotes() != null ? dc.getNotes() : "")
+                        + " | Chi phí đền bù: "
                         + dc.getDamagePrice() + " VNĐ");
                 repairTask.setImageUrl(dc.getImageUrl());
                 repairTask.setDamagePrice(dc.getDamagePrice());

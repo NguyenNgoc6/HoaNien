@@ -32,7 +32,6 @@ function getOrCreateToastContainer() {
         container.style.flexDirection = 'column';
         container.style.gap = '16px';
         document.body.appendChild(container);
->>>>>>> aed533a3a682114c661c169914fc113b8f0e289b
     }
     return container;
 }
@@ -129,7 +128,7 @@ async function pollPendingWalkInRooms() {
         roomNums.forEach(roomNum => {
             const status = statusMap[roomNum];
             if (status === 'Vacant_Clean') {
-                showToastAlert(`✅ Phòng ${roomNum} đã dọn xong!`, roomNum);
+                showToastAlert(`✅ Phòng ${roomNum} đã dọn xong! Bạn có thể tiếp tục hoàn tất đơn.`, roomNum);
                 playAlertSound();
                 delete pendingRooms[roomNum];
                 changed = true;
@@ -240,7 +239,7 @@ async function pollCleanTasksDone() {
             playSound = true;
             markUrgentTaskAlerted(task.taskId, task.roomNumber); // truyền roomNumber để suppress handover toast
             showToastAlert(
-                `🧹 Phòng <strong>${task.roomNumber}</strong> đã dọn xong! Sẵn sàng nhận khách.`,
+                `🧹 Phòng <strong>${task.roomNumber}</strong> đã dọn xong!`,
                 task.roomNumber,
                 {
                     icon: '<i class="fa-solid fa-broom fa-bounce" style="font-size:22px;color:#fde047;"></i>',
@@ -256,10 +255,7 @@ async function pollCleanTasksDone() {
     }
 }
 
-// ── Start polling (10s interval) ────────────────────────────────────────────
+// ── Khởi chạy lần đầu khi load trang ──────────────────────────────────────
 pollCleanedRooms();
 pollPendingWalkInRooms();
 pollCleanTasksDone();
-setInterval(pollCleanedRooms, 10000);
-setInterval(pollPendingWalkInRooms, 10000);
-setInterval(pollCleanTasksDone, 10000);

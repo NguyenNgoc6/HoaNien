@@ -89,12 +89,10 @@ public class ReceptionistController {
                     .filter(t -> !"Completed".equalsIgnoreCase(t.getStatus()))
                     .forEach(t -> {
                         if (t.getRoom() != null) {
-                            if ("Maintenance".equalsIgnoreCase(t.getOperationalType()) && !"Pending".equalsIgnoreCase(t.getStatus())) {
+                            if ("Maintenance".equalsIgnoreCase(t.getOperationalType())) {
                                 roomsWithMaintenance.add(t.getRoom().getId());
-                            } else if (("URGENT_CLEAN".equalsIgnoreCase(t.getOperationalType()) || 
-                                        "GUEST_REQUEST".equalsIgnoreCase(t.getOperationalType()) ||
-                                        ("CHECKOUT_CLEAN".equalsIgnoreCase(t.getOperationalType()) && "Lễ tân báo dọn khẩn".equalsIgnoreCase(t.getPriority())))
-                                       && !"Pending".equalsIgnoreCase(t.getStatus())) {
+                            } else if ("URGENT_CLEAN".equalsIgnoreCase(t.getOperationalType()) ||
+                                      ("CHECKOUT_CLEAN".equalsIgnoreCase(t.getOperationalType()) && "Lễ tân báo dọn khẩn".equalsIgnoreCase(t.getPriority()))) {
                                 roomsWithUrgentClean.add(t.getRoom().getId());
                             }
                         }
@@ -830,11 +828,6 @@ public class ReceptionistController {
         return "receptionist/folio-detail";
     }
 
-    @GetMapping("/night-audit")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_NIGHT_AUDIT')")
-    public String nightAudit(Model model) {
-        return "receptionist/night-audit";
-    }
 
     /**
      * Gửi yêu cầu dọn khẩn cấp cho phòng Vacant_Dirty.
