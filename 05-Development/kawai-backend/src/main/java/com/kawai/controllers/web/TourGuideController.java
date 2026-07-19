@@ -499,8 +499,11 @@ public class TourGuideController {
             } else if (dbStatus != null && "ongoing".equalsIgnoreCase(dbStatus)) {
                 mappedStatus = "ongoing";
             } else {
-                // Tương lai/chưa bắt đầu → Sắp diễn ra
-                mappedStatus = "upcoming";
+                if (depDate2 != null && depDate2.isBefore(today2)) {
+                    mappedStatus = "completed";
+                } else {
+                    mappedStatus = "upcoming";
+                }
             }
             map.put("status", mappedStatus);
             map.put("date", sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "2026-06-27");
