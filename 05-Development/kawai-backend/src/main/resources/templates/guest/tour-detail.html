@@ -676,7 +676,7 @@
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block text-black">Phương thức
                             thanh toán</label>
                         <div class="payment-option border border-brand-border p-6 flex justify-between items-center"
-                            onclick="showPaymentModal('deposit')">
+                            onclick="startPaymentFlow('deposit')">
                             <div>
                                 <h4 class="font-bold text-sm mb-1">Thanh toán đặt cọc</h4>
                                 <p class="text-xs text-gray-500">Giữ chỗ ngay với 30% tổng giá trị hành trình</p>
@@ -686,7 +686,7 @@
                             </div>
                         </div>
                         <div class="payment-option border border-brand-border p-6 flex justify-between items-center"
-                            onclick="showPaymentModal('full')">
+                            onclick="startPaymentFlow('full')">
                             <div>
                                 <h4 class="font-bold text-sm mb-1">Thanh toán tổng đơn booking tour</h4>
                                 <p class="text-xs text-gray-500">Thanh toán toàn bộ 100% để hoàn tất thủ tục</p>
@@ -697,7 +697,7 @@
                         </div>
                         <div id="room-charge-container">
                             <div class="payment-option border border-brand-border p-6 flex justify-between items-center group"
-                                onclick="openRoomSelection()">
+                                onclick="startPaymentFlow('post-room')">
                                 <div>
                                     <h4 class="font-bold text-sm mb-1">Tính vào phòng nghỉ</h4>
                                     <p class="text-xs text-gray-500">Dành riêng cho khách đang lưu trú tại HoaNien
@@ -830,6 +830,10 @@
                             <td class="py-4 font-bold text-amber-600 uppercase tracking-wider">Phí bảo hiểm</td>
                             <td class="py-4 text-right text-amber-700 font-medium" id="modal-insurance-amount">+0 VNĐ
                             </td>
+                        </tr>
+                        <tr class="border-b border-brand-border hidden" id="modal-row-linked-rooms">
+                            <td class="py-4 font-bold text-gray-400 uppercase tracking-wider">Phòng liên kết</td>
+                            <td class="py-4 text-right font-medium text-brand-dark" id="modal-linked-rooms-text">---</td>
                         </tr>
                         <tr>
                             <td class="py-4 font-bold text-gray-400 uppercase tracking-wider" id="modal-payment-label">
@@ -1189,6 +1193,7 @@
     <script data-purpose="ui-interactions">
         let currentTour = initialTourType || 'doantu';
         let selectedRooms = []; // Array of {id, roomNumber, type} — supports multi-room
+        let targetPaymentFlow = 'deposit'; // 'deposit' or 'full' or 'post-room'
         let selectedPaymentType = 'deposit'; // 'deposit' or 'full' or 'post-room'
         let currentPaymentMethod = 'counter'; // 'counter' or 'vnpay'
 
@@ -2464,6 +2469,18 @@
                 }
             }
 
+            // Display Linked Rooms Info
+            const linkedRoomsRow = document.getElementById('modal-row-linked-rooms');
+            const linkedRoomsText = document.getElementById('modal-linked-rooms-text');
+            if (linkedRoomsRow && linkedRoomsText) {
+                if (selectedRooms && selectedRooms.length > 0) {
+                    linkedRoomsText.innerText = selectedRooms.map(r => `Phòng ${r.roomNumber}`).join(', ');
+                    linkedRoomsRow.classList.remove('hidden');
+                } else {
+                    linkedRoomsRow.classList.add('hidden');
+                }
+            }
+
             // Final calculated price (after child discount, promo, + insurance)
             const finalPriceWithInsurance = finalPrice + insuranceFee;
 
@@ -2510,6 +2527,11 @@
             overlay.classList.add('active');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        function startPaymentFlow(flow) {
+            targetPaymentFlow = flow;
+            openRoomSelection();
         }
 
         function openRoomSelection() {
@@ -2706,47 +2728,53 @@
                     return;
                 }
 
-                selectedPaymentType = 'post-room';
-                const container = document.getElementById('room-charge-container');
-                if (container) {
-                    const roomsHtml = selectedRooms.map(room => {
-                        const isVirtual = room.id.startsWith('Virtual_');
-                        const statusText = isVirtual ? 'Đã đặt' : 'Đang ở';
-                        const statusClass = isVirtual ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200';
-                        const paxText = `${room.adults || 0} người lớn${(room.children || 0) > 0 ? ', ' + room.children + ' trẻ em' : ''}`;
-                        return `
-                          <div class="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
-                            <div class="flex items-center space-x-3">
-                              <span class="material-symbols-outlined text-brand-dark text-base">door_front</span>
-                              <div>
-                                <p class="font-bold text-xs">${room.roomNumber}</p>
-                                <p class="text-[10px] text-gray-400">${room.type} &mdash; ${paxText}</p>
+                selectedPaymentType = targetPaymentFlow;
+
+                if (targetPaymentFlow === 'post-room') {
+                    const container = document.getElementById('room-charge-container');
+                    if (container) {
+                        const roomsHtml = selectedRooms.map(room => {
+                            const isVirtual = room.id.startsWith('Virtual_');
+                            const statusText = isVirtual ? 'Đã đặt' : 'Đang ở';
+                            const statusClass = isVirtual ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200';
+                            const paxText = `${room.adults || 0} người lớn${(room.children || 0) > 0 ? ', ' + room.children + ' trẻ em' : ''}`;
+                            return `
+                              <div class="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
+                                <div class="flex items-center space-x-3">
+                                  <span class="material-symbols-outlined text-brand-dark text-base">door_front</span>
+                                  <div>
+                                    <p class="font-bold text-xs">${room.roomNumber}</p>
+                                    <p class="text-[10px] text-gray-400">${room.type} &mdash; ${paxText}</p>
+                                  </div>
+                                </div>
+                                <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
+                              </div>`;
+                        }).join('');
+                        container.innerHTML = `
+                            <div class="border border-brand-dark p-5 bg-white animate-in fade-in duration-500">
+                              <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                  <div class="w-9 h-9 bg-brand-bg flex items-center justify-center border border-brand-border">
+                                    <span class="material-symbols-outlined text-brand-dark text-sm">key</span>
+                                  </div>
+                                  <div>
+                                    <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Tính vào phòng</p>
+                                    <p class="text-xs font-bold">${selectedRooms.length} phòng &mdash; ${selectedRooms.reduce((s, r) => s + (r.adults || 0) + (r.children || 0), 0)} người</p>
+                                  </div>
+                                </div>
+                                <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
                               </div>
+                              <div class="pl-12">${roomsHtml}</div>
                             </div>
-                            <span class="px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest border ${statusClass}">${statusText}</span>
-                          </div>`;
-                    }).join('');
-                    container.innerHTML = `
-                        <div class="border border-brand-dark p-5 bg-white animate-in fade-in duration-500">
-                          <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                              <div class="w-9 h-9 bg-brand-bg flex items-center justify-center border border-brand-border">
-                                <span class="material-symbols-outlined text-brand-dark text-sm">key</span>
-                              </div>
-                              <div>
-                                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Tính vào phòng</p>
-                                <p class="text-xs font-bold">${selectedRooms.length} phòng &mdash; ${selectedRooms.reduce((s, r) => s + (r.adults || 0) + (r.children || 0), 0)} người</p>
-                              </div>
-                            </div>
-                            <button class="text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-dark underline underline-offset-4" onclick="resetToScreen1()">Thay đổi</button>
-                          </div>
-                          <div class="pl-12">${roomsHtml}</div>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        console.error('room-charge-container element not found in DOM');
+                    }
+                    closeModal();
                 } else {
-                    console.error('room-charge-container element not found in DOM');
+                    closeModal();
+                    showPaymentModal(targetPaymentFlow);
                 }
-                closeModal();
             } catch (err) {
                 console.error('Error in confirmRoomSelection:', err);
             }
