@@ -423,6 +423,9 @@ public class FaceIdApiController {
 
                 // Gọi cancelTour với cancelledByResort = true (hoàn tiền 100%)
                 java.math.BigDecimal refundAmount = tourBookingService.cancelTour(booking.getId(), true);
+                if (refundAmount == null) {
+                    refundAmount = booking.getTotalPrice() != null ? booking.getTotalPrice() : java.math.BigDecimal.ZERO;
+                }
                 cancelCount++;
 
                 // A. Nếu là khách lưu trú (có phòng nghỉ): Hoàn tiền vào Folio phòng
