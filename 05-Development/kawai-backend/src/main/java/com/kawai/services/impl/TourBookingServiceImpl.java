@@ -283,6 +283,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                         mainAttendee.setTourBooking(savedBooking);
                         mainAttendee.setCustomer(customer);
                         mainAttendee.setAttendanceStatus("Not_Show");
+                        mainAttendee.setFaceVectorData(customer.getFaceVectorData());
                         attendees.add(mainAttendee);
                         currentAttendeeCount++;
                 }
@@ -320,6 +321,9 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 attendee.setTourBooking(savedBooking);
                                 attendee.setDependent(savedDep);
                                 attendee.setAttendanceStatus("Not_Show");
+                                if (savedDep != null) {
+                                        attendee.setFaceVectorData(savedDep.getFaceVectorData());
+                                }
                                 attendees.add(attendee);
                                 currentAttendeeCount++;
                         }
@@ -370,6 +374,9 @@ public class TourBookingServiceImpl implements TourBookingService {
                         attendee.setTourBooking(savedBooking);
                         attendee.setDependent(savedChildDep);
                         attendee.setAttendanceStatus("Not_Show");
+                        if (savedChildDep != null) {
+                                attendee.setFaceVectorData(savedChildDep.getFaceVectorData());
+                        }
                         attendees.add(attendee);
                         currentAttendeeCount++;
                 }
