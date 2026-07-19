@@ -333,7 +333,11 @@ public class TourGuideController {
         long checkedIn = attendees.stream()
                 .filter(a -> "Checked_In".equals(a.getStatus()))
                 .count();
+        long absentCount = attendees.stream()
+                .filter(a -> "Absent".equals(a.getStatus()))
+                .count();
         model.addAttribute("checkedInCount", checkedIn);
+        model.addAttribute("absentCount", absentCount);
         model.addAttribute("totalAttendees", attendees.size());
 
         // Tổng hợp và parse ghi chú của các đặt tour cho hành trình này

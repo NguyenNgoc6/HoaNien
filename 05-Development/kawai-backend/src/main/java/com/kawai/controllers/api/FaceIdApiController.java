@@ -110,6 +110,7 @@ public class FaceIdApiController {
                 if (!"Not_Show".equals(attendee.getStatus())) {
                     attendee.setStatus("Not_Show");
                     attendee.setFaceMatchedAt(null);
+                    attendee.setAbsentReason(null);
                     tourAttendeeRepository.saveAndFlush(attendee);
                     resetCount++;
                 }
@@ -232,6 +233,54 @@ public class FaceIdApiController {
                         "name", name,
                         "attendeeId", String.valueOf(attendee.getId()),
                         "time", LocalDateTime.now().toString()));
+            } else {
+                return ResponseEntity.status(404).body(Map.of(
+                        "success", false,
+                        "message", "Không tìm thấy hành khách với ID: " + attendeeId));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Lỗi máy chủ: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/faceid/absent-manual
+     * Báo vắng mặt khách hàng thủ công kèm lý do.
+     */
+    @PostMapping("/absent-manual")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> absentManual(@RequestBody Map<String, Object> body) {
+        Object idObj = body.get("attendeeId");
+        Object reasonObj = body.get("reason");
+        if (idObj == null || reasonObj == null || reasonObj.toString().trim().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Thiếu ID hành khách hoặc lý do vắng mặt"));
+        }
+
+        try {
+            Long attendeeId = Long.valueOf(idObj.toString());
+            String reason = reasonObj.toString().trim();
+            Optional<TourAttendee> attendeeOpt = tourAttendeeRepository.findById(attendeeId);
+            if (attendeeOpt.isPresent()) {
+                TourAttendee attendee = attendeeOpt.get();
+                attendee.setStatus("Absent");
+                attendee.setAbsentReason(reason);
+                tourAttendeeRepository.saveAndFlush(attendee);
+                
+                String name = "Ẩn danh";
+                if (attendee.getCustomer() != null) {
+                    name = attendee.getCustomer().getFullName();
+                } else if (attendee.getDependent() != null) {
+                    name = attendee.getDependent().getDependentName();
+                }
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "name", name,
+                        "attendeeId", String.valueOf(attendee.getId())));
             } else {
                 return ResponseEntity.status(404).body(Map.of(
                         "success", false,
