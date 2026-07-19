@@ -431,7 +431,6 @@ public class FaceIdApiController {
                     tourBookingService.cancelTour(booking.getId(), true, reason);
                     cancelCount++;
                 }
-
                 return ResponseEntity.ok(Map.of(
                     "success", true, 
                     "message", "Đã hủy lịch trình tour thành công! Đã hoàn tiền cho " + cancelCount + " đơn đặt tour."
@@ -440,14 +439,6 @@ public class FaceIdApiController {
                 e.printStackTrace();
                 return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi khi hủy lịch trình tour: " + e.getMessage()));
             }
-            return ResponseEntity.ok(Map.of(
-                "success", true, 
-                "message", "Đã hủy lịch trình tour thành công! Đã hoàn tiền cho " + cancelCount + " đơn đặt tour."
-            ));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi khi hủy lịch trình tour: " + e.getMessage()));
->>>>>>> bca1e4cace50736c7d10835d769d7bb34196b1b6
         }
     }
 

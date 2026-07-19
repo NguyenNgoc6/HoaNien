@@ -41,6 +41,9 @@ public class RoomApiController {
     private com.kawai.repositories.RoomGuestRepository roomGuestRepository;
 
     @Autowired
+    private com.kawai.repositories.TourAttendeeRepository tourAttendeeRepository;
+
+    @Autowired
     public RoomApiController(RoomRepository roomRepository,
             RoomBookingDetailRepository roomBookingDetailRepository,
             RoomService roomService,
@@ -232,6 +235,34 @@ public class RoomApiController {
                 guestsList.add(gMap);
             }
             rMap.put("guests", guestsList);
+            
+            // Tính quota đã sử dụng để đặt tour bằng Post to Room của phòng này
+            int usedAdults = 0;
+            int usedChildren = 0;
+            try {
+                List<com.kawai.models.TourAttendee> activeTourAttendees = tourAttendeeRepository.findActiveAttendeesByRoomBookingDetailId(rbd.getId());
+                for (com.kawai.models.TourAttendee ta : activeTourAttendees) {
+                    if (ta.getCustomer() != null) {
+                        usedAdults++;
+                    } else if (ta.getDependent() != null) {
+                        java.time.LocalDate birthDate = ta.getDependent().getBirthDate();
+                        if (birthDate != null) {
+                            int age = java.time.Period.between(birthDate, java.time.LocalDate.now()).getYears();
+                            if (age < 12) {
+                                usedChildren++;
+                            } else {
+                                usedAdults++;
+                            }
+                        } else {
+                            usedAdults++;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+            rMap.put("usedAdultTourSeats", usedAdults);
+            rMap.put("usedChildTourSeats", usedChildren);
 
             responseList.add(rMap);
         }

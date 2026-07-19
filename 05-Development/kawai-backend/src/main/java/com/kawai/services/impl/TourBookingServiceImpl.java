@@ -273,8 +273,12 @@ public class TourBookingServiceImpl implements TourBookingService {
                 List<TourAttendee> attendees = new ArrayList<>();
                 int currentAttendeeCount = 0;
 
-                // KhÃ¡ch hÃ ng Ä‘áº·t chÃ­nh lÃ  attendee sá»‘ 1
-                if (currentAttendeeCount < request.getParticipantCount()) {
+                // Kiểm tra xem khách hàng đặt chính đã đăng ký tham gia chuyến đi này trước đó chưa
+                boolean isCustomerAlreadyRegistered = tourAttendeeRepository.existsByCustomerIdAndTourBookingScheduleIdAndTourBookingBookingStatusNot(
+                                customer.getId(), schedule.getId(), "Cancelled");
+
+                // Khách hàng đặt chính là attendee số 1 (Chỉ gán nếu khách hàng chưa đăng ký tham gia chuyến đi này)
+                if (!isCustomerAlreadyRegistered && currentAttendeeCount < request.getParticipantCount()) {
                         TourAttendee mainAttendee = new TourAttendee();
                         mainAttendee.setTourBooking(savedBooking);
                         mainAttendee.setCustomer(customer);

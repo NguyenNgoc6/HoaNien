@@ -1197,6 +1197,7 @@
         let selectedPaymentType = 'deposit'; // 'deposit' or 'full' or 'post-room'
         let currentPaymentMethod = 'counter'; // 'counter' or 'vnpay'
         let myActiveRoomsData = []; // Store full rooms payload from backend including guests
+        let isCustomerAlreadyRegisteredInTour = false; // Check if customer has already booked this tour schedule
 
         const tourData = {
             doantu: {
@@ -2024,6 +2025,7 @@
             renderActivities();
             displayCachedWeather();
             updateTotalPrice();
+            checkDuplicateTourRegistration();
         }
 
         // Handle Smooth Scroll to Map with Header Offset and Activity Focus
@@ -2737,6 +2739,22 @@
                         const originalRoom = myActiveRoomsData.find(r => r.roomNumber === sRoom.roomNumber || r.id === sRoom.id);
                         if (!originalRoom) continue;
 
+                        const rGuests = originalRoom.guests || [];
+                        
+                        // Lấy đăng ký gốc của phòng và trừ đi lượng đã gán ở các đơn đặt tour khác
+                        let roomAdultsCount = parseInt(originalRoom.numberOfAdults) || 1;
+                        let roomChildrenCount = parseInt(originalRoom.numberOfChildren) || 0;
+                        const usedAdults = parseInt(originalRoom.usedAdultTourSeats) || 0;
+                        const usedChildren = parseInt(originalRoom.usedChildTourSeats) || 0;
+                        
+                        roomAdultsCount = Math.max(0, roomAdultsCount - usedAdults);
+                        roomChildrenCount = Math.max(0, roomChildrenCount - usedChildren);
+
+                        const tourAdultsForRoom = sRoom.adults || 0;
+                        const tourChildrenForRoom = sRoom.children || 0;
+                        const totalTourForRoom = tourAdultsForRoom + tourChildrenForRoom;
+                        const totalRoomOccupants = roomAdultsCount + roomChildrenCount;
+
                         // Tình huống 2: Tổng khách đi tour phân bổ cho phòng này lớn hơn số khách đăng ký lưu trú thực tế
                         if (totalTourForRoom > totalRoomOccupants) {
                             const msg = `Số khách đi tour phân bổ cho phòng ${sRoom.roomNumber} (${totalTourForRoom} người) vượt quá số khách đăng ký (${totalRoomOccupants} người).\n\nBạn đang thừa ${totalTourForRoom - totalRoomOccupants} khách.\nVui lòng đặt thêm phòng để tiếp tục.`;
@@ -3164,21 +3182,32 @@
             if (myActiveRoomsData.length === 1) {
                 const refRoom = myActiveRoomsData[0];
                 rGuests = refRoom.guests || [];
-                // Sử dụng numberOfAdults và numberOfChildren của phòng đặt làm tiêu chuẩn quy mô lưu trú thực tế
-                roomAdultsCount = parseInt(refRoom.numberOfAdults) || 1;
-                roomChildrenCount = parseInt(refRoom.numberOfChildren) || 0;
+                // Sử dụng numberOfAdults và numberOfChildren của phòng đặt làm tiêu chuẩn quy mô lưu trú thực tế, trừ lượng đã sử dụng ở các đơn khác
+                let rawAdults = parseInt(refRoom.numberOfAdults) || 1;
+                let rawChildren = parseInt(refRoom.numberOfChildren) || 0;
+                const usedAdults = parseInt(refRoom.usedAdultTourSeats) || 0;
+                const usedChildren = parseInt(refRoom.usedChildTourSeats) || 0;
+
+                roomAdultsCount = Math.max(0, rawAdults - usedAdults);
+                roomChildrenCount = Math.max(0, rawChildren - usedChildren);
                 totalRoom = roomAdultsCount + roomChildrenCount;
                 refRoomLabel = `phòng ${refRoom.roomNumber}`;
                 roomChildAges = rGuests
                     .filter(g => g.guestType === 'Child' && g.ageLabel !== 'Người lớn')
                     .map(g => g.ageLabel);
             } else {
-                // Trường hợp có từ 2 phòng trở lên: Gộp tất cả các khách của tất cả các phòng để tính tổng sức chứa
+                // Trường hợp có từ 2 phòng trở lên: Gộp tất cả các khách của tất cả các phòng để tính tổng sức chứa còn lại
                 myActiveRoomsData.forEach(room => {
                     const guests = room.guests || [];
                     rGuests = rGuests.concat(guests);
-                    roomAdultsCount += parseInt(room.numberOfAdults) || 1;
-                    roomChildrenCount += parseInt(room.numberOfChildren) || 0;
+                    
+                    let rawAdults = parseInt(room.numberOfAdults) || 1;
+                    let rawChildren = parseInt(room.numberOfChildren) || 0;
+                    const usedAdults = parseInt(room.usedAdultTourSeats) || 0;
+                    const usedChildren = parseInt(room.usedChildTourSeats) || 0;
+
+                    roomAdultsCount += Math.max(0, rawAdults - usedAdults);
+                    roomChildrenCount += Math.max(0, rawChildren - usedChildren);
                 });
                 totalRoom = roomAdultsCount + roomChildrenCount;
                 refRoomLabel = `các phòng đăng ký (${myActiveRoomsData.map(r => r.roomNumber).join(', ')})`;
@@ -3306,8 +3335,10 @@
                 // Generate child name and age rows because sum matches exactly!
                 generateChildRows(children);
 
-                // Generate adult companions if adults > 1
-                const adultCompanionsCount = adults > 1 ? adults - 1 : 0;
+                // Generate adult companions
+                // Nếu khách đã đăng ký trước đó (chế độ đặt hộ), sinh đủ 'adults' dòng nhập thông tin.
+                // Nếu chưa đăng ký, sinh 'adults - 1' dòng nhập thông tin (trừ suất của khách chính).
+                const adultCompanionsCount = isCustomerAlreadyRegisteredInTour ? adults : (adults > 1 ? adults - 1 : 0);
                 generateAdultCompanionRows(adultCompanionsCount);
                 validateParticipantsWithRoomOnInput();
                 return true;
@@ -3814,6 +3845,7 @@
 
         document.getElementById('departureDate').addEventListener('change', function () {
             fetchWeather(this.value);
+            checkDuplicateTourRegistration();
         });
 
         document.addEventListener('click', (e) => {
@@ -3825,6 +3857,25 @@
                 document.querySelectorAll('.map-marker .animate-in').forEach(info => info.classList.add('hidden'));
             }
         });
+
+        function checkDuplicateTourRegistration() {
+            const tourInfo = tourData[currentTour];
+            const dateInput = document.getElementById('departureDate');
+            if (!tourInfo || !dateInput || !dateInput.value) return;
+            
+            fetch(`/api/tour-bookings/check-registered?tourId=${tourInfo.id}&departureDate=${dateInput.value}`)
+                .then(res => res.ok ? res.json() : { registered: false })
+                .then(data => {
+                    isCustomerAlreadyRegisteredInTour = data.registered;
+                    console.log("isCustomerAlreadyRegisteredInTour updated:", isCustomerAlreadyRegisteredInTour);
+                    // Cập nhật lại form gõ companion để đồng bộ số lượng ô nhập
+                    validateCompanions(false, false);
+                })
+                .catch(err => {
+                    console.warn("Lỗi kiểm tra đăng ký trùng lặp:", err);
+                    isCustomerAlreadyRegisteredInTour = false;
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
@@ -3849,6 +3900,7 @@
                     myActiveRoomsData = rooms;
                     console.log("myActiveRoomsData preloaded:", myActiveRoomsData);
                     validateParticipantsWithRoomOnInput();
+                    checkDuplicateTourRegistration();
                 })
                 .catch(err => console.warn("Lỗi tải thông tin phòng khi khởi tạo:", err));
         });

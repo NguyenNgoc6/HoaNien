@@ -52,6 +52,42 @@ public class TourBookingApiController {
     @Autowired
     private TourAttendeeRepository tourAttendeeRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @GetMapping("/check-registered")
+    public ResponseEntity<?> checkRegistered(
+            @RequestParam Long tourId,
+            @RequestParam String departureDate,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.ok(Map.of("registered", false));
+        }
+        
+        Optional<Customer> customerOpt = customerRepository.findByAccount_Username(principal.getName());
+        if (customerOpt.isEmpty()) {
+            return ResponseEntity.ok(Map.of("registered", false));
+        }
+        
+        LocalDate depDate = LocalDate.parse(departureDate, DateTimeFormatter.ISO_LOCAL_DATE);
+        List<TourSchedule> schedules = tourScheduleRepository.findByTourIdAndDepartureDate(tourId, depDate);
+        if (schedules.isEmpty()) {
+            return ResponseEntity.ok(Map.of("registered", false));
+        }
+        
+        Long customerId = customerOpt.get().getId();
+        boolean registered = false;
+        for (TourSchedule schedule : schedules) {
+            if (tourAttendeeRepository.existsByCustomerIdAndTourBookingScheduleIdAndTourBookingBookingStatusNot(
+                    customerId, schedule.getId(), "Cancelled")) {
+                registered = true;
+                break;
+            }
+        }
+        
+        return ResponseEntity.ok(Map.of("registered", registered));
+    }
+
     @PostMapping
     public ResponseEntity<?> createTourBooking(@RequestBody Map<String, Object> payload, Principal principal,
             HttpServletRequest httpRequest) {
