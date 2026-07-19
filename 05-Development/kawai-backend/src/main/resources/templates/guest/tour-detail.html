@@ -2590,43 +2590,62 @@
                                 container.innerHTML = activeRooms.map((r, idx) => {
                                     const safeId = r.id.replace(/'/g, "\\'");
                                     const roomIdx = idx;
-                                    const defaultAdults = Math.min(mainAdults, r.numberOfAdults || 1);
-                                    const defaultChildren = Math.min(mainChildren, r.numberOfChildren || 0);
+                                    
+                                    // Tính sức chứa còn lại thực tế (đăng ký gốc trừ đi lượng đã sử dụng ở các tour khác)
+                                    let rawAdults = parseInt(r.numberOfAdults) || 1;
+                                    let rawChildren = parseInt(r.numberOfChildren) || 0;
+                                    const usedAdults = parseInt(r.usedAdultTourSeats) || 0;
+                                    const usedChildren = parseInt(r.usedChildTourSeats) || 0;
+                                    
+                                    const remainAdults = Math.max(0, rawAdults - usedAdults);
+                                    const remainChildren = Math.max(0, rawChildren - usedChildren);
+                                    const totalRemain = remainAdults + remainChildren;
+                                    const isOutOfQuota = (totalRemain <= 0);
+                                    
+                                    const disabledAttr = isOutOfQuota ? 'disabled' : '';
+                                    const opacityClass = isOutOfQuota ? 'opacity-50 cursor-not-allowed' : '';
+                                    
+                                    let statusLabel = '';
+                                    if (isOutOfQuota) {
+                                        statusLabel = '<span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border text-red-700 bg-red-50 border-red-200">Đã gán hết</span>';
+                                    } else {
+                                        statusLabel = `<span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${r.roomStatus === 'Confirmed' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200'}">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</span>`;
+                                    }
+
                                     return `
-                                    <div class="room-item border border-brand-border p-4 transition-all" id="room-item-${roomIdx}">
-                                        <label class="flex items-start space-x-3 cursor-pointer">
+                                    <div class="room-item border border-brand-border p-4 transition-all ${opacityClass}" id="room-item-${roomIdx}">
+                                        <label class="flex items-start space-x-3 ${isOutOfQuota ? 'cursor-not-allowed' : 'cursor-pointer'}">
                                             <input type="checkbox" class="room-checkbox mt-0.5 w-4 h-4 accent-[#2D2926] shrink-0"
                                                 value="${safeId}"
+                                                ${disabledAttr}
                                                 data-number="${r.roomNumber.replace(/"/g, '&quot;')}"
                                                 data-type="${(r.roomType || '').replace(/"/g, '&quot;')}"
-                                                data-default-adults="${defaultAdults}"
-                                                data-default-children="${defaultChildren}"
                                                 data-idx="${roomIdx}"
                                                 onchange="toggleRoomSelection(this)">
                                             <div class="flex-1">
                                                 <div class="flex items-center justify-between">
                                                     <div>
                                                         <p class="text-xs font-bold uppercase tracking-widest">${r.roomNumber}</p>
-                                                        <p class="text-[10px] text-gray-400 uppercase">${r.roomType || ''}</p>
+                                                        <p class="text-[10px] text-gray-400 uppercase">${r.roomType || ''} &mdash; Còn lại: ${remainAdults}L, ${remainChildren}T</p>
                                                     </div>
-                                                    <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border ${r.roomStatus === 'Confirmed' ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200'}">${r.roomStatus === 'Confirmed' ? 'Chưa nhận phòng' : 'Đang hoạt động'}</span>
+                                                    ${statusLabel}
                                                 </div>
                                                 <!-- Per-room participant inputs (hidden until checked) -->
                                                 <div class="room-participant-inputs mt-3 hidden" id="participants-${roomIdx}">
                                                     <div class="grid grid-cols-2 gap-3 pt-3 border-t border-brand-border">
                                                         <div>
-                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Người lớn</label>
-                                                            <input type="number" min="0" max="10"
+                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Người lớn (Tối đa ${remainAdults})</label>
+                                                            <input type="number" min="0" max="${remainAdults}"
                                                                 class="room-adults-input w-full border-b border-brand-border text-xs py-1 bg-transparent text-center"
-                                                                value="${defaultAdults}"
+                                                                value="0"
                                                                 data-idx="${roomIdx}"
                                                                 onchange="updateRoomParticipants(${roomIdx})">
                                                         </div>
                                                         <div>
-                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Trẻ em</label>
-                                                            <input type="number" min="0" max="10"
+                                                            <label class="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Trẻ em (Tối đa ${remainChildren})</label>
+                                                            <input type="number" min="0" max="${remainChildren}"
                                                                 class="room-children-input w-full border-b border-brand-border text-xs py-1 bg-transparent text-center"
-                                                                value="${defaultChildren}"
+                                                                value="0"
                                                                 data-idx="${roomIdx}"
                                                                 onchange="updateRoomParticipants(${roomIdx})">
                                                         </div>
@@ -2671,6 +2690,9 @@
                 const participantDiv = document.getElementById('participants-' + idx);
                 const roomItem = document.getElementById('room-item-' + idx);
 
+                const adultsInput = document.querySelector(`.room-adults-input[data-idx="${idx}"]`);
+                const childrenInput = document.querySelector(`.room-children-input[data-idx="${idx}"]`);
+
                 if (checkbox.checked) {
                     // Show per-room participant inputs
                     if (participantDiv) participantDiv.classList.remove('hidden');
@@ -2678,10 +2700,29 @@
                         roomItem.classList.add('border-brand-dark', 'bg-[#FBF9F6]');
                         roomItem.classList.remove('border-brand-border');
                     }
-                    const adults = parseInt(checkbox.dataset.defaultAdults) || 1;
-                    const children = parseInt(checkbox.dataset.defaultChildren) || 0;
+
+                    // Tính toán số lượng còn thiếu của form chính để tự động điền thông minh
+                    const mainAdults = parseInt(document.getElementById('num-adults').value) || 1;
+                    const mainChildren = parseInt(document.getElementById('num-children').value) || 0;
+                    
+                    const alreadyAllocatedAdults = selectedRooms.reduce((sum, r) => sum + (r.adults || 0), 0);
+                    const alreadyAllocatedChildren = selectedRooms.reduce((sum, r) => sum + (r.children || 0), 0);
+
+                    const remainingNeedAdults = Math.max(0, mainAdults - alreadyAllocatedAdults);
+                    const remainingNeedChildren = Math.max(0, mainChildren - alreadyAllocatedChildren);
+
+                    const maxAdultsForThisRoom = parseInt(adultsInput?.max) || 0;
+                    const maxChildrenForThisRoom = parseInt(childrenInput?.max) || 0;
+
+                    // Autofill thông minh số lượng còn thiếu, tối đa là sức chứa còn lại của phòng này
+                    const adultsToAssign = Math.min(remainingNeedAdults, maxAdultsForThisRoom);
+                    const childrenToAssign = Math.min(remainingNeedChildren, maxChildrenForThisRoom);
+
+                    if (adultsInput) adultsInput.value = adultsToAssign;
+                    if (childrenInput) childrenInput.value = childrenToAssign;
+
                     if (!selectedRooms.find(r => r.id === id)) {
-                        selectedRooms.push({ id, roomNumber, type, adults, children, idx });
+                        selectedRooms.push({ id, roomNumber, type, adults: adultsToAssign, children: childrenToAssign, idx });
                     }
                 } else {
                     // Hide per-room participant inputs
@@ -2690,9 +2731,13 @@
                         roomItem.classList.remove('border-brand-dark', 'bg-[#FBF9F6]');
                         roomItem.classList.add('border-brand-border');
                     }
+                    
+                    if (adultsInput) adultsInput.value = 0;
+                    if (childrenInput) childrenInput.value = 0;
+
                     selectedRooms = selectedRooms.filter(r => r.id !== id);
                 }
-                console.log('selectedRooms:', selectedRooms);
+                console.log('selectedRooms updated:', selectedRooms);
             } catch (err) {
                 console.error('Error in toggleRoomSelection:', err);
             }
