@@ -406,6 +406,20 @@
         </div>
         <!-- 4. Adjusted Main Content Body -->
         <main class="flex-1 mt-36 p-margin-desktop space-y-10">
+            <!-- Banner báo tour đã bị hủy do sự cố -->
+            <div th:if="${schedule != null && schedule.scheduleStatus == 'Cancelled'}"
+                class="bg-red-50 border border-red-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-md no-print mb-8">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                    <span class="material-symbols-outlined text-[36px]">block</span>
+                </div>
+                <div class="space-y-2 text-center md:text-left flex-1">
+                    <h3 class="text-xl font-bold text-red-900">Lịch Trình Tour Đã Bị Hủy</h3>
+                    <p class="text-sm text-red-700 leading-relaxed">
+                        Lịch trình tour này đã được xác nhận hủy do sự cố bất khả kháng. Hệ thống đã tự động thực hiện hoàn tiền 100% vào Folio phòng nghỉ của các khách lưu trú, tạo yêu cầu hoàn tiền cho khách vãng lai, và gửi email thông báo chi tiết đến toàn bộ hành khách trong đoàn.
+                    </p>
+                </div>
+            </div>
+
             <!-- Header & Notice Banner on the same row -->
             <div class="grid grid-cols-12 gap-8 items-center no-print w-full pb-6 border-b border-primary/5">
                 <!-- Left: Title -->
@@ -686,16 +700,22 @@
                                 class="w-full bg-surface-container/30 border-none rounded-lg p-4 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none min-h-[120px]"
                                 placeholder="Nhập chi tiết sự cố tại đây..."></textarea>
                         </div>
-                        <div class="flex justify-end">
-                            <button onclick="submitIncidentReport()"
-                                class="px-8 py-3 rounded-full bg-primary text-white font-label-md text-label-md shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-semibold">
-                                Gửi báo cáo
+                        <div class="flex justify-end gap-4 flex-wrap">
+                            <button onclick="submitIncidentReport(false)"
+                                class="px-6 py-3 rounded-full bg-[#1b1c1a]/5 text-on-surface hover:bg-[#1b1c1a]/10 font-label-md text-label-md transition-all font-semibold"
+                                id="btn-only-report">
+                                Chỉ gửi báo cáo
+                            </button>
+                            <button th:if="${scheduleStatus != 'Cancelled'}" onclick="submitIncidentReport(true)"
+                                class="px-6 py-3 rounded-full bg-red-600 text-white font-label-md text-label-md shadow-lg shadow-red-600/20 hover:scale-[1.02] hover:bg-red-700 transition-all font-semibold"
+                                id="btn-report-cancel">
+                                Gửi báo cáo & Hủy Tour
                             </button>
                         </div>
                     </div>
                 </div>
                 <!-- Right Column: FaceID Attendance -->
-                <div class="col-span-12 lg:col-span-4 space-y-8" id="faceid-section">
+                <div th:if="${scheduleStatus != 'Cancelled'}" class="col-span-12 lg:col-span-4 space-y-8" id="faceid-section">
                     <!-- Scanner Interface -->
                     <div class="glass-panel p-6 rounded-lg space-y-6">
                         <div class="space-y-8">
@@ -1502,28 +1522,93 @@
             modal.classList.add('opacity-0', 'pointer-events-none');
         }
 
-        function submitIncidentReport() {
+        function submitIncidentReport(cancelTour = false) {
             const desc = document.getElementById('incident-description').value.trim();
             if (!desc) {
                 showToast('Vui lòng nhập mô tả sự cố.', 'warning');
                 return;
             }
-            fetch('/api/tour-incidents', {
+
+            if (cancelTour) {
+                showCustomConfirm({
+                    title: 'Xác Nhận Hủy Tour',
+                    message: 'Bạn có chắc chắn muốn hủy toàn bộ lịch trình tour này và tự động hoàn tiền 100% cho tất cả khách hàng không?',
+                    icon: 'report_problem',
+                    onConfirm: () => {
+                        executeCancelSchedule(desc);
+                    }
+                });
+            } else {
+                fetch('/api/tour-incidents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: desc })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showCustomWarning({
+                                title: 'Báo Cáo Thành Công',
+                                message: 'Báo cáo sự cố đã được gửi thành công đến Ban Quản lý Resort HoaNien!',
+                                icon: 'check_circle'
+                            });
+                            document.getElementById('incident-description').value = '';
+                        } else {
+                            showCustomWarning({
+                                title: 'Gửi Thất Bại',
+                                message: data.message || 'Có lỗi xảy ra khi gửi báo cáo.',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        showCustomWarning({
+                            title: 'Lỗi Kết Nối',
+                            message: 'Không thể kết nối tới máy chủ.',
+                            icon: 'error'
+                        });
+                    });
+            }
+        }
+
+        function executeCancelSchedule(description) {
+            if (!activeScheduleId) {
+                showToast('Không xác định được mã lịch trình tour.', 'error');
+                return;
+            }
+
+            fetch('/api/faceid/cancel-schedule', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: desc })
+                body: JSON.stringify({ scheduleId: activeScheduleId, description: description })
             })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Báo cáo sự cố đã được gửi thành công đến Ban Quản lý Resort HoaNien!', 'success');
+                        showCustomWarning({
+                            title: 'Hủy Tour Thành Công',
+                            message: data.message,
+                            icon: 'check_circle',
+                            onConfirm: () => {
+                                window.location.reload();
+                            }
+                        });
                         document.getElementById('incident-description').value = '';
                     } else {
-                        showToast(data.message || 'Có lỗi xảy ra', 'error');
+                        showCustomWarning({
+                            title: 'Hủy Tour Thất Bại',
+                            message: data.message || 'Có lỗi xảy ra khi hủy lịch trình tour.',
+                            icon: 'error'
+                        });
                     }
                 })
                 .catch(err => {
-                    showToast('Lỗi kết nối máy chủ.', 'error');
+                    console.error(err);
+                    showCustomWarning({
+                        title: 'Lỗi Kết Nối',
+                        message: 'Không thể kết nối tới máy chủ khi hủy tour.',
+                        icon: 'error'
+                    });
                 });
         }
 
