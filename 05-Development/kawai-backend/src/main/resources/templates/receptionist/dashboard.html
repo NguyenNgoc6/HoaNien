@@ -390,8 +390,10 @@
                         </div>
 
                         <div class="room-grid">
-                            <div th:each="room : ${entry.value}" class="room-card" style="position: relative;"
-                                th:classappend="${#strings.equalsIgnoreCase(room.status, 'Occupied')} ? 'card-occupied' : (${#strings.equalsIgnoreCase(room.status, 'Vacant_Dirty')} ? 'card-housekeeping' : (${#strings.equalsIgnoreCase(room.status, 'Maintenance')} ? 'card-ooo' : 'card-available'))">
+                            <div th:each="room : ${entry.value}" class="room-card" style="position: relative; cursor: pointer;"
+                                th:classappend="${#strings.equalsIgnoreCase(room.status, 'Occupied')} ? 'card-occupied' : (${#strings.equalsIgnoreCase(room.status, 'Vacant_Dirty')} ? 'card-housekeeping' : (${#strings.equalsIgnoreCase(room.status, 'Maintenance')} ? 'card-ooo' : 'card-available'))"
+                                th:attr="data-room=${room.roomNumber}, data-status=${room.status}, data-guest=${room.guestName}, data-pax=${room.pax}, data-in=${room.checkInDate}, data-out=${room.checkOutDate}"
+                                th:onclick="|showRoomDetail(this)|" >
                                 <div class="room-card-top">
                                     <span class="room-number" th:text="${room.roomNumber}"></span>
                                     <div style="display: flex; align-items: center; gap: 6px;">
@@ -415,8 +417,7 @@
                                     <span class="type-badge" th:text="${room.category}"></span>
                                 </div>
                                 <div class="room-status-text"
-                                    th:with="baseText=${#strings.equalsIgnoreCase(room.status, 'Vacant_Clean') ? 'Ready' : (#strings.equalsIgnoreCase(room.status, 'Vacant_Dirty') ? 'Needs cleaning' : (#strings.equalsIgnoreCase(room.status, 'Maintenance') ? 'Maintenance' : (#strings.equalsIgnoreCase(room.status, 'Occupied') ? 'Occupied' : room.status)))}"
-                                    th:text="${baseText}">
+                                    th:text="${(#strings.equalsIgnoreCase(room.status, 'Occupied') ? 'Occupied' : (#strings.equalsIgnoreCase(room.status, 'Vacant_Clean') ? 'Ready' : (#strings.equalsIgnoreCase(room.status, 'Vacant_Dirty') ? 'Needs cleaning' : (#strings.equalsIgnoreCase(room.status, 'Maintenance') ? 'Maintenance' : room.status)))) + (room.hasUrgentMaintenance and room.hasUrgentClean ? ' (Sửa & Dọn)' : (room.hasUrgentMaintenance ? ' (Cần sửa)' : (room.hasUrgentClean ? ' (Dọn khẩn)' : '')))}">
                                 </div>
                                 <!-- Báo sửa chữa khẩn cấp -->
                                 <button title="Yêu cầu sửa chữa khẩn"
@@ -452,6 +453,7 @@
             </div>
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/receptionist/js/dashboard.js"></script>
     <script src="/receptionist/js/room-alert.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -595,12 +597,6 @@
 
             try {
                 var pending = JSON.parse(localStorage.getItem('kawai_notifs') || '[]');
-                pending = pending.filter(function (n) {
-                    var t = n.text || '';
-                    return !t.includes('khẩn cấp') && !t.includes('Yêu cầu dọn') && !t.includes('Yêu cầu sửa');
-                });
-                localStorage.setItem('kawai_notifs', JSON.stringify(pending));
-
                 pending.forEach(function (n) { showPersistentToast(n); });
             } catch (e) { }
 
@@ -631,15 +627,12 @@
                         try {
                             var payload = JSON.parse(msg.body);
                             console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
-                            if (payload.type === 'NEW_TASK') return;
-                            if (payload.type === 'ROOM_CLEANED') {
-                                if (typeof pollCleanTasksDone === 'function') {
-                                    pollCleanTasksDone();
-                                }
-                                setTimeout(function () { window.location.reload(); }, 3500);
-                                return;
-                            }
-                            saveAndShow('THÔNG BÁO HỆ THỐNG: \n' + payload.message, false);
+                            saveAndShow('📢 THÔNG BÁO HỆ THỐNG: \n' + payload.message, false);
+                            
+                            // Tự động tải lại trang sau 1.5 giây để cập nhật sơ đồ phòng
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 1500);
                         } catch (e) { console.error('[WS] parse error', e); }
                     });
 
@@ -648,26 +641,18 @@
                             try {
                                 var payload = JSON.parse(msg.body);
                                 console.log('[WS] Nhận tin nhắn từ kênh Đích danh (/topic/operations/' + staffId + '):', payload);
-                                Toastify({
-                                    text: 'NHIỆM VỤ MỚI: \n ' + payload.message,
-                                    duration: 5000,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "right",
-                                    backgroundColor: "linear-gradient(to right, #f39c12, #f1c40f)"
-                                }).showToast();
+                                saveAndShow('🔔 NHIỆM VỤ MỚI: \n ' + payload.message, true);
                             } catch (e) { console.error('[WS] parse error', e); }
                         });
-                        console.log(' Đã đăng ký kênh riêng: /topic/operations/' + staffId);
+                        console.log('[WS] Đã đăng ký kênh riêng: /topic/operations/' + staffId);
                     }
 
                 }, function (error) {
-                    console.error(' Lỗi kết nối WebSocket:', error);
+                    console.error('[WS] Lỗi kết nối WebSocket:', error);
                 });
             });
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Schedule Notification Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -724,6 +709,37 @@
                 .catch(err => console.log('Không thể lấy lịch làm việc:', err));
         });
     </script>
-</body>
+    <script>
+        function showRoomDetail(element) {
+            const status = element.getAttribute('data-status') || '';
+            if (!status.toLowerCase().includes('occupied')) return;
 
+            const roomNumber = element.getAttribute('data-room') || 'N/A';
+            const guestName  = element.getAttribute('data-guest') || 'Chưa cập nhật';
+            const pax        = element.getAttribute('data-pax') || 'N/A';
+            const checkIn    = element.getAttribute('data-in') || 'N/A';
+            const checkOut   = element.getAttribute('data-out') || 'N/A';
+
+            Swal.fire({
+                title: `<div style="font-family:'Playfair Display',serif;font-size:20px;color:#1a1a1a;letter-spacing:0.5px;">Phòng ${roomNumber}</div>`,
+                html: `
+                    <div style="text-align:left;padding:4px 8px;font-size:14px;color:#4a4a4a;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #f0e8de;"><td style="padding:10px 0;color:#c9a96e;font-weight:600;width:120px;">Khách hàng</td><td style="padding:10px 0;font-weight:600;color:#1a1a1a;">${guestName}</td></tr>
+                            <tr style="border-bottom:1px solid #f0e8de;"><td style="padding:10px 0;color:#c9a96e;font-weight:600;">Số khách</td><td style="padding:10px 0;">${pax}</td></tr>
+                            <tr style="border-bottom:1px solid #f0e8de;"><td style="padding:10px 0;color:#c9a96e;font-weight:600;">Check-in</td><td style="padding:10px 0;">${checkIn}</td></tr>
+                            <tr><td style="padding:10px 0;color:#c9a96e;font-weight:600;">Check-out</td><td style="padding:10px 0;color:#d35400;font-weight:700;">${checkOut}</td></tr>
+                        </table>
+                    </div>`,
+                showConfirmButton: true,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#1a1a1a',
+                icon: undefined,
+                customClass: {
+                    popup: 'swal-room-popup'
+                }
+            });
+        }
+    </script>
+</body>
 </html>

@@ -183,18 +183,7 @@ INSERT INTO Room_Categories (
 (9,  'Luxury Penthouse',         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688,https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80,https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&q=80', 12000000, 4, 'Căn hộ tầng mái đẳng cấp ngắm toàn cảnh resort.',  2, 0, 4, 2, 1500000, 750000, TRUE, '2 Giường King siêu lớn', 180, 'Toàn cảnh Resort', TRUE, TRUE, 'Rượu vang cao cấp, Trái cây nhập khẩu, Minibar', TRUE),
 (10, 'Cozy Studio Room',         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af,https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80,https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&q=80', 1500000,  2, 'Phòng Studio nhỏ gọn, đầy đủ tiện nghi.',          2, 0, 2, 1, 300000,  150000, TRUE, '1 Giường Queen 1m8', 35, 'Hướng đường phố', FALSE, FALSE, '2 chai nước suối, Cà phê hòa tan', FALSE);
 
--- ── 7. Room Surcharges (10 rows) ─────────────────────────────
-INSERT INTO Room_Surcharges (surcharge_id, category_id, surcharge_type, age_from, age_to, price_modifier, is_active) VALUES 
-(1, 1, 'EXTRA_ADULT_BED', 12, 100, 500000, TRUE),
-(2, 1, 'CHILD_WITH_BED', 6, 11, 250000, TRUE),
-(3, 1, 'CHILD_WITHOUT_BED', 0, 5, 0, TRUE),
-(4, 2, 'EXTRA_ADULT_BED', 12, 100, 600000, TRUE),
-(5, 2, 'CHILD_WITH_BED', 6, 11, 300000, TRUE),
-(6, 3, 'EXTRA_ADULT_BED', 12, 100, 1000000, TRUE),
-(7, 3, 'CHILD_WITH_BED', 6, 11, 500000, TRUE),
-(8, 4, 'EXTRA_ADULT_BED', 12, 100, 400000, TRUE),
-(9, 5, 'EXTRA_ADULT_BED', 12, 100, 2000000, TRUE),
-(10, 6, 'EXTRA_ADULT_BED', 12, 100, 600000, TRUE);
+-- ── 7. Room Surcharges (Dữ liệu đã được chuyển xuống cuối file dùng INSERT SELECT) ──
 
 -- ── 8. Rooms (50 rows) ───────────────────────────────────────
 -- Trạng thái phòng được mô hình hóa đúng:
@@ -1082,8 +1071,8 @@ ALTER TABLE Tour_Bookings AUTO_INCREMENT = 300;
 
 INSERT IGNORE INTO Export_History (id, report_name, format, exported_at, exported_by, file_size) VALUES
 (1, 'Doanh thu tháng 5/2026', 'Excel', '2026-06-01 09:15:00', 'Manager ', '2.4 MB'),
-(2, 'Tỷ lệ lấp đầy Q2', 'PDF', '2026-05-30 14:30:00', 'Manager ', '1.1 MB'),
-(3, 'Báo cáo tour tháng 4', 'CSV', '2026-05-02 10:00:00', 'Manager ', '320 KB'),
+(2, 'Tỷ lệ lấp đầy Q2', 'Excel', '2026-05-30 14:30:00', 'Manager ', '1.1 MB'),
+(3, 'Báo cáo tour tháng 4', 'Excel', '2026-05-02 10:00:00', 'Manager ', '320 KB'),
 (4, 'Doanh thu năm 2025', 'Excel', '2026-01-15 08:45:00', 'Manager ', '5.8 MB');
 
 
