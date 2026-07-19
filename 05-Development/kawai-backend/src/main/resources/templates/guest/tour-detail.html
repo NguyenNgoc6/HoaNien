@@ -592,7 +592,7 @@
                             <input class="text-sm py-2" id="departureDate" type="date" value="2026-06-26"
                                 oninput="validateDepartureDate(this)">
                             <p class="text-[9px] font-bold text-red-500 uppercase tracking-widest mt-1 hidden"
-                                id="date-error">Không thể chọn ngày trong quá khứ</p>
+                                id="date-error">Chỉ cho phép đặt tour khởi hành từ ngày mai trở đi</p>
                         </div>
                     </div>
                     <div class="flex flex-col">
@@ -2839,17 +2839,22 @@
             }
         }
 
-        // Real-time validation: prevent past date selection
+        // Real-time validation: prevent past and today date selection
         function validateDepartureDate(input) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
             const selected = new Date(input.value);
             const errorEl = document.getElementById('date-error');
-            if (selected < today) {
+            if (selected < tomorrow) {
                 input.style.borderColor = '#ef4444';
                 if (errorEl) errorEl.classList.remove('hidden');
-                // Reset to today
-                input.value = today.toISOString().split('T')[0];
+                // Reset to tomorrow
+                const yyyy = tomorrow.getFullYear();
+                const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                const dd = String(tomorrow.getDate()).padStart(2, '0');
+                input.value = `${yyyy}-${mm}-${dd}`;
                 setTimeout(() => {
                     input.style.borderColor = '';
                     if (errorEl) errorEl.classList.add('hidden');
@@ -2928,14 +2933,15 @@
                 return false;
             }
 
-            // Validate departure date is not in the past
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            // Validate departure date is tomorrow onwards
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
             const selectedDate = new Date(departureDate);
-            if (selectedDate < today) {
+            if (selectedDate < tomorrow) {
                 showWarningAlertPopup(
                     lang === 'vi' ? 'Ngày khởi hành không hợp lệ' : 'Invalid Departure Date',
-                    lang === 'vi' ? 'Ngày khởi hành không thể là ngày trong quá khứ. Vui lòng chọn lại.' : 'Departure date cannot be in the past. Please select a valid date.'
+                    lang === 'vi' ? 'Chỉ cho phép đặt tour khởi hành từ ngày mai trở đi (phải đặt trước ít nhất 1 ngày). Vui lòng chọn lại.' : 'Departure date must be tomorrow onwards. Please select a valid date.'
                 );
                 document.getElementById('departureDate').focus();
                 return false;
@@ -3607,13 +3613,19 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderTour();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            const tomorrowStr = `${yyyy}-${mm}-${dd}`;
+            
             const dateInput = document.getElementById('departureDate');
             if (dateInput) {
-                dateInput.min = todayStr;  // Block past dates in native picker
-                dateInput.value = todayStr;
+                dateInput.min = tomorrowStr;  // Block past and today dates in native picker
+                dateInput.value = tomorrowStr;
             }
-            fetchWeather(todayStr);
+            fetchWeather(tomorrowStr);
         });
     </script>
     <div th:replace="~{guest/fragments/auth :: authModal}"></div>

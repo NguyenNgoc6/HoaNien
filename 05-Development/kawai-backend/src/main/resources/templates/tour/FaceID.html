@@ -1571,11 +1571,27 @@
             }
         }
 
+        let isCancellingSchedule = false;
+
         function executeCancelSchedule(description) {
             if (!activeScheduleId) {
                 showToast('Không xác định được mã lịch trình tour.', 'error');
                 return;
             }
+            if (isCancellingSchedule) return;
+
+            isCancellingSchedule = true;
+
+            const cancelBtn = document.getElementById('btn-report-cancel');
+            let originalText = '';
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                originalText = cancelBtn.innerHTML;
+                cancelBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Đang hủy...';
+                cancelBtn.style.opacity = '0.7';
+            }
+
+            showToast('Đang thực hiện hủy tour và hoàn tiền, vui lòng đợi...', 'warning');
 
             fetch('/api/faceid/cancel-schedule', {
                 method: 'POST',
@@ -1584,6 +1600,12 @@
             })
                 .then(res => res.json())
                 .then(data => {
+                    isCancellingSchedule = false;
+                    if (cancelBtn) {
+                        cancelBtn.disabled = false;
+                        cancelBtn.innerHTML = originalText;
+                        cancelBtn.style.opacity = '1';
+                    }
                     if (data.success) {
                         showCustomWarning({
                             title: 'Hủy Tour Thành Công',
@@ -1603,6 +1625,12 @@
                     }
                 })
                 .catch(err => {
+                    isCancellingSchedule = false;
+                    if (cancelBtn) {
+                        cancelBtn.disabled = false;
+                        cancelBtn.innerHTML = originalText;
+                        cancelBtn.style.opacity = '1';
+                    }
                     console.error(err);
                     showCustomWarning({
                         title: 'Lỗi Kết Nối',
