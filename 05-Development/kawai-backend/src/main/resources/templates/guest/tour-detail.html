@@ -2741,6 +2741,8 @@
                         if (totalTourForRoom > totalRoomOccupants) {
                             const msg = `Số khách đi tour phân bổ cho phòng ${sRoom.roomNumber} (${totalTourForRoom} người) vượt quá số khách đăng ký (${totalRoomOccupants} người).\n\nBạn đang thừa ${totalTourForRoom - totalRoomOccupants} khách.\nVui lòng đặt thêm phòng để tiếp tục.`;
                             showWarningAlertPopup('Yêu cầu đặt thêm phòng', msg, true);
+                            closeModal();
+                            scrollToParticipants();
                             return;
                         }
 
@@ -2748,12 +2750,16 @@
                         if (tourAdultsForRoom > roomAdultsCount) {
                             const msg = `Số người lớn đi tour phân bổ cho phòng ${sRoom.roomNumber} (${tourAdultsForRoom} người) vượt quá đăng ký (${roomAdultsCount} người).\n\nVui lòng điều chỉnh lại phân bổ.`;
                             showWarningAlertPopup('Không khớp người lớn', msg, false);
+                            closeModal();
+                            scrollToParticipants();
                             return;
                         }
 
                         if (tourChildrenForRoom > roomChildrenCount) {
                             const msg = `Số trẻ em đi tour phân bổ cho phòng ${sRoom.roomNumber} (${tourChildrenForRoom} trẻ) vượt quá đăng ký (${roomChildrenCount} trẻ).\n\nVui lòng điều chỉnh lại phân bổ.`;
                             showWarningAlertPopup('Không khớp trẻ em', msg, false);
+                            closeModal();
+                            scrollToParticipants();
                             return;
                         }
 
@@ -2788,6 +2794,8 @@
                                 const roomDesc = roomChildAges.join(', ');
                                 const msg = `Độ tuổi trẻ em đi tour không khớp với khai báo của phòng ${sRoom.roomNumber}.\n\nThông tin phòng: ${roomDesc}.\nVui lòng chọn lại cho khớp.`;
                                 showWarningAlertPopup('Độ tuổi không khớp', msg, false);
+                                closeModal();
+                                scrollToParticipants();
                                 return;
                             }
                         }
@@ -3183,6 +3191,7 @@
             if (totalTour > totalRoom) {
                 const msg = `Số khách đi tour (${totalTour} người) vượt quá số khách đăng ký của ${refRoomLabel} (${totalRoom} người).\n\nBạn đang thừa ${totalTour - totalRoom} khách.\nVui lòng đặt thêm phòng để tiếp tục đăng ký đi tour cho đoàn.`;
                 showWarningAlertPopup('Yêu cầu đặt thêm phòng', msg, true);
+                scrollToParticipants();
                 return false;
             }
 
@@ -3190,6 +3199,7 @@
             if (mainAdults > roomAdultsCount) {
                 const msg = `Số người lớn đi tour (${mainAdults} người) vượt quá số người lớn đăng ký của ${refRoomLabel} (${roomAdultsCount} người).\n\nVui lòng kiểm tra lại thông tin.`;
                 showWarningAlertPopup('Không khớp người lớn', msg, false);
+                scrollToParticipants();
                 return false;
             }
 
@@ -3197,6 +3207,7 @@
             if (mainChildren > roomChildrenCount) {
                 const msg = `Số trẻ em đi tour (${mainChildren} trẻ) vượt quá số trẻ em đăng ký của ${refRoomLabel} (${roomChildrenCount} trẻ).\n\nVui lòng kiểm tra lại thông tin.`;
                 showWarningAlertPopup('Không khớp trẻ em', msg, false);
+                scrollToParticipants();
                 return false;
             }
 
@@ -3227,6 +3238,7 @@
                     const roomDesc = roomChildAges.join(', ');
                     const msg = `Độ tuổi của trẻ em đi tour không khớp với đăng ký của ${refRoomLabel}.\n\nThông tin phòng: ${roomDesc}.\nVui lòng chọn đúng độ tuổi trẻ em.`;
                     showWarningAlertPopup('Độ tuổi không khớp', msg, false);
+                    scrollToParticipants();
                     return false;
                 }
             }
@@ -3333,6 +3345,18 @@
         function redirectToBooking() {
             closeWarningAlertPopup();
             window.location.href = '/living';
+        }
+
+        function scrollToParticipants() {
+            const el = document.getElementById('participantCount') || document.getElementById('num-adults');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.transition = 'all 0.3s ease';
+                el.style.outline = '2px solid #C5A059';
+                setTimeout(() => {
+                    el.style.outline = '';
+                }, 2000);
+            }
         }
 
         function closeWarningAlertPopup() {
