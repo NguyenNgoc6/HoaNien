@@ -183,6 +183,7 @@ INSERT INTO Room_Categories (
 (9,  'Luxury Penthouse',         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688,https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80,https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&q=80', 12000000, 4, 'Căn hộ tầng mái đẳng cấp ngắm toàn cảnh resort.',  2, 0, 4, 2, 1500000, 750000, TRUE, '2 Giường King siêu lớn', 180, 'Toàn cảnh Resort', TRUE, TRUE, 'Rượu vang cao cấp, Trái cây nhập khẩu, Minibar', TRUE),
 (10, 'Cozy Studio Room',         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af,https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80,https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&q=80', 1500000,  2, 'Phòng Studio nhỏ gọn, đầy đủ tiện nghi.',          2, 0, 2, 1, 300000,  150000, TRUE, '1 Giường Queen 1m8', 35, 'Hướng đường phố', FALSE, FALSE, '2 chai nước suối, Cà phê hòa tan', FALSE);
 
+-- ── 7. Room Surcharges (Dữ liệu đã được chuyển xuống cuối file dùng INSERT SELECT) ──
 
 
 -- ── 8. Rooms (50 rows) ───────────────────────────────────────
