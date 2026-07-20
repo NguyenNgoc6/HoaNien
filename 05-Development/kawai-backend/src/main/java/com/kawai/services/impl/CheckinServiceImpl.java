@@ -112,7 +112,7 @@ public class CheckinServiceImpl implements CheckinService {
 
                 assignRoomToGuest(detail, room, allocatedCreditLimit);
 
-                return detail;
+                return roomBookingDetailRepo.save(detail);
         }
 
         private void assignRoomToGuest(RoomBookingDetail detail, Room room, java.math.BigDecimal allocatedCreditLimit) {

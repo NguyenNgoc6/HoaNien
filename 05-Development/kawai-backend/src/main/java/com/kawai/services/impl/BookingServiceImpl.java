@@ -372,10 +372,8 @@ public class BookingServiceImpl implements BookingService {
             detail.setDetailStatus("Pending");
             detail.setCustomer(customer);
 
-            // Distribute the booking's total credit limit equally among all rooms
-            BigDecimal subLimit = savedBooking.getCreditLimit()
-                    .divide(new BigDecimal(categoriesToBook.size()), 2, java.math.RoundingMode.HALF_UP);
-            detail.setSubCreditLimit(subLimit);
+            // Bỏ tự động phân bổ hạn mức, set về 0 để lễ tân tự nhập lúc Check-in
+            detail.setSubCreditLimit(BigDecimal.ZERO);
 
             roomBookingDetailRepository.save(detail);
 
