@@ -387,20 +387,20 @@ public class TourBookingServiceImpl implements TourBookingService {
                         // roomBookingDetailId
                         // hợp lệ (phòng đã check-in). Nếu không -> TOUR-004.
                         if (request.getRoomBookingDetailId() == null) {
-                                LOG.warn("TOUR-004: Booking {} yeu cau Post to Room nhung khong cung cap roomBookingDetailId",
+                                LOG.warn("TOUR-004: Booking {} yêu cầu Post to Room nhưng không cung cấp roomBookingDetailId",
                                                 savedBooking.getId());
                                 throw new IllegalStateException(
-                                                "TOUR-004: Vui long chon phong de ghi no. Phong phai da duoc check-in.");
+                                                "TOUR-004: Vui lòng chọn phòng để ghi nợ. Phòng phải đã được check-in.");
                         }
 
                         // BR-TR-09: roomBookingDetailId phai ton tai trong he thong -> TOUR-005
                         RoomBookingDetail detail = roomBookingDetailRepository
                                         .findById(request.getRoomBookingDetailId())
                                         .orElseThrow(() -> {
-                                                LOG.warn("TOUR-005: RoomBookingDetail {} khong ton tai trong he thong",
+                                                LOG.warn("TOUR-005: RoomBookingDetail {} không tồn tại trong hệ thống",
                                                                 request.getRoomBookingDetailId());
                                                 return new IllegalStateException(
-                                                                "TOUR-005: Chi tiet dat phong khong ton tai hoac da bi xoa. ID: "
+                                                                "TOUR-005: Chi tiết đặt phòng không tồn tại hoặc đã bị xóa. ID: "
                                                                                 + request.getRoomBookingDetailId());
                                         });
 
@@ -426,10 +426,10 @@ public class TourBookingServiceImpl implements TourBookingService {
                         BigDecimal available = limit.add(creditTopUp).subtract(charged);
 
                         if (available.compareTo(totalPrice) < 0) {
-                                LOG.warn("TOUR-LIMIT BLOCKED: Han muc chi tieu cua phong {} khong du de thanh toan tour (Available: {}, Price: {})",
+                                LOG.warn("TOUR-LIMIT BLOCKED: Hạn mức chi tiêu của phòng {} không đủ để thanh toán tour (Available: {}, Price: {})",
                                                 detail.getId(), available, totalPrice);
                                 throw new IllegalStateException(
-                                                "Han muc ghi no cua phong bi qua han, vui long toi quay le tan de lam thu tuc nang len han muc hoac thanh toan chuyen khoan.");
+                                                "Hạn mức ghi nợ của phòng bị quá hạn, vui lòng tới quầy lễ tân để làm thủ tục nâng lên hạn mức hoặc thanh toán chuyển khoản trực tiếp cho đơn này.");
                         }
 
                         FolioItem folioItem = new FolioItem();
@@ -553,7 +553,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                                                 selectedGuideId, schedule.getId());
                         }
                 } catch (Exception e) {
-                        LOG.error("Loi khi tu dong gan Tour Guide theo luat thoi gian: {}", e.getMessage());
+                        LOG.error("Lỗi khi tự động gán Tour Guide theo luật thời gian: {}", e.getMessage());
                 }
 
                 return savedBooking.getId();
