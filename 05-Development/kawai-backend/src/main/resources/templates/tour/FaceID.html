@@ -2303,37 +2303,131 @@
             .replace(/\s+/g, ' ').trim();
     }
 
-    function showActivities(tourName) {
-        const norm = normalizeKey(tourName || '');
-        let key = null;
-        if (norm.includes('tinh tuy') || norm.includes('dong noi')) key = 'dongnoi';
-        else if (norm.includes('doan tu')) key = 'doantu';
-        else if (norm.includes('di san')) key = 'disan';
-        else if (norm.includes('tinh lang')) key = 'tinhlang';
-        else if (norm.includes('ha long') || norm.includes('song xanh')) key = 'halong';
-        else if (norm.includes('sapa') || norm.includes('suong phu')) key = 'sapa';
-        else if (norm.includes('cat tien') || norm.includes('rung gia')) key = 'cattien';
-        else if (norm.includes('mui ne') || norm.includes('con cat')) key = 'muine';
-        else if (norm.includes('phu quoc') || norm.includes('san ho')) key = 'phuquoc';
-        else if (norm.includes('can tho') || norm.includes('miet vuon')) key = 'cantho';
+    function getCheckpointStorageKey(key) {
+        const schedId = (typeof activeScheduleId !== 'undefined' && activeScheduleId) ? activeScheduleId : key;
+        return 'tour_checkpoints_' + schedId;
+    }
 
+    function getCheckpointStates(key, totalCount) {
+        try {
+            const stored = localStorage.getItem(getCheckpointStorageKey(key));
+            if (stored) {
+                const arr = JSON.parse(stored);
+                if (Array.isArray(arr) && arr.length === totalCount) {
+                    return arr;
+                }
+            }
+        } catch (e) {
+            console.error("Error reading checkpoints:", e);
+        }
+        return new Array(totalCount).fill(false);
+    }
+
+    function saveCheckpointStates(key, states) {
+        try {
+            localStorage.setItem(getCheckpointStorageKey(key), JSON.stringify(states));
+        } catch (e) {
+            console.error("Error saving checkpoints:", e);
+        }
+    }
+
+    function toggleCheckpoint(key, index, totalCount) {
+        const states = getCheckpointStates(key, totalCount);
+        states[index] = !states[index];
+        saveCheckpointStates(key, states);
+        const tourName = document.getElementById('tour-name-display')?.textContent?.trim() || '';
+        showActivities(tourName);
+    }
+
+    function toggleAllCheckpoints(key, totalCount, forceValue) {
+        const states = new Array(totalCount).fill(forceValue);
+        saveCheckpointStates(key, states);
+        const tourName = document.getElementById('tour-name-display')?.textContent?.trim() || '';
+        showActivities(tourName);
+    }
+
+    function isAllCheckpointsDone(key, totalCount) {
+        if (!key || !totalCount) return true;
+        const states = getCheckpointStates(key, totalCount);
+        return states.length > 0 && states.every(s => s === true);
+    }
+
+    function getActiveTourKey() {
+        const tourName = document.getElementById('tour-name-display')?.textContent?.trim() || '';
+        const norm = normalizeKey(tourName);
+        if (norm.includes('tinh tuy') || norm.includes('dong noi')) return 'dongnoi';
+        if (norm.includes('doan tu')) return 'doantu';
+        if (norm.includes('di san')) return 'disan';
+        if (norm.includes('tinh lang')) return 'tinhlang';
+        if (norm.includes('ha long') || norm.includes('song xanh')) return 'halong';
+        if (norm.includes('sapa') || norm.includes('suong phu')) return 'sapa';
+        if (norm.includes('cat tien') || norm.includes('rung gia')) return 'cattien';
+        if (norm.includes('mui ne') || norm.includes('con cat')) return 'muine';
+        if (norm.includes('phu quoc') || norm.includes('san ho')) return 'phuquoc';
+        if (norm.includes('can tho') || norm.includes('miet vuon')) return 'cantho';
+        return (typeof tourTypeDb !== 'undefined' && tourTypeDb) ? tourTypeDb : 'doantu';
+    }
+
+    function showActivities(tourName) {
+        const key = getActiveTourKey();
         if (!key || !TOUR_ITINERARIES[key]) return;
 
         const data = TOUR_ITINERARIES[key];
+        const totalCount = data.activities ? data.activities.length : 0;
+        const states = getCheckpointStates(key, totalCount);
+        const doneCount = states.filter(Boolean).length;
+        const percent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+        const allDone = doneCount === totalCount && totalCount > 0;
+
         const content = document.getElementById('activities-content');
 
-        content.innerHTML = [
-            '<p class="font-headline text-lg font-light text-on-surface-variant mb-4 italic">' + data.subtitle + '</p>',
-            ...data.activities.map(a =>
-                '<div class="flex gap-4 items-start">' +
-                '<span class="bg-primary/10 text-primary text-label-sm font-bold px-3 py-1 rounded-full shrink-0 min-w-[100px] text-center border border-primary/20">' + a.time + '</span>' +
-                '<div class="text-on-surface-variant">' +
-                '<p class="font-semibold text-on-surface">' + a.title + '</p>' +
-                '<p class="text-sm opacity-80">' + a.desc + '</p>' +
-                '</div>' +
-                '</div>'
-            )
-        ].join('');
+        let html = '';
+        html += '<div class="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-4">';
+        html += '  <p class="font-headline text-base font-semibold text-primary mb-2 italic">' + data.subtitle + '</p>';
+        html += '  <div class="flex justify-between items-center text-xs font-bold text-on-surface mb-1.5">';
+        html += '    <span>Tiến độ hành trình (Checkpoints):</span>';
+        html += '    <span class="' + (allDone ? 'text-green-600' : 'text-primary') + '">' + doneCount + '/' + totalCount + ' mốc (' + percent + '%)</span>';
+        html += '  </div>';
+        html += '  <div class="w-full bg-primary/10 h-2 rounded-full overflow-hidden mb-3">';
+        html += '    <div class="h-full ' + (allDone ? 'bg-green-500' : 'bg-primary') + ' transition-all duration-500" style="width: ' + percent + '%;"></div>';
+        html += '  </div>';
+        html += '  <div class="flex justify-end gap-2">';
+        if (allDone) {
+            html += '    <button onclick="toggleAllCheckpoints(\'' + key + '\', ' + totalCount + ', false)" class="text-[11px] font-bold text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1 rounded-full transition-colors">Bỏ chọn tất cả</button>';
+        } else {
+            html += '    <button onclick="toggleAllCheckpoints(\'' + key + '\', ' + totalCount + ', true)" class="text-[11px] font-bold text-green-700 bg-green-500/10 hover:bg-green-500/20 px-3 py-1 rounded-full transition-colors">✓ Tích chọn tất cả</button>';
+        }
+        html += '  </div>';
+        html += '</div>';
+
+        html += '<div class="space-y-3">';
+        data.activities.forEach((a, idx) => {
+            const isDone = !!states[idx];
+            html += '<div onclick="toggleCheckpoint(\'' + key + '\', ' + idx + ', ' + totalCount + ')" class="flex gap-3 items-start p-3 rounded-xl border transition-all cursor-pointer select-none ' + (isDone ? 'bg-green-50/50 border-green-500/30 shadow-sm' : 'bg-surface border-primary/10 hover:border-primary/30') + '">';
+            html += '  <div class="pt-0.5 shrink-0">';
+            if (isDone) {
+                html += '    <span class="material-symbols-outlined text-green-600 text-2xl font-bold">check_box</span>';
+            } else {
+                html += '    <span class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary text-2xl">check_box_outline_blank</span>';
+            }
+            html += '  </div>';
+            html += '  <div class="flex-1 min-w-0">';
+            html += '    <div class="flex flex-wrap items-center justify-between gap-2 mb-1">';
+            html += '      <span class="font-bold text-xs px-2.5 py-0.5 rounded-full ' + (isDone ? 'bg-green-600 text-white' : 'bg-primary/10 text-primary border border-primary/20') + '">' + a.time + '</span>';
+            if (isDone) {
+                html += '      <span class="text-[10px] uppercase font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-md flex items-center gap-1"><span class="material-symbols-outlined text-xs">done</span> Đã xong</span>';
+            } else {
+                html += '      <span class="text-[10px] uppercase font-bold text-on-surface-variant/50 bg-on-surface/5 px-2 py-0.5 rounded-md">Chưa tích</span>';
+            }
+            html += '    </div>';
+            html += '    <p class="font-semibold text-sm ' + (isDone ? 'text-green-900 line-through/70 opacity-90' : 'text-on-surface') + '">' + a.title + '</p>';
+            html += '    <p class="text-xs opacity-75 leading-relaxed mt-0.5">' + a.desc + '</p>';
+            html += '  </div>';
+            html += '</div>';
+        });
+        html += '</div>';
+
+        content.innerHTML = html;
 
         document.getElementById('activities-modal').classList.remove('hidden');
     }
@@ -2596,6 +2690,25 @@
 
     function confirmFinishTour(event) {
         if (event) event.preventDefault();
+
+        const key = getActiveTourKey();
+        const data = (key && TOUR_ITINERARIES[key]) ? TOUR_ITINERARIES[key] : null;
+        const totalCount = data && data.activities ? data.activities.length : 0;
+
+        if (totalCount > 0 && !isAllCheckpointsDone(key, totalCount)) {
+            const states = getCheckpointStates(key, totalCount);
+            const doneCount = states.filter(Boolean).length;
+            showCustomWarning({
+                title: 'Chưa Hoàn Thành Lịch Trình',
+                message: 'Bạn mới tích ' + doneCount + '/' + totalCount + ' mốc hoạt động. Vui lòng kiểm tra và tích hoàn thành tất cả các mốc lịch trình trước khi kết thúc tour!',
+                icon: 'checklist',
+                onConfirm: () => {
+                    showActivities(document.getElementById('tour-name-display')?.textContent?.trim() || '');
+                }
+            });
+            return;
+        }
+
         showCustomConfirm({
             title: 'Hoàn Thành Tour',
             message: 'Xác nhận hoàn thành tour? Email phản hồi sẽ được gửi tới khách hàng.',
