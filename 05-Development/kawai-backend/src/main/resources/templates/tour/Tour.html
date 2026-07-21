@@ -644,6 +644,7 @@
 
     <script th:inline="javascript">
         const loggedInGuideName = /*[[${employee?.fullName ?: 'Nguyễn Ngọc'}]]*/ "Nguyễn Ngọc";
+        const isAdminOrManager = /*[[${#authorization.expression('hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")')}]]*/ false;
         let selectedDateFilter = null;
 
         function clearDateFilter() {
@@ -973,7 +974,7 @@
                 guideName = element.getAttribute('data-guide');
             }
 
-            if (!isSameGuide(guideName, loggedInGuideName)) {
+            if (!isAdminOrManager && !isSameGuide(guideName, loggedInGuideName)) {
                 showUnauthorizedModal(guideName);
                 return;
             }

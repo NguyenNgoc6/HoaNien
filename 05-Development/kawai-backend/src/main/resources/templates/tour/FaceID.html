@@ -601,6 +601,8 @@
                                                     th:data-email="${attendee.customer?.email ?: '--'}"
                                                     th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                     th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
+                                                    th:data-cccd="${attendee.customer != null ? (attendee.customer.cccdPassportEncrypted != null ? attendee.customer.cccdPassportEncrypted : '--') : (attendee.dependent != null && attendee.dependent.cccdPassportEncrypted != null && !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'PHONE_') && !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? attendee.dependent.cccdPassportEncrypted : '--')}"
+                                                    th:data-dob="${attendee.customer != null ? (attendee.customer.birthDate != null ? #temporals.format(attendee.customer.birthDate, 'dd/MM/yyyy') : '--') : (attendee.dependent != null && attendee.dependent.birthDate != null ? #temporals.format(attendee.dependent.birthDate, 'dd/MM/yyyy') : '--')}"
                                                     onclick="showCustomerContactModal(this)">
                                                     NM
                                                 </div>
@@ -613,6 +615,8 @@
                                                         th:data-email="${attendee.customer?.email ?: '--'}"
                                                         th:data-membership="${attendee.customer != null && attendee.customer.membershipTier != null ? attendee.customer.membershipTier.tierName : (attendee.dependent != null ? (attendee.dependent.cccdPassportEncrypted != null && #strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? 'Trẻ em (' + #strings.substringAfter(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_').replace('_', ' ') + ')' : 'Khách đi cùng') : 'Chưa xác định')}"
                                                         th:data-room="${attendee.tourBooking?.roomBookingDetail != null ? ('Phòng ' + attendee.tourBooking.roomBookingDetail.id) : '--'}"
+                                                        th:data-cccd="${attendee.customer != null ? (attendee.customer.cccdPassportEncrypted != null ? attendee.customer.cccdPassportEncrypted : '--') : (attendee.dependent != null && attendee.dependent.cccdPassportEncrypted != null && !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'PHONE_') && !#strings.startsWith(attendee.dependent.cccdPassportEncrypted, 'AUTO_CHILD_') ? attendee.dependent.cccdPassportEncrypted : '--')}"
+                                                        th:data-dob="${attendee.customer != null ? (attendee.customer.birthDate != null ? #temporals.format(attendee.customer.birthDate, 'dd/MM/yyyy') : '--') : (attendee.dependent != null && attendee.dependent.birthDate != null ? #temporals.format(attendee.dependent.birthDate, 'dd/MM/yyyy') : '--')}"
                                                         onclick="showCustomerContactModal(this)">
                                                         Nguyễn Minh Anh
                                                     </p>
@@ -1535,19 +1539,23 @@
         }
 
         function showCustomerContactModal(element) {
-            const name = element.getAttribute('data-name');
-            const id = element.getAttribute('data-id');
-            const phone = element.getAttribute('data-phone');
-            const email = element.getAttribute('data-email');
-            const detail = element.getAttribute('data-membership');
-            const room = element.getAttribute('data-room');
+            const name = element.getAttribute('data-name') || '--';
+            const id = element.getAttribute('data-id') || '--';
+            const phone = element.getAttribute('data-phone') || '--';
+            const email = element.getAttribute('data-email') || '--';
+            const detail = element.getAttribute('data-membership') || '--';
+            const room = element.getAttribute('data-room') || '--';
+            const cccd = element.getAttribute('data-cccd') || '--';
+            const dob = element.getAttribute('data-dob') || '--';
 
-            document.getElementById('modal-customer-name').textContent = name;
-            document.getElementById('modal-customer-id').textContent = id;
-            document.getElementById('modal-customer-phone').textContent = phone;
-            document.getElementById('modal-customer-email').textContent = email;
-            document.getElementById('modal-customer-room').textContent = room;
-            document.getElementById('modal-customer-detail').textContent = detail;
+            if (document.getElementById('modal-customer-name')) document.getElementById('modal-customer-name').textContent = name;
+            if (document.getElementById('modal-customer-id')) document.getElementById('modal-customer-id').textContent = id;
+            if (document.getElementById('modal-customer-phone')) document.getElementById('modal-customer-phone').textContent = phone;
+            if (document.getElementById('modal-customer-email')) document.getElementById('modal-customer-email').textContent = email;
+            if (document.getElementById('modal-customer-room')) document.getElementById('modal-customer-room').textContent = room;
+            if (document.getElementById('modal-customer-detail')) document.getElementById('modal-customer-detail').textContent = detail;
+            if (document.getElementById('modal-customer-cccd')) document.getElementById('modal-customer-cccd').textContent = cccd;
+            if (document.getElementById('modal-customer-dob')) document.getElementById('modal-customer-dob').textContent = dob;
 
             // Extract initials from name
             const nameParts = name.trim().split(/\s+/);
@@ -1557,15 +1565,15 @@
             } else if (nameParts.length === 1 && nameParts[0].length > 0) {
                 initials = nameParts[0].substring(0, Math.min(2, nameParts[0].length)).toUpperCase();
             }
-            document.getElementById('modal-avatar-placeholder').textContent = initials;
+            if (document.getElementById('modal-avatar-placeholder')) document.getElementById('modal-avatar-placeholder').textContent = initials;
 
             const modal = document.getElementById('customer-contact-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
+            if (modal) modal.classList.remove('opacity-0', 'pointer-events-none');
         }
 
         function closeCustomerContactModal() {
             const modal = document.getElementById('customer-contact-modal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
+            if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
         }
 
         function submitIncidentReport(cancelTour = false) {
@@ -3042,6 +3050,70 @@
             <button type="button" onclick="submitAbsentManual()"
                 class="flex-1 py-3 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md inline-flex items-center justify-center gap-2">
                 Đồng ý
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CUSTOMER CONTACT & DETAIL MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="customer-contact-modal"
+    class="fixed inset-0 z-[600] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+    <div class="max-w-md w-full p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden bg-white border border-primary/20">
+        <button type="button" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors text-2xl font-bold"
+            onclick="closeCustomerContactModal()">✕</button>
+        <div class="flex flex-col items-center text-center space-y-4">
+            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/20 bg-primary/10 flex items-center justify-center shadow-inner">
+                <span class="font-display-md text-primary text-2xl font-bold" id="modal-avatar-placeholder">KH</span>
+            </div>
+            <div class="space-y-1">
+                <h2 class="font-display-md text-xl md:text-2xl font-bold text-primary" id="modal-customer-name">--</h2>
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <span class="font-label-md text-xs font-bold text-primary/80 bg-primary/10 px-2.5 py-0.5 rounded-full" id="modal-customer-id">#EVN-0000</span>
+                    <span class="text-xs font-bold text-emerald-800 bg-emerald-500/10 px-2.5 py-0.5 rounded-full" id="modal-customer-detail">--</span>
+                </div>
+            </div>
+            <div class="w-full space-y-3 text-left pt-2">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-xl">call</span>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Số điện thoại</p>
+                        <p class="font-semibold text-sm text-on-surface" id="modal-customer-phone">--</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-xl">badge</span>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Số CCCD / Passport</p>
+                        <p class="font-semibold text-sm text-on-surface" id="modal-customer-cccd">--</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-xl">cake</span>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Ngày sinh / Tuổi</p>
+                        <p class="font-semibold text-sm text-on-surface" id="modal-customer-dob">--</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-xl">mail</span>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Email</p>
+                        <p class="font-semibold text-sm text-on-surface truncate max-w-[280px]" id="modal-customer-email">--</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                    <span class="material-symbols-outlined text-primary text-xl">meeting_room</span>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant/60 uppercase font-bold tracking-wider">Số phòng lưu trú</p>
+                        <p class="font-semibold text-sm text-on-surface" id="modal-customer-room">--</p>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeCustomerContactModal()"
+                class="w-full py-2.5 rounded-full text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-md mt-2">
+                Đóng
             </button>
         </div>
     </div>
