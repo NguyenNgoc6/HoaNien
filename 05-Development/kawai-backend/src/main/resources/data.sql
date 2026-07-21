@@ -677,11 +677,11 @@ INSERT INTO Booking_Services (booking_service_id, booking_id, service_id, quanti
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
 -- HOUSEKEEPING (CHECKOUT_CLEAN)
 
-(1, 2, 8, 4, 'CHECKOUT_CLEAN', 'High', 'Pending', '2026-06-28 08:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
-(2, 4, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Pending', '2026-06-28 09:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
+(1, 2, 8, 4, 'CHECKOUT_CLEAN', 'High', 'Pending', '2026-06-28 08:00:00', NULL, NULL, 'Task created by workflow.'),
+(2, 4, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Pending', '2026-06-28 09:00:00', NULL, NULL, 'Task created by workflow.'),
 (3, 3, 8, 4, 'GUEST_REQUEST', 'Normal', 'Completed', '2026-06-28 09:30:00', '2026-06-28 10:15:00', '2026-06-28 11:00:00', '[Khách Yêu Cầu Dọn Phòng] - Bổ sung khăn tắm và nước uống.\n[Ghi chú hoàn thành]: Đã thực hiện.'),
 (4, 13, 9, 4, 'URGENT_CLEAN', 'Lễ tân báo dọn khẩn', 'InProgress', '2026-06-28 10:00:00', '2026-06-28 10:20:00', NULL, '[Arrival] Dọn phòng khẩn để đón khách nhận phòng. \n[Khẩn cấp] Lễ tân hối thúc dọn ưu tiên để khách Check-in!'),
-(5, 1, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 07:00:00', '2026-06-28 07:15:00', '2026-06-28 08:45:00', '[Check-out] Dọn phòng sau khi khách trả phòng.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
+(5, 1, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 07:00:00', '2026-06-28 07:15:00', '2026-06-28 08:45:00', 'Task created by workflow.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
 
 -- MAINTENANCE (MAINTENANCE)
 (6, 17, 10, 4, 'MAINTENANCE', 'High', 'Pending', '2026-06-28 10:30:00', NULL, NULL, 'Housekeeping báo: Điều hòa chảy nước ướt cả sàn gỗ, phòng 207.'),
@@ -2181,17 +2181,12 @@ UPDATE Bookings b SET total_price = (
     WHERE room_booking_id = b.booking_id
 ) WHERE b.booking_id IN (8008);
 -- 1. Từ 0-5 tuổi: Miễn phí (0 VNĐ)
-INSERT INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
+INSERT IGNORE INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
 SELECT category_id, 'CHILD_0_5', 0, 5, 0, 1 FROM Room_Categories;
 -- 2. Từ 6-11 tuổi: Phụ thu 200.000 VNĐ
-INSERT INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
+INSERT IGNORE INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
 SELECT category_id, 'CHILD_6_11', 6, 11, 200000, 1 FROM Room_Categories;
 -- 3. Từ 12-17 tuổi: Phụ thu 350.000 VNĐ
-INSERT INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
+INSERT IGNORE INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
 SELECT category_id, 'CHILD_12_17', 12, 17, 350000, 1 FROM Room_Categories;
--- 2. Từ 6-11 tuổi: Phụ thu 200.000 VNĐ
-INSERT INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
-SELECT category_id, 'CHILD_6_11', 6, 11, 200000, 1 FROM Room_Categories;
--- 3. Từ 12-17 tuổi: Phụ thu 350.000 VNĐ
-INSERT INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
-SELECT category_id, 'CHILD_12_17', 12, 17, 350000, 1 FROM Room_Categories;
+
