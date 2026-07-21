@@ -1445,14 +1445,28 @@
         function manualResetAttendance() {
             showCustomConfirm({
                 title: 'Đặt Lại Điểm Danh',
-                message: 'Bạn có chắc chắn muốn đặt lại trạng thái điểm danh cho toàn bộ khách hàng trong ngày hôm nay?',
+                message: 'Bạn có chắc chắn muốn đặt lại trạng thái điểm danh cho toàn bộ khách hàng trong chuyến đi này không?',
                 icon: 'restart_alt',
                 onConfirm: async () => {
                     try {
-                        await fetch('/api/faceid/reset');
-                        window.location.href = '/tourguide/dashboard' + (activeScheduleId ? '?scheduleId=' + activeScheduleId : '');
+                        const url = '/api/faceid/reset' + (activeScheduleId ? '?scheduleId=' + activeScheduleId : '');
+                        const resp = await fetch(url);
+                        const data = await resp.json();
+                        if (data.success) {
+                            try {
+                                const key = getActiveTourKey();
+                                localStorage.removeItem(getCheckpointStorageKey(key));
+                            } catch (e) {}
+                            showToast('Đã đặt lại trạng thái điểm danh cho toàn bộ đoàn khách!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/tourguide/dashboard' + (activeScheduleId ? '?scheduleId=' + activeScheduleId : '');
+                            }, 600);
+                        } else {
+                            showToast('Không thể đặt lại điểm danh: ' + (data.message || 'Lỗi hệ thống'), 'error');
+                        }
                     } catch (e) {
                         console.error(e);
+                        showToast('Lỗi kết nối máy chủ khi đặt lại điểm danh.', 'error');
                     }
                 }
             });
