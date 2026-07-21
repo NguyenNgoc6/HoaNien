@@ -725,15 +725,15 @@
                                 tổng chi phí tour.
                             </label>
                         </div>
-                        <div class="flex items-start space-x-3">
-                            <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
+                        <label for="tourConsent" class="flex items-start space-x-3 cursor-pointer select-none group">
+                            <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark cursor-pointer"
                                 id="tourConsent" type="checkbox" onchange="validateConsentAndEnableButtons()">
-                            <p class="text-[10px] leading-relaxed text-gray-500">
+                            <span class="text-[10px] leading-relaxed text-gray-500 group-hover:text-gray-700">
                                 Tôi đồng ý cung cấp thông tin cá nhân và hành trình để resort thực hiện dịch vụ đặt tour
                                 và
                                 mã hóa bảo mật thông tin.
-                            </p>
-                        </div>
+                            </span>
+                        </label>
                     </div>
                     <button type="submit" id="btn-submit-booking" disabled
                         class="w-full bg-brand-dark text-white py-5 text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-brand-gold transition-all duration-300 opacity-50 pointer-events-none cursor-not-allowed">
