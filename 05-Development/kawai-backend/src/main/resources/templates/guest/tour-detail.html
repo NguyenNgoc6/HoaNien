@@ -602,6 +602,13 @@
                             oninput="updateTotalPrice(); validateCompanions(false, false)"
                             onchange="validateCompanions(true, false)">
                     </div>
+                    <!-- Checkbox: Tôi là người tham gia chuyến đi -->
+                    <div class="flex items-center gap-3 py-2 border-b border-brand-border/30">
+                        <input type="checkbox" id="isPayerParticipating" checked class="w-4 h-4 text-brand-gold border-brand-border focus:ring-brand-gold focus:ring-2 rounded cursor-pointer" onchange="onPayerParticipatingChange()">
+                        <label for="isPayerParticipating" class="text-xs font-bold uppercase tracking-widest text-black cursor-pointer select-none">
+                            Tôi là người tham gia chuyến đi (Chủ tài khoản đi tour)
+                        </label>
+                    </div>
                     <!-- Companion Section -->
                     <div data-purpose="accompanying-section">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-4 block text-black">Người cùng
@@ -726,7 +733,8 @@
                             </label>
                         </div>
                         <label for="tourConsent" class="flex items-start space-x-3 cursor-pointer select-none group">
-                            <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark cursor-pointer"
+                            <input
+                                class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark cursor-pointer"
                                 id="tourConsent" type="checkbox" onchange="validateConsentAndEnableButtons()">
                             <span class="text-[10px] leading-relaxed text-gray-500 group-hover:text-gray-700">
                                 Tôi đồng ý cung cấp thông tin cá nhân và hành trình để resort thực hiện dịch vụ đặt tour
@@ -3117,7 +3125,9 @@
             // Validate adult companions info
             const adultsInput = document.getElementById('num-adults');
             const adults = parseInt(adultsInput ? adultsInput.value : '1') || 1;
-            if (adults > 1) {
+            const chkParticipate = document.getElementById('isPayerParticipating');
+            const isPayerParticipatingVal = chkParticipate ? chkParticipate.checked : true;
+            if (!isPayerParticipatingVal || adults > 1) {
                 const adultCompanionRows = document.querySelectorAll('.adult-companion-row');
                 for (let i = 0; i < adultCompanionRows.length; i++) {
                     const row = adultCompanionRows[i];
@@ -3401,13 +3411,19 @@
                 generateChildRows(children);
 
                 // Generate adult companions
-                // Nếu khách đã đăng ký trước đó (chế độ đặt hộ), sinh đủ 'adults' dòng nhập thông tin.
-                // Nếu chưa đăng ký, sinh 'adults - 1' dòng nhập thông tin (trừ suất của khách chính).
-                const adultCompanionsCount = isCustomerAlreadyRegisteredInTour ? adults : (adults > 1 ? adults - 1 : 0);
+                // Nếu khách CHỌN làm người tham gia, sinh 'adults - 1' dòng nhập thông tin (trừ suất của khách chính).
+                // Nếu khách KHÔNG tham gia (đặt hộ), sinh đủ 'adults' dòng nhập thông tin.
+                const chkParticipate = document.getElementById('isPayerParticipating');
+                const isPayerParticipatingVal = chkParticipate ? chkParticipate.checked : true;
+                const adultCompanionsCount = isPayerParticipatingVal ? (adults > 1 ? adults - 1 : 0) : adults;
                 generateAdultCompanionRows(adultCompanionsCount);
                 validateParticipantsWithRoomOnInput();
                 return true;
             }
+        }
+
+        function onPayerParticipatingChange() {
+            validateCompanions(false, false);
         }
 
         function showWarningAlertPopup(title, message, isBookingPrompt = false) {
@@ -3582,7 +3598,9 @@
 
             const companions = [];
             const adultsVal = parseInt(document.getElementById('num-adults').value) || 1;
-            if (adultsVal > 1) {
+            const chkParticipateSubmit = document.getElementById('isPayerParticipating');
+            const isPayerParticipatingValSubmit = chkParticipateSubmit ? chkParticipateSubmit.checked : true;
+            if (!isPayerParticipatingValSubmit || adultsVal > 1) {
                 const adultCompanionRows = document.querySelectorAll('.adult-companion-row');
                 adultCompanionRows.forEach(row => {
                     const nameEl = row.querySelector('.adult-companion-name');
@@ -3621,6 +3639,7 @@
                 companions: companions,
                 promoCode: appliedPromoState ? appliedPromoState.code : null,
                 notes: customerNotes,
+                isPayerParticipating: isPayerParticipatingValSubmit,
                 acceptInsurance: (function () {
                     const chk = document.getElementById('insuranceConsent');
                     return chk ? chk.checked : false;
@@ -3940,14 +3959,24 @@
                 .then(data => {
                     isCustomerAlreadyRegisteredInTour = data.registered;
                     console.log("isCustomerAlreadyRegisteredInTour updated:", isCustomerAlreadyRegisteredInTour);
-                    
+
                     if (isCustomerAlreadyRegisteredInTour) {
                         showWarningAlertPopup(
                             lang === 'vi' ? 'Thông báo đặt trùng' : 'Duplicate Booking Notice',
                             lang === 'vi' ? 'Bạn đã đăng ký tour này trước đó. Bạn đang đặt hộ cho người khác?' : 'You have already booked this tour. Are you booking on behalf of others?'
                         );
+                        const chk = document.getElementById('isPayerParticipating');
+                        if (chk) {
+                            chk.checked = false;
+                            chk.disabled = true;
+                        }
+                    } else {
+                        const chk = document.getElementById('isPayerParticipating');
+                        if (chk) {
+                            chk.disabled = false;
+                        }
                     }
-                    
+
                     // Cập nhật lại form gõ companion để đồng bộ số lượng ô nhập
                     validateCompanions(false, false);
                 })
@@ -4104,4 +4133,4 @@
 
 </body>
 
-</html>
+</html>

@@ -280,9 +280,9 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 .existsByCustomerIdAndTourBookingScheduleIdAndTourBookingBookingStatusNot(
                                                 customer.getId(), schedule.getId(), "Cancelled");
 
-                // Khách hàng đặt chính là attendee số 1 (Chỉ gán nếu khách hàng chưa đăng ký
-                // tham gia chuyến đi này)
-                if (!isCustomerAlreadyRegistered && currentAttendeeCount < request.getParticipantCount()) {
+                // Khách hàng đặt chính là attendee số 1 (Chỉ gán nếu khách hàng chọn tham gia chuyến đi và chưa đăng ký tham gia chuyến đi này)
+                boolean shouldAddMainCustomer = request.isPayerParticipating() && !isCustomerAlreadyRegistered;
+                if (shouldAddMainCustomer && currentAttendeeCount < request.getParticipantCount()) {
                         TourAttendee mainAttendee = new TourAttendee();
                         mainAttendee.setTourBooking(savedBooking);
                         mainAttendee.setCustomer(customer);
