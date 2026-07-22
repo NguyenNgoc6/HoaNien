@@ -140,7 +140,16 @@ public class TourBookingRequest {
     }
 
     private String notes;
+    private boolean isCustomerGoing = true;
     private java.util.List<CompanionRequest> companions = new java.util.ArrayList<>();
+
+    public boolean isCustomerGoing() {
+        return isCustomerGoing;
+    }
+
+    public void setCustomerGoing(boolean customerGoing) {
+        isCustomerGoing = customerGoing;
+    }
 
     public java.util.List<CompanionRequest> getCompanions() {
         return companions;
@@ -184,6 +193,15 @@ public class TourBookingRequest {
         private Integer age;
         private String phone;
         private String idCard;
+        private Long dependentId;
+
+        public Long getDependentId() {
+            return dependentId;
+        }
+
+        public void setDependentId(Long dependentId) {
+            this.dependentId = dependentId;
+        }
 
         public CompanionRequest() {}
 
