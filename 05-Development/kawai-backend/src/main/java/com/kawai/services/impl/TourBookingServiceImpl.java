@@ -140,7 +140,7 @@ public class TourBookingServiceImpl implements TourBookingService {
                 if (Boolean.TRUE.equals(tour.getIsInsuranceRequired()) && request.isAcceptInsurance()) {
                         insuranceFee = tour.getInsurancePrice()
                                         .multiply(BigDecimal.valueOf(request.getParticipantCount()));
-                        LOG.info("PhÃ­ báº£o hiá»ƒm háº¡ch toÃ¡n (Ä‘Ã£ bao gá»“m trong giÃ¡): {} x {} ngÆ°á»i = {} VND",
+                        LOG.info("Phí bảo hiểm hạch toán (đã bao gồm trong giá): {} x {} người = {} VND",
                                         tour.getInsurancePrice(), request.getParticipantCount(), insuranceFee);
                 }
 
