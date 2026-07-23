@@ -33,6 +33,15 @@ public class GlobalSessionAdvice {
         return null;
     }
 
+    @ModelAttribute("currentEmployee")
+    public com.kawai.models.Employee getCurrentEmployee() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            return employeeRepository.findByAccountUsername(auth.getName()).orElse(null);
+        }
+        return null;
+    }
+
     @ModelAttribute
     public void syncSessionUser(HttpSession session) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -524,6 +524,29 @@ public class FolioRestController {
         response.put("numberOfChildren", detail.getNumberOfChildren() != null ? detail.getNumberOfChildren() : 0);
         response.put("bookingSource", detail.getRoomBooking() != null ? detail.getRoomBooking().getBookingSource() : "Direct_Web");
 
+        // Determine room check status
+        String roomCheckStatus = "Not_Requested";
+        if (detail.getRoom() != null) {
+            java.util.List<com.kawai.models.HotelOperation> tasks = housekeepingTaskRepo.findAll().stream()
+                    .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                            && "ROOM_CHECK".equals(t.getOperationalType()))
+                    .collect(java.util.stream.Collectors.toList());
+            if (!tasks.isEmpty()) {
+                // Find the latest one
+                com.kawai.models.HotelOperation latestTask = tasks.stream()
+                        .max(java.util.Comparator.comparing(com.kawai.models.HotelOperation::getCreatedAt))
+                        .orElse(null);
+                if (latestTask != null) {
+                    if ("Completed".equals(latestTask.getStatus())) {
+                        roomCheckStatus = "Completed";
+                    } else {
+                        roomCheckStatus = "Pending";
+                    }
+                }
+            }
+        }
+        response.put("roomCheckStatus", roomCheckStatus);
+
         return ResponseEntity.ok(response);
     }
 
@@ -697,13 +720,33 @@ public class FolioRestController {
             com.kawai.models.RoomBooking booking = detail.getRoomBooking();
 
             // KIỂM TRA: Đảm bảo task ROOM_CHECK đã hoàn tất
-            boolean hasPendingCheck = housekeepingTaskRepo.findAll().stream()
-                    .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
-                            && "ROOM_CHECK".equals(t.getOperationalType())
-                            && !"Completed".equals(t.getStatus()));
-            if (hasPendingCheck) {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "message",
-                        "Vui lòng chờ bộ phận Housekeeping hoàn tất kiểm tra phòng (Minibar/Hỏng hóc) trước khi thanh toán và checkout."));
+            boolean hasCompletedCheck = false;
+            boolean hasPendingCheck = false;
+            java.util.List<com.kawai.models.HotelOperation> tasks = housekeepingTaskRepo.findAll().stream()
+                    .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                            && "ROOM_CHECK".equals(t.getOperationalType()))
+                    .collect(java.util.stream.Collectors.toList());
+            if (!tasks.isEmpty()) {
+                com.kawai.models.HotelOperation latestTask = tasks.stream()
+                        .max(java.util.Comparator.comparing(com.kawai.models.HotelOperation::getCreatedAt))
+                        .orElse(null);
+                if (latestTask != null) {
+                    if ("Completed".equals(latestTask.getStatus())) {
+                        hasCompletedCheck = true;
+                    } else {
+                        hasPendingCheck = true;
+                    }
+                }
+            }
+
+            if (!hasCompletedCheck) {
+                if (hasPendingCheck) {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                            "Vui lòng chờ bộ phận Housekeeping hoàn tất kiểm tra phòng (Minibar/Hỏng hóc) trước khi thanh toán và checkout."));
+                } else {
+                    return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                            "Chưa có yêu cầu kiểm tra phòng. Vui lòng yêu cầu kiểm tra phòng trước khi thanh toán và checkout."));
+                }
             }
             boolean isGroup = false;
             if (payload != null && payload.containsKey("isGroup")) {

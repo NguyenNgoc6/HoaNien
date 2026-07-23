@@ -17,8 +17,7 @@ public class SystemEmailEventListener {
 
     private final EmailService emailService;
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @org.springframework.context.event.EventListener
     public void handleSystemEmailEvent(SystemEmailEvent event) {
         log.info("[SystemEmailEventListener] Bắt đầu gửi email (Async) tới: {}, Loại: {}", event.getToEmail(), event.getTemplateName());
 

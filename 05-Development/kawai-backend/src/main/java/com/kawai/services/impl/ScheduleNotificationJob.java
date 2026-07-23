@@ -28,8 +28,8 @@ public class ScheduleNotificationJob {
     private EmailService emailService;
 
     // Lắng nghe sự kiện chạy ứng dụng lần đầu để demo/test
-    @EventListener(ApplicationReadyEvent.class)
-    @org.springframework.core.annotation.Order(2)
+    // @EventListener(ApplicationReadyEvent.class)
+    // @org.springframework.core.annotation.Order(2)
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
 
     // Chạy vào 8h sáng Chủ Nhật hàng tuần

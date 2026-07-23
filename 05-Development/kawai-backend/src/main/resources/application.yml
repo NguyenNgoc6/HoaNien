@@ -19,7 +19,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -49,7 +49,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME:hoanien.00@gmail.com}
-    password: ${MAIL_PASSWORD:scpqgxlbzpsqkxxa}
+    password: ${MAIL_PASSWORD:xiaq hstwvqnnzmjv}
     properties:
       mail:
         smtp:
