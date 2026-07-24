@@ -3,7 +3,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.hibernate.envers.Audited;
+
 @Entity @Table(name="Dynamic_Pricing") @Data
+@Audited
 public class DynamicPricing {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="price_id") private Long id;
     @ManyToOne @JoinColumn(name="category_id", nullable=false) private RoomCategory category;

@@ -114,7 +114,8 @@ INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, 
 (39, 47, 'Hoàng Hữu Nga', 'Nữ', '001271550498', '0912778014', 'maintainer2_47@hoanien.vn', 9000000),
 (40, 48, 'Phạm Ngọc Việt', 'Nam', '001214604610', '0912238661', 'manager1_48@hoanien.vn', 8000000),
 (41, 49, 'Đỗ Thu Bình', 'Nữ', '001268274071', '0912201144', 'tourguide1_49@hoanien.vn', 8000000),
-(42, 50, 'Ngô Minh Lan', 'Nữ', '001229629943', '0912733244', 'tourguide2_50@hoanien.vn', 9000000);
+(42, 50, 'Ngô Minh Lan', 'Nữ', '001229629943', '0912733244', 'tourguide2_50@hoanien.vn', 9000000),
+(55, 19, 'Lê Quản Lý', 'Nam', '001211111119', '0912999919', 'manager1_19@hoanien.vn', 15000000);
 
 -- ── 3.5. Membership Tiers (4 rows) ───────────────────────────────────
 INSERT INTO membership_tiers (tier_id, tier_name, points_from, points_to, credit_limit, description) VALUES
@@ -923,15 +924,15 @@ INSERT INTO Authorized_Devices (device_code, is_approved) VALUES
 ('HN-DEV-LAPTOP010', true);
 
 -- ── 41. Audit Logs (10 rows) ─────────────────────────────────
-INSERT INTO Audit_Logs (log_id, account_id, action, table_name, record_id, old_value, new_value, ip_address, timestamp) VALUES 
-(1, 1, 'UPDATE_ROOM_STATUS', 'Rooms', 1, 'Vacant_Clean', 'Occupied', '192.168.1.10', CURRENT_TIMESTAMP),
-(2, 1, 'CREATE_BOOKING', 'Bookings', 14, NULL, 'New Booking Created', '192.168.1.10', CURRENT_TIMESTAMP),
-(3, 4, 'CHECKIN_GUEST', 'Room_Guests', 1, NULL, 'Guest Checked In Room 101', '192.168.1.15', CURRENT_TIMESTAMP),
-(4, 2, 'ORDER_FOOD', 'Food_Orders', 19, NULL, 'New Room Service Order Created', '192.168.1.22', CURRENT_TIMESTAMP),
-(5, 4, 'APPROVE_DEVICE', 'Authorized_Devices', 2, 'false', 'true', '192.168.1.10', CURRENT_TIMESTAMP),
-(6, 13, 'START_TOUR', 'Run_Itinerary_Status', 1, 'NOT_STARTED', 'COMPLETED', '192.168.1.5', CURRENT_TIMESTAMP),
-(7, 4, 'MODERATE_REVIEW', 'Reviews', 1, 'Pending', 'Approved', '192.168.1.10', CURRENT_TIMESTAMP),
-(9, 4, 'UPDATE_INVOICE', 'Consolidated_Invoices', 1, 'Draft', 'Settled', '192.168.1.10', CURRENT_TIMESTAMP);
+-- INSERT INTO Audit_Logs (log_id, account_id, action, table_name, record_id, old_value, new_value, ip_address, timestamp) VALUES 
+-- (1, 1, 'UPDATE_ROOM_STATUS', 'Rooms', 1, 'Vacant_Clean', 'Occupied', '192.168.1.10', CURRENT_TIMESTAMP),
+-- (2, 1, 'CREATE_BOOKING', 'Bookings', 14, NULL, 'New Booking Created', '192.168.1.10', CURRENT_TIMESTAMP),
+-- (3, 4, 'CHECKIN_GUEST', 'Room_Guests', 1, NULL, 'Guest Checked In Room 101', '192.168.1.15', CURRENT_TIMESTAMP),
+-- (4, 2, 'ORDER_FOOD', 'Food_Orders', 19, NULL, 'New Room Service Order Created', '192.168.1.22', CURRENT_TIMESTAMP),
+-- (5, 4, 'APPROVE_DEVICE', 'Authorized_Devices', 2, 'false', 'true', '192.168.1.10', CURRENT_TIMESTAMP),
+-- (6, 13, 'START_TOUR', 'Run_Itinerary_Status', 1, 'NOT_STARTED', 'COMPLETED', '192.168.1.5', CURRENT_TIMESTAMP),
+-- (7, 4, 'MODERATE_REVIEW', 'Reviews', 1, 'Pending', 'Approved', '192.168.1.10', CURRENT_TIMESTAMP),
+-- (9, 4, 'UPDATE_INVOICE', 'Consolidated_Invoices', 1, 'Draft', 'Settled', '192.168.1.10', CURRENT_TIMESTAMP);
 
 -- ── 42. Test Accounts cho khách đăng nhập test ───────────────
 -- password: admin123  |  hash: $2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q
@@ -1216,13 +1217,13 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 
 -- 1. Thêm Booking quá hạn lưu trú (Overdue Checked_In ID: 301)
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(301, 1, '2026-07-18', 3500000, 'Checked_In', 'Direct_Web', NULL, 1);
+
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (301, DATE_SUB(CURDATE(), INTERVAL 2 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 5000000, 'hash301');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(3011, 301, 1, 1, 3500000, 'Checked_In', 'KING_SIZE', 'Khách trả phòng quá hạn', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
+
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (30111, 3011, 1, NULL, 'ADULT', TRUE);
@@ -2023,10 +2024,10 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 (910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 5000000.00, 'hash910');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(9101, 910, 1, 1, 2500000.00, 'Checked_Out', 'KING_SIZE', TRUE, 5000000.00, 'BILL_TO_LEADER', 2, 0);
+
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
-(91011, 9101, 910, 'ADULT', TRUE);
+
 
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES
 (905, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Yêu cầu Late Checkout - Xin miễn phí phụ thu trả phòng trễ cho booking ID: 910');
@@ -2211,10 +2212,10 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 (910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 5000000.00, 'hash910');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(9101, 910, 1, 1, 2500000.00, 'Checked_Out', 'KING_SIZE', TRUE, 5000000.00, 'BILL_TO_LEADER', 2, 0);
+
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
-(91011, 9101, 910, 'ADULT', TRUE);
+
 
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES
 (905, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Yêu cầu Late Checkout - Xin miễn phí phụ thu trả phòng trễ cho booking ID: 910');

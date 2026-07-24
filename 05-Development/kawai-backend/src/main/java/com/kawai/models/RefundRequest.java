@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -8,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Refund_Requests")
 @Data
+@Audited
 public class RefundRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

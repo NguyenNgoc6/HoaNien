@@ -73,8 +73,42 @@ public class AuditLogAspect {
             AuditLog auditLog = new AuditLog();
             auditLog.setAccount(account);
             auditLog.setAction(action);
+            
+            // Try to dynamically extract table name and record ID
+            Long recordId = 0L;
+            try {
+                String[] parameterNames = signature.getParameterNames();
+                Object[] args = joinPoint.getArgs();
+                for (int i = 0; i < parameterNames.length; i++) {
+                    if ("entityType".equals(parameterNames[i]) && args[i] instanceof String) {
+                        module = (String) args[i]; // override module with actual table name
+                    }
+                    if ("id".equals(parameterNames[i]) && args[i] instanceof String) {
+                        // Extract number from id (e.g., C-101 -> 101)
+                        recordId = Long.parseLong(args[i].toString().replaceAll("[^0-9]", ""));
+                    }
+                }
+            } catch (Exception ignored) { }
+
+            // If it's a create method, we try to extract from the return value
+            if (recordId == 0L && result instanceof org.springframework.http.ResponseEntity) {
+                try {
+                    org.springframework.http.ResponseEntity<?> response = (org.springframework.http.ResponseEntity<?>) result;
+                    Object body = response.getBody();
+                    if (body instanceof java.util.Map) {
+                        Object data = ((java.util.Map<?, ?>) body).get("data");
+                        if (data instanceof java.util.Map) {
+                            Object createdId = ((java.util.Map<?, ?>) data).get("id");
+                            if (createdId != null) {
+                                recordId = Long.parseLong(createdId.toString().replaceAll("[^0-9]", ""));
+                            }
+                        }
+                    }
+                } catch (Exception ignored) { }
+            }
+
             auditLog.setTableName(module);
-            auditLog.setRecordId(0L); // Optional for general activities
+            auditLog.setRecordId(recordId); // Dynamic extraction
             auditLog.setIpAddress(ipAddress);
             auditLog.setTimestamp(LocalDateTime.now());
             

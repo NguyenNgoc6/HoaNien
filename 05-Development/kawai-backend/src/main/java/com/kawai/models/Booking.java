@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.math.BigDecimal;
@@ -8,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Bookings")
 @Inheritance(strategy = InheritanceType.JOINED)
+@Audited
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

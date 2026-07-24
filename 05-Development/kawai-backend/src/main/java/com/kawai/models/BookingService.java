@@ -1,11 +1,14 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Booking_Services")
+@Audited
 public class BookingService {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

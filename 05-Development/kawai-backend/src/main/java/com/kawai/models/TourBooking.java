@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,6 +10,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "Tour_Bookings")
 @Data
 @EqualsAndHashCode(callSuper = true)
+@Audited
 public class TourBooking extends Booking {
     @ManyToOne
     @JoinColumn(name = "schedule_id", nullable = false)

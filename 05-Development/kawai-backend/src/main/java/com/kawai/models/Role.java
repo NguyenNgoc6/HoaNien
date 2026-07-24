@@ -1,9 +1,12 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Roles")
+@Audited
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
