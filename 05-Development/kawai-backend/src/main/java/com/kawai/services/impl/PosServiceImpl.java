@@ -431,9 +431,20 @@ public class PosServiceImpl implements PosService {
     }
 
     @Override
-    public FoodOrder payOrder(Long id) {
+    public FoodOrder payOrder(Long id, String paymentType, String roomNumber) {
         FoodOrder order = foodOrderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
+
+        if ("CHARGE_TO_ROOM".equalsIgnoreCase(paymentType)) {
+            if (roomNumber == null || roomNumber.trim().isEmpty()) {
+                throw new BusinessException("POS-007", "Vui lòng cung cấp số phòng để ghi nợ");
+            }
+            chargeToRoom(roomNumber, order.getTotalAmount());
+            order.setPaymentType("CHARGE_TO_ROOM");
+        } else if (paymentType != null && !paymentType.trim().isEmpty()) {
+            order.setPaymentType(paymentType);
+        }
+
         if ("AWAITING_PAYMENT".equalsIgnoreCase(order.getOrderStatus())) {
             order.setOrderStatus("Pending");
         }
@@ -471,6 +482,40 @@ public class PosServiceImpl implements PosService {
         postChargeToFolio(detail, amount);
     }
 
+    @Override
+    public java.util.Map<String, Object> verifyRoomForCharge(String roomNumber) {
+        Room room = getOccupiedRoom(roomNumber);
+        RoomBookingDetail detail = getBookingDetail(room.getCurrentBookingDetailId());
+        
+        com.kawai.models.Customer payer = detail.getCustomer();
+        if (payer == null) {
+            payer = detail.getRoomBooking().getCustomer();
+        }
+        
+        String name = payer.getFullName();
+        String idCard = payer.getCccdPassportDecrypted();
+        if (idCard == null || idCard.trim().isEmpty() || "--".equals(idCard)) {
+            idCard = "N/A";
+        }
+        
+        String maskedIdCard = maskString(idCard, 3);
+        
+        return java.util.Map.of(
+            "guestName", name, 
+            "idCard", maskedIdCard
+        );
+    }
+    
+    private String maskString(String str, int unmaskedCharsAtEnd) {
+        if (str == null || str.length() <= unmaskedCharsAtEnd || "N/A".equals(str)) return str;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length() - unmaskedCharsAtEnd; i++) {
+            sb.append("*");
+        }
+        sb.append(str.substring(str.length() - unmaskedCharsAtEnd));
+        return sb.toString();
+    }
+
     private Room getOccupiedRoom(String roomNumber) {
         Room room = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(() -> new BusinessException("ROOM_NOT_FOUND", "Phòng không tồn tại"));
@@ -500,6 +545,14 @@ public class PosServiceImpl implements PosService {
     private void postChargeToFolio(RoomBookingDetail detail, BigDecimal amount) {
         FolioItem folioItem = new FolioItem();
         folioItem.setRoomBookingDetail(detail);
+        folioItem.setBooking(detail.getRoomBooking());
+        
+        com.kawai.models.Customer payer = detail.getCustomer();
+        if (payer == null) {
+            payer = detail.getRoomBooking().getCustomer();
+        }
+        folioItem.setPayerCustomer(payer);
+        
         folioItem.setSourceDepartment("POS");
         folioItem.setAmount(amount);
         folioItem.setDescription("Ký gửi hóa đơn từ nhà hàng");
