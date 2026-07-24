@@ -465,30 +465,14 @@
         <input type="hidden" id="cccdCheckIn-resRoom" />
         <input type="hidden" id="cccdCheckIn-resName" />
 
-        <div style="display:flex; gap:16px; margin-bottom:15px;">
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-            <input type="radio" name="checkInMode" value="cccd" checked onchange="toggleCheckInMode()" />
-            Bằng CCCD
-          </label>
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-            <input type="radio" name="checkInMode" value="room" onchange="toggleCheckInMode()" />
-            Bằng Số phòng
-          </label>
-        </div>
-
-        <div class="form-group" id="group-cccd-input">
-          <label class="form-label" for="cccdCheckIn-cccd">Căn cước công dân / Hộ chiếu <span
-              style="color:#b03232;">*</span></label>
-          <input type="text" class="form-input" id="cccdCheckIn-cccd" placeholder="Nhập CCCD hoặc Hộ chiếu" required
-            onblur="searchCccdInfo()" />
-        </div>
-
-        <div class="form-group" id="group-room-input" style="display:none;">
+        <div class="form-group" id="group-room-input">
           <label class="form-label" for="cccdCheckIn-roomInput">Nhập Số phòng <span
               style="color:#b03232;">*</span></label>
           <input type="text" class="form-input" id="cccdCheckIn-roomInput" placeholder="Ví dụ: 101" required
             onblur="searchRoomInfo()" />
         </div>
+
+
 
         <div id="cccdCheckIn-error" style="color:#b03232; font-size: 0.75rem; margin-top: 5px; display: none;"></div>
 
@@ -499,11 +483,16 @@
         </div>
 
         <div class="form-group" style="margin-top: 15px;">
-          <label class="form-label" for="cccdCheckIn-room">Số phòng (Đang lưu trú)</label>
-          <input type="text" class="form-input" id="cccdCheckIn-room" readonly
+          <label class="form-label" for="cccdCheckIn-cccdDisplay">Số căn cước công dân</label>
+          <input type="text" class="form-input" id="cccdCheckIn-cccdDisplay" readonly
             style="background:var(--bg-base); cursor:not-allowed; opacity:0.8;" />
         </div>
-      </div>
+
+        <div class="form-group" style="margin-top: 15px;">
+          <label class="form-label" for="cccdCheckIn-phone">Số điện thoại</label>
+          <input type="text" class="form-input" id="cccdCheckIn-phone" readonly
+            style="background:var(--bg-base); cursor:not-allowed; opacity:0.8;" />
+        </div>
 
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeCccdCheckInModal()">Hủy</button>

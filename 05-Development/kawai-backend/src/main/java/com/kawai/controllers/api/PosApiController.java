@@ -84,11 +84,24 @@ public class PosApiController {
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_ORDER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/orders/charge-to-room/verify")
+    public ResponseEntity<?> verifyRoomForCharge(@org.springframework.web.bind.annotation.RequestParam String roomNumber) {
+        try {
+            java.util.Map<String, Object> data = posService.verifyRoomForCharge(roomNumber);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Lỗi xác thực"));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_ORDER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @PostMapping("/orders/{id}/pay")
 
-    public ResponseEntity<?> payOrder(@PathVariable Long id) {
+    public ResponseEntity<?> payOrder(@PathVariable Long id, 
+                                      @org.springframework.web.bind.annotation.RequestParam(required = false) String paymentType, 
+                                      @org.springframework.web.bind.annotation.RequestParam(required = false) String roomNumber) {
         try {
-            posService.payOrder(id);
+            posService.payOrder(id, paymentType, roomNumber);
             return ResponseEntity.ok().body(Map.of("status", "success", "message", "Thanh toán thành công"));
         } catch (Exception e) {
             e.printStackTrace();
