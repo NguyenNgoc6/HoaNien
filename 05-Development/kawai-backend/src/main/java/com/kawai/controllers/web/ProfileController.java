@@ -341,10 +341,10 @@ public class ProfileController {
             if (phone != null && !phone.trim().isEmpty()) {
                 if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
                     redirectAttributes.addFlashAttribute("error",
-                            "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0)");
+                            "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0 hoặc +84)");
                     return "redirect:/profile";
                 }
-                customer.setPhone(phone);
+                customer.setPhone(com.kawai.utils.ValidationUtils.normalizePhone(phone));
             }
             if (cccd != null && !cccd.trim().isEmpty() && !"********".equals(cccd)) {
                 if (!com.kawai.utils.ValidationUtils.isValidDocument(cccd)) {

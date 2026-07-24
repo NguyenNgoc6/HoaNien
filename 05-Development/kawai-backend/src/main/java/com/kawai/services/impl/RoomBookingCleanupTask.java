@@ -53,7 +53,7 @@ public class RoomBookingCleanupTask {
                     d.setDetailStatus("No_Show");
                     roomBookingDetailRepository.save(d);
                 }
-                
+
                 try {
                     emailService.sendRoomNoShowEmail(rb, rb.getCustomer());
                 } catch (Exception e) {
@@ -62,24 +62,7 @@ public class RoomBookingCleanupTask {
             }
         }
 
-        // 2. Pending bookings past check-in -> Cancelled
-        List<RoomBooking> pendingExpired = roomBookingRepository.findByBookingStatusAndCheckInDateBefore("Pending",
-                today);
-        if (!pendingExpired.isEmpty()) {
-            log.info("Bắt đầu giải phóng {} đơn phòng Pending quá hạn sang Cancelled.", pendingExpired.size());
-            for (RoomBooking rb : pendingExpired) {
-                rb.setBookingStatus("Cancelled");
-                roomBookingRepository.save(rb);
-
-                List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(rb.getId());
-                for (RoomBookingDetail d : details) {
-                    d.setDetailStatus("Cancelled");
-                    roomBookingDetailRepository.save(d);
-                }
-            }
-        }
-
-        // 3. Pending_Approval bookings past check-in -> Cancelled
+        // 2. Pending_Approval bookings past check-in -> Cancelled
         List<RoomBooking> pendingAppExpired = roomBookingRepository
                 .findByBookingStatusAndCheckInDateBefore("Pending_Approval", today);
         if (!pendingAppExpired.isEmpty()) {

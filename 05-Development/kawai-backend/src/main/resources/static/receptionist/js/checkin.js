@@ -264,16 +264,16 @@ window.escalateDirtyRoom = function (roomNumber, assignAfter) {
                         assignBtn.style.cursor = 'pointer';
                     }
                 }
+                try {
+                    const pendingRaw = sessionStorage.getItem('walkInPendingCleanRooms');
+                    const pendingRooms = pendingRaw ? JSON.parse(pendingRaw) : {};
+                    pendingRooms[roomNumber] = true;
+                    sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
+                } catch (e) { }
 
                 if (assignAfter) {
                     const selectedType = typeSelect.value;
                     const selectedRoomOpt = roomSelect.options[roomSelect.selectedIndex];
-                    try {
-                        const pendingRaw = sessionStorage.getItem('walkInPendingCleanRooms');
-                        const pendingRooms = pendingRaw ? JSON.parse(pendingRaw) : {};
-                        pendingRooms[roomNumber] = true;
-                        sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
-                    } catch (e) { }
                     proceedAssignRoom(typeSelect, selectedType, roomNumber, selectedRoomOpt);
                 } else {
                     roomSelect.value = "";

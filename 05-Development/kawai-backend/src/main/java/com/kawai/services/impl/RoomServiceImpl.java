@@ -30,13 +30,16 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomBookingRepository roomBookingRepository;
     private final com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+    private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
 
     public RoomServiceImpl(RoomRepository roomRepository,
             RoomBookingRepository roomBookingRepository,
-            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository) {
+            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository,
+            com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository) {
         this.roomRepository = roomRepository;
         this.roomBookingRepository = roomBookingRepository;
         this.roomCategoryRepository = roomCategoryRepository;
+        this.roomSurchargeRepository = roomSurchargeRepository;
     }
 
     @Override
@@ -220,6 +223,23 @@ public class RoomServiceImpl implements RoomService {
             dto.setMaxChildren(cat.getMaxChildren());
             dto.setExtraAdultSurcharge(cat.getExtraAdultSurcharge());
             dto.setExtraChildSurcharge(cat.getExtraChildSurcharge());
+
+            java.util.List<com.kawai.models.RoomSurcharge> surcharges = roomSurchargeRepository.findByCategoryAndIsActiveTrue(cat);
+            if (!surcharges.isEmpty()) {
+                try {
+                    java.util.List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
+                    for (com.kawai.models.RoomSurcharge s : surcharges) {
+                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        map.put("ageFrom", s.getAgeFrom());
+                        map.put("ageTo", s.getAgeTo());
+                        map.put("priceModifier", s.getPriceModifier());
+                        list.add(map);
+                    }
+                    dto.setSurchargesJson(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(list));
+                } catch (Exception e) {}
+            } else {
+                dto.setSurchargesJson("[]");
+            }
 
             dto.setDescription(cat.getDescription());
 
