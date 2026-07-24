@@ -167,7 +167,7 @@
           </div>
           <div class="info-box">
             <div class="info-label" id="lbl-pax">Thanh toán / Pax</div>
-            <div class="info-value" id="info-pax" th:text="${foodOrder != null ? (foodOrder.isPaidInPos ? 'Đã thanh toán' : 'Chưa (' + foodOrder.paymentType + ')') : tableOrder.pax + ' người'}"></div>
+            <div class="info-value" id="info-pax" th:text="${foodOrder != null ? (foodOrder.isPaidInPos || (foodOrder.paymentType != null && foodOrder.paymentType.equalsIgnoreCase('CHARGE_TO_ROOM')) ? 'Đã thanh toán (' + (foodOrder.paymentType != null ? foodOrder.paymentType : '') + ')' : 'Chưa (' + (foodOrder.paymentType != null ? foodOrder.paymentType : 'N/A') + ')') : tableOrder.pax + ' người'}"></div>
           </div>
         </div>
 
@@ -579,10 +579,12 @@
     }
 
     let currentPayOrderId = null;
+    let currentPayTableId = null;
     let isRoomVerified = false;
 
     function openPaymentModal(id, tableId) {
       currentPayOrderId = id;
+      currentPayTableId = tableId;
       document.getElementById('paymentModal').style.display = 'flex';
       
       // Reset state

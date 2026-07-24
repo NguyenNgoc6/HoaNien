@@ -240,7 +240,7 @@ public class PosServiceImpl implements PosService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             employeeRepository.findByAccountUsername(auth.getName())
-                              .ifPresent(order::setCreatedByStaff);
+                    .ifPresent(order::setCreatedByStaff);
         }
 
         FoodOrder savedOrder = foodOrderRepository.save(order);
@@ -307,11 +307,6 @@ public class PosServiceImpl implements PosService {
         // CHARGE_TO_ROOM chỉ được phép cho Room Service.
         // Chặn cả trường hợp gọi API trực tiếp (Postman/curl) để bypass Frontend.
         // =========================================================
-        if ("CHARGE_TO_ROOM".equalsIgnoreCase(request.getPaymentType())
-                && "Dine In".equalsIgnoreCase(savedOrder.getOrderType())) {
-            throw new BusinessException("POS-011",
-                    "Đơn ăn tại bàn (Dine-in) không hỗ trợ ký bill về phòng. Vui lòng thanh toán trực tiếp tại quầy.");
-        }
 
         if ("CHARGE_TO_ROOM".equalsIgnoreCase(request.getPaymentType()) && activeBooking != null
                 && activeBooking instanceof RoomBooking) {
@@ -486,28 +481,28 @@ public class PosServiceImpl implements PosService {
     public java.util.Map<String, Object> verifyRoomForCharge(String roomNumber) {
         Room room = getOccupiedRoom(roomNumber);
         RoomBookingDetail detail = getBookingDetail(room.getCurrentBookingDetailId());
-        
+
         com.kawai.models.Customer payer = detail.getCustomer();
         if (payer == null) {
             payer = detail.getRoomBooking().getCustomer();
         }
-        
+
         String name = payer.getFullName();
         String idCard = payer.getCccdPassportDecrypted();
         if (idCard == null || idCard.trim().isEmpty() || "--".equals(idCard)) {
             idCard = "N/A";
         }
-        
+
         String maskedIdCard = maskString(idCard, 3);
-        
+
         return java.util.Map.of(
-            "guestName", name, 
-            "idCard", maskedIdCard
-        );
+                "guestName", name,
+                "idCard", maskedIdCard);
     }
-    
+
     private String maskString(String str, int unmaskedCharsAtEnd) {
-        if (str == null || str.length() <= unmaskedCharsAtEnd || "N/A".equals(str)) return str;
+        if (str == null || str.length() <= unmaskedCharsAtEnd || "N/A".equals(str))
+            return str;
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < str.length() - unmaskedCharsAtEnd; i++) {
             sb.append("*");
@@ -546,13 +541,13 @@ public class PosServiceImpl implements PosService {
         FolioItem folioItem = new FolioItem();
         folioItem.setRoomBookingDetail(detail);
         folioItem.setBooking(detail.getRoomBooking());
-        
+
         com.kawai.models.Customer payer = detail.getCustomer();
         if (payer == null) {
             payer = detail.getRoomBooking().getCustomer();
         }
         folioItem.setPayerCustomer(payer);
-        
+
         folioItem.setSourceDepartment("POS");
         folioItem.setAmount(amount);
         folioItem.setDescription("Ký gửi hóa đơn từ nhà hàng");
@@ -662,7 +657,8 @@ public class PosServiceImpl implements PosService {
         foodOrderRepository.save(order);
     }
 
-    public void cancelOrder(Long orderId, com.kawai.dto.CancelOrderRequestDTO dto, String cancelledBy, Customer explicitCustomer) {
+    public void cancelOrder(Long orderId, com.kawai.dto.CancelOrderRequestDTO dto, String cancelledBy,
+            Customer explicitCustomer) {
         FoodOrder order = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
 
@@ -719,22 +715,23 @@ public class PosServiceImpl implements PosService {
                 customer = order.getBooking().getCustomer();
             }
         }
-        
+
         if (customer != null) {
             java.math.BigDecimal refundAmount = java.math.BigDecimal.ZERO;
             if (pType != null && (pType.toUpperCase().contains("VNPAY") || pType.toUpperCase().contains("ONLINE"))) {
                 refundAmount = order.getTotalAmount();
             }
-            
+
             String bankName = dto != null ? dto.getBankName() : null;
             String accountName = dto != null ? dto.getAccountName() : null;
             String accountNumber = dto != null ? dto.getAccountNumber() : null;
-            String accountLast3 = (accountNumber != null && accountNumber.length() >= 3) 
-                                  ? accountNumber.substring(accountNumber.length() - 3) : null;
+            String accountLast3 = (accountNumber != null && accountNumber.length() >= 3)
+                    ? accountNumber.substring(accountNumber.length() - 3)
+                    : null;
 
-            emailService.sendCancelFoodOrderEmail(order, customer, cancelledBy, 
-                dto != null ? dto.getReason() : "", 
-                refundAmount, bankName, accountName, accountLast3);
+            emailService.sendCancelFoodOrderEmail(order, customer, cancelledBy,
+                    dto != null ? dto.getReason() : "",
+                    refundAmount, bankName, accountName, accountLast3);
         }
     }
 
@@ -772,8 +769,10 @@ public class PosServiceImpl implements PosService {
             throw new BusinessException("ACCESS_DENIED", "Bạn không có quyền hủy đơn hàng này");
         }
 
-        // [DELEGATION] Bước 3: Đã an toàn -> Chuyển tiếp (delegate) cho Core Logic xử lý.
-        // Tuyệt đối không lặp lại code hủy đơn (xử lý KOT, refund, v.v...) ở đây để đảm bảo DRY.
+        // [DELEGATION] Bước 3: Đã an toàn -> Chuyển tiếp (delegate) cho Core Logic xử
+        // lý.
+        // Tuyệt đối không lặp lại code hủy đơn (xử lý KOT, refund, v.v...) ở đây để đảm
+        // bảo DRY.
         cancelOrder(orderId, dto, "Khách hàng", customer);
     }
 }
