@@ -541,13 +541,11 @@ public class PosServiceImpl implements PosService {
         FolioItem folioItem = new FolioItem();
         folioItem.setRoomBookingDetail(detail);
         folioItem.setBooking(detail.getRoomBooking());
-
         com.kawai.models.Customer payer = detail.getCustomer();
         if (payer == null) {
             payer = detail.getRoomBooking().getCustomer();
         }
         folioItem.setPayerCustomer(payer);
-
         folioItem.setSourceDepartment("POS");
         folioItem.setAmount(amount);
         folioItem.setDescription("Ký gửi hóa đơn từ nhà hàng");
