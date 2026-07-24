@@ -1,237 +1,146 @@
 <!DOCTYPE html>
-<html lang="vi">
-
+<html>
 <head>
     <meta charset="UTF-8">
+    <title>Lịch Làm Việc Hàng Tuần</title>
     <style>
-        /* Đã chuyển màu chữ sang #2F1F17 */
-        body {
-            font-family: 'Times New Roman', serif;
-            background-color: #F0EBDF;
-            padding: 40px;
-            color: #2F1F17;
-        }
-
-        .invoice-container {
-            max-width: 700px;
-            margin: auto;
-            background-color: #FFFFFF;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            text-transform: uppercase;
-        }
-
-        .header .address {
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #2F1F17;
-            opacity: 0.8;
-        }
-
-        .invoice-title {
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 20px 0;
-            border-top: 1px solid #2F1F17;
-            border-bottom: 1px solid #2F1F17;
-            padding: 10px 0;
-        }
-
-        .info-grid {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th {
-            border-bottom: 1px solid #2F1F17;
-            padding: 10px 0;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        td {
-            padding: 10px 0;
-            vertical-align: top;
-            font-size: 14px;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .totals-wrapper {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            border-top: 1px solid #2F1F17;
-            padding-top: 20px;
-            align-items: flex-start;
-        }
-
-        .payment-info {
-            font-size: 14px;
-            width: 50%;
-        }
-
-        .totals-section {
-            width: 40%;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            padding: 5px 0;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 60px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .footer-contact {
-            font-size: 12px;
-            margin-bottom: 15px;
-            color: #2F1F17;
-            opacity: 0.8;
-        }
+        body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .header { background-color: #2c3e50; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .footer { text-align: center; font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; }
     </style>
 </head>
-
 <body>
-
-    <div class="invoice-container">
+    <div class="container">
         <div class="header">
-            <h1>HÒA NIÊN RETREAT RESORT & HUB</h1>
-            <p class="address">268 Minh Mạng, Phường Thủy Xuân, Thành phố Huế, Tỉnh Thừa Thiên Huế.</p>
-            <div class="invoice-title">HÓA ĐƠN KHÁCH HÀNG</div>
+            <h2>HOANIEN Resort - Lịch Làm Việc</h2>
         </div>
-
-        <table style="width: 100%; border: none; margin-bottom: 30px; font-size: 14px; line-height: 1.6; font-family: 'Times New Roman', serif;">
-            <tr>
-                <td style="width: 60%; padding: 0; border: none; text-align: left; color: #2F1F17; vertical-align: top;">
-                    <strong>Tên khách hàng:</strong> <span>Vũ Thị Thảo</span><br>
-                    <strong>Số phòng:</strong> <span>205</span> &nbsp;|&nbsp; <strong>Số khách:</strong> <span>2</span><br>
-                    <strong>Check-in:</strong> <span>24/07/2026</span><br>
-                    <strong>Check-out:</strong> <span>25/07/2026</span>
-                </td>
-                <td style="width: 40%; padding: 0; border: none; text-align: right; color: #2F1F17; vertical-align: top;">
-                    <strong>Mã hóa đơn:</strong> <span>INV-4EE3D6D3</span><br>
-                    <strong>Ngày xuất:</strong> <span>24/07/2026</span>
-                </td>
-            </tr>
-        </table>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Times New Roman', serif;">
-            <thead>
-                <tr>
-                    <th style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: left; font-size: 14px; width: 15%; color: #2F1F17;">Ngày</th>
-                    <th style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: left; font-size: 14px; width: 40%; color: #2F1F17;">Mô tả</th>
-                    <th style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: center; font-size: 14px; width: 10%; color: #2F1F17;">Số lượng</th>
-                    <th style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: right; font-size: 14px; width: 15%; color: #2F1F17;">Đơn giá</th>
-                    <th style="border-bottom: 1px solid #2F1F17; padding: 10px 0; text-align: right; font-size: 14px; width: 20%; color: #2F1F17;">Thành tiền (VNĐ)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <!-- Cột Ngày -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;">24/07/2026</td>
+        <div class="content">
+            <p>Xin chào <strong>Vo Huu Viet</strong>,</p>
+            <p>Đây là lịch làm việc sắp tới của bạn. Vui lòng kiểm tra và có mặt đúng giờ.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Ca làm việc</th>
+                        <th>Giờ làm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-07-24</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-25</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-26</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-27</td>
+                        <td>Ca Đêm</td>
+                        <td>
+                            <span>21:00</span> - <span>05:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-28</td>
+                        <td>Ca Chiều</td>
+                        <td>
+                            <span>13:00</span> - <span>21:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-29</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-30</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-31</td>
+                        <td>Ca Đêm</td>
+                        <td>
+                            <span>21:00</span> - <span>05:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-01</td>
+                        <td>Ca Chiều</td>
+                        <td>
+                            <span>13:00</span> - <span>21:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-02</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-03</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-04</td>
+                        <td>Ca Đêm</td>
+                        <td>
+                            <span>21:00</span> - <span>05:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-06</td>
+                        <td>Ca Chiều</td>
+                        <td>
+                            <span>13:00</span> - <span>21:00</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-07</td>
+                        <td>Ca Sáng</td>
+                        <td>
+                            <span>05:00</span> - <span>13:00</span>
+                        </td>
+                    </tr>
                     
-                    <!-- Cột Mô tả -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;">Phí sử dụng Minibar: Nước suối Evian (x3)</td>
-                    
-                    <!-- Cột Số lượng -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: center;">1</td>
-                    
-                    <!-- Cột Đơn giá -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">150.000 ₫</td>
-                    
-                    <!-- Cột Thành tiền -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">150.000 ₫</td>
-                </tr>
-                <tr>
-                    <!-- Cột Ngày -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;"></td>
-                    
-                    <!-- Cột Mô tả -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;">[Đền bù hỏng hóc] á</td>
-                    
-                    <!-- Cột Số lượng -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: center;">1</td>
-                    
-                    <!-- Cột Đơn giá -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">20.000.000 ₫</td>
-                    
-                    <!-- Cột Thành tiền -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">20.000.000 ₫</td>
-                </tr>
-                <tr>
-                    <!-- Cột Ngày -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;"></td>
-                    
-                    <!-- Cột Mô tả -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: left;">Room Charge - Superior Room</td>
-                    
-                    <!-- Cột Số lượng -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: center;">1</td>
-                    
-                    <!-- Cột Đơn giá -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">4.500.000 ₫</td>
-                    
-                    <!-- Cột Thành tiền -->
-                    <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; color: #2F1F17; text-align: right;">4.500.000 ₫</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="totals-wrapper">
-            <div class="payment-info">
-                <strong>PHƯƠNG THỨC THANH TOÁN:</strong><br>
-                ☐ <span>CASH</span>
-            </div>
-            <div class="totals-section">
-                <div class="total-row"><span>Tạm tính:</span> <span>24.650.000 ₫</span></div>
-                <div class="total-row"><span>Thuế (10%):</span> <span>381.683 ₫</span></div>
-                <div class="total-row"><span>Đã đặt
-                        cọc:</span> <span>- 4.500.000 ₫</span></div>
-                <div class="total-row" style="border-top: 1px solid #2F1F17; margin-top: 5px; padding-top: 5px;">
-                    <span>TỔNG CỘNG:</span> <span>16.115.000 ₫</span>
-                </div>
-            </div>
+                </tbody>
+            </table>
+            
+            <p style="margin-top:20px">Nếu có bất kỳ sai sót nào, vui lòng liên hệ Quản lý ngay lập tức.</p>
+            <p>Trân trọng,<br>Ban Quản Lý HOANIEN Resort</p>
         </div>
-
         <div class="footer">
-            <p style="font-style: italic;">Cảm ơn Quý khách đã lựa chọn Hòa Niên Retreat Resort & Hub. Rất mong được đón
-                tiếp Quý khách trong những lần tới!</p>
-            <p>Hệ thống bởi Hòa Niên PMS</p>
-            <div class="footer-contact">
-                ĐT: +84 236 3123 456 | Email: info@hoanien.vn
-            </div>
+            <p>Email này được gửi tự động từ hệ thống quản lý HOANIEN Resort. Vui lòng không trả lời email này.</p>
         </div>
     </div>
-
 </body>
-
 </html>
+l>
