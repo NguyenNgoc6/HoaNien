@@ -256,7 +256,7 @@
           </button>
           <div style="margin-left:auto; display:flex; gap:10px;">
             <button class="btn btn-primary" id="btn-addon" th:if="${foodOrder != null && foodOrder.orderStatus != 'PAID' && foodOrder.orderStatus != 'Cancelled' && foodOrder.orderStatus != 'Refunded' && !foodOrder.isPaidInPos && foodOrder.orderType != 'Room Service' && foodOrder.orderType != 'RoomService'}" onclick="openAddonModal()" style="background-color: #ff9800; border-color: #ff9800; color: white;"><span class="material-symbols-outlined">add</span> Gọi thêm món</button>
-            <button class="btn btn-primary" id="btn-pay" th:if="${foodOrder != null && !foodOrder.isPaidInPos && foodOrder.orderStatus != 'PAID' && foodOrder.orderStatus != 'Cancelled' && foodOrder.orderStatus != 'Refunded' && foodOrder.orderType != 'Room Service' && foodOrder.orderType != 'RoomService'}" style="background-color: var(--status-ready-text); border-color: var(--status-ready-text);" th:onclick="|payOrder(${foodOrder.id}, ${foodOrder.table != null ? foodOrder.table.id : 'null'})|"><span class="material-symbols-outlined">payments</span> Thanh toán</button>
+            <button class="btn btn-primary" id="btn-pay" th:if="${foodOrder != null && !foodOrder.isPaidInPos && foodOrder.orderStatus != 'PAID' && foodOrder.orderStatus != 'Cancelled' && foodOrder.orderStatus != 'Refunded' && foodOrder.orderType != 'Room Service' && foodOrder.orderType != 'RoomService'}" style="background-color: var(--status-ready-text); border-color: var(--status-ready-text);" th:onclick="|openPaymentModal(${foodOrder.id}, ${foodOrder.table != null ? foodOrder.table.id : 'null'})|"><span class="material-symbols-outlined">payments</span> Thanh toán</button>
             <button class="btn btn-outline" id="btn-print" onclick="window.print()"><span class="material-symbols-outlined">print</span> In hóa đơn</button>
             <!-- NÚT CHO ĐƠN DINE-IN (ĂN TẠI BÀN) -->
             <!-- Chuyển trạng thái từ Ready/Completed sang Served (Chỉ có 1 bước) -->
@@ -330,6 +330,41 @@
              <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="submitAddonOrder()" id="btn-submit-addon">Gửi Nhà Bếp</button>
            </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div id="paymentModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+    <div class="modal-content" style="background:#fff; width:90%; max-width:400px; border-radius:12px; display:flex; flex-direction:column; overflow:hidden; padding:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h3 style="margin:0; font-family:'Playfair Display', serif;">Chọn hình thức thanh toán</h3>
+        <button onclick="closePaymentModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap: 15px;">
+        <label style="display:flex; align-items:center; gap: 10px; cursor:pointer;">
+          <input type="radio" name="paymentType" value="Pay_Now" checked onchange="toggleRoomInput()">
+          <span style="font-weight: 500;">Thanh toán ngay (Tiền mặt/Thẻ)</span>
+        </label>
+        <label style="display:flex; align-items:center; gap: 10px; cursor:pointer;">
+          <input type="radio" name="paymentType" value="CHARGE_TO_ROOM" onchange="toggleRoomInput()">
+          <span style="font-weight: 500;">Tính vào hóa đơn phòng (Charge to Room)</span>
+        </label>
+        
+        <div id="roomInputContainer" style="display:none; margin-top: 10px; margin-left: 25px;">
+          <label style="font-size: 0.9rem; color: var(--text-secondary); display:block; margin-bottom: 5px;">Số phòng (nếu là khách đang lưu trú):</label>
+          <div style="display:flex; gap: 8px;">
+            <input type="text" id="paymentRoomNumber" placeholder="Nhập số phòng, VD: 101" style="width:100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;" oninput="onRoomNumberChange()">
+            <button type="button" class="btn btn-outline" style="white-space: nowrap; padding: 0 12px; display:flex; align-items:center;" onclick="verifyRoom()">Kiểm tra</button>
+          </div>
+          <div id="roomVerifyResult" style="margin-top: 10px; font-size: 0.9rem; display: none; padding: 10px; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #10B981;">
+             <!-- verify result goes here -->
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 25px; display:flex; justify-content:flex-end; gap: 10px;">
+        <button class="btn btn-outline" onclick="closePaymentModal()">Hủy</button>
+        <button class="btn btn-primary" id="btn-submit-payment" onclick="submitPayment()">Thanh toán</button>
       </div>
     </div>
   </div>
@@ -543,17 +578,118 @@
         alert("Chức năng xác nhận khách đến bàn đang được phát triển.");
     }
 
-    function payOrder(id, tableId) {
+    let currentPayOrderId = null;
+    let isRoomVerified = false;
+
+    function openPaymentModal(id, tableId) {
+      currentPayOrderId = id;
+      document.getElementById('paymentModal').style.display = 'flex';
+      
+      // Reset state
+      document.querySelector('input[name="paymentType"][value="Pay_Now"]').checked = true;
+      document.getElementById('paymentRoomNumber').value = '';
+      isRoomVerified = false;
+      document.getElementById('roomVerifyResult').style.display = 'none';
+      document.getElementById('btn-submit-payment').disabled = false;
+      toggleRoomInput();
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').style.display = 'none';
+      currentPayOrderId = null;
+      currentPayTableId = null;
+    }
+
+    function toggleRoomInput() {
+      const selectedType = document.querySelector('input[name="paymentType"]:checked').value;
+      const roomContainer = document.getElementById('roomInputContainer');
+      const submitBtn = document.getElementById('btn-submit-payment');
+
+      if (selectedType === 'CHARGE_TO_ROOM') {
+        roomContainer.style.display = 'block';
+        submitBtn.disabled = !isRoomVerified;
+      } else {
+        roomContainer.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    }
+
+    function onRoomNumberChange() {
+        isRoomVerified = false;
+        document.getElementById('roomVerifyResult').style.display = 'none';
+        if (document.querySelector('input[name="paymentType"]:checked').value === 'CHARGE_TO_ROOM') {
+            document.getElementById('btn-submit-payment').disabled = true;
+        }
+    }
+
+    function verifyRoom() {
+      const roomNumber = document.getElementById('paymentRoomNumber').value.trim();
+      if (!roomNumber) {
+        alert("Vui lòng nhập số phòng");
+        return;
+      }
+      const resDiv = document.getElementById('roomVerifyResult');
+      resDiv.style.display = 'block';
+      resDiv.style.borderLeftColor = '#3B82F6';
+      resDiv.innerHTML = 'Đang kiểm tra...';
+      
+      fetch('/api/pos/orders/charge-to-room/verify?roomNumber=' + encodeURIComponent(roomNumber))
+        .then(res => {
+          if(!res.ok) return res.json().then(e => { throw new Error(e.message); });
+          return res.json();
+        })
+        .then(data => {
+          isRoomVerified = true;
+          resDiv.style.borderLeftColor = '#10B981';
+          resDiv.innerHTML = `
+            <div style="font-weight: 600; color: #10B981; margin-bottom: 4px;">✔ Xác thực thành công</div>
+            <div>Khách hàng: <b>${data.guestName}</b></div>
+            <div>CCCD/Passport: <b>${data.idCard}</b></div>
+          `;
+          document.getElementById('btn-submit-payment').disabled = false;
+        })
+        .catch(err => {
+          isRoomVerified = false;
+          resDiv.style.borderLeftColor = '#EF4444';
+          resDiv.innerHTML = `<div style="color: #EF4444; font-weight: 500;">❌ ${err.message}</div>`;
+          document.getElementById('btn-submit-payment').disabled = true;
+        });
+    }
+
+    function submitPayment() {
       if(!confirm("Bạn có chắc chắn muốn thanh toán đơn hàng này?")) return;
-      const btn = document.getElementById('btn-pay');
+      
+      const selectedType = document.querySelector('input[name="paymentType"]:checked').value;
+      let roomNumber = '';
+      if (selectedType === 'CHARGE_TO_ROOM') {
+        roomNumber = document.getElementById('paymentRoomNumber').value.trim();
+        if (!roomNumber) {
+          alert('Vui lòng nhập số phòng!');
+          return;
+        }
+        if (!isRoomVerified) {
+          alert('Vui lòng ấn "Kiểm tra" để xác thực thông tin khách trước khi thanh toán!');
+          return;
+        }
+      }
+
+      const btn = document.getElementById('btn-submit-payment');
       if (btn) { btn.disabled = true; btn.innerHTML = 'Đang xử lý...'; }
-      fetch('/api/pos/orders/' + id + '/pay', {
+      
+      let url = '/api/pos/orders/' + currentPayOrderId + '/pay?paymentType=' + selectedType;
+      if (roomNumber) {
+        url += '&roomNumber=' + encodeURIComponent(roomNumber);
+      }
+
+      fetch(url, {
         method: 'POST'
       }).then(res => {
-        if(!res.ok) throw new Error('API Error');
+        if(!res.ok) {
+           return res.json().then(e => { throw new Error(e.message || 'Lỗi hệ thống'); });
+        }
         return res.json();
       }).then(data => {
-        if (tableId && tableId !== 'null' && tableId !== null) {
+        if (currentPayTableId && currentPayTableId !== 'null' && currentPayTableId !== null) {
           alert("Thanh toán thành công! Bàn đã tự động chuyển sang trạng thái Đang Dọn Dẹp (Cleaning).");
           window.location.reload();
           return;
@@ -562,8 +698,12 @@
         window.location.reload();
       }).catch(err => {
         alert("Lỗi thanh toán: " + err.message);
-        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">payments</span> Thanh toán'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Thanh toán'; }
       });
+    }
+
+    function payOrder(id, tableId) {
+      openPaymentModal(id, tableId);
     }
 
     // Reload ngầm (Background refresh) mỗi 15 giây

@@ -62,15 +62,9 @@
             <span class="adm-breadcrumb-page">Kích hoạt luồng</span>
         </div>
         <div class="adm-header-right">
-            <button class="adm-header-icon-btn"><i data-lucide="search"></i></button>
-            <button class="adm-header-icon-btn">
-                <i data-lucide="bell"></i>
-                <span class="adm-notif-dot"></span>
-            </button>
-            <div class="adm-divider-v"></div>
             <div class="adm-header-user-box">
-                <div class="adm-header-avatar">AD</div>
-                <span class="adm-header-username">Admin Dũng</span>
+                <div class="adm-header-avatar" th:text="${staffName != null ? #strings.substring(staffName, 0, 2).toUpperCase() : (#authentication != null ? #strings.substring(#authentication.name, 0, 2).toUpperCase() : 'AD')}">AD</div>
+                <span class="adm-header-username" th:text="${staffName != null ? staffName : (#authentication != null ? #authentication.name : 'Admin')}">Admin</span>
             </div>
             <div class="adm-divider-v"></div>
             <a href="/logout" class="adm-header-logout"><i data-lucide="log-out" style="width:12px;height:12px"></i>Đăng xuất</a>
@@ -538,6 +532,325 @@
     </div>
     <p style="color: #888888; font-size: 13px; margin-bottom: 5px; font-style: italic;">* Mã xác nhận này chỉ có hiệu lực trong vòng <strong>15 phút</strong>.</p>
 </div>
+</body>
+
+</html>`;
+            }
+
+            valContainer.innerHTML = `
+                <div class="mb-2 flex items-center justify-between text-sm text-[#4E4A3F] bg-[#f9fafb] p-2 rounded border border-[#eaedff]">
+                    <span class="font-medium text-[11px] uppercase">Độ trễ thực thi (Delay):</span>
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" class="action-delay-input w-16 px-2 py-1 border border-[#c0c8cb] rounded text-center focus:outline-none focus:ring-1 focus:ring-brand-gold text-xs bg-white font-semibold" placeholder="0" min="0">
+                        <span class="text-[11px]">phút</span>
+                    </div>
+                </div>
+                <div class="space-y-3 mt-2 border-t border-[#eaedff] pt-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#6B6558] mb-1">EMAIL NGƯỜI GỬI (TÙY CHỌN)</label>
+                            <input type="email" value="${globalDefaultFromEmail}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-sender-email font-medium text-[#2C2A24]" />
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#6B6558] mb-1">EMAIL NGƯỜI NHẬN</label>
+                            <input type="text" value="${defaultTarget}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-target-email font-medium text-[#2C2A24]" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#6B6558] mb-1">TIÊU ĐỀ EMAIL</label>
+                        <input type="text" value="${defaultSubject}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-email-subject font-medium text-[#2C2A24]" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#6B6558] mb-1">NỘI DUNG EMAIL (HỖ TRỢ HTML & BIẾN)</label>
+                        <textarea rows="6" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-email-html font-medium text-[#2C2A24]">${defaultHtml}</textarea>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function removeActionRow(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+        }
+    }
+
+    // Save Workflow (Submit Handler)
+    async function saveWorkflow(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById("workflow-id").value;
+        const name = document.getElementById("workflow-name").value;
+        const triggerEvent = document.getElementById("trigger-event").value;
+
+        // Construct Conditions Object (Generic Rule Builder)
+        const conditions = {};
+        const condRows = document.querySelectorAll(".generic-cond-row");
+        condRows.forEach(row => {
+            const field = row.querySelector(".cond-field").value.trim();
+            const op = row.querySelector(".cond-operator").value;
+            const val = row.querySelector(".cond-value").value.trim();
+            
+            if (field && val) {
+                let parsedVal = val;
+                // Auto-parse number if it looks like one
+                if (!isNaN(val) && val !== "") {
+                    parsedVal = Number(val);
+                }
+                // Handle booleans
+                if (val.toLowerCase() === "true") parsedVal = true;
+                if (val.toLowerCase() === "false") parsedVal = false;
+
+                if (op === "=") {
+                    conditions[field] = parsedVal;
+                } else if (op === ">") {
+                    conditions[field + "_gt"] = parsedVal;
+                } else if (op === "<") {
+                    conditions[field + "_lt"] = parsedVal;
+                } else if (op === "!=") {
+                    conditions[field + "_neq"] = parsedVal;
+                }
+            }
+        });
+
+        // Construct Actions List
+        const actions = [];
+        const actionRows = document.querySelectorAll(".action-item-row");
+        actionRows.forEach(row => {
+            const typeSelect = row.querySelector(".action-type-select");
+            const type = typeSelect ? typeSelect.value : null;
+            const valInput = row.querySelector(".action-val-input");
+            
+            if (type) {
+                const actionObj = {
+                    type: type,
+                    value: valInput ? valInput.value : ""
+                };
+
+                const delayInput = row.querySelector(".action-delay-input");
+                if (delayInput && delayInput.value && parseInt(delayInput.value) > 0) {
+                    actionObj.delay_minutes = parseInt(delayInput.value);
+                }
+
+                // Capture priority and supervisor_id if present
+                const prioritySelect = row.querySelector(".action-priority-input");
+                if (prioritySelect) {
+                    actionObj.priority = prioritySelect.value;
+                }
+                const supervisorSelect = row.querySelector(".action-supervisor-input");
+                if (supervisorSelect && supervisorSelect.value) {
+                    actionObj.supervisor_id = parseInt(supervisorSelect.value, 10);
+                }
+
+                if (type === "CREATE_OPERATION_TASK") {
+                    const assignee = row.querySelector(".action-assignee-input");
+                    const notes = row.querySelector(".action-notes-input");
+                    if (assignee && assignee.value) actionObj.assignee_id = parseInt(assignee.value, 10);
+                    if (notes && notes.value) actionObj.custom_notes = notes.value;
+                }
+
+                if (type === "SEND_EMAIL") {
+                    const sender = row.querySelector(".action-sender-email");
+                    const target = row.querySelector(".action-target-email");
+                    const subject = row.querySelector(".action-email-subject");
+                    const html = row.querySelector(".action-email-html");
+                    if (sender) actionObj.sender_email = sender.value;
+                    if (target) actionObj.target_email = target.value;
+                    if (subject) actionObj.email_subject = subject.value;
+                    if (html) actionObj.email_body_html = html.value;
+                }
+
+                actions.push(actionObj);
+            }
+        });
+
+        const payload = {
+            id: id ? id : null,
+            workflowName: name,
+            triggerEvent: triggerEvent,
+            conditionsJson: conditions,
+            actionsJson: actions,
+            isActive: true
+        };
+
+        try {
+            const res = await fetch("/admin/api/v1/workflows", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Không thể lưu quy trình");
+            }
+
+            showToast(id ? "Cập nhật quy trình thành công" : "Tạo quy trình thành công", "success");
+            resetForm();
+            loadWorkflows();
+        } catch (err) {
+            showToast(err.message, "error");
+        }
+    }
+
+    // Toggle Workflow Active Status
+    async function toggleWorkflowStatus(id) {
+        try {
+            const res = await fetch(`/admin/api/v1/workflows/${id}/toggle`, {
+                method: "PATCH"
+            });
+            if (!res.ok) throw new Error("Không thể thay đổi trạng thái quy trình");
+            const data = await res.json();
+            
+            // Update local state without reloading
+            workflows = workflows.map(w => w.id === id ? { ...w, isActive: data.isActive } : w);
+            renderWorkflows();
+            showToast("Đã thay đổi trạng thái quy trình", "success");
+        } catch (err) {
+            showToast(err.message, "error");
+        }
+    }
+
+    // Edit button click handler
+    function editWorkflow(id) {
+        const w = workflows.find(item => item.id === id);
+        if (!w) return;
+
+        document.getElementById("form-title").innerText = "Chỉnh sửa quy trình";
+        document.getElementById("workflow-id").value = w.id;
+        document.getElementById("workflow-name").value = w.workflowName;
+        document.getElementById("trigger-event").value = w.triggerEvent;
+        
+        onTriggerChange();
+
+        // Load conditions
+        document.getElementById("generic-conditions-container").innerHTML = "";
+        if (w.conditionsJson) {
+            try {
+                const condObj = typeof w.conditionsJson === 'string' ? JSON.parse(w.conditionsJson) : w.conditionsJson;
+                for (const [key, val] of Object.entries(condObj)) {
+                    let field = key;
+                    let op = "=";
+                    if (key.endsWith("_gt")) { field = key.replace("_gt", ""); op = ">"; }
+                    else if (key.endsWith("_lt")) { field = key.replace("_lt", ""); op = "<"; }
+                    else if (key.endsWith("_neq")) { field = key.replace("_neq", ""); op = "!="; }
+                    addGenericConditionRow(field, op, val);
+                }
+            } catch(e) {
+                console.error("Error parsing conditions_json", e);
+            }
+        }
+
+        // Load Actions
+        const container = document.getElementById("actions-container");
+        container.innerHTML = "";
+        if (w.actionsJson) {
+            try {
+                const actionsList = typeof w.actionsJson === 'string' ? JSON.parse(w.actionsJson) : w.actionsJson;
+                actionsList.forEach(act => {
+                    addActionRow(act.type, act.value, act.priority || "High", act.supervisor_id || "", act.assignee_id || "", act.custom_notes || "");
+                    
+                    // Delay slightly to let the DOM render the newly added action row before filling in SEND_EMAIL fields
+                    setTimeout(() => {
+                        const rows = document.querySelectorAll(".action-item-row");
+                        const currentRow = rows[rows.length - 1]; // The last one added
+                        if (currentRow) {
+                            if (act.delay_minutes) {
+                                const delayInput = currentRow.querySelector(".action-delay-input");
+                                if (delayInput) delayInput.value = act.delay_minutes;
+                            }
+                            if (act.type === "SEND_EMAIL") {
+                                const sender = currentRow.querySelector(".action-sender-email");
+                                const target = currentRow.querySelector(".action-target-email");
+                                const subject = currentRow.querySelector(".action-email-subject");
+                                const html = currentRow.querySelector(".action-email-html");
+                                if (sender && act.sender_email) sender.value = act.sender_email;
+                                if (target && act.target_email) target.value = act.target_email;
+                                if (subject && act.email_subject) subject.value = act.email_subject;
+                                if (html && act.email_body_html) html.value = act.email_body_html;
+                            }
+                        }
+                    }, 50);
+                });
+            } catch (e) {
+                console.error("Error parsing actions_json", e);
+            }
+        }
+    }
+
+    // Delete Workflow
+    async function deleteWorkflow(id) {
+        if (!confirm("Bạn có chắc chắn muốn xóa quy trình này?")) return;
+
+        try {
+            const res = await fetch(`/admin/api/v1/workflows/${id}`, {
+                method: "DELETE"
+            });
+            if (!res.ok) throw new Error("Không thể xóa quy trình");
+            
+            showToast("Đã xóa quy trình thành công", "success");
+            loadWorkflows();
+        } catch (err) {
+            showToast(err.message, "error");
+        }
+    }
+
+    // Reset Form to Default empty values
+    function resetForm() {
+        document.getElementById("form-title").innerText = "Cấu hình quy trình mới";
+        document.getElementById("workflow-id").value = "";
+        document.getElementById("workflow-form").reset();
+        document.getElementById("actions-container").innerHTML = "";
+        onTriggerChange();
+    }
+
+    // Premium Toast feedback alerts
+    function showToast(msg, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-md border text-sm transition-all duration-300 transform translate-y-2 opacity-0`;
+        
+        if (type === "success") {
+            toast.className += " bg-emerald-50 border-emerald-200 text-emerald-800";
+            toast.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> <span>${msg}</span>`;
+        } else if (type === "error") {
+            toast.className += " bg-rose-50 border-rose-200 text-rose-800";
+            toast.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600"></i> <span>${msg}</span>`;
+        } else {
+            toast.className += " bg-brand-gold/10 border-brand-gold/25 text-[#4E4A3F]";
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand-gold"></i> <span>${msg}</span>`;
+        }
+
+        container.appendChild(toast);
+        lucide.createIcons();
+
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove("translate-y-2", "opacity-0");
+        }, 10);
+
+        // Animate out and remove
+        setTimeout(() => {
+            toast.classList.add("translate-y-2", "opacity-0");
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 4000);
+    }
+
+    // Safe escape helper
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+</script>
 
 <!-- ADMIN PROFILE MODAL -->
 <div id="adminProfileModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">

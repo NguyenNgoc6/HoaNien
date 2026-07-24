@@ -370,85 +370,20 @@ function renderMockDiff(contentEl, tableName, timeStr, ipStr, empStr) {
     const displayTime = timeAgo(timeStr);
     const displayIp = ipStr || 'Unknown IP';
     
-    // Tạo data giả định phù hợp với từng bảng
-    let mockRows = '';
-    let mockAction = "Cập nhật dữ liệu (Mẫu)";
-    
-    if (tableName === 'accounts' || tableName === 'account') {
-        contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:#8B7355"><i data-lucide="info" style="width:24px;height:24px;display:inline-block;margin-bottom:12px;"></i><p>Chưa có dữ liệu theo dõi thay đổi (Audit) cho bản ghi này do tính năng kiểm toán mới được bật.</p></div>';
-        if (typeof lucide !== "undefined") lucide.createIcons();
-        return;
-    }
-
-    if (tableName === 'menu-items' || tableName.includes('menu')) {
-        mockAction = "Thay đổi trạng thái phục vụ (Mẫu)";
-        mockRows = `
-            <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Trạng thái (is_available)</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">false</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">true</td>
-            </tr>
-        `;
-    } else if (tableName === 'rooms' || tableName.includes('room')) {
-        mockRows = `
-            <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Giá cơ bản / đêm</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">1,500,000 VNĐ</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">1,800,000 VNĐ</td>
-            </tr>
-            <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Mô tả</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">Phòng view biển</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">Phòng view biển có ban công</td>
-            </tr>
-            <tr style="font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Trạng thái</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">Inactive</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">Active</td>
-            </tr>
-        `;
-    } else if (tableName === 'tours' || tableName.includes('tour')) {
-        mockRows = `
-            <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Tên Tour</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">Tour Lặn Biển</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">Tour Lặn Biển (Kèm Ăn Trưa)</td>
-            </tr>
-        `;
-    } else {
-        mockAction = "Thay đổi trạng thái (Mẫu)";
-        mockRows = `
-            <tr style="font-size: 13px;">
-                <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">Trạng thái (Status)</td>
-                <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">Vô hiệu hóa</td>
-                <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">Kích hoạt</td>
-            </tr>
-        `;
-    }
-
     const html = `
         <div class="history-item">
             <div class="history-meta">
-                <span class="history-rev">#1204 — ${mockAction}</span>
+                <span class="history-rev">#1 — Thao tác hệ thống</span>
                 <span>${displayTime}</span>
             </div>
             <div style="font-size:13px;color:#6B6558;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
                 <span>Bởi: <strong>${empStr || 'System'}</strong></span>
                 <span style="font-size:12px;color:#A8A296;background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:4px;"><i data-lucide="globe" style="width:12px;height:12px;margin-right:4px;display:inline-block;vertical-align:middle;"></i>${displayIp}</span>
             </div>
-            <div style="overflow-x:auto;">
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid rgba(44,42,30,0.1); border-radius: 6px; overflow: hidden; background: #fff;">
-                    <thead>
-                        <tr style="background: #EDE8DF; color: #5C4A3A; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
-                            <th style="padding: 8px 12px; text-align: left; width: 30%;">Thuộc tính</th>
-                            <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị cũ</th>
-                            <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị mới</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${mockRows}
-                    </tbody>
-                </table>
+            <div style="text-align:center;padding:24px;color:#8B7355; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px dashed rgba(44,42,30,0.1);">
+                <i data-lucide="info" style="width:24px;height:24px;display:inline-block;margin-bottom:8px; opacity: 0.6;"></i>
+                <p style="font-size: 13px; font-weight: 500;">Không có chi tiết dữ liệu thay đổi</p>
+                <p style="font-size: 12px; opacity: 0.7; margin-top: 4px;">(Bản ghi này có thể được tạo từ trước khi hệ thống kiểm toán chi tiết được áp dụng)</p>
             </div>
         </div>
     `;
@@ -464,38 +399,83 @@ function renderDiffHtml(contentEl, data, tableName, numericId, ipStr, empStr) {
         const timestamp = entry.timestamp || '--';
         const displayTime = timeAgo(timestamp);
         const username = entry.username || empStr || 'System';
-        const action = entry.action || 'UPDATE';
+        const rawAction = entry.action || 'UPDATE';
         const changes = entry.changes || {};
+
+        let isCreate = rawAction.toUpperCase() === 'CREATE';
+        let actionStr = isCreate ? 'Tạo mới bản ghi' : 'Cập nhật dữ liệu';
+        
+        // Nếu chỉ thay đổi trạng thái kích hoạt/khóa
+        const changeKeys = Object.keys(changes);
+        if (!isCreate && changeKeys.length === 1 && (changeKeys[0] === 'isActive' || changeKeys[0] === 'isAvailable' || changeKeys[0] === 'status')) {
+            actionStr = 'Thay đổi trạng thái (Khóa/Mở)';
+        }
 
         let changesRows = '';
         for (const [field, vals] of Object.entries(changes)) {
-            changesRows += `
-                <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
-                    <td style="padding: 10px 12px; font-weight: 600; color: #6B6558;">${field}</td>
-                    <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through;">${vals.old || '-'}</td>
-                    <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">${vals.new || '-'}</td>
-                </tr>
-            `;
+            let oldVal = vals.old || '-';
+            let newVal = vals.new || '-';
+            
+            // Format boolean fields for status
+            if (newVal === 'true' || newVal === true) newVal = '<span style="color:#2E5A3B;background:rgba(46,90,59,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">Kích hoạt</span>';
+            if (newVal === 'false' || newVal === false) newVal = '<span style="color:#8C3C28;background:rgba(140,60,40,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">Bị Khóa</span>';
+            if (oldVal === 'true' || oldVal === true) oldVal = '<span style="color:#2E5A3B;background:rgba(46,90,59,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">Kích hoạt</span>';
+            if (oldVal === 'false' || oldVal === false) oldVal = '<span style="color:#8C3C28;background:rgba(140,60,40,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">Bị Khóa</span>';
+
+            if (isCreate) {
+                changesRows += `
+                    <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
+                        <td style="padding: 10px 12px; font-weight: 600; color: #6B6558; width: 40%;">${field}</td>
+                        <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600;">${newVal}</td>
+                    </tr>
+                `;
+            } else {
+                changesRows += `
+                    <tr style="border-bottom: 1px solid rgba(44,42,30,0.06); font-size: 13px;">
+                        <td style="padding: 10px 12px; font-weight: 600; color: #6B6558; width: 30%;">${field}</td>
+                        <td style="padding: 10px 12px; background: rgba(140,60,40,0.05); color: #8C3C28; text-decoration: line-through; width: 35%;">${oldVal}</td>
+                        <td style="padding: 10px 12px; background: rgba(46,90,59,0.05); color: #2E5A3B; font-weight: 600; width: 35%;">${newVal}</td>
+                    </tr>
+                `;
+            }
         }
 
         let tableHtml = '';
         if (changesRows) {
-            tableHtml = `
-                <div style="overflow-x:auto;">
-                    <table style="width: 100%; border-collapse: collapse; border: 1px solid rgba(44,42,30,0.1); border-radius: 6px; overflow: hidden; background: #fff;">
-                        <thead>
-                            <tr style="background: #EDE8DF; color: #5C4A3A; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
-                                <th style="padding: 8px 12px; text-align: left; width: 30%;">Thuộc tính</th>
-                                <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị cũ</th>
-                                <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị mới</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${changesRows}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            if (isCreate) {
+                tableHtml = `
+                    <div style="overflow-x:auto;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid rgba(44,42,30,0.1); border-radius: 6px; overflow: hidden; background: #fff;">
+                            <thead>
+                                <tr style="background: #EDE8DF; color: #5C4A3A; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
+                                    <th style="padding: 8px 12px; text-align: left;">Thuộc tính</th>
+                                    <th style="padding: 8px 12px; text-align: left;">Giá trị khởi tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${changesRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                tableHtml = `
+                    <div style="overflow-x:auto;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid rgba(44,42,30,0.1); border-radius: 6px; overflow: hidden; background: #fff;">
+                            <thead>
+                                <tr style="background: #EDE8DF; color: #5C4A3A; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
+                                    <th style="padding: 8px 12px; text-align: left; width: 30%;">Thuộc tính</th>
+                                    <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị cũ</th>
+                                    <th style="padding: 8px 12px; text-align: left; width: 35%;">Giá trị mới</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${changesRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
         } else {
             tableHtml = '<em style="color:#8B7355; font-size: 13px;">Không phát hiện thay đổi dữ liệu lõi</em>';
         }
@@ -503,7 +483,7 @@ function renderDiffHtml(contentEl, data, tableName, numericId, ipStr, empStr) {
         html += `
             <div class="history-item">
                 <div class="history-meta">
-                    <span class="history-rev">#${revNum} — ${action}</span>
+                    <span class="history-rev">#${revNum} — ${actionStr}</span>
                     <span>${displayTime}</span>
                 </div>
                 <div style="font-size:13px;color:#6B6558;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">

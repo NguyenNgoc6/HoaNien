@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -10,6 +12,7 @@ import java.time.LocalDate;
     @UniqueConstraint(columnNames = {"category_id", "rate_date"})
 })
 @Data
+@Audited
 public class DailyRate {
 
     @Id

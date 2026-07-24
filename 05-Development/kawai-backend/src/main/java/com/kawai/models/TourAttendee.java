@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -7,6 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Tour_Attendees")
 @Data
+@Audited
 public class TourAttendee {
 
     @Id

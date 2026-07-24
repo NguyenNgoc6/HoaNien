@@ -1,11 +1,14 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Table(name = "Food_Orders")
 @Data
+@Audited
 public class FoodOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +32,7 @@ public class FoodOrder {
     @Column(name = "is_paid_in_pos", nullable = false)
     private Boolean isPaidInPos = false;
     @ManyToOne
-    @JoinColumn(name = "created_by_staff_id", nullable = false)
+    @JoinColumn(name = "created_by_staff_id")
     private Employee createdByStaff;
     @ManyToOne
     @JoinColumn(name = "kitchen_processed_by_id")

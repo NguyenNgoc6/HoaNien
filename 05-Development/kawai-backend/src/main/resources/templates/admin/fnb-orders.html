@@ -78,10 +78,9 @@
             <span class="adm-breadcrumb-page">Order Nhà hàng</span>
         </div>
         <div class="adm-header-right">
-            <button class="adm-header-icon-btn"><i data-lucide="search"></i></button>
             <div class="adm-header-user-box">
-                <div class="adm-header-avatar">AD</div>
-                <span class="adm-header-username">Admin Dũng</span>
+                <div class="adm-header-avatar" th:text="${staffName != null ? #strings.substring(staffName, 0, 2).toUpperCase() : (#authentication != null ? #strings.substring(#authentication.name, 0, 2).toUpperCase() : 'AD')}">AD</div>
+                <span class="adm-header-username" th:text="${staffName != null ? staffName : (#authentication != null ? #authentication.name : 'Admin')}">Admin</span>
             </div>
         </div>
     </header>
