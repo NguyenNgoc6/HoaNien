@@ -18,4 +18,6 @@ public class RoomInfoDto {
     private String guestName;
     private Long customerId;
     private BigDecimal limitRemaining;
+    private String identityCard;
+    private String phoneNumber;
 }

@@ -821,19 +821,12 @@ function openCccdCheckInModal(resId, tableId) {
   document.getElementById('cccdCheckIn-resName').value = actualName;
 
   // reset fields
-  document.getElementById('cccdCheckIn-cccd').value = '';
   document.getElementById('cccdCheckIn-name').value = '';
-  document.getElementById('cccdCheckIn-room').value = '';
+  document.getElementById('cccdCheckIn-cccdDisplay').value = '';
+  document.getElementById('cccdCheckIn-phone').value = '';
   document.getElementById('cccdCheckIn-roomInput').value = '';
   document.getElementById('cccdCheckIn-error').style.display = 'none';
   document.getElementById('cccdCheckIn-submit').disabled = true;
-
-  // reset mode to CCCD
-  const radios = document.getElementsByName('checkInMode');
-  for(let r of radios) {
-    if(r.value === 'cccd') r.checked = true;
-  }
-  toggleCheckInMode();
 
   document.getElementById('cccdCheckInModal').classList.add('open');
 }
@@ -842,81 +835,7 @@ function closeCccdCheckInModal() {
   document.getElementById('cccdCheckInModal').classList.remove('open');
 }
 
-function toggleCheckInMode() {
-  const mode = document.querySelector('input[name="checkInMode"]:checked').value;
-  const cccdGroup = document.getElementById('group-cccd-input');
-  const roomGroup = document.getElementById('group-room-input');
-  const errorEl = document.getElementById('cccdCheckIn-error');
-  const submitBtn = document.getElementById('cccdCheckIn-submit');
-  
-  const roomDisplayGroup = document.getElementById('cccdCheckIn-room').closest('.form-group');
-  const nameEl = document.getElementById('cccdCheckIn-name');
-  
-  errorEl.style.display = 'none';
-  submitBtn.disabled = true;
 
-  if (mode === 'cccd') {
-    cccdGroup.style.display = 'block';
-    roomGroup.style.display = 'none';
-    roomDisplayGroup.style.display = 'block'; // Show "Số phòng (Đang lưu trú)"
-    nameEl.value = '';
-    searchCccdInfo(); // re-evaluate if there's already input
-  } else {
-    cccdGroup.style.display = 'none';
-    roomGroup.style.display = 'block';
-    roomDisplayGroup.style.display = 'none'; // Hide redundant room display
-    nameEl.value = '';
-    searchRoomInfo(); // re-evaluate if there's already input
-  }
-}
-
-async function searchCccdInfo() {
-  const cccd = document.getElementById('cccdCheckIn-cccd').value.trim();
-  const errorEl = document.getElementById('cccdCheckIn-error');
-  const submitBtn = document.getElementById('cccdCheckIn-submit');
-  const nameEl = document.getElementById('cccdCheckIn-name');
-  const roomEl = document.getElementById('cccdCheckIn-room');
-  const expectedRoom = document.getElementById('cccdCheckIn-resRoom').value;
-
-  if (!cccd) {
-    nameEl.value = '';
-    roomEl.value = '';
-    submitBtn.disabled = true;
-    errorEl.style.display = 'none';
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/rooms/by-cccd?cccd=' + encodeURIComponent(cccd));
-    if (res.ok) {
-      const data = await res.json();
-      nameEl.value = data.guestName || 'Không rõ';
-      roomEl.value = data.roomNumber || 'Không rõ';
-      
-      // Strict Validation: Compare room from CCCD with reservation's room
-      if (expectedRoom && String(data.roomNumber).trim() !== String(expectedRoom).trim()) {
-        submitBtn.disabled = true;
-        errorEl.textContent = `Lỗi: Khách này ở phòng ${data.roomNumber}, không khớp với số phòng đặt bàn (${expectedRoom}).`;
-        errorEl.style.display = 'block';
-      } else {
-        errorEl.style.display = 'none';
-        submitBtn.disabled = false;
-      }
-    } else {
-      nameEl.value = '';
-      roomEl.value = '';
-      submitBtn.disabled = true;
-      errorEl.textContent = 'Không tìm thấy phòng đang lưu trú với CCCD này.';
-      errorEl.style.display = 'block';
-    }
-  } catch (err) {
-    nameEl.value = '';
-    roomEl.value = '';
-    submitBtn.disabled = true;
-    errorEl.textContent = 'Lỗi kết nối máy chủ.';
-    errorEl.style.display = 'block';
-  }
-}
 
 async function searchRoomInfo() {
   const inputRoom = document.getElementById('cccdCheckIn-roomInput').value.trim();
@@ -925,11 +844,15 @@ async function searchRoomInfo() {
   const errorEl = document.getElementById('cccdCheckIn-error');
   const submitBtn = document.getElementById('cccdCheckIn-submit');
   const nameEl = document.getElementById('cccdCheckIn-name');
+  const cccdDisplayEl = document.getElementById('cccdCheckIn-cccdDisplay');
+  const phoneEl = document.getElementById('cccdCheckIn-phone');
 
   if (!inputRoom) {
     submitBtn.disabled = true;
     errorEl.style.display = 'none';
     nameEl.value = '';
+    cccdDisplayEl.value = '';
+    phoneEl.value = '';
     return;
   }
 
@@ -938,6 +861,8 @@ async function searchRoomInfo() {
     if (res.ok) {
       const data = await res.json();
       nameEl.value = data.guestName || 'Không rõ';
+      cccdDisplayEl.value = data.identityCard || 'Không rõ';
+      phoneEl.value = data.phoneNumber || 'Không rõ';
       
       // Strict Validation: Compare input room with reservation's room
       // If expectedRoom is empty, it means backend didn't provide it, so we fallback to comparing names if possible,
@@ -969,12 +894,16 @@ async function searchRoomInfo() {
       }
     } else {
       nameEl.value = '';
+      cccdDisplayEl.value = '';
+      phoneEl.value = '';
       submitBtn.disabled = true;
       errorEl.textContent = 'Không tìm thấy thông tin khách đang lưu trú tại phòng này.';
       errorEl.style.display = 'block';
     }
   } catch (err) {
     nameEl.value = '';
+    cccdDisplayEl.value = '';
+    phoneEl.value = '';
     submitBtn.disabled = true;
     errorEl.textContent = 'Lỗi kết nối máy chủ.';
     errorEl.style.display = 'block';

@@ -63,7 +63,7 @@ class PosServiceUC15Test {
         when(foodOrderRepository.save(any(FoodOrder.class))).thenReturn(mockOrder);
 
         // Act
-        FoodOrder result = posService.payOrder(orderId);
+        FoodOrder result = posService.payOrder(orderId, "Pay_Now", null);
 
         // Assert
         assertTrue(result.getIsPaidInPos(), "Order isPaidInPos phải được set thành true");
@@ -89,7 +89,7 @@ class PosServiceUC15Test {
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            posService.payOrder(orderId);
+            posService.payOrder(orderId, "Pay_Now", null);
         });
 
         assertEquals("POS-006", exception.getErrorCode());
