@@ -901,10 +901,7 @@
                             if (payload.type === 'NEW_TASK') return;
                             saveAndShow('THÔNG BÁO HỆ THỐNG: \n' + payload.message, false);
                             if (payload.type === 'ROOM_CLEANED') {
-                                if (typeof pollCleanTasksDone === 'function') pollCleanTasksDone();
-                                if (typeof pollPendingWalkInRooms === 'function') pollPendingWalkInRooms();
-                                if (typeof pollCleanedRooms === 'function') pollCleanedRooms();
-                                // KHÔNG auto-reload ở màn này để tránh mất dữ liệu khách đang nhập dở
+                                if (typeof handleRoomCleanedEvent === 'function') handleRoomCleanedEvent(payload);
                                 return;
                             }
                         } catch (e) { console.error('[WS] parse error', e); }

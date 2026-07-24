@@ -538,9 +538,7 @@
                             console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
                             if (payload.type === 'NEW_TASK') return;
                             if (payload.type === 'ROOM_CLEANED') {
-                                if (typeof pollCleanTasksDone === 'function') pollCleanTasksDone();
-                                if (typeof pollPendingWalkInRooms === 'function') pollPendingWalkInRooms();
-                                if (typeof pollCleanedRooms === 'function') pollCleanedRooms();
+                                if (typeof handleRoomCleanedEvent === 'function') handleRoomCleanedEvent(payload);
                                 return;
                             }
 

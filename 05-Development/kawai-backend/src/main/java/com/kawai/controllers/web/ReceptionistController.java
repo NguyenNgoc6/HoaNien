@@ -951,75 +951,8 @@ public class ReceptionistController {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên để ghi nhận thao tác."));
     }
 
-    @GetMapping("/api/notifications/cleaned-rooms")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<List<Map<String, String>>> getCleanedRoomsPendingHandover() {
-        List<Object[]> results = roomBookingDetailRepository.findCleanedRoomsPendingHandover();
-        List<Map<String, String>> response = new ArrayList<>();
-        for (Object[] row : results) {
-            Map<String, String> map = new HashMap<>();
-            map.put("roomNumber", row[0] != null ? row[0].toString() : "");
-            map.put("customerName", row[1] != null ? row[1].toString() : "Khách hàng");
-            response.add(map);
-        }
-        return org.springframework.http.ResponseEntity.ok(response);
-    }
-
     /**
-     * API dành cho trang WalkIn: poll trạng thái của các phòng đang "treo"
-     * (escalate Vacant_Dirty + assignAfter=true, chưa hoàn thành đơn WalkIn).
-     * Trả về Map { roomNumber -> roomStatus } để frontend phát hiện khi
-     * phòng chuyển sang Vacant_Clean và hiện toast thông báo.
-     */
-    @GetMapping("/api/notifications/room-status")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<Map<String, String>> getRoomStatuses(
-            @RequestParam(value = "rooms", required = false) List<String> roomNumbers) {
-        Map<String, String> result = new HashMap<>();
-        if (roomNumbers == null || roomNumbers.isEmpty()) {
-            return org.springframework.http.ResponseEntity.ok(result);
-        }
-        // Tìm trạng thái của từng phòng theo roomNumber (dùng findByRoomNumber để tránh
-        // full-table scan)
-        for (String roomNum : roomNumbers) {
-            roomRepository.findByRoomNumber(roomNum)
-                    .ifPresent(r -> result.put(roomNum, r.getRoomStatus()));
-        }
-        return org.springframework.http.ResponseEntity.ok(result);
-    }
-
-    /**
-     * API polling: Trả về danh sách task URGENT_CLEAN đã hoàn thành trong vòng 30
-     * phút gần nhất.
-     * Frontend (room-alert.js) poll định kỳ để hiện toast notify cho Lễ tân khi
-     * Housekeeping dọn xong.
-     * Response: [ { taskId, roomNumber, completedAt }, ... ]
-     */
-    @GetMapping("/api/notifications/clean-tasks-done")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<List<Map<String, String>>> getCleanTasksDone() {
-        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusMinutes(30);
-        List<com.kawai.models.HotelOperation> tasks = housekeepingTaskRepository.findRecentCompletedCleanTasks(since);
-        List<Map<String, String>> response = new ArrayList<>();
-        for (com.kawai.models.HotelOperation task : tasks) {
-            if (task.getRoom() == null)
-                continue;
-            Map<String, String> map = new HashMap<>();
-            map.put("taskId", task.getId().toString());
-            map.put("roomNumber", task.getRoom().getRoomNumber());
-            map.put("completedAt",
-                    task.getCompletedAt() != null ? task.getCompletedAt().toString() : "");
-            response.add(map);
-        }
-        return org.springframework.http.ResponseEntity.ok(response);
-    }
-
-    /**
-     * API xóa một slot RoomGuest (khách đi kèm) trước khi hoàn tất check-in.
-     * Điều kiện:
-     * - Slot không phải isPrimaryContact (không được xóa người đứng đầu).
-     * - detailStatus của booking detail CHƯA phải "Checked_In" / "CHECKED_IN"
-     * (tức là vẫn đang trong quá trình khai báo, chưa chốt).
+     * xóa một slot RoomGuest (khách đi kèm) trước khi hoàn tất check-in.
      */
     @DeleteMapping("/api/room-guests/by-dependent/{dependentId}")
     @ResponseBody
