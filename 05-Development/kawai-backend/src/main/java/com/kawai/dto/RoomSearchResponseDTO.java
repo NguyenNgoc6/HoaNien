@@ -28,6 +28,7 @@ public class RoomSearchResponseDTO {
     private Integer maxChildren;
     private BigDecimal extraAdultSurcharge;
     private BigDecimal extraChildSurcharge;
+    private String surchargesJson;
     private String description;
 
     // Legacy fields to maintain backwards compatibility

@@ -1,20 +1,51 @@
 const ALERT_AUDIO = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 ALERT_AUDIO.playbackRate = 2.0;
 
-// lastAlertedRooms dùng sessionStorage để persist qua navigate giữa các trang
-// (reset khi đóng tab — phù hợp với ca làm việc của Lễ tân)
-const HANDOVER_SS_KEY = 'handoverAlertedRooms';
-function getHandoverAlerted() {
-    try { return JSON.parse(sessionStorage.getItem(HANDOVER_SS_KEY) || '[]'); } catch { return []; }
+// Dùng localStorage với TTL 2 giờ để persist giữa các lần đăng nhập.
+// Tránh toast hiện lại mỗi khi nhân viên đăng nhập lại trong cùng ca trực.
+const HANDOVER_LS_KEY = 'handoverAlertedRooms_v2';
+const URGENT_CLEAN_LS_KEY = 'urgentCleanAlertedTasks_v2';
+const ALERT_TTL_MS = 2 * 60 * 60 * 1000; // 2 giờ
+
+function _lsGetWithTTL(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        const obj = JSON.parse(raw);
+        const now = Date.now();
+        // Lọc bỏ các entry đã quá TTL
+        const valid = (obj.items || []).filter(item => (now - item.ts) < ALERT_TTL_MS);
+        if (valid.length !== (obj.items || []).length) {
+            localStorage.setItem(key, JSON.stringify({ items: valid }));
+        }
+        return valid.map(item => item.id);
+    } catch { return []; }
 }
+
+function _lsAddWithTTL(key, id) {
+    try {
+        const raw = localStorage.getItem(key);
+        const obj = raw ? JSON.parse(raw) : { items: [] };
+        const now = Date.now();
+        const valid = (obj.items || []).filter(item => (now - item.ts) < ALERT_TTL_MS);
+        if (!valid.find(item => item.id === id)) {
+            valid.push({ id, ts: now });
+        }
+        localStorage.setItem(key, JSON.stringify({ items: valid }));
+    } catch { /* ignore */ }
+}
+
+function getHandoverAlerted() { return _lsGetWithTTL(HANDOVER_LS_KEY); }
 function setHandoverAlerted(arr) {
-    try { sessionStorage.setItem(HANDOVER_SS_KEY, JSON.stringify(arr)); } catch { /* ignore */ }
+    // Ghi lại toàn bộ danh sách (dùng khi cần trim), giữ timestamp hiện tại
+    try {
+        const now = Date.now();
+        const items = arr.map(id => ({ id, ts: now }));
+        localStorage.setItem(HANDOVER_LS_KEY, JSON.stringify({ items }));
+    } catch { /* ignore */ }
 }
 function isHandoverAlerted(roomNum) { return getHandoverAlerted().includes(roomNum); }
-function addHandoverAlerted(roomNum) {
-    const arr = getHandoverAlerted();
-    if (!arr.includes(roomNum)) { arr.push(roomNum); setHandoverAlerted(arr); }
-}
+function addHandoverAlerted(roomNum) { _lsAddWithTTL(HANDOVER_LS_KEY, roomNum); }
 
 // ── Shared Utilities ────────────────────────────────────────────────────────
 
@@ -111,14 +142,12 @@ window.dismissRoomAlert = function (roomNum, element) {
 };
 
 // ── Urgent Clean Notification ─────────────────────────────────────────────────
-const URGENT_CLEAN_SS_KEY = 'urgentCleanAlertedTasks';
+// urgentCleanAlertedTasks → dùng localStorage với TTL (đã khai báo ở trên)
 const RECENTLY_URGENT_CLEANED_ROOMS_KEY = 'recentlyUrgentCleanedRooms';
 
-function getUrgentCleanAlerted() {
-    try { return JSON.parse(sessionStorage.getItem(URGENT_CLEAN_SS_KEY) || '[]'); } catch { return []; }
-}
+function getUrgentCleanAlerted() { return _lsGetWithTTL(URGENT_CLEAN_LS_KEY); }
 function setUrgentCleanAlerted(arr) {
-    try { sessionStorage.setItem(URGENT_CLEAN_SS_KEY, JSON.stringify(arr)); } catch { /* ignore */ }
+    // Noop — dùng _lsAddWithTTL trực tiếp để tránh mất timestamp
 }
 function getRecentlyUrgentCleanedRooms() {
     try { return JSON.parse(sessionStorage.getItem(RECENTLY_URGENT_CLEANED_ROOMS_KEY) || '[]'); } catch { return []; }
@@ -127,111 +156,51 @@ function setRecentlyUrgentCleanedRooms(arr) {
     try { sessionStorage.setItem(RECENTLY_URGENT_CLEANED_ROOMS_KEY, JSON.stringify(arr)); } catch { /* ignore */ }
 }
 
-window.isRecentlyUrgentCleaned = function(roomNum) {
+window.isRecentlyUrgentCleaned = function (roomNum) {
     return getRecentlyUrgentCleanedRooms().includes(roomNum);
 };
 
-window.pollCleanTasksDone = async function() {
-    try {
-        const res = await fetch('/receptionist/api/notifications/clean-tasks-done');
-        if (!res.ok) return;
-        const tasks = await res.json();
-        
-        let playSound = false;
-        tasks.forEach(task => {
-            const alertedTasks = getUrgentCleanAlerted();
-            if (alertedTasks.includes(task.taskId)) return;
-            
-            playSound = true;
-            alertedTasks.push(task.taskId);
-            setUrgentCleanAlerted(alertedTasks);
-            
-            const recentRooms = getRecentlyUrgentCleanedRooms();
-            if (!recentRooms.includes(task.roomNumber)) {
-                recentRooms.push(task.roomNumber);
-                setRecentlyUrgentCleanedRooms(recentRooms);
-            }
-            
-            showToastAlert(`🚨 Housekeeping đã hoàn tất dọn khẩn cấp phòng ${task.roomNumber}!`, task.roomNumber, {
-                icon: '<i class="fa-solid fa-check-circle fa-beat" style="font-size:24px;color:#4ade80;"></i>',
-                bg: '#b91c1c'
-            });
-        });
-        if (playSound) playAlertSound();
-    } catch (err) {
-        console.error('Failed to poll urgent clean tasks:', err);
-    }
-};
+window.handleRoomCleanedEvent = function (payload) {
+    const roomNumber = payload.roomNumber || (payload.message && payload.message.match(/Phòng (\w+)/) ? payload.message.match(/Phòng (\w+)/)[1] : null);
+    if (!roomNumber) return;
 
-// ── WalkIn Pending Clean Rooms ──────────────────────────────────────────────
-async function pollPendingWalkInRooms() {
+    // 1. Kiểm tra xem phòng này có đang nằm trong danh sách chờ nhận phòng vãng lai / dọn khẩn cấp không
+    let pendingRooms = {};
     try {
         const raw = sessionStorage.getItem('walkInPendingCleanRooms');
-        if (!raw) return;
-        const pendingRooms = JSON.parse(raw); // { roomNum: true, ... }
-        if (!pendingRooms || Object.keys(pendingRooms).length === 0) return;
+        if (raw) pendingRooms = JSON.parse(raw);
+    } catch { /* ignore */ }
 
-        const roomNums = Object.keys(pendingRooms);
-        const params = roomNums.map(r => 'rooms=' + encodeURIComponent(r)).join('&');
-        const res = await fetch('/receptionist/api/notifications/room-status?' + params);
-        if (!res.ok) return;
-        const statusMap = await res.json(); // { "101": "Vacant_Clean", "102": "Vacant_Dirty" }
-
-        let changed = false;
-        roomNums.forEach(roomNum => {
-            const status = statusMap[roomNum];
-            if (status === 'Vacant_Clean') {
-                showToastAlert(`✅ Phòng ${roomNum} đã dọn xong!`, roomNum);
-                playAlertSound();
-                delete pendingRooms[roomNum];
-                changed = true;
-            }
+    if (pendingRooms[roomNumber]) {
+        // Đây là phòng lễ tân phiên này đang hóng dọn khẩn
+        showToastAlert(` ✅ Phòng ${roomNumber} đã dọn xong!`, roomNumber, {
+            icon: '<i class="fa-solid fa-check-circle fa-beat" style="font-size:24px;color:#4ade80;"></i>',
+            bg: '#b91c1c'
         });
+        playAlertSound();
 
-        if (changed) {
-            if (Object.keys(pendingRooms).length === 0) {
-                sessionStorage.removeItem('walkInPendingCleanRooms');
-            } else {
-                sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
-            }
+        // Cập nhật lại session storage (xóa phòng đã xong)
+        delete pendingRooms[roomNumber];
+        if (Object.keys(pendingRooms).length === 0) {
+            sessionStorage.removeItem('walkInPendingCleanRooms');
+        } else {
+            sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
         }
-    } catch (err) {
-        console.error('Failed to poll walk-in pending clean rooms:', err);
+
+        // Đánh dấu đã dọn khẩn để tí nữa không bị toast trùng
+        const recentRooms = getRecentlyUrgentCleanedRooms();
+        if (!recentRooms.includes(roomNumber)) {
+            recentRooms.push(roomNumber);
+            setRecentlyUrgentCleanedRooms(recentRooms);
+        }
+        return;
     }
-}
 
-// ── Cleaned Rooms (WalkIn handover) ────────────────────────────────────────
-async function pollCleanedRooms() {
-    try {
-        const res = await fetch('/receptionist/api/notifications/cleaned-rooms');
-        if (!res.ok) return;
-        const rooms = await res.json();
+    // 2. Thông báo dọn phòng thành công thông thường
+    if (isHandoverAlerted(roomNumber) || window.isRecentlyUrgentCleaned(roomNumber)) return;
 
-        let playSound = false;
-        // Lấy danh sách phòng backend đang trả về (còn pending handover)
-        const currentRoomNums = rooms.map(r => r.roomNumber);
-
-        rooms.forEach(roomInfo => {
-            const roomNum = roomInfo.roomNumber;
-            const customerName = roomInfo.customerName;
-            // Bỏ qua nếu phòng này vừa được alert bởi pollUrgentCleanDone (tránh toast trùng)
-            if (isHandoverAlerted(roomNum) || isRecentlyUrgentCleaned(roomNum)) return;
-            playSound = true;
-            addHandoverAlerted(roomNum);
-            showToastAlert(`Ting! 🔔 Phòng ${roomNum} đã dọn xong! Vui lòng báo khách (${customerName}) lên nhận thẻ từ!`, roomNum);
-        });
-
-        // Dọn phòng đã check-in xong khỏi danh sách (để hiện lại nếu lần sau cần)
-        const cleaned = getHandoverAlerted().filter(r => currentRoomNums.includes(r));
-        setHandoverAlerted(cleaned);
-
-        if (playSound) playAlertSound();
-    } catch (err) {
-        console.error('Failed to poll cleaned rooms:', err);
-    }
-}
-
-// ── Khởi chạy lần đầu khi load trang ──────────────────────────────────────
-window.pollCleanTasksDone();
-pollCleanedRooms();
-pollPendingWalkInRooms();
+    addHandoverAlerted(roomNumber);
+    const displayMsg = payload.message ? payload.message : `Phòng ${roomNumber} đã dọn xong!`;
+    showToastAlert(`Ting!${displayMsg}`, roomNumber);
+    playAlertSound();
+};

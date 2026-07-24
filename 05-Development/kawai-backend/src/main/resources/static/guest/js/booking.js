@@ -370,6 +370,7 @@ function createRoomCardHTML(room, availableCount) {
                                     data-base-children="${room.baseChildren || 0}"
                                     data-extra-adult="${room.extraAdultSurcharge || 0}"
                                     data-extra-child="${room.extraChildSurcharge || 0}"
+                                    data-surcharges='${room.surchargesJson || "[]"}'
                                     onclick="handleSelectRoomClick(this)">
                                 Select Room
                             </button>
@@ -664,15 +665,25 @@ function handleSelectRoomClick(button) {
     }
 
     const diffDays = Math.ceil(Math.abs(bookingState.checkOut - bookingState.checkIn) / (1000 * 60 * 60 * 24)) || 1;
-
-    // Tính phụ thu cho người lớn thêm
     const extraAdults = Math.max(0, adultsPerRoom - baseAdults);
     const adultSurchargePerNight = extraAdultSurcharge * extraAdults;
+    const surchargesData = JSON.parse(button.getAttribute('data-surcharges') || '[]');
+    let childSurchargePerNight = 0;
 
-    // Tính phụ thu trẻ em (child vượt baseChildren sẽ bị tính phụ thu theo tuổi)
-    // Dùng extraChildSurcharge làm fallback mặc định khi không có data tuổi chi tiết
-    const chargeableChildren = Math.max(0, childrenPerRoom - baseChildren);
-    const childSurchargePerNight = extraChildSurcharge * chargeableChildren;
+    // Sort ages youngest first (ascending)
+    const sortedAges = [...childrenAges].sort((a, b) => a - b);
+    const chargeableChildrenCount = Math.max(0, childrenPerRoom - baseChildren);
+    const skipCount = Math.max(0, childrenPerRoom - chargeableChildrenCount); // Free allowance for youngest
+
+    for (let idx = skipCount; idx < sortedAges.length; idx++) {
+        const childAge = sortedAges[idx];
+        const matchedRule = surchargesData.find(s => childAge >= s.ageFrom && childAge <= s.ageTo);
+        if (matchedRule) {
+            childSurchargePerNight += parseFloat(matchedRule.priceModifier);
+        } else {
+            childSurchargePerNight += extraChildSurcharge;
+        }
+    }
 
     const surchargePerNightPerRoom = adultSurchargePerNight + childSurchargePerNight;
     const estimatedSurchargeTotal = surchargePerNightPerRoom * quantity * diffDays;
