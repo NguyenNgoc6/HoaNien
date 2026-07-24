@@ -121,7 +121,7 @@ public class MaintenanceWebController {
         return "redirect:/maintenance/dashboard";
     }
 
-    @PostMapping("/requests/{requestId}/complete")
+    @PostMapping({"/requests/{requestId}/complete", "/tasks/{requestId}/complete"})
     public String completeRequest(@PathVariable Long requestId, 
             @RequestParam(required=false) String notes, 
             @RequestParam(required=false) Double cost, RedirectAttributes ra, HttpSession session) {
@@ -133,12 +133,36 @@ public class MaintenanceWebController {
         try { 
             var t = maintenanceRequestRepo.findById(requestId).orElseThrow();
             if (notes != null && !notes.isEmpty()) {
-                t.setNotes(t.getNotes() + "\n[Đã sửa]: " + notes);
+                String existingNotes = t.getNotes() != null ? t.getNotes() : "";
+                t.setNotes(existingNotes + (existingNotes.isEmpty() ? "" : "\n") + "[Đã sửa]: " + notes);
                 maintenanceRequestRepo.save(t);
             }
             housekeepingService.completeMaintenance(requestId);
             ra.addFlashAttribute("successMessage","Hoàn tất bảo trì, phòng đã sẵn sàng.");
         } catch(Exception e) { ra.addFlashAttribute("errorMessage","Lỗi: "+e.getMessage()); }
+        return "redirect:/maintenance/dashboard";
+    }
+
+    @PostMapping("/tasks/{taskId}/pause")
+    public String pauseTask(@PathVariable Long taskId, 
+            @RequestParam String reason, RedirectAttributes ra, HttpSession session) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!shiftService.checkIsOnShift(auth, session)) {
+            ra.addFlashAttribute("errorMessage", "Lỗi: Bạn chưa vào ca làm việc.");
+            return "redirect:/maintenance/dashboard";
+        }
+        try {
+            var t = maintenanceRequestRepo.findById(taskId).orElseThrow();
+            t.setStatus("Paused");
+            if (reason != null && !reason.isEmpty()) {
+                String existingNotes = t.getNotes() != null ? t.getNotes() : "";
+                t.setNotes(existingNotes + (existingNotes.isEmpty() ? "" : "\n") + "[Tạm dừng]: " + reason);
+            }
+            maintenanceRequestRepo.save(t);
+            ra.addFlashAttribute("successMessage", "Đã tạm dừng công việc.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+        }
         return "redirect:/maintenance/dashboard";
     }
 

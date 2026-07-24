@@ -775,6 +775,7 @@
                 display: block !important;
                 position: relative !important;
                 width: 100% !important;
+                max-width: none !important;
                 background: white !important;
                 padding: 1.5cm 2cm !important;
                 margin: 0 !important;
@@ -1432,7 +1433,8 @@
                             renderGroupFolio(results);
                         }).catch(err => {
                             console.error(err);
-                            alert("Lỗi tải dữ liệu các phòng");
+                            alert("Lỗi tải dữ liệu các phòng (Chi tiết: " + err.message + "). Hệ thống sẽ chuyển sang hiển thị phòng đơn lẻ.");
+                            fetchFolioData(id);
                         });
                     } else {
                         fetchFolioData(id);
@@ -1696,8 +1698,7 @@
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         if (diffDays > 0) nights = diffDays;
                     }
-                    const isWalkIn = data.bookingSource === 'WALK_IN';
-                    const expectedTotalCharge = isWalkIn ? (data.roomCharge * nights) : data.roomCharge;
+                    const expectedTotalCharge = data.roomCharge * nights;
 
                     const dep = 'Room';
                     // Right Pane
@@ -1746,8 +1747,8 @@
                         const checkIn = new Date(data.checkInDate);
                         const checkOut = new Date(data.checkOutDate);
                         const nights = Math.max(1, Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
-                        const dailyRoomCharge = data.dailyRate || ((data.roomCharge || 0) / nights);
-                        const dailyExtraSurcharge = (data.extraSurcharge || 0) / nights;
+                        const dailyRoomCharge = data.dailyRate || (data.roomCharge || 0);
+                        const dailyExtraSurcharge = data.extraSurcharge || 0;
                         const extraAdultsCount = Math.max(0, data.numberOfAdults - (data.baseAdults || 2));
                         const dailyAdultSurcharge = extraAdultsCount * (data.extraAdultSurcharge || 0);
                         const dailyChildSurcharge = Math.max(0, dailyExtraSurcharge - dailyAdultSurcharge);
@@ -1782,6 +1783,7 @@
                                  <div style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
                                      ${data.roomCheckStatus === 'Completed' ? '<span style="color: #27ae60; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-check-circle"></i> Đã kiểm phòng</span>' : 
                                        data.roomCheckStatus === 'Pending' ? '<span style="color: #f39c12; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ kiểm phòng...</span>' : 
+                                       data.roomCheckStatus === 'Pending_Damage' ? '<span style="color: #e67e22; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Chờ định giá hỏng hóc</span>' :
                                        (data.detailStatus !== 'Checked_Out' ? `<button onclick="requestRoomCheck(${roomId}, event)" style="background: transparent; border: 1px solid #d35400; color: #d35400; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#d35400'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#d35400';">Yêu cầu kiểm phòng</button>` : '')}
                                  </div>
                              </div>
@@ -1969,13 +1971,27 @@
                                       <span style="font-family: 'Inter', sans-serif; font-size: 15px; color: #2c2a29; font-weight: 700;">${formatCurrency(roomTotalWithVat)}</span>
                                   </div>
                                   <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                      ${data.detailStatus !== 'Checked_Out' ? `
-                                      <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                                          Thanh toán Phòng ${data.roomNumber || 'N/A'}
-                                      </button>
-                                      ` : `
-                                      <span style="color: #27ae60; font-weight: 600; font-family: 'Inter', sans-serif; font-size: 13px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
-                                      `}
+                                       ${data.detailStatus !== 'Checked_Out' ? (
+                                           data.roomCheckStatus === 'Pending_Damage' ? `
+                                           <button disabled style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #d35400; color: white; border: none; border-radius: 4px; cursor: not-allowed; opacity: 0.8;">
+                                               Chờ định giá hỏng hóc
+                                           </button>
+                                           ` : data.roomCheckStatus === 'Pending' ? `
+                                           <button disabled style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: not-allowed; opacity: 0.8;">
+                                               Đang kiểm phòng...
+                                           </button>
+                                           ` : data.roomCheckStatus !== 'Completed' ? `
+                                           <button disabled style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: not-allowed; opacity: 0.8;">
+                                               Chưa kiểm phòng
+                                           </button>
+                                           ` : `
+                                           <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                               Thanh toán Phòng ${data.roomNumber || 'N/A'}
+                                           </button>
+                                           `
+                                       ) : `
+                                       <span style="color: #27ae60; font-weight: 600; font-family: 'Inter', sans-serif; font-size: 13px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
+                                       `}
                                   </div>
                               </div>
                           </div>
@@ -2010,18 +2026,17 @@
                 }
 
                 if (data.roomCharge && data.roomCharge > 0) {
-                    const isWalkIn = data.bookingSource === 'WALK_IN';
                     const key = `${data.originalCategoryName || data.categoryName || 'N/A'}_${data.roomCharge}`;
                     if (!breakdownGroups[key]) {
                         breakdownGroups[key] = {
                             categoryName: data.originalCategoryName || data.categoryName || 'Room',
-                            roomCharge: isWalkIn ? data.roomCharge : (data.roomCharge / nights),
-                            extraSurcharge: isWalkIn ? (data.extraSurcharge || 0) : ((data.extraSurcharge || 0) / nights),
+                            roomCharge: data.roomCharge,
+                            extraSurcharge: data.extraSurcharge || 0,
                             nights: nights,
                             roomCount: 0
                         };
                     } else {
-                        breakdownGroups[key].extraSurcharge += isWalkIn ? (data.extraSurcharge || 0) : ((data.extraSurcharge || 0) / nights);
+                        breakdownGroups[key].extraSurcharge += data.extraSurcharge || 0;
                     }
                     breakdownGroups[key].roomCount += 1;
                     if (nights > breakdownGroups[key].nights) {
@@ -2200,7 +2215,13 @@
                 btn.disabled = true;
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
-                btn.innerText = 'Chưa kiểm phòng ' + roomInfo.roomNumber;
+                if (roomInfo.roomCheckStatus === 'Pending_Damage') {
+                    btn.innerText = 'Chờ định giá hỏng hóc ' + roomInfo.roomNumber;
+                } else if (roomInfo.roomCheckStatus === 'Pending') {
+                    btn.innerText = 'Đang kiểm phòng ' + roomInfo.roomNumber;
+                } else {
+                    btn.innerText = 'Chưa kiểm phòng ' + roomInfo.roomNumber;
+                }
                 document.getElementById('roomPromoSection').style.display = 'block';
             } else {
                 btn.style.display = 'block';
@@ -2342,7 +2363,17 @@
                     btn.disabled = true;
                     btn.style.opacity = '0.5';
                     btn.style.cursor = 'not-allowed';
-                    btn.innerHTML = 'Chưa kiểm phòng';
+                    
+                    let hasPendingDamage = globalFolioResults.some(r => r.success && r.roomCheckStatus === 'Pending_Damage' && r.detailStatus !== 'Checked_Out');
+                    let hasPendingCheck = globalFolioResults.some(r => r.success && r.roomCheckStatus === 'Pending' && r.detailStatus !== 'Checked_Out');
+                    
+                    if (hasPendingDamage) {
+                        btn.innerHTML = 'Chờ định giá hỏng hóc';
+                    } else if (hasPendingCheck) {
+                        btn.innerHTML = 'Đang kiểm phòng...';
+                    } else {
+                        btn.innerHTML = 'Chưa kiểm phòng';
+                    }
                     btn.onclick = null;
                 } else if (outstanding < 1) {
                     btn.disabled = false;
@@ -2866,13 +2897,14 @@
                                 formattedVal = formatNumber(c.unitVal);
                                 formattedAmt = 'Đã bao gồm';
                             }
+                            const fontStyle = g.isParentMinibar ? 'normal' : 'italic';
                             tbodyHtml += `
                                 <tr style="color: #2F1F17; font-family: 'Times New Roman', serif; font-size: 14px;">
                                     <td style="padding: 8px 0; border-bottom: 1px dashed #eee;"></td>
-                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; padding-left: 20px; font-style: italic;">${c.description}</td>
-                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: center; font-style: italic;">${c.qty}</td>
-                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: italic;">${formattedVal}</td>
-                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: italic;">${formattedAmt}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; padding-left: 20px; font-style: ${fontStyle};">${c.description}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: center; font-style: ${fontStyle};">${c.qty}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: ${fontStyle};">${formattedVal}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: ${fontStyle};">${formattedAmt}</td>
                                 </tr>
                             `;
                         });

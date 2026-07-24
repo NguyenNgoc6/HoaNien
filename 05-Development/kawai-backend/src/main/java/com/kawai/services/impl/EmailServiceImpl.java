@@ -532,7 +532,7 @@ public class EmailServiceImpl implements EmailService {
                         if (nights <= 0) nights = 1;
 
                         String originalCategoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Room";
-                        java.math.BigDecimal pricePerNight = detail.getRoomCharge().divide(java.math.BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP);
+                        java.math.BigDecimal pricePerNight = detail.getRoomCharge() != null ? detail.getRoomCharge() : java.math.BigDecimal.ZERO;
                         
                         if (detail.getCategory() != null && detail.getCategory().getBasePrice() != null 
                                 && detail.getCategory().getBasePrice().compareTo(pricePerNight) != 0) {
@@ -560,7 +560,7 @@ public class EmailServiceImpl implements EmailService {
                         if (!hasRoomCharge) {
                             com.kawai.models.FolioItem virtualRoomCharge = new com.kawai.models.FolioItem();
                             virtualRoomCharge.setSourceDepartment("Room");
-                            virtualRoomCharge.setAmount(detail.getRoomCharge());
+                            virtualRoomCharge.setAmount(detail.getRoomCharge() != null ? detail.getRoomCharge().multiply(java.math.BigDecimal.valueOf(nights)) : java.math.BigDecimal.ZERO);
                             virtualRoomCharge.setDescription("Room Charge - " + originalCategoryName);
                             virtualRoomCharge.setIsSettledSeparately(false);
                             virtualRoomCharge.setCreatedAt(rb.getCheckInDate().atStartOfDay());

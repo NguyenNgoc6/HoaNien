@@ -371,7 +371,7 @@ INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_
 -- Booking 15 (Cancelled)
 (10, 15, 2, NULL, 3500000, 'Cancelled',   'TWIN_BED',  NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
 -- Booking 995 (Confirmed, Pending): room_booking_id=995, cat 1, 3 đêm × 2,500,000 = 7,500,000
-(11, 995,  1, NULL, 7500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER');
+(11, 995,  1, NULL, 2500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER');
 
 -- ── 15. Room Guests (10 rows) ────────────────────────────────
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
@@ -1191,12 +1191,12 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
 -- Booking 101: 2 rooms (2 nights x 4,500,000 = 9,000,000 per room)
-(1011, 101, 7, NULL, 9000000, 'Pending', 'KING_SIZE', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 0),
-(1012, 101, 7, NULL, 9000000, 'Pending', 'TWIN_BED', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 2),
+(1011, 101, 7, NULL, 4500000, 'Pending', 'KING_SIZE', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 0),
+(1012, 101, 7, NULL, 4500000, 'Pending', 'TWIN_BED', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 2),
 -- Booking 102: 3 rooms (3 nights x 4,500,000 = 13,500,000 per room)
-(1021, 102, 7, NULL, 13500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 1, 0),
-(1022, 102, 7, NULL, 13500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 3, 1),
-(1023, 102, 7, NULL, 13500000, 'Pending', 'TWIN_BED', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 2, 1);
+(1021, 102, 7, NULL, 4500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 1, 0),
+(1022, 102, 7, NULL, 4500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 3, 1),
+(1023, 102, 7, NULL, 4500000, 'Pending', 'TWIN_BED', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 2, 1);
 
 -- UPDATE Room_Booking_Details SET number_of_adults = 2, number_of_children = 0 WHERE number_of_adults IS NULL;
 
@@ -1240,8 +1240,8 @@ INSERT INTO Refund_Requests (id, order_id, room_booking_id, tour_booking_id, ban
 (2, NULL, 14, NULL, 'Techcombank', '19033482938', 'TRAN THI BICH', '0900000104', 1000000.00, 'COMPLETED', 'Đã chuyển khoản hoàn tiền cọc qua ứng dụng ngân hàng', 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(1031, 103, 8, NULL, 3600000, 'Pending', 'KING_SIZE', 'Gần thang máy', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1),
-(1032, 103, 8, NULL, 3600000, 'Pending', 'TWIN_BED', 'Gần phòng 26', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1);
+(1031, 103, 8, NULL, 1800000, 'Pending', 'KING_SIZE', 'Gần thang máy', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1),
+(1032, 103, 8, NULL, 1800000, 'Pending', 'TWIN_BED', 'Gần phòng 26', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1);
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (10311, 1031, 1, NULL, 'ADULT', TRUE),
@@ -1268,8 +1268,8 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (505, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 5000000.00, 'hash505');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id, number_of_adults, number_of_children) VALUES
-(5051, 505, 2, 11, 7000000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
-(5052, 505, 2, 12, 7000000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
+(5051, 505, 2, 11, 3500000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
+(5052, 505, 2, 12, 3500000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (50511, 5051, 505, NULL, 'ADULT', TRUE),
@@ -1364,7 +1364,7 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 VALUES (9999, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 2000000, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 7500000, 'hash9999');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id, number_of_adults, number_of_children) 
-VALUES (99991, 9999, 1, 5, 7500000, 'Checked_In', 'KING_SIZE', TRUE, 7500000, 'INDIVIDUAL', 1, 1, 0);
+VALUES (99991, 9999, 1, 5, 2500000, 'Checked_In', 'KING_SIZE', TRUE, 7500000, 'INDIVIDUAL', 1, 1, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) 
 VALUES (999911, 99991, 1, 'ADULT', TRUE);
@@ -2047,7 +2047,7 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (8001, DATE_SUB(CURDATE(), INTERVAL 3 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 2000000, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 10000000, 'hash8001');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(8001, 8001, 1, NULL, 6000000, 'Checked_Out', 'KING_SIZE', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
+(8001, 8001, 1, NULL, 3000000, 'Checked_Out', 'KING_SIZE', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
 (8001, 8001, 10, 'ADULT', TRUE);
@@ -2088,7 +2088,7 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (8003, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 3000000, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 10000000, 'hash8003');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(8003, 8003, 2, 13, 12000000, 'Checked_In', 'KING_SIZE', TRUE, 5000000, 'BILL_TO_LEADER', 2, 1);
+(8003, 8003, 2, 13, 4000000, 'Checked_In', 'KING_SIZE', TRUE, 5000000, 'BILL_TO_LEADER', 2, 1);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
 (8003, 8003, 11, 'ADULT', TRUE);
@@ -2136,7 +2136,7 @@ INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date
 (8005, DATE_ADD(CURDATE(), INTERVAL 2 DAY), DATE_ADD(CURDATE(), INTERVAL 5 DAY), 2000000, CURDATE(), 10000000, 'hash8005');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(8005, 8005, 3, NULL, 9000000, 'Pending', 'TWIN_BED', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
+(8005, 8005, 3, NULL, 3000000, 'Pending', 'TWIN_BED', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
 (8005, 8005, 12, 'ADULT', TRUE);

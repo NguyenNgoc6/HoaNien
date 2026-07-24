@@ -21,6 +21,7 @@ description: Đảm bảo tính toàn vẹn của Frontend (Giao diện và Tư�
 
 ## 3. Data & API Payload Integrity
 - Khi Fetch API, kiểm tra phương thức (GET, POST, PUT, DELETE) có đúng với Backend không.
+- Khi Fetch API hoặc chỉ định Form Action, kiểm tra phương thức (GET, POST, PUT, DELETE) và đường dẫn URL có khớp chính xác với Mapping bên Backend hay không. Ví dụ: Tránh việc Frontend gọi `/tasks/...` nhưng Backend chỉ lắng nghe `/requests/...` dẫn đến lỗi `NoResourceFoundException (404)`.
 - Đối chiếu các Key trong JSON payload gửi đi có khớp 100% với DTO hoặc `Map<String, Object>` mà Backend Controller kỳ vọng hay không.
 - Đối chiếu các giá trị (Enum values, Type strings) được định nghĩa ở thẻ `<select>` hoặc `<input>` của Frontend xem Backend có thực sự hỗ trợ xử lý và truy vấn giá trị đó hay không (ví dụ: `Manager_Approval` thay vì `Discount_Approval` để tránh trường hợp lưu thành công nhưng không hiển thị trên Dashboard).
 - Xử lý các trạng thái Promise (then/catch) và hiển thị UI thông báo tương ứng (Loading, Success, Error).

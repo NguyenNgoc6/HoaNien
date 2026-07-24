@@ -166,12 +166,6 @@ public class NightAuditServiceImpl implements NightAuditService {
     private void handleNightAuditRoomUpgradeSurcharge(RoomBookingDetail detail, LocalDate auditDate) {
         BigDecimal baseRate = detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO;
         RoomBooking booking = detail.getRoomBooking();
-        if (booking != null) {
-            long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
-            if (nights > 0 && "DIRECT_WEB".equalsIgnoreCase(booking.getBookingSource())) {
-                baseRate = baseRate.divide(BigDecimal.valueOf(nights), 2, RoundingMode.HALF_UP);
-            }
-        }
 
         BigDecimal currentRate = detail.getCategory() != null && detail.getCategory().getBasePrice() != null
                 ? detail.getCategory().getBasePrice()

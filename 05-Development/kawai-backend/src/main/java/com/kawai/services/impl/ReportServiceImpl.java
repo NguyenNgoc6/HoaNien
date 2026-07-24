@@ -350,7 +350,8 @@ public class ReportServiceImpl implements ReportService {
             String checkIn = d.getRoomBooking().getCheckInDate().toString();
             String checkOut = d.getRoomBooking().getCheckOutDate().toString();
             long nights = java.time.temporal.ChronoUnit.DAYS.between(d.getRoomBooking().getCheckInDate(), d.getRoomBooking().getCheckOutDate());
-            BigDecimal charge = d.getRoomCharge() != null ? d.getRoomCharge() : BigDecimal.ZERO;
+            long multiplier = nights <= 0 ? 1 : nights;
+            BigDecimal charge = d.getRoomCharge() != null ? d.getRoomCharge().multiply(BigDecimal.valueOf(multiplier)) : BigDecimal.ZERO;
             totalCharge = totalCharge.add(charge);
             String status = d.getDetailStatus();
 
@@ -556,7 +557,8 @@ public class ReportServiceImpl implements ReportService {
             String checkOut = d.getRoomBooking().getCheckOutDate().toString();
             long nights = java.time.temporal.ChronoUnit.DAYS.between(d.getRoomBooking().getCheckInDate(), d.getRoomBooking().getCheckOutDate());
             staySum += nights;
-            BigDecimal charge = d.getRoomCharge() != null ? d.getRoomCharge() : BigDecimal.ZERO;
+            long multiplier = nights <= 0 ? 1 : nights;
+            BigDecimal charge = d.getRoomCharge() != null ? d.getRoomCharge().multiply(BigDecimal.valueOf(multiplier)) : BigDecimal.ZERO;
             totalRevenue = totalRevenue.add(charge);
 
             dataRows.add(new String[]{

@@ -151,10 +151,19 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
 
         Room mockRoom = new Room();
+        mockRoom.setId(1L);
         mockRoom.setRoomNumber("101");
         mockDetail.setRoom(mockRoom);
+
+        HotelOperation mockTask = new HotelOperation();
+        mockTask.setOperationalType("ROOM_CHECK");
+        mockTask.setStatus("Completed");
+        mockTask.setCreatedAt(java.time.LocalDateTime.now());
+        mockTask.setRoom(mockRoom);
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockTask));
 
         RoomBooking mockBooking = new RoomBooking();
         Customer mockCustomer = new Customer();
@@ -201,9 +210,22 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
         RoomBooking mockBooking = new RoomBooking();
         mockBooking.setId(1L);
         mockDetail.setRoomBooking(mockBooking);
+
+        Room mockRoom = new Room();
+        mockRoom.setId(1L);
+        mockRoom.setRoomNumber("101");
+        mockDetail.setRoom(mockRoom);
+
+        HotelOperation mockTask = new HotelOperation();
+        mockTask.setOperationalType("ROOM_CHECK");
+        mockTask.setStatus("Completed");
+        mockTask.setCreatedAt(java.time.LocalDateTime.now());
+        mockTask.setRoom(mockRoom);
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockTask));
 
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
         FolioItem item = new FolioItem();
@@ -238,6 +260,7 @@ public class FolioRestControllerUC21Test {
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
         mockDetail.setRoomCharge(new BigDecimal("1000000"));
+        mockDetail.setDetailStatus("Checked_In");
 
         RoomBooking mockBooking = new RoomBooking();
         mockBooking.setId(10L);
@@ -248,8 +271,16 @@ public class FolioRestControllerUC21Test {
         mockDetail.setRoomBooking(mockBooking);
 
         Room mockRoom = new Room();
+        mockRoom.setId(1L);
         mockRoom.setRoomNumber("101");
         mockDetail.setRoom(mockRoom);
+
+        HotelOperation mockTask = new HotelOperation();
+        mockTask.setOperationalType("ROOM_CHECK");
+        mockTask.setStatus("Completed");
+        mockTask.setCreatedAt(java.time.LocalDateTime.now());
+        mockTask.setRoom(mockRoom);
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockTask));
 
         // Stubbing
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
@@ -288,6 +319,7 @@ public class FolioRestControllerUC21Test {
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
         mockDetail.setRoomCharge(new BigDecimal("1000000"));
+        mockDetail.setDetailStatus("Checked_In");
 
         RoomBooking mockBooking = new RoomBooking();
         mockBooking.setId(10L);
@@ -298,8 +330,16 @@ public class FolioRestControllerUC21Test {
         mockDetail.setRoomBooking(mockBooking);
 
         Room mockRoom = new Room();
+        mockRoom.setId(1L);
         mockRoom.setRoomNumber("101");
         mockDetail.setRoom(mockRoom);
+
+        HotelOperation mockTask = new HotelOperation();
+        mockTask.setOperationalType("ROOM_CHECK");
+        mockTask.setStatus("Completed");
+        mockTask.setCreatedAt(java.time.LocalDateTime.now());
+        mockTask.setRoom(mockRoom);
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockTask));
 
         // Stubbing
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
@@ -331,5 +371,195 @@ public class FolioRestControllerUC21Test {
                 eq("CASH"), eq(PaymentStatus.SUCCESS), anyString());
         // Verify deposit amount on booking is subtracted to 0
         assertEquals(new BigDecimal("0"), mockBooking.getDepositAmount());
+    }
+
+    @Test
+    @DisplayName("MOD5-TC-007 - Checkout thất bại do có đơn định giá hỏng hóc phát sinh sau đơn kiểm phòng chưa hoàn thành")
+    void testCheckoutFolio_Fail_PendingDamagePrice() {
+        // Arrange
+        Long detailId = 1L;
+        RoomBookingDetail mockDetail = new RoomBookingDetail();
+        mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
+
+        Room mockRoom = new Room();
+        mockRoom.setId(1L);
+        mockRoom.setRoomNumber("101");
+        mockDetail.setRoom(mockRoom);
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        HotelOperation mockRoomCheck = new HotelOperation();
+        mockRoomCheck.setOperationalType("ROOM_CHECK");
+        mockRoomCheck.setStatus("Completed");
+        mockRoomCheck.setCreatedAt(now.minusMinutes(10));
+        mockRoomCheck.setRoom(mockRoom);
+
+        HotelOperation mockDamageCheck = new HotelOperation();
+        mockDamageCheck.setOperationalType("DAMAGE_CHECK");
+        mockDamageCheck.setStatus("Pending");
+        mockDamageCheck.setCreatedAt(now.minusMinutes(5));
+        mockDamageCheck.setRoom(mockRoom);
+        mockDamageCheck.setDamagePrice(null); // Chưa định giá
+
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockRoomCheck, mockDamageCheck));
+
+        RoomBooking mockBooking = new RoomBooking();
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail("test@gmail.com");
+        mockBooking.setCustomer(mockCustomer);
+        mockDetail.setRoomBooking(mockBooking);
+
+        when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("paymentAmount", 1100000);
+        payload.put("paymentMethod", "CASH");
+
+        // Act
+        ResponseEntity<?> response = folioRestController.checkoutFolio(detailId, payload, null);
+
+        // Assert
+        assertTrue(response.getStatusCode().is4xxClientError());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertTrue(((String) body.get("message")).contains("định giá"));
+    }
+
+    @Test
+    @DisplayName("Checkout thất bại do có đơn định giá hỏng hóc đã hoàn thành nhưng chưa ghi nhận vào hóa đơn (Folio)")
+    void testCheckoutFolio_Fail_PricedButNoFolioItem() {
+        // Arrange
+        Long detailId = 1L;
+        RoomBookingDetail mockDetail = new RoomBookingDetail();
+        mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
+
+        Room mockRoom = new Room();
+        mockRoom.setId(1L);
+        mockRoom.setRoomNumber("101");
+        mockDetail.setRoom(mockRoom);
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        HotelOperation mockRoomCheck = new HotelOperation();
+        mockRoomCheck.setOperationalType("ROOM_CHECK");
+        mockRoomCheck.setStatus("Completed");
+        mockRoomCheck.setCreatedAt(now.minusMinutes(10));
+        mockRoomCheck.setRoom(mockRoom);
+
+        HotelOperation mockDamageCheck = new HotelOperation();
+        mockDamageCheck.setOperationalType("DAMAGE_CHECK");
+        mockDamageCheck.setStatus("Priced"); // Đã hoàn thành/định giá
+        mockDamageCheck.setCreatedAt(now.minusMinutes(5));
+        mockDamageCheck.setRoom(mockRoom);
+        mockDamageCheck.setDamagePrice(500000.0); // Đã định giá 500k
+
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockRoomCheck, mockDamageCheck));
+        when(folioItemRepository.findByRoomBookingDetailId(detailId)).thenReturn(List.of()); // Không có folio item tương ứng
+
+        RoomBooking mockBooking = new RoomBooking();
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail("test@gmail.com");
+        mockBooking.setCustomer(mockCustomer);
+        mockDetail.setRoomBooking(mockBooking);
+
+        when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("paymentAmount", 1100000);
+        payload.put("paymentMethod", "CASH");
+
+        // Act
+        ResponseEntity<?> response = folioRestController.checkoutFolio(detailId, payload, null);
+
+        // Assert
+        assertTrue(response.getStatusCode().is4xxClientError());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertTrue(((String) body.get("message")).contains("chưa ghi nhận vào hóa đơn"));
+    }
+
+    @Test
+    @DisplayName("Checkout thành công khi đơn định giá hỏng hóc đã hoàn thành và đã có folio item tương ứng")
+    void testCheckoutFolio_Success_PricedWithFolioItem() {
+        // Arrange
+        Long detailId = 1L;
+        RoomBookingDetail mockDetail = new RoomBookingDetail();
+        mockDetail.setId(detailId);
+        mockDetail.setRoomCharge(new BigDecimal("1000000"));
+        mockDetail.setDetailStatus("Checked_In");
+
+        RoomBooking mockBooking = new RoomBooking();
+        mockBooking.setId(10L);
+        mockBooking.setDepositAmount(new BigDecimal("500000"));
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail("test@gmail.com");
+        mockBooking.setCustomer(mockCustomer);
+        mockDetail.setRoomBooking(mockBooking);
+
+        Room mockRoom = new Room();
+        mockRoom.setId(1L);
+        mockRoom.setRoomNumber("101");
+        mockDetail.setRoom(mockRoom);
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        HotelOperation mockRoomCheck = new HotelOperation();
+        mockRoomCheck.setOperationalType("ROOM_CHECK");
+        mockRoomCheck.setStatus("Completed");
+        mockRoomCheck.setCreatedAt(now.minusMinutes(10));
+        mockRoomCheck.setRoom(mockRoom);
+
+        HotelOperation mockDamageCheck = new HotelOperation();
+        mockDamageCheck.setOperationalType("DAMAGE_CHECK");
+        mockDamageCheck.setStatus("Priced"); // Đã hoàn thành/định giá
+        mockDamageCheck.setCreatedAt(now.minusMinutes(5));
+        mockDamageCheck.setRoom(mockRoom);
+        mockDamageCheck.setDamagePrice(500000.0); // Đã định giá 500k
+
+        when(housekeepingTaskRepo.findAll()).thenReturn(List.of(mockRoomCheck, mockDamageCheck));
+
+        // Stubbing DTO/folio
+        when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
+        when(roomBookingDetailRepository.findByRoomBookingId(mockBooking.getId())).thenReturn(List.of(mockDetail));
+
+        FolioItem mockFbItem = new FolioItem();
+        mockFbItem.setAmount(new BigDecimal("1000000"));
+        mockFbItem.setSourceDepartment("F&B");
+
+        FolioItem mockDamageFolioItem = new FolioItem();
+        mockDamageFolioItem.setAmount(new BigDecimal("500000"));
+        mockDamageFolioItem.setSourceDepartment("Maintenance");
+        mockDamageFolioItem.setDescription("[Đền bù hỏng hóc] Làm hỏng TV");
+
+        when(nightAuditService.getFolioItems(detailId)).thenReturn(List.of(mockFbItem, mockDamageFolioItem));
+        when(folioItemRepository.findByRoomBookingDetailId(detailId)).thenReturn(List.of(mockFbItem, mockDamageFolioItem)); // Có folio item đền bù tương ứng
+
+        // Deposit txn
+        PaymentTransaction depositTxn = new PaymentTransaction();
+        depositTxn.setStatus(PaymentStatus.SUCCESS);
+        depositTxn.setAmount(new BigDecimal("500000"));
+        depositTxn.setTransactionType("ROOM_BOOKING");
+        when(paymentService.getPaymentsByBookingId(mockBooking.getId())).thenReturn(List.of(depositTxn));
+        when(invoicePdfService.generateInvoicePdf(any())).thenReturn("path/to/invoice.pdf");
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("isGroup", true); // Hóa đơn tổng
+        // 1.000.000 (phòng) + 1.000.000 (F&B) + 500.000 (đền bù) = 2.500.000 + 10% VAT = 2.750.000 - 500.000 cọc = 2.250.000
+        payload.put("paymentAmount", 2250000);
+        payload.put("paymentMethod", "CASH");
+
+        // Act
+        ResponseEntity<?> response = folioRestController.checkoutFolio(detailId, payload, null);
+
+        // Assert
+        assertTrue(response.getStatusCode().is2xxSuccessful());
+        verify(paymentService, times(1)).recordPayment(any(), any(), eq(new BigDecimal("2250000")), anyString(),
+                eq("CASH"), eq(PaymentStatus.SUCCESS), anyString());
     }
 }

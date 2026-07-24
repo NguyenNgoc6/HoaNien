@@ -534,11 +534,49 @@ public class FolioRestController {
             if (!tasks.isEmpty()) {
                 // Find the latest one
                 com.kawai.models.HotelOperation latestTask = tasks.stream()
+                        .filter(t -> t.getCreatedAt() != null)
                         .max(java.util.Comparator.comparing(com.kawai.models.HotelOperation::getCreatedAt))
                         .orElse(null);
                 if (latestTask != null) {
                     if ("Completed".equals(latestTask.getStatus())) {
                         roomCheckStatus = "Completed";
+                        
+                        // Check for pending/unbilled DAMAGE_CHECK tasks at or after this ROOM_CHECK
+                        java.time.LocalDateTime finalRoomCheckCreatedAt = latestTask.getCreatedAt();
+                        java.util.List<com.kawai.models.HotelOperation> damageTasks = housekeepingTaskRepo.findAll().stream()
+                                .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                                        && "DAMAGE_CHECK".equals(t.getOperationalType())
+                                        && t.getCreatedAt() != null
+                                        && finalRoomCheckCreatedAt != null
+                                        && !t.getCreatedAt().isBefore(finalRoomCheckCreatedAt))
+                                .collect(java.util.stream.Collectors.toList());
+                        
+                        for (com.kawai.models.HotelOperation dt : damageTasks) {
+                            boolean isCompleted = "Priced".equalsIgnoreCase(dt.getStatus())
+                                    || "ConvertedToRepair".equalsIgnoreCase(dt.getStatus())
+                                    || "Completed".equalsIgnoreCase(dt.getStatus());
+                            if (!isCompleted || dt.getDamagePrice() == null) {
+                                roomCheckStatus = "Pending_Damage";
+                                break;
+                            }
+                            
+                            if (dt.getDamagePrice() > 0) {
+                                java.util.List<com.kawai.models.FolioItem> folioItems = null;
+                                try {
+                                    folioItems = folioItemRepository.findByRoomBookingDetailId(detail.getId());
+                                } catch (Exception e) {}
+                                if (folioItems == null) folioItems = java.util.Collections.emptyList();
+                                boolean hasFolio = folioItems.stream()
+                                        .anyMatch(item -> ("Maintenance".equalsIgnoreCase(item.getSourceDepartment())
+                                                    || (item.getDescription() != null && item.getDescription().contains("Đền bù hỏng hóc")))
+                                                && item.getAmount() != null
+                                                && Math.abs(item.getAmount().doubleValue() - dt.getDamagePrice()) < 0.01);
+                                if (!hasFolio) {
+                                    roomCheckStatus = "Pending_Damage";
+                                    break;
+                                }
+                            }
+                        }
                     } else {
                         roomCheckStatus = "Pending";
                     }
@@ -722,6 +760,7 @@ public class FolioRestController {
             // KIỂM TRA: Đảm bảo task ROOM_CHECK đã hoàn tất
             boolean hasCompletedCheck = false;
             boolean hasPendingCheck = false;
+            java.time.LocalDateTime roomCheckCreatedAt = null;
             java.util.List<com.kawai.models.HotelOperation> tasks = housekeepingTaskRepo.findAll().stream()
                     .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
                             && "ROOM_CHECK".equals(t.getOperationalType()))
@@ -731,6 +770,7 @@ public class FolioRestController {
                         .max(java.util.Comparator.comparing(com.kawai.models.HotelOperation::getCreatedAt))
                         .orElse(null);
                 if (latestTask != null) {
+                    roomCheckCreatedAt = latestTask.getCreatedAt();
                     if ("Completed".equals(latestTask.getStatus())) {
                         hasCompletedCheck = true;
                     } else {
@@ -746,6 +786,39 @@ public class FolioRestController {
                 } else {
                     return ResponseEntity.badRequest().body(Map.of("success", false, "message",
                             "Chưa có yêu cầu kiểm tra phòng. Vui lòng yêu cầu kiểm tra phòng trước khi thanh toán và checkout."));
+                }
+            }
+
+            // KIỂM TRA: Nếu có đơn định giá hỏng hóc phát sinh cùng lúc hoặc sau đơn kiểm phòng, phải hoàn thành định giá đó trước và thu được folio mới được checkout
+            if (roomCheckCreatedAt != null) {
+                final java.time.LocalDateTime finalRoomCheckCreatedAt = roomCheckCreatedAt;
+                java.util.List<com.kawai.models.HotelOperation> damageTasks = housekeepingTaskRepo.findAll().stream()
+                        .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                                && "DAMAGE_CHECK".equals(t.getOperationalType())
+                                && !t.getCreatedAt().isBefore(finalRoomCheckCreatedAt))
+                        .collect(java.util.stream.Collectors.toList());
+
+                for (com.kawai.models.HotelOperation dt : damageTasks) {
+                    boolean isCompleted = "Priced".equalsIgnoreCase(dt.getStatus())
+                            || "ConvertedToRepair".equalsIgnoreCase(dt.getStatus())
+                            || "Completed".equalsIgnoreCase(dt.getStatus());
+                    if (!isCompleted || dt.getDamagePrice() == null) {
+                        return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                                "Phòng có báo cáo hỏng hóc phát sinh đang chờ định giá. Vui lòng hoàn thành định giá để cập nhật hóa đơn trước khi checkout."));
+                    }
+
+                    if (dt.getDamagePrice() > 0) {
+                        java.util.List<com.kawai.models.FolioItem> folioItems = folioItemRepository.findByRoomBookingDetailId(detail.getId());
+                        boolean hasFolio = folioItems.stream()
+                                .anyMatch(item -> ("Maintenance".equalsIgnoreCase(item.getSourceDepartment())
+                                            || (item.getDescription() != null && item.getDescription().contains("Đền bù hỏng hóc")))
+                                        && item.getAmount() != null
+                                        && Math.abs(item.getAmount().doubleValue() - dt.getDamagePrice()) < 0.01);
+                        if (!hasFolio) {
+                            return ResponseEntity.badRequest().body(Map.of("success", false, "message",
+                                    "Đơn định giá đã hoàn thành nhưng chưa ghi nhận vào hóa đơn (Folio) của phòng. Vui lòng cập nhật hóa đơn trước khi checkout."));
+                        }
+                    }
                 }
             }
             boolean isGroup = false;
@@ -1666,11 +1739,6 @@ public class FolioRestController {
         }
         if (totalCharge.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
-        }
-
-        boolean isWalkIn = d.getRoomBooking() != null && "WALK_IN".equalsIgnoreCase(d.getRoomBooking().getBookingSource());
-        if (!isWalkIn) {
-            return totalCharge;
         }
 
         long nights = 1;

@@ -801,6 +801,9 @@ public class BookingServiceImpl implements BookingService {
 
         List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
 
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
+        if (nights <= 0) nights = 1;
+
         BigDecimal baseRoomPrice = BigDecimal.ZERO;
         BigDecimal servicesFee = BigDecimal.ZERO;
         int totalAdults = 0;
@@ -808,9 +811,9 @@ public class BookingServiceImpl implements BookingService {
 
         for (RoomBookingDetail detail : details) {
             baseRoomPrice = baseRoomPrice
-                    .add(detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO);
+                    .add(detail.getRoomCharge() != null ? detail.getRoomCharge().multiply(BigDecimal.valueOf(nights)) : BigDecimal.ZERO);
             servicesFee = servicesFee
-                    .add(detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO);
+                    .add(detail.getExtraSurcharge() != null ? detail.getExtraSurcharge().multiply(BigDecimal.valueOf(nights)) : BigDecimal.ZERO);
             totalAdults += detail.getNumberOfAdults() != null ? detail.getNumberOfAdults() : 0;
             totalChildren += detail.getNumberOfChildren() != null ? detail.getNumberOfChildren() : 0;
         }
@@ -871,15 +874,17 @@ public class BookingServiceImpl implements BookingService {
 
         BigDecimal totalBaseTotal = BigDecimal.ZERO;
 
-        if (generalBooking instanceof RoomBooking) {
+        if (generalBooking instanceof RoomBooking rb) {
+            long nights = java.time.temporal.ChronoUnit.DAYS.between(rb.getCheckInDate(), rb.getCheckOutDate());
+            if (nights <= 0) nights = 1;
             List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(bookingId);
             BigDecimal baseRoomPrice = BigDecimal.ZERO;
             BigDecimal servicesFee = BigDecimal.ZERO;
             for (RoomBookingDetail detail : details) {
                 baseRoomPrice = baseRoomPrice
-                        .add(detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO);
+                        .add(detail.getRoomCharge() != null ? detail.getRoomCharge().multiply(BigDecimal.valueOf(nights)) : BigDecimal.ZERO);
                 servicesFee = servicesFee
-                        .add(detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO);
+                        .add(detail.getExtraSurcharge() != null ? detail.getExtraSurcharge().multiply(BigDecimal.valueOf(nights)) : BigDecimal.ZERO);
             }
             totalBaseTotal = baseRoomPrice.add(servicesFee);
         } else if (generalBooking instanceof com.kawai.models.TourBooking) {

@@ -3,22 +3,34 @@ package com.kawai;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import com.kawai.repositories.TourScheduleRepository;
-import com.kawai.models.TourSchedule;
+import com.kawai.repositories.StaffScheduleRepository;
+import com.kawai.models.StaffSchedule;
+import java.time.LocalDate;
 import java.util.List;
 
 @SpringBootTest
 public class CheckDbTest {
 
     @Autowired
-    private TourScheduleRepository tourScheduleRepository;
+    private StaffScheduleRepository staffScheduleRepository;
 
     @Test
+    @org.springframework.transaction.annotation.Transactional
     public void testCount() {
-        System.out.println("DEBUG_COUNT: " + tourScheduleRepository.count());
-        List<TourSchedule> schedules = tourScheduleRepository.findAll();
-        for (TourSchedule s : schedules) {
-            System.out.println("SCHEDULE_ID: " + s.getId() + " - " + (s.getTour() != null ? s.getTour().getTourName() : "No Tour"));
+        LocalDate today = LocalDate.now();
+        System.out.println("TODAY_DATE: " + today);
+        List<StaffSchedule> schedules = staffScheduleRepository.findByWorkDateAndStatus(today, "Published");
+        System.out.println("TOTAL_SHIFTS: " + schedules.size());
+        for (StaffSchedule s : schedules) {
+            if (s.getEmployee() != null && s.getEmployee().getAccount() != null && s.getEmployee().getAccount().getRole() != null) {
+                String roleName = s.getEmployee().getAccount().getRole().getRoleName();
+                if ("MAINTAINER".equalsIgnoreCase(roleName)) {
+                    System.out.println("MAINTAINER_SHIFT: Username=" + s.getEmployee().getAccount().getUsername() 
+                        + ", Name=" + s.getEmployee().getFullName() 
+                        + ", Shift=" + s.getShift().getShiftName() 
+                        + " (" + s.getShift().getStartTime() + " - " + s.getShift().getEndTime() + ")");
+                }
+            }
         }
     }
 }

@@ -535,6 +535,12 @@
             box-sizing: border-box;
         }
 
+        .btn:disabled {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
         .btn-primary {
             background: #3B2D24;
             color: #fff;
@@ -1053,7 +1059,7 @@
                         </div>
                     </div>
                     <div class="room-card-footer">
-                        <button class="btn btn-report"
+                        <button class="btn btn-report" disabled
                             th:attr="onclick=|openReportModal('${t.room.id}', '${t.room.roomNumber}', '${t.operationalType}')|">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -1065,7 +1071,7 @@
                                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
                             </svg> Báo sự cố
                         </button>
-                        <button type="button" class="btn btn-minibar"
+                        <button type="button" class="btn btn-minibar" disabled
                             th:attr="onclick=|openMinibarModal('${t.room.id}', '${t.room.roomNumber}')|">
                             <i class="fa-solid fa-martini-glass"></i> Minibar
                         </button>
