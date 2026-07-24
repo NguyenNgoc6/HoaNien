@@ -125,7 +125,7 @@ public class AuthServiceImpl implements AuthService {
         customerToUse.setFullName(fullName != null && !fullName.trim().isEmpty() ? fullName : username);
         customerToUse.setEmail(email);
         customerToUse.setGender(gender != null ? gender : "Other");
-        customerToUse.setPhone(phone != null && !phone.trim().isEmpty() ? phone : "0000000000");
+        customerToUse.setPhone(phone != null && !phone.trim().isEmpty() ? com.kawai.utils.ValidationUtils.normalizePhone(phone) : "0000000000");
         if (customerToUse.getMembershipTier() == null) {
             customerToUse.setMembershipTier(membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
         }
@@ -140,7 +140,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public boolean login(String username, String password) {
-        Optional<Account> optAcc = accountRepository.findByUsername(username);
+        if (username == null || username.trim().isEmpty() || password == null || password.isEmpty()) {
+            return false;
+        }
+        String cleanUsername = username.trim();
+        Optional<Account> optAcc = accountRepository.findByUsername(cleanUsername);
         if (optAcc.isEmpty()) {
             return false;
         }

@@ -538,324 +538,118 @@
     </div>
     <p style="color: #888888; font-size: 13px; margin-bottom: 5px; font-style: italic;">* Mã xác nhận này chỉ có hiệu lực trong vòng <strong>15 phút</strong>.</p>
 </div>
-</body>
-</html>`;
-            }
 
-            valContainer.innerHTML = `
-                <div class="mb-2 flex items-center justify-between text-sm text-[#4E4A3F] bg-[#f9fafb] p-2 rounded border border-[#eaedff]">
-                    <span class="font-medium text-[11px] uppercase">Độ trễ thực thi (Delay):</span>
-                    <div class="flex items-center gap-1.5">
-                        <input type="number" class="action-delay-input w-16 px-2 py-1 border border-[#c0c8cb] rounded text-center focus:outline-none focus:ring-1 focus:ring-brand-gold text-xs bg-white font-semibold" placeholder="0" min="0">
-                        <span class="text-[11px]">phút</span>
+<!-- ADMIN PROFILE MODAL -->
+<div id="adminProfileModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: white; padding: 24px; border-radius: 8px; width: 600px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Inter', sans-serif;">
+        <h2 style="margin-top: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; color: #111827; font-size: 1.25rem; font-weight: 600;">Hồ sơ Cá nhân</h2>
+        
+        <div style="display: flex; gap: 24px; margin-top: 16px;">
+            <!-- Left col: Info -->
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div class="adm-sidebar-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: #111827; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px; font-weight: bold;" th:text="${staffName != null && staffName.length() >= 2 ? staffName.substring(0, 2).toUpperCase() : 'NV'}">NV</div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; color: #111827;" th:text="${staffName != null ? staffName : 'Nhân viên'}">Nhân viên</h3>
+                        <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;" th:text="${staffRole != null ? staffRole : 'Quản trị Hệ thống'}">Quản trị Hệ thống</p>
                     </div>
                 </div>
-                <div class="space-y-3 mt-2 border-t border-[#eaedff] pt-3">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#6B6558] mb-1">EMAIL NGƯỜI GỬI (TÙY CHỌN)</label>
-                            <input type="email" value="${globalDefaultFromEmail}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-sender-email font-medium text-[#2C2A24]" />
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#6B6558] mb-1">EMAIL NGƯỜI NHẬN</label>
-                            <input type="text" value="${defaultTarget}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-target-email font-medium text-[#2C2A24]" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#6B6558] mb-1">TIÊU ĐỀ EMAIL</label>
-                        <input type="text" value="${defaultSubject}" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-email-subject font-medium text-[#2C2A24]" />
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#6B6558] mb-1">NỘI DUNG EMAIL (HỖ TRỢ HTML & BIẾN)</label>
-                        <textarea rows="6" class="w-full px-2 py-1.5 border border-[#c0c8cb] rounded text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold action-email-html font-medium text-[#2C2A24]">${defaultHtml}</textarea>
-                    </div>
+                <div style="font-size: 14px; line-height: 1.6; color: #374151;">
+                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentEmployee != null ? currentEmployee.email : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentEmployee != null ? currentEmployee.phone : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentEmployee != null ? currentEmployee.gender : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentEmployee != null ? currentEmployee.cccd : 'Chưa cập nhật'}"></span></p>
                 </div>
-            `;
-        }
-    }
+            </div>
 
-    function removeActionRow(rowId) {
-        const row = document.getElementById(rowId);
-        if (row) {
-            row.remove();
-        }
-    }
+            <!-- Right col: Password -->
+            <div style="flex: 1; border-left: 1px solid #e5e7eb; padding-left: 24px;">
+                <h3 style="margin-top: 0; font-size: 16px; color: #111827;">Đổi mật khẩu</h3>
+                <div style="margin-top: 12px;">
+                    <label style="display: block; font-size: 13px; color: #4b5563; margin-bottom: 4px;">Mật khẩu mới</label>
+                    <input type="password" id="adminNewPassword" placeholder="Nhập mật khẩu mới" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-size: 14px; margin-bottom: 8px;">
+                    <button id="adminSavePasswordBtn" style="padding: 8px 16px; background: #111827; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px; width: 100%;">Cập nhật ngay</button>
+                    <div id="adminPasswordMsg" style="margin-top: 8px; font-size: 13px; display: none;"></div>
+                </div>
+            </div>
+        </div>
 
-    // Save Workflow (Submit Handler)
-    async function saveWorkflow(e) {
-        e.preventDefault();
-        
-        const id = document.getElementById("workflow-id").value;
-        const name = document.getElementById("workflow-name").value;
-        const triggerEvent = document.getElementById("trigger-event").value;
-
-        // Construct Conditions Object (Generic Rule Builder)
-        const conditions = {};
-        const condRows = document.querySelectorAll(".generic-cond-row");
-        condRows.forEach(row => {
-            const field = row.querySelector(".cond-field").value.trim();
-            const op = row.querySelector(".cond-operator").value;
-            const val = row.querySelector(".cond-value").value.trim();
-            
-            if (field && val) {
-                let parsedVal = val;
-                // Auto-parse number if it looks like one
-                if (!isNaN(val) && val !== "") {
-                    parsedVal = Number(val);
-                }
-                // Handle booleans
-                if (val.toLowerCase() === "true") parsedVal = true;
-                if (val.toLowerCase() === "false") parsedVal = false;
-
-                if (op === "=") {
-                    conditions[field] = parsedVal;
-                } else if (op === ">") {
-                    conditions[field + "_gt"] = parsedVal;
-                } else if (op === "<") {
-                    conditions[field + "_lt"] = parsedVal;
-                } else if (op === "!=") {
-                    conditions[field + "_neq"] = parsedVal;
-                }
-            }
-        });
-
-        // Construct Actions List
-        const actions = [];
-        const actionRows = document.querySelectorAll(".action-item-row");
-        actionRows.forEach(row => {
-            const typeSelect = row.querySelector(".action-type-select");
-            const type = typeSelect ? typeSelect.value : null;
-            const valInput = row.querySelector(".action-val-input");
-            
-            if (type) {
-                const actionObj = {
-                    type: type,
-                    value: valInput ? valInput.value : ""
-                };
-
-                const delayInput = row.querySelector(".action-delay-input");
-                if (delayInput && delayInput.value && parseInt(delayInput.value) > 0) {
-                    actionObj.delay_minutes = parseInt(delayInput.value);
-                }
-
-                // Capture priority and supervisor_id if present
-                const prioritySelect = row.querySelector(".action-priority-input");
-                if (prioritySelect) {
-                    actionObj.priority = prioritySelect.value;
-                }
-                const supervisorSelect = row.querySelector(".action-supervisor-input");
-                if (supervisorSelect && supervisorSelect.value) {
-                    actionObj.supervisor_id = parseInt(supervisorSelect.value, 10);
-                }
-
-                if (type === "CREATE_OPERATION_TASK") {
-                    const assignee = row.querySelector(".action-assignee-input");
-                    const notes = row.querySelector(".action-notes-input");
-                    if (assignee && assignee.value) actionObj.assignee_id = parseInt(assignee.value, 10);
-                    if (notes && notes.value) actionObj.custom_notes = notes.value;
-                }
-
-                if (type === "SEND_EMAIL") {
-                    const sender = row.querySelector(".action-sender-email");
-                    const target = row.querySelector(".action-target-email");
-                    const subject = row.querySelector(".action-email-subject");
-                    const html = row.querySelector(".action-email-html");
-                    if (sender) actionObj.sender_email = sender.value;
-                    if (target) actionObj.target_email = target.value;
-                    if (subject) actionObj.email_subject = subject.value;
-                    if (html) actionObj.email_body_html = html.value;
-                }
-
-                actions.push(actionObj);
-            }
-        });
-
-        const payload = {
-            id: id ? id : null,
-            workflowName: name,
-            triggerEvent: triggerEvent,
-            conditionsJson: conditions,
-            actionsJson: actions,
-            isActive: true
-        };
-
-        try {
-            const res = await fetch("/admin/api/v1/workflows", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
+        <div style="margin-top: 24px; text-align: right; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+            <button onclick="document.getElementById('adminProfileModal').style.display='none'" style="padding: 8px 16px; background: white; color: #374151; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; font-weight: 500;">Đóng</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatars = document.querySelectorAll('.adm-sidebar-user, .adm-header-user-box, .adm-sidebar-footer, .adm-header-avatar');
+        avatars.forEach(avatar => {
+            avatar.style.cursor = 'pointer';
+            avatar.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                document.getElementById('adminProfileModal').style.display = 'flex';
+                document.getElementById('adminNewPassword').value = '';
+                document.getElementById('adminPasswordMsg').style.display = 'none';
             });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || "Không thể lưu quy trình");
-            }
-
-            showToast(id ? "Cập nhật quy trình thành công" : "Tạo quy trình thành công", "success");
-            resetForm();
-            loadWorkflows();
-        } catch (err) {
-            showToast(err.message, "error");
-        }
-    }
-
-    // Toggle Workflow Active Status
-    async function toggleWorkflowStatus(id) {
-        try {
-            const res = await fetch(`/admin/api/v1/workflows/${id}/toggle`, {
-                method: "PATCH"
-            });
-            if (!res.ok) throw new Error("Không thể thay đổi trạng thái quy trình");
-            const data = await res.json();
-            
-            // Update local state without reloading
-            workflows = workflows.map(w => w.id === id ? { ...w, isActive: data.isActive } : w);
-            renderWorkflows();
-            showToast("Đã thay đổi trạng thái quy trình", "success");
-        } catch (err) {
-            showToast(err.message, "error");
-        }
-    }
-
-    // Edit button click handler
-    function editWorkflow(id) {
-        const w = workflows.find(item => item.id === id);
-        if (!w) return;
-
-        document.getElementById("form-title").innerText = "Chỉnh sửa quy trình";
-        document.getElementById("workflow-id").value = w.id;
-        document.getElementById("workflow-name").value = w.workflowName;
-        document.getElementById("trigger-event").value = w.triggerEvent;
+        });
         
-        onTriggerChange();
-
-        // Load conditions
-        document.getElementById("generic-conditions-container").innerHTML = "";
-        if (w.conditionsJson) {
-            try {
-                const condObj = typeof w.conditionsJson === 'string' ? JSON.parse(w.conditionsJson) : w.conditionsJson;
-                for (const [key, val] of Object.entries(condObj)) {
-                    let field = key;
-                    let op = "=";
-                    if (key.endsWith("_gt")) { field = key.replace("_gt", ""); op = ">"; }
-                    else if (key.endsWith("_lt")) { field = key.replace("_lt", ""); op = "<"; }
-                    else if (key.endsWith("_neq")) { field = key.replace("_neq", ""); op = "!="; }
-                    addGenericConditionRow(field, op, val);
+        const modal = document.getElementById('adminProfileModal');
+        if(modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
                 }
-            } catch(e) {
-                console.error("Error parsing conditions_json", e);
-            }
+            });
         }
 
-        // Load Actions
-        const container = document.getElementById("actions-container");
-        container.innerHTML = "";
-        if (w.actionsJson) {
-            try {
-                const actionsList = typeof w.actionsJson === 'string' ? JSON.parse(w.actionsJson) : w.actionsJson;
-                actionsList.forEach(act => {
-                    addActionRow(act.type, act.value, act.priority || "High", act.supervisor_id || "", act.assignee_id || "", act.custom_notes || "");
-                    
-                    // Delay slightly to let the DOM render the newly added action row before filling in SEND_EMAIL fields
-                    setTimeout(() => {
-                        const rows = document.querySelectorAll(".action-item-row");
-                        const currentRow = rows[rows.length - 1]; // The last one added
-                        if (currentRow) {
-                            if (act.delay_minutes) {
-                                const delayInput = currentRow.querySelector(".action-delay-input");
-                                if (delayInput) delayInput.value = act.delay_minutes;
-                            }
-                            if (act.type === "SEND_EMAIL") {
-                                const sender = currentRow.querySelector(".action-sender-email");
-                                const target = currentRow.querySelector(".action-target-email");
-                                const subject = currentRow.querySelector(".action-email-subject");
-                                const html = currentRow.querySelector(".action-email-html");
-                                if (sender && act.sender_email) sender.value = act.sender_email;
-                                if (target && act.target_email) target.value = act.target_email;
-                                if (subject && act.email_subject) subject.value = act.email_subject;
-                                if (html && act.email_body_html) html.value = act.email_body_html;
-                            }
-                        }
-                    }, 50);
+        const saveBtn = document.getElementById('adminSavePasswordBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function() {
+                const newPwd = document.getElementById('adminNewPassword').value;
+                const msg = document.getElementById('adminPasswordMsg');
+                
+                if (!newPwd || newPwd.trim() === '') {
+                    msg.style.display = 'block';
+                    msg.style.color = '#dc2626';
+                    msg.innerText = 'Vui lòng nhập mật khẩu mới';
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.innerText = 'Đang lưu...';
+
+                fetch('/api/staff/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newPassword: newPwd })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = 'Cập nhật ngay';
+                    msg.style.display = 'block';
+                    if (data.success) {
+                        msg.style.color = '#16a34a';
+                        msg.innerText = 'Đổi mật khẩu thành công!';
+                        document.getElementById('adminNewPassword').value = '';
+                    } else {
+                        msg.style.color = '#dc2626';
+                        msg.innerText = data.message || 'Có lỗi xảy ra';
+                    }
+                })
+                .catch(err => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = 'Cập nhật ngay';
+                    msg.style.display = 'block';
+                    msg.style.color = '#dc2626';
+                    msg.innerText = 'Lỗi kết nối mạng';
                 });
-            } catch (e) {
-                console.error("Error parsing actions_json", e);
-            }
-        }
-    }
-
-    // Delete Workflow
-    async function deleteWorkflow(id) {
-        if (!confirm("Bạn có chắc chắn muốn xóa quy trình này?")) return;
-
-        try {
-            const res = await fetch(`/admin/api/v1/workflows/${id}`, {
-                method: "DELETE"
             });
-            if (!res.ok) throw new Error("Không thể xóa quy trình");
-            
-            showToast("Đã xóa quy trình thành công", "success");
-            loadWorkflows();
-        } catch (err) {
-            showToast(err.message, "error");
         }
-    }
-
-    // Reset Form to Default empty values
-    function resetForm() {
-        document.getElementById("form-title").innerText = "Cấu hình quy trình mới";
-        document.getElementById("workflow-id").value = "";
-        document.getElementById("workflow-form").reset();
-        document.getElementById("actions-container").innerHTML = "";
-        onTriggerChange();
-    }
-
-    // Premium Toast feedback alerts
-    function showToast(msg, type = "info") {
-        const container = document.getElementById("toast-container");
-        const toast = document.createElement("div");
-        toast.className = `flex items-center gap-3 px-4 py-3 rounded shadow-md border text-sm transition-all duration-300 transform translate-y-2 opacity-0`;
-        
-        if (type === "success") {
-            toast.className += " bg-emerald-50 border-emerald-200 text-emerald-800";
-            toast.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> <span>${msg}</span>`;
-        } else if (type === "error") {
-            toast.className += " bg-rose-50 border-rose-200 text-rose-800";
-            toast.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600"></i> <span>${msg}</span>`;
-        } else {
-            toast.className += " bg-brand-gold/10 border-brand-gold/25 text-[#4E4A3F]";
-            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand-gold"></i> <span>${msg}</span>`;
-        }
-
-        container.appendChild(toast);
-        lucide.createIcons();
-
-        // Animate in
-        setTimeout(() => {
-            toast.classList.remove("translate-y-2", "opacity-0");
-        }, 10);
-
-        // Animate out and remove
-        setTimeout(() => {
-            toast.classList.add("translate-y-2", "opacity-0");
-            setTimeout(() => {
-                toast.remove();
-            }, 300);
-        }, 4000);
-    }
-
-    // Safe escape helper
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, "&amp;")
-                  .replace(/</g, "&lt;")
-                  .replace(/>/g, "&gt;")
-                  .replace(/"/g, "&quot;")
-                  .replace(/'/g, "&#039;");
-    }
+    });
 </script>
-
 </body>
+
 </html>

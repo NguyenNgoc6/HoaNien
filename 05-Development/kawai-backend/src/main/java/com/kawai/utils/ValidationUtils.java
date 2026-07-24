@@ -2,15 +2,27 @@ package com.kawai.utils;
 
 public class ValidationUtils {
 
+    public static String normalizePhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return "";
+        }
+        String cleanPhone = phone.replaceAll("[\\s\\-\\.]", "");
+        // If user typed 84 instead of +84 (and length is 11), add the +
+        if (cleanPhone.startsWith("84") && cleanPhone.length() == 11) {
+            cleanPhone = "+" + cleanPhone;
+        }
+        return cleanPhone;
+    }
+
     /**
      * Validate Phone Number: Must start with '0' or '+84' and followed by valid VN
      * mobile prefix (3,5,7,8,9).
      */
     public static boolean isValidPhone(String phone) {
-        if (phone == null || phone.trim().isEmpty()) {
+        String cleanPhone = normalizePhone(phone);
+        if (cleanPhone.isEmpty()) {
             return false;
         }
-        String cleanPhone = phone.trim();
         return cleanPhone.matches("^(0|\\+84)[35789]\\d{8}$");
     }
 
