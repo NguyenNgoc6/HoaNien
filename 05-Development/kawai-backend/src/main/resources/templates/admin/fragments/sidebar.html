@@ -106,9 +106,9 @@
         </div>
 
         <div class="adm-sidebar-user">
-            <div class="adm-sidebar-avatar" th:text="${#authentication != null ? #strings.substring(#authentication.name, 0, 2).toUpperCase() : 'AD'}">AD</div>
+            <div class="adm-sidebar-avatar" th:text="${staffName != null ? #strings.substring(staffName, 0, 2).toUpperCase() : (#authentication != null ? #strings.substring(#authentication.name, 0, 2).toUpperCase() : 'AD')}">AD</div>
             <div>
-                <div class="adm-sidebar-name" th:text="${#authentication != null ? #authentication.name : 'Admin Dũng'}">Admin Dũng</div>
+                <div class="adm-sidebar-name" th:text="${staffName != null ? staffName : (#authentication != null ? #authentication.name : 'Admin Dũng')}">Admin Dũng</div>
                 <div class="adm-sidebar-role" th:text="${#authentication != null and #authentication.authorities != null and !#authentication.authorities.isEmpty() ? #strings.replace(#authentication.authorities[0].authority, 'ROLE_', '') : 'Super Admin'}">Super Admin</div>
             </div>
         </div>

@@ -29,16 +29,10 @@
                 <span class="adm-breadcrumb-page">Nhật ký kiểm toán</span>
             </div>
             <div class="adm-header-right">
-                <button class="adm-header-icon-btn"><i data-lucide="search"></i></button>
-                <button class="adm-header-icon-btn">
-                    <i data-lucide="bell"></i>
-                    <span class="adm-notif-dot"></span>
-                </button>
-                <div class="adm-divider-v"></div>
                 <div class="adm-header-user-box">
-                    <div class="adm-header-avatar">AD</div>
-                    <span class="adm-header-username">Admin Dũng</span>
-                </div>
+                <div class="adm-header-avatar" th:text="${staffName != null ? #strings.substring(staffName, 0, 2).toUpperCase() : (#authentication != null ? #strings.substring(#authentication.name, 0, 2).toUpperCase() : 'AD')}">AD</div>
+                <span class="adm-header-username" th:text="${staffName != null ? staffName : (#authentication != null ? #authentication.name : 'Admin')}">Admin</span>
+            </div>
                 <div class="adm-divider-v"></div>
                 <a href="/logout" class="adm-header-logout"><i data-lucide="log-out"
                         style="width:12px;height:12px"></i>Đăng xuất</a>

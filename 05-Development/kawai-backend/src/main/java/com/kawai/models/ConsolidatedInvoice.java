@@ -1,9 +1,12 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Entity @Table(name="Consolidated_Invoices") @Data
+@Audited
 public class ConsolidatedInvoice {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="invoice_id") private Long id;
     @Column(name="invoice_number", unique=true, nullable=false) private String invoiceNumber;

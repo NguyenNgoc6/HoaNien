@@ -1,9 +1,12 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Entity @Table(name="Folio_Items") @Data
+@Audited
 public class FolioItem {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="folio_item_id") private Long id;
     @ManyToOne @JoinColumn(name="booking_id", nullable=false) private Booking booking;

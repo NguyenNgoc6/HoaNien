@@ -1,10 +1,13 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "Employees")
+@Audited
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

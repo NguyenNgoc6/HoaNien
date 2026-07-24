@@ -1,8 +1,11 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 @Entity @Table(name="Tour_Staff_Assignments") @Data
+@Audited
 public class TourStaffAssignment {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="assignment_id") private Long id;
     @ManyToOne @JoinColumn(name="schedule_id", nullable=false) private TourSchedule schedule;
