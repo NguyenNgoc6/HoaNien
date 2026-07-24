@@ -6,9 +6,56 @@ document.addEventListener('DOMContentLoaded', () => {
     orderType: 'dine-in', // 'dine-in' or 'room-svc'
     cart: {}, // foodId -> { item, qty }
     vatRate: 0.1,
-    roomLimit: 1000000, // Hardcoded for mockup (1,000,000 VND)
-    roomOccupied: false
+    roomLimit: 0, // Set to 0 initially, updated by API
+    roomOccupied: false,
+    guestVerified: false
   };
+
+  // --- TABLE ID MAPPING ---
+  const tableInputText = document.getElementById('tableSelectText');
+  const tableHiddenId = document.getElementById('tableSelect');
+
+  if (tableInputText && tableHiddenId) {
+    tableInputText.addEventListener('input', () => {
+      const val = tableInputText.value.trim();
+      const options = document.querySelectorAll('#tableDatalist option');
+      let foundId = val; // fallback
+      options.forEach(opt => {
+        if (opt.value === val) {
+          foundId = opt.getAttribute('data-id');
+        }
+      });
+      tableHiddenId.value = foundId;
+    });
+  }
+
+  // --- PARSE URL PARAMS ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const preselectTableId = urlParams.get('tableId');
+  const typeParam = urlParams.get('type');
+  const returnUrl = urlParams.get('returnUrl') || "/fbStaff/dashboard";
+
+  // Customize back button
+  if (urlParams.has('returnUrl')) {
+    const backBtn = document.querySelector('.topbar-right a.btn');
+    if (backBtn) {
+      backBtn.href = returnUrl;
+      if (returnUrl.includes('room-service')) {
+        backBtn.innerHTML = '<span class="material-symbols-outlined">arrow_back</span> Quay lại Room Service';
+      }
+    }
+  }
+
+  if (preselectTableId && tableInputText && tableHiddenId) {
+    tableHiddenId.value = preselectTableId;
+    // Tìm tableNumber tương ứng với tableId để hiển thị
+    const option = document.querySelector(`#tableDatalist option[data-id="${preselectTableId}"]`);
+    if (option) {
+      tableInputText.value = option.value;
+    } else {
+      tableInputText.value = preselectTableId;
+    }
+  }
 
   // --- ELEMENTS ---
   const typeBtns = document.querySelectorAll('.type-btn');
@@ -41,27 +88,30 @@ document.addEventListener('DOMContentLoaded', () => {
       state.orderType = btn.dataset.type;
 
       if (state.orderType === 'dine-in') {
+        state.vatRate = 0.10;
+        const feeLabel = document.getElementById('fee-label-text');
+        if (feeLabel) feeLabel.textContent = 'VAT (10%)';
         dineInFields.style.display = 'grid';
         roomSvcFields.style.display = 'none';
-        
-        // Show normal payment options
-        paymentSection.innerHTML = `
-          <label class="form-label">Thanh toán</label>
-          <select class="form-control">
-            <option>Thanh toán tại quầy</option>
-            <option>Xác nhận thanh toán sau</option>
-          </select>
-        `;
+
+        paymentSection.style.display = 'none';
+        const btnSaveDraft = document.getElementById('btn-save-draft');
+        if (btnSaveDraft) btnSaveDraft.style.display = 'none';
       } else {
+        state.vatRate = 0.05;
+        const feeLabel = document.getElementById('fee-label-text');
+        if (feeLabel) feeLabel.textContent = 'Phí dịch vụ (5%)';
         dineInFields.style.display = 'none';
         roomSvcFields.style.display = 'grid';
-        
+
+        paymentSection.style.display = 'block';
+
         // Show charge to room info
         paymentSection.innerHTML = `
           <label class="form-label">Thanh toán</label>
           <div class="room-charge-info">
             <div class="rc-row"><span class="rc-label">Hình thức</span><span class="rc-val">Charge to Room</span></div>
-            <div class="rc-row"><span class="rc-label">Hạn mức còn lại</span><span class="rc-val">${formatMoney(state.roomLimit)}</span></div>
+            <div class="rc-row" id="sidebar-limit-row" style="display: none;"><span class="rc-label">Hạn mức còn lại</span><span class="rc-val" id="sidebar-room-limit">${formatMoney(state.roomLimit)}</span></div>
           </div>
         `;
       }
@@ -69,21 +119,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Auto select based on URL
+  if (typeParam === 'room-service') {
+    const rsBtn = document.querySelector('.type-btn[data-type="room-svc"]');
+    if (rsBtn) rsBtn.click();
+  }
+
   // --- ROOM SERVICE API INTEGRATION ---
   let roomSearchTimeout = null;
   roomInput.addEventListener('input', (e) => {
     const val = e.target.value.trim().toUpperCase();
-    
+
     // Clear previous timeout
     if (roomSearchTimeout) clearTimeout(roomSearchTimeout);
-    
+
     if (!val) {
       roomInfo.style.display = 'none';
+      const limitRow = document.getElementById('sidebar-limit-row');
+      if (limitRow) limitRow.style.display = 'none';
       state.roomOccupied = false;
+      state.guestVerified = false;
       validateCheckout();
       return;
     }
-    
+
+    // Reset verify state when room changes
+    state.guestVerified = false;
+    guestNameEl.textContent = 'Đang chờ xác thực...';
+    guestNameEl.style.color = 'var(--text-secondary)';
+
     // Debounce API call
     roomSearchTimeout = setTimeout(() => {
       fetch(`/api/rooms/${val}/info`)
@@ -94,16 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
           if (data.occupied) {
             roomInfo.style.display = 'block';
-            guestNameEl.textContent = data.guestName || 'Không có tên';
+            guestNameEl.textContent = 'Đang chờ xác thực CCCD...';
+            guestNameEl.style.color = 'var(--text-secondary)';
             state.roomLimit = data.limitRemaining || 0;
             roomLimitEl.textContent = formatMoney(state.roomLimit);
             state.roomOccupied = true;
             document.getElementById('roomStatusBadge').className = 'status-badge status-occupied';
             document.getElementById('roomStatusBadge').textContent = 'Occupied';
-            
-            if(state.orderType === 'room-svc') {
-                const limitDisplay = document.querySelector('.room-charge-info .rc-val:last-child');
-                if(limitDisplay) limitDisplay.textContent = formatMoney(state.roomLimit);
+
+            if (state.orderType === 'room-svc') {
+              const limitDisplay = document.getElementById('sidebar-room-limit');
+              const limitRow = document.getElementById('sidebar-limit-row');
+              if (limitDisplay) limitDisplay.textContent = formatMoney(state.roomLimit);
+              if (limitRow) limitRow.style.display = 'flex';
             }
           } else {
             showVacant();
@@ -120,8 +187,60 @@ document.addEventListener('DOMContentLoaded', () => {
   function showVacant() {
     roomInfo.style.display = 'none';
     state.roomOccupied = false;
+    state.guestVerified = false;
+    const limitRow = document.getElementById('sidebar-limit-row');
+    if (limitRow) limitRow.style.display = 'none';
     document.getElementById('roomStatusBadge').className = 'status-badge status-vacant';
     document.getElementById('roomStatusBadge').textContent = 'Trống';
+  }
+
+  // --- VERIFY GUEST API ---
+  const btnVerifyGuest = document.getElementById('btnVerifyGuest');
+  const last4DigitsInput = document.getElementById('last4DigitsInput');
+
+  if (btnVerifyGuest && last4DigitsInput) {
+    btnVerifyGuest.addEventListener('click', () => {
+      const val = roomInput.value.trim().toUpperCase();
+      const last4 = last4DigitsInput.value.trim();
+
+      if (!val) {
+        alert("Vui lòng nhập số phòng trước.");
+        return;
+      }
+      if (!last4 || last4.length !== 4) {
+        alert("Vui lòng nhập đủ 4 số cuối CCCD/Passport.");
+        return;
+      }
+
+      btnVerifyGuest.textContent = '...';
+      btnVerifyGuest.disabled = true;
+
+      fetch(`/api/rooms/${val}/verify-guest?last4Digits=${last4}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            state.guestVerified = true;
+            guestNameEl.textContent = data.guestName;
+            guestNameEl.style.color = 'var(--status-ready-text)'; // Greenish
+            alert("Xác thực thành công!");
+          } else {
+            state.guestVerified = false;
+            guestNameEl.textContent = data.message || 'Xác thực thất bại';
+            guestNameEl.style.color = 'red';
+            alert(data.message || "Xác thực thất bại!");
+          }
+          validateCheckout();
+        })
+        .catch(err => {
+          alert("Lỗi kết nối máy chủ");
+          state.guestVerified = false;
+          validateCheckout();
+        })
+        .finally(() => {
+          btnVerifyGuest.textContent = 'Xác nhận';
+          btnVerifyGuest.disabled = false;
+        });
+    });
   }
 
   // --- FILTER & SEARCH ---
@@ -137,20 +256,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterFoods() {
     const query = searchInput.value.toLowerCase();
     const activeCat = document.querySelector('.cat-pill.active').dataset.cat;
-    
+
     document.querySelectorAll('.food-card').forEach(card => {
       const name = card.dataset.name.toLowerCase();
       const cat = card.dataset.cat;
       const matchesSearch = name.includes(query);
       const matchesCat = activeCat === 'all' || cat === activeCat;
-      
+
       card.style.display = (matchesSearch && matchesCat) ? 'flex' : 'none';
     });
   }
 
   // --- DYNAMIC RENDERING ---
   function getCatLabel(cat) {
-    switch(cat) {
+    switch (cat) {
       case 'starter': return 'Khai vị';
       case 'main': return 'Món chính';
       case 'dessert': return 'Tráng miệng';
@@ -165,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderFoodGrid() {
     const grid = document.getElementById('food-grid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = MENU_ITEMS.map(item => {
       const isOut = item.status === 'out-of-stock';
       const currentQty = state.cart[item.id] ? state.cart[item.id].qty : 0;
@@ -198,27 +317,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- CART LOGIC ---
-  window.changeQty = function(btn, delta, id, name, price) {
+  window.changeQty = function (btn, delta, id, name, price) {
     // If out of stock, do nothing
     const card = btn.closest('.food-card');
-    if(card && card.classList.contains('disabled')) return;
+    if (card && card.classList.contains('disabled')) return;
 
     if (!state.cart[id]) {
       state.cart[id] = { id, name, price, qty: 0 };
     }
-    
+
     const newQty = state.cart[id].qty + delta;
     if (newQty < 0) return;
-    
+
     state.cart[id].qty = newQty;
     if (newQty === 0) {
       delete state.cart[id];
     }
-    
+
     // Update input display
     const display = btn.parentElement.querySelector('.qty-value');
     display.textContent = newQty;
-    
+
     renderCart();
   };
 
@@ -226,9 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const items = Object.values(state.cart);
     let subtotal = 0;
     let totalQty = 0;
-    
+
     cartList.innerHTML = '';
-    
+
     if (items.length === 0) {
       cartList.appendChild(emptyMsg);
       emptyMsg.style.display = 'block';
@@ -237,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
       items.forEach(item => {
         subtotal += item.price * item.qty;
         totalQty += item.qty;
-        
+
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
@@ -253,15 +372,15 @@ document.addEventListener('DOMContentLoaded', () => {
         cartList.appendChild(div);
       });
     }
-    
+
     const vat = subtotal * state.vatRate;
     const total = subtotal + vat;
-    
+
     countEl.textContent = totalQty;
     subtotalEl.textContent = formatMoney(subtotal);
     vatEl.textContent = formatMoney(vat);
     totalEl.textContent = formatMoney(total);
-    
+
     state.currentTotal = total;
     validateCheckout();
   }
@@ -269,36 +388,52 @@ document.addEventListener('DOMContentLoaded', () => {
   function validateCheckout() {
     let isValid = true;
     const items = Object.values(state.cart);
-    
+
     // Condition 1: Must have items
     if (items.length === 0) {
       isValid = false;
     }
-    
+
     // Condition 2: Room Service checks
     if (state.orderType === 'room-svc') {
       if (!state.roomOccupied) {
         isValid = false;
       }
+      if (!state.guestVerified) {
+        isValid = false;
+      }
       if (state.currentTotal > state.roomLimit) {
         isValid = false;
-        limitWarning.style.display = 'block';
+        if (limitWarning) limitWarning.style.display = 'block';
       } else {
-        limitWarning.style.display = 'none';
+        if (limitWarning) limitWarning.style.display = 'none';
       }
     } else {
-      limitWarning.style.display = 'none';
+      if (limitWarning) limitWarning.style.display = 'none';
     }
-    
+
     btnSendKitchen.disabled = !isValid;
+  }
+
+  // --- PREFILL FROM URL PARAMS ---
+  // Note: the prefill is already handled at the top of the file using tableSelectText & tableSelect
+
+  const customerNameParam = urlParams.get('customerName');
+  if (customerNameParam) {
+    const guestInput = document.getElementById('guestNameInput');
+    if (guestInput) guestInput.value = customerNameParam;
   }
 
   // --- INIT ---
   renderFoodGrid();
-  
+
   // Expose send logic
-  window.sendToKitchen = function() {
-    const tableSelect = document.querySelector('#fields-dine-in select');
+  window.sendToKitchen = function () {
+    if (!confirm("Bạn có chắc chắn muốn chốt đơn và gửi xuống bếp (KOT) không?\nHành động này không thể hoàn tác.")) {
+      return; // Hủy bỏ, ở lại màn hình hiện tại
+    }
+
+    const tableSelect = document.getElementById('tableSelect');
     const guestInput = document.getElementById('guestNameInput');
     const dineInNote = document.getElementById('dineInNoteInput');
     const roomSvcNote = document.getElementById('roomSvcNoteInput');
@@ -308,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tableId: state.orderType === 'dine-in' && tableSelect ? tableSelect.value : null,
       guestName: state.orderType === 'dine-in' && guestInput ? guestInput.value.trim() : null,
       note: state.orderType === 'dine-in' && dineInNote ? dineInNote.value.trim() : (state.orderType === 'room-svc' && roomSvcNote ? roomSvcNote.value.trim() : null),
-      paymentType: 'Pay_Later',
+      paymentType: state.orderType === 'room-svc' ? 'CHARGE_TO_ROOM' : 'Pay_Later',
       items: Object.values(state.cart).map(item => ({
         id: item.id,
         qty: item.qty,
@@ -326,19 +461,42 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       body: JSON.stringify(payload)
     })
-    .then(res => {
-      if (!res.ok) throw new Error('API Error');
-      return res.json();
-    })
-    .then(data => {
-      alert("Đã sinh Kitchen Order Ticket (KOT) và chuyển xuống bếp!");
-      window.location.href = "/fbStaff/dashboard";
-    })
-    .catch(err => {
-      alert("Lỗi khi tạo đơn: " + err.message);
-      btnSendKitchen.disabled = false;
-      btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
-    });
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(errData => {
+            throw new Error(errData.message || 'API Error');
+          });
+        }
+        return res.json();
+      })
+      .then(data => {
+        alert("Đã sinh Kitchen Order Ticket (KOT) và chuyển xuống bếp!");
+
+        // Trừ đi hạn mức trên giao diện để nhân viên thấy trực quan
+        if (state.orderType === 'room-svc') {
+          state.roomLimit -= state.currentTotal;
+          if (document.getElementById('roomLimit')) {
+            document.getElementById('roomLimit').textContent = formatMoney(state.roomLimit);
+          }
+          const sidebarLimit = document.getElementById('sidebar-room-limit');
+          if (sidebarLimit) {
+            sidebarLimit.textContent = formatMoney(state.roomLimit);
+          }
+        }
+
+        // Reset giỏ hàng và UI
+        state.cart = {};
+        renderCart();
+        btnSendKitchen.disabled = false;
+        btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
+
+        window.location.href = returnUrl;
+      })
+      .catch(err => {
+        alert("Lỗi khi tạo đơn: " + err.message);
+        btnSendKitchen.disabled = false;
+        btnSendKitchen.textContent = 'Gửi xuống Bếp (KOT)';
+      });
   }
 
 
