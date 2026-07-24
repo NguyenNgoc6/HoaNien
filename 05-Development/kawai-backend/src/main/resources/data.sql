@@ -1182,17 +1182,12 @@ INSERT IGNORE INTO Food_Order_Details (detail_id, order_id, item_id, quantity, u
 -- APPENDED NEW BOOKINGS FOR MULTIPLE ROOM TESTING
 -- ============================================================
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(101, 3, '2026-06-25', 15000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (102, 4, '2026-06-26', 22000000, 'Confirmed', 'OTA', NULL, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
-(101, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 2000000, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 10000000, 'hash101'),
 (102, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 3000000, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 15000000, 'hash102');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
--- Booking 101: 2 rooms (2 nights x 4,500,000 = 9,000,000 per room)
-(1011, 101, 7, NULL, 9000000, 'Pending', 'KING_SIZE', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 0),
-(1012, 101, 7, NULL, 9000000, 'Pending', 'TWIN_BED', NULL, TRUE, 9000000, 'BILL_TO_LEADER', 2, 2),
 -- Booking 102: 3 rooms (3 nights x 4,500,000 = 13,500,000 per room)
 (1021, 102, 7, NULL, 13500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 1, 0),
 (1022, 102, 7, NULL, 13500000, 'Pending', 'KING_SIZE', NULL, TRUE, 13500000, 'BILL_TO_LEADER', 3, 1),
@@ -1205,7 +1200,7 @@ INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_
 -- APPENDED BOOKING 103: MULTIPLE ROOMS + PRE-REGISTERED GUESTS
 -- ============================================================
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(103, 1, '2026-06-27', 18000000, 'Confirmed', 'Direct_Web', NULL, 1);
+(103, 1, '2026-06-27', 10800000, 'Confirmed', 'Direct_Web', NULL, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (103, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 2000000, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 10000000, 'hash103');
@@ -1240,13 +1235,10 @@ INSERT INTO Refund_Requests (id, order_id, room_booking_id, tour_booking_id, ban
 (2, NULL, 14, NULL, 'Techcombank', '19033482938', 'TRAN THI BICH', '0900000104', 1000000.00, 'COMPLETED', 'Đã chuyển khoản hoàn tiền cọc qua ứng dụng ngân hàng', 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(1031, 103, 8, NULL, 3600000, 'Pending', 'KING_SIZE', 'Gần thang máy', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1),
-(1032, 103, 8, NULL, 3600000, 'Pending', 'TWIN_BED', 'Gần phòng 26', TRUE, 3600000, 'BILL_TO_LEADER', 2, 1);
+(1031, 103, 8, NULL, 3600000, 'Pending', 'KING_SIZE', 'Gần thang máy', TRUE, 3600000, 'BILL_TO_LEADER', 2, 0);
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
-(10311, 1031, 1, NULL, 'ADULT', TRUE),
-(10312, 1031, NULL, 1, 'CHILD', FALSE), -- Lê Hoàng Minh
-(10321, 1032, NULL, 2, 'CHILD', FALSE); -- Lê Thị Hồng
+(10311, 1031, 1, NULL, 'ADULT', TRUE);
 
 -- ============================================================
 -- APPENDED BOOKING 505: NGOC LAN CHECKED-IN WITH 2 ROOMS (201 & 202)
