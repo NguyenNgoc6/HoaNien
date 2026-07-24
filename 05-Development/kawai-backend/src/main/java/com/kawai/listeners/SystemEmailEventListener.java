@@ -5,7 +5,8 @@ import com.kawai.models.ConsolidatedInvoice;
 import com.kawai.services.interfaces.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +17,7 @@ public class SystemEmailEventListener {
 
     private final EmailService emailService;
 
-    @Async
-    @EventListener
+    @org.springframework.context.event.EventListener
     public void handleSystemEmailEvent(SystemEmailEvent event) {
         log.info("[SystemEmailEventListener] Bắt đầu gửi email (Async) tới: {}, Loại: {}", event.getToEmail(), event.getTemplateName());
 

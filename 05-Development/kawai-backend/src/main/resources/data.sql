@@ -172,16 +172,17 @@ INSERT INTO Room_Categories (
 ) VALUES 
 (1,  'Nipa Pool Villa',          'https://i.pinimg.com/1200x/32/4d/93/324d935a2dcf3e17755d9b2a56db8dd8.jpg,https://i.pinimg.com/1200x/92/da/a5/92daa5b7f54fb083037e380c346ec915.jpg,https://i.pinimg.com/736x/de/bf/21/debf21e88839c41b74110c968cb06580.jpg', 2500000,  2, 'Phòng nghỉ sang trọng với nội thất gỗ cao cấp, không gian ấm cúng đậm chất Á Đông, mang đến cảm giác thư thái và riêng tư tuyệt đối.',             2, 0, 3, 1, 500000,  250000, TRUE, '1 Giường King 2m', 65, 'Hướng vườn cảnh quan tươi mát', TRUE, TRUE, '2 chai nước suối, Trái cây tươi, Vang đỏ', TRUE),
 (2,  'River Pool Villa',         'https://i.pinimg.com/1200x/e3/2a/bd/e32abd795403ecdc1f9a39cca7a2b36e.jpg,https://i.pinimg.com/1200x/fc/ad/21/fcad21b76553df856751ec8b465c4de1.jpg,https://i.pinimg.com/736x/95/83/75/95837513ef477c7674a49c40b64b7944.jpg', 3500000,  3, 'Tuyệt tác nghỉ dưỡng nép mình bên dòng Thu Bồn thơ mộng, quyện hòa kiến trúc mộc mạc đậm hồn Việt cùng tiện nghi xa hoa, tạo nên chốn ẩn mình thư thái hoàn hảo.',          2, 0, 3, 2, 600000,  300000, TRUE, '1 Giường King 2m2', 80, 'Hướng sông Thu Bồn thơ mộng', TRUE, TRUE, '4 chai nước suối, Trái cây, Trà chiều', TRUE),
-(3,  'Wellness Retreats',        'https://i.pinimg.com/736x/c8/95/86/c89586f5c7f42012ff96b71679b0f77e.jpg,https://i.pinimg.com/736x/b5/99/a1/b599a169fc0d46ed80abf3658a5696ae.jpg,https://i.pinimg.com/1200x/b8/56/8c/b8568cc6bbd6bdc0682a49645a902aba.jpg', 8000000,  4, 'Không gian chữa lành mang đậm hơi thở Á Đông truyền thống, bao bọc bởi thiên nhiên tĩnh mặc, nơi đánh thức mọi giác quan và tái tạo năng lượng tuyệt đối.', 2, 0, 4, 2, 1000000, 500000, TRUE, '2 Giường King', 120, 'Hướng vườn thiền thanh tịnh', TRUE, TRUE, 'Nước detox, Trái cây Organic, Trà thảo mộc', TRUE),
+(3,  'Wellness Retreats',        'https://i.pinimg.com/736x/b5/99/a1/b599a169fc0d46ed80abf3658a5696ae.jpg,https://i.pinimg.com/736x/c8/95/86/c89586f5c7f42012ff96b71679b0f77e.jpg,https://i.pinimg.com/1200x/b8/56/8c/b8568cc6bbd6bdc0682a49645a902aba.jpg', 8000000,  4, 'Không gian chữa lành mang đậm hơi thở Á Đông truyền thống, bao bọc bởi thiên nhiên tĩnh mặc, nơi đánh thức mọi giác quan và tái tạo năng lượng tuyệt đối.', 2, 0, 4, 2, 1000000, 500000, TRUE, '2 Giường King', 120, 'Hướng vườn thiền thanh tịnh', TRUE, TRUE, 'Nước detox, Trái cây Organic, Trà thảo mộc', TRUE),
 (4,  'Superior Room',        'https://i.pinimg.com/1200x/4c/b3/5d/4cb35d45c3df7d2826dde080f3d5ee89.jpg,https://i.pinimg.com/736x/79/ae/eb/79aeeb12ae2779b5c3d6ddc4b282a7bf.jpg,https://i.pinimg.com/736x/a4/c6/4a/a4c64a255575700ce97e496092da44e5.jpg', 2000000,  2, 'Phòng nghỉ tinh tế hòa quyện vẻ đẹp Á Đông mộc mạc và sự thanh lịch hiện đại, mở ra không gian vườn nhiệt đới xanh mát rợp bóng cây.',             2, 0, 3, 1, 400000,  200000, TRUE, '1 Giường Queen 1m8', 45, 'Hướng vườn nhiệt đới an yên', FALSE, TRUE, '2 chai nước suối, Trà & Cà phê', TRUE),
-(5,  'Presidential Suite', 'https://i.pinimg.com/736x/03/18/7c/03187ce97e28a8e9fe9969c609f855d4.jpg,https://i.pinimg.com/1200x/50/a8/36/50a836ae68f0b08ae84c37739acbd6c8.jpg,https://i.pinimg.com/736x/4d/fb/df/4dfbdfe5caad42a0c83a885a21e544e5.jpg', 15000000, 6, 'Không gian vương giả đẳng cấp bậc nhất, nơi nghệ thuật kiến trúc tinh hoa hội tụ cùng tầm nhìn ôm trọn cảnh sắc thiên nhiên hùng vĩ của resort, định nghĩa lại trải nghiệm nghỉ dưỡng xa xỉ.',           4, 0, 6, 3, 2000000, 1000000, TRUE, '3 Giường King 2m2', 250, 'Hướng panorama toàn cảnh Resort', TRUE, TRUE, 'Minibar miễn phí, Rượu Champagne, Bánh ngọt', TRUE),
+(5,  'Presidential Suite', 'https://i.pinimg.com/736x/4d/fb/df/4dfbdfe5caad42a0c83a885a21e544e5.jpg,https://i.pinimg.com/736x/03/18/7c/03187ce97e28a8e9fe9969c609f855d4.jpg,https://i.pinimg.com/1200x/50/a8/36/50a836ae68f0b08ae84c37739acbd6c8.jpg', 15000000, 6, 'Không gian vương giả đẳng cấp bậc nhất, nơi nghệ thuật kiến trúc tinh hoa hội tụ cùng tầm nhìn ôm trọn cảnh sắc thiên nhiên hùng vĩ của resort, định nghĩa lại trải nghiệm nghỉ dưỡng xa xỉ.',           4, 0, 6, 3, 2000000, 1000000, TRUE, '3 Giường King 2m2', 250, 'Hướng panorama toàn cảnh Resort', TRUE, TRUE, 'Minibar miễn phí, Rượu Champagne, Bánh ngọt', TRUE),
 (6,  'Heritage Wood Bungalow',      'https://i.pinimg.com/736x/19/dc/7a/19dc7a8862941a3c505cf083e9b5e4d0.jpg,https://i.pinimg.com/736x/c0/7e/80/c07e80ff7753364ef1cc210a29189b79.jpg,https://i.pinimg.com/736x/f5/31/4f/f5314f4fcb55d67b986d5acf0d2e080f.jpg', 3000000,  2, 'Lấy cảm hứng từ nếp nhà truyền thống Á Đông, Bungalow sử dụng chất liệu gỗ tự nhiên nguyên bản, mang đến cảm giác thân thuộc, ấm cúng và an yên đến lạ.',           2, 0, 3, 1, 600000,  300000, TRUE, '1 Giường King 2m2', 50, 'Hướng không gian mở an yên', TRUE, TRUE, '2 chai nước suối, Trái cây tươi', TRUE),
 (7,  'Family Connecting Room',   'https://i.pinimg.com/736x/22/18/4d/22184d22b4ea5819d81c01a448154d7b.jpg,https://i.pinimg.com/736x/fe/13/9b/fe139b0daaf5570ab624e4e74c4ef297.jpg,https://i.pinimg.com/736x/2f/46/6d/2f466d84d125ebd5589d049782c2c34a.jpg', 9500000,  5, 'Không gian ấm cúng thiết kế mở kết nối yêu thương, nơi cả gia đình quây quần lưu giữ những khoảnh khắc trọn vẹn hạnh phúc giữa thiên nhiên bình yên.',         2, 2, 4, 4, 500000,  250000, TRUE, '1 Giường King & 2 Giường Đơn', 90, 'Hướng vườn êm đềm', FALSE, TRUE, '4 chai nước suối, Bánh quy, Trà, Sách', TRUE),
-(8,  'Classic Room',   'https://i.pinimg.com/736x/5c/e6/b2/5ce6b284f68e75c930d84214882c1451.jpg,https://i.pinimg.com/1200x/25/df/c6/25dfc64dd98b33514f5f5597b6258f6a.jpg,https://i.pinimg.com/1200x/79/71/37/797137545c45e65d4e46dbc8090926fe.jpg', 1800000,  2, 'Không gian nghỉ dưỡng tối giản nhưng tinh tế, mang lại cảm giác thoải mái và thư thái với tiện nghi cơ bản, là lựa chọn hoàn hảo cho những ai yêu thích sự mộc mạc.',              2, 0, 2, 1, 350000,  150000, TRUE, '1 Giường 1m8', 40, 'Hướng không gian tĩnh lặng', FALSE, FALSE, '2 chai nước suối, Trà', TRUE),
+(8,  'Classic Room',   'https://i.pinimg.com/1200x/25/df/c6/25dfc64dd98b33514f5f5597b6258f6a.jpg,https://i.pinimg.com/736x/5c/e6/b2/5ce6b284f68e75c930d84214882c1451.jpg,https://i.pinimg.com/1200x/79/71/37/797137545c45e65d4e46dbc8090926fe.jpg', 1800000,  2, 'Không gian nghỉ dưỡng tối giản nhưng tinh tế, mang lại cảm giác thoải mái và thư thái với tiện nghi cơ bản, là lựa chọn hoàn hảo cho những ai yêu thích sự mộc mạc.',              2, 0, 2, 1, 350000,  150000, TRUE, '1 Giường 1m8', 40, 'Hướng không gian tĩnh lặng', FALSE, FALSE, '2 chai nước suối, Trà', TRUE),
 
-(9,  'Heritage Suite',         'https://i.pinimg.com/1200x/63/a2/59/63a259ff25028ebc7ee6738f99f8f2e0.jpg,https://i.pinimg.com/1200x/31/21/fe/3121fe2b26a4e17b9417f3f032c9e66b.jpg,https://i.pinimg.com/1200x/3d/2d/36/3d2d36b8ccf42d575802b00708304eaf.jpg', 12000000, 4, 'Tuyệt tác không gian mang đậm dấu ấn di sản, tôn vinh nghệ thuật kiến trúc Á Đông kết hợp hoàn hảo cùng tiện nghi xa xỉ bậc nhất, đem lại trải nghiệm nghỉ dưỡng thượng lưu độc bản.',  2, 0, 4, 2, 1500000, 750000, TRUE, '2 Giường King siêu lớn', 180, 'Hướng toàn cảnh khu nghỉ dưỡng', TRUE, TRUE, 'Rượu vang cao cấp, Trái cây nhập khẩu, Minibar', TRUE),
+(9,  'Heritage Suite',         'https://i.pinimg.com/1200x/3d/2d/36/3d2d36b8ccf42d575802b00708304eaf.jpg,https://i.pinimg.com/1200x/63/a2/59/63a259ff25028ebc7ee6738f99f8f2e0.jpg,https://i.pinimg.com/1200x/31/21/fe/3121fe2b26a4e17b9417f3f032c9e66b.jpg', 12000000, 4, 'Tuyệt tác không gian mang đậm dấu ấn di sản, tôn vinh nghệ thuật kiến trúc Á Đông kết hợp hoàn hảo cùng tiện nghi xa xỉ bậc nhất, đem lại trải nghiệm nghỉ dưỡng thượng lưu độc bản.',  2, 0, 4, 2, 1500000, 750000, TRUE, '2 Giường King siêu lớn', 180, 'Hướng toàn cảnh khu nghỉ dưỡng', TRUE, TRUE, 'Rượu vang cao cấp, Trái cây nhập khẩu, Minibar', TRUE),
 (10, 'Cozy Studio Room',         'https://i.pinimg.com/1200x/5a/93/2a/5a932a215282cb5cbcd7c6c6bcbe0302.jpg,https://i.pinimg.com/736x/02/f7/c6/02f7c655b9c1afc45b77f2a6701a9e9b.jpg,https://i.pinimg.com/1200x/fe/52/09/fe5209e25f3a6bcc67e952e9321fc815.jpg', 1500000,  2, 'Không gian nhỏ gọn và ấm áp với thiết kế thông minh, trang bị đầy đủ tiện nghi thiết yếu, là điểm dừng chân lý tưởng để bạn tận hưởng những giây phút nghỉ ngơi.',          2, 0, 2, 1, 300000,  150000, TRUE, '1 Giường Queen 1m8', 35, 'Hướng khu phố yên bình', FALSE, FALSE, '2 chai nước suối, Cà phê hòa tan', FALSE),
-(11, 'Traditional Room',         'https://i.pinimg.com/1200x/43/cd/86/43cd86b688531a000a4aee8be3befb61.jpg,https://i.pinimg.com/736x/0e/84/24/0e8424cfb4d5baffaba3c5d85d9036c9.jpg,https://i.pinimg.com/1200x/ea/c5/81/eac581a1d4dcbe2279e1170452dbcb0a.jpg', 2200000,  2, 'Không gian nghỉ dưỡng thấm đẫm nét đẹp truyền thống mộc mạc, mang hơi thở văn hóa Á Đông thanh bình, giúp bạn tìm lại sự thư thái tĩnh tại trong tâm hồn.', 2, 0, 2, 1, 400000, 200000, TRUE, '1 Giường Queen 1m8', 42, 'Hướng vườn thiền', FALSE, TRUE, '2 chai nước suối, Trà sen truyền thống', TRUE);
+(11, 'Traditional Room',         'https://i.pinimg.com/1200x/43/cd/86/43cd86b688531a000a4aee8be3befb61.jpg,https://i.pinimg.com/736x/0e/84/24/0e8424cfb4d5baffaba3c5d85d9036c9.jpg,https://i.pinimg.com/1200x/ea/c5/81/eac581a1d4dcbe2279e1170452dbcb0a.jpg', 12000000,  2, 'Không gian nghỉ dưỡng thấm đẫm nét đẹp truyền thống mộc mạc, mang hơi thở văn hóa Á Đông thanh bình, giúp bạn tìm lại sự thư thái tĩnh tại trong tâm hồn.', 2, 0, 2, 1, 400000, 200000, TRUE, '1 Giường Queen 1m8', 42, 'Hướng vườn thiền', FALSE, TRUE, '2 chai nước suối, Trà sen truyền thống', TRUE);
+
 
 -- ── 7. Room Surcharges (Dữ liệu đã được chuyển xuống cuối file dùng INSERT SELECT) ──
 
@@ -289,7 +290,7 @@ INSERT INTO Promotions (promo_id, promo_code, discount_type, discount_value, val
 (1, 'SUMMER2026', 'PERCENTAGE', 10.00, '2026-05-01 00:00:00', '2026-08-31 23:59:59', 1000, 15, TRUE, 'Giảm giá 10% cho toàn bộ dịch vụ đặt phòng hè.'),
 (2, 'WELCOMETOHOANIEN', 'FIXED_AMOUNT', 200000.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 5000, 120, TRUE, 'Tặng ngay 200,000 VND cho khách đặt phòng lần đầu.'),
 (3, 'VIPGOLD', 'PERCENTAGE', 15.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 9999, 45, TRUE, 'Ưu đãi đặc biệt giảm 15% cho thành viên Gold.'),
-(4, 'MIDWEEK20', 'PERCENTAGE', 20.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 200, 10, TRUE, 'Giảm 20% đặt phòng từ thứ 2 đến thứ 5.'),
+(4, 'MIDWEEK20', 'PERCENTAGE', 55.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 200, 10, TRUE, 'Giảm 20% đặt phòng từ thứ 2 đến thứ 5.'),
 
 (5, 'AUTUMNRETREAT', 'PERCENTAGE', 12.00, '2026-09-01 00:00:00', '2026-11-30 23:59:59', 500, 0, TRUE, 'Giảm giá 12% chăm sóc sức khoẻ mùa thu.'),
 
@@ -1213,25 +1214,22 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 -- DATA TEST NGHIỆP VỤ MANAGER APPROVALS & REFUNDS
 -- ============================================================
 
--- 1. Thêm Booking chờ duyệt vượt hạn mức chiết khấu (Booking ID: 201)
+-- 1. Thêm Booking quá hạn lưu trú (Overdue Checked_In ID: 301)
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(201, 1, '2026-06-28', 3000000, 'Pending_Approval', 'Direct_Web', 1, 1);
+(301, 1, '2026-07-18', 3500000, 'Checked_In', 'Direct_Web', NULL, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
-(201, '2026-07-10', '2026-07-12', 1000000, '2026-07-08', 5000000, 'hash');
+(301, DATE_SUB(CURDATE(), INTERVAL 2 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 5000000, 'hash301');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-(2011, 201, 1, 4, 3000000, 'Pending', 'KING_SIZE', 'Cần duyệt chiết khấu vượt hạn mức 35%', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
+(3011, 301, 1, 1, 3500000, 'Checked_In', 'KING_SIZE', 'Khách trả phòng quá hạn', TRUE, 5000000, 'BILL_TO_LEADER', 2, 0);
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
-(20111, 2011, 1, NULL, 'ADULT', TRUE);
+(30111, 3011, 1, NULL, 'ADULT', TRUE);
 
 -- Tác vụ phê duyệt dành cho Manager
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
-(901, 4, 1, 1, 'Manager_Approval', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Mã giảm giá SUMMER2026 áp dụng vượt ngưỡng (15.0% > 10.0%). Yêu cầu phê duyệt cho booking ID: 201'),
-(902, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách trả phòng trễ 3 tiếng do trời mưa bão. Xin miễn phí phụ thu trả phòng trễ cho booking ID: 1'),
-(903, 2, 1, 1, 'Cancellation_Fee_Waiver', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách gặp tai nạn không thể đến nhận phòng. Xin miễn 100% phí phạt hủy cho booking ID: 2'),
-(904, 3, 1, 1, 'Room_Downgrade_Refund', 'High', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Máy lạnh phòng Deluxe hỏng, khách đồng ý xuống hạng Superior. Xin duyệt hoàn tiền chênh lệch 500k cho booking ID: 3');
+(902, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách trả phòng trễ 3 tiếng do trời mưa bão. Xin miễn phí phụ thu trả phòng trễ cho booking ID: 301');
 
 
 -- 2. Thêm các yêu cầu hoàn tiền (Refund Requests)
@@ -1263,14 +1261,14 @@ INSERT IGNORE INTO Dependents (dependent_id, customer_id, dependent_name, birth_
 (506, 505, 'Trần Thị Bạn', '1998-11-25', 'Nữ', NULL);
 
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(505, 505, '2026-07-01', 7000000, 'Checked_In', 'Direct_Web', NULL, 1);
+(505, 505, '2026-07-01', 14000000, 'Checked_In', 'Direct_Web', NULL, 1);
 
 INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (505, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 5000000.00, 'hash505');
 
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id, number_of_adults, number_of_children) VALUES
-(5051, 505, 2, 11, 3500000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
-(5052, 505, 2, 12, 3500000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
+(5051, 505, 2, 11, 7000000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
+(5052, 505, 2, 12, 7000000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (50511, 5051, 505, NULL, 'ADULT', TRUE),
@@ -2011,6 +2009,35 @@ UPDATE Bookings SET booking_status = 'Checked_Out' WHERE booking_id = 10;
 -- 53. ONE-WEEK SIMULATION DATA (PAST, PRESENT, FUTURE)
 -- ============================================================
 
+-- Seed data cho khách hàng Lê Văn Định (tài khoản khach_hang_910) chưa có đơn trước đó, yêu cầu Late Checkout
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES 
+(910, 'khach_hang_910', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
+
+INSERT INTO Customers (customer_id, account_id, full_name, email, phone, gender, cccd_passport_encrypted, loyalty_points, membership_tier_id) VALUES 
+(910, 910, 'Lê Văn Định', 'vandinh910@example.com', '0999888910', 'Nam', '001099000910', 100, 1);
+
+INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
+(910, 910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 2500000.00, 'Checked_Out', 'Direct_Web', NULL, 1);
+
+INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
+(910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 5000000.00, 'hash910');
+
+INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
+(9101, 910, 1, 1, 2500000.00, 'Checked_Out', 'KING_SIZE', TRUE, 5000000.00, 'BILL_TO_LEADER', 2, 0);
+
+INSERT INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
+(91011, 9101, 910, 'ADULT', TRUE);
+
+INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES
+(905, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Yêu cầu Late Checkout - Xin miễn phí phụ thu trả phòng trễ cho booking ID: 910');
+
+-- Reconcile Bookings total_price
+UPDATE Bookings b SET total_price = (
+    SELECT COALESCE(SUM(room_charge), 0) 
+    FROM Room_Booking_Details 
+    WHERE room_booking_id = b.booking_id
+) WHERE b.booking_id IN (8008, 910);
+
 -- KHỐI 1: PAST (2 ngày trước)
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
 (8001, 10, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 8500000, 'Checked_Out', 'Direct_Web', NULL, 1);
@@ -2170,12 +2197,34 @@ UPDATE Rooms SET room_status = 'Occupied', current_booking_detail_id = 8008 WHER
 INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transaction_type, payment_method, gateway_status, transaction_ref, created_at, paid_at) VALUES
 (8006, 8008, 4500000, 'SUCCESS', 'Deposit', 'CASH', 'SUCCESS', 'PAY8006_ROOM', CONCAT(CURDATE(), ' 18:45:00'), CONCAT(CURDATE(), ' 18:45:00'));
 
+-- Seed data cho khách hàng Lê Văn Định (tài khoản khach_hang_910) chưa có đơn trước đó, yêu cầu Late Checkout
+INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES 
+(910, 'khach_hang_910', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
+
+INSERT INTO Customers (customer_id, account_id, full_name, email, phone, gender, cccd_passport_encrypted, loyalty_points, membership_tier_id) VALUES 
+(910, 910, 'Lê Văn Định', 'vandinh910@example.com', '0999888910', 'Nam', '001099000910', 100, 1);
+
+INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
+(910, 910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 2500000.00, 'Checked_Out', 'Direct_Web', NULL, 1);
+
+INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
+(910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 5000000.00, 'hash910');
+
+INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
+(9101, 910, 1, 1, 2500000.00, 'Checked_Out', 'KING_SIZE', TRUE, 5000000.00, 'BILL_TO_LEADER', 2, 0);
+
+INSERT INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
+(91011, 9101, 910, 'ADULT', TRUE);
+
+INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES
+(905, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Yêu cầu Late Checkout - Xin miễn phí phụ thu trả phòng trễ cho booking ID: 910');
+
 -- Reconcile Bookings total_price
 UPDATE Bookings b SET total_price = (
     SELECT COALESCE(SUM(room_charge), 0) 
     FROM Room_Booking_Details 
     WHERE room_booking_id = b.booking_id
-) WHERE b.booking_id IN (8008);
+) WHERE b.booking_id IN (8008, 910);
 -- 1. Từ 0-5 tuổi: Miễn phí (0 VNĐ)
 INSERT IGNORE INTO Room_Surcharges (category_id, surcharge_type, age_from, age_to, price_modifier, is_active)
 SELECT category_id, 'CHILD_0_5', 0, 5, 0, 1 FROM Room_Categories;
