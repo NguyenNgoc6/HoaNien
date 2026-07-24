@@ -239,6 +239,7 @@ public class ProfileController {
             model.addAttribute("hasAttachedToursMap", hasAttachedToursMap);
             model.addAttribute("hasRefundableItemsMap", hasRefundableItemsMap);
 
+
             List<TourBooking> tourBookings = bookingRepository.findByCustomerId(customer.getId()).stream()
                     .filter(b -> b instanceof TourBooking)
                     .map(b -> (TourBooking) b)

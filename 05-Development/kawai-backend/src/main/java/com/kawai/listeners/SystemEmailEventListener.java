@@ -17,9 +17,11 @@ public class SystemEmailEventListener {
 
     private final EmailService emailService;
 
-    @org.springframework.context.event.EventListener
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleSystemEmailEvent(SystemEmailEvent event) {
-        log.info("[SystemEmailEventListener] Bắt đầu gửi email (Async) tới: {}, Loại: {}", event.getToEmail(), event.getTemplateName());
+        log.info("[SystemEmailEventListener] Bắt đầu gửi email (Async) tới: {}, Loại: {}", event.getToEmail(),
+                event.getTemplateName());
 
         try {
             switch (event.getTemplateName()) {
@@ -27,41 +29,37 @@ public class SystemEmailEventListener {
                     emailService.sendRegistrationOtpEmail(
                             event.getToEmail(),
                             (String) event.getContext().get("otpCode"),
-                            (String) event.getContext().get("fullName")
-                    );
+                            (String) event.getContext().get("fullName"));
                     break;
                 case "password-reset":
                     emailService.sendPasswordResetEmail(
                             event.getToEmail(),
                             (String) event.getContext().get("resetLink"),
-                            (String) event.getContext().get("fullName")
-                    );
+                            (String) event.getContext().get("fullName"));
                     break;
                 case "invoice":
                     emailService.sendInvoiceEmail(
                             event.getToEmail(),
                             (ConsolidatedInvoice) event.getContext().get("invoice"),
-                            (String) event.getContext().get("pdfPath")
-                    );
+                            (String) event.getContext().get("pdfPath"));
                     break;
                 case "sla-warning":
                     emailService.sendSlaWarningEmail(
                             event.getToEmail(),
                             (String) event.getContext().get("taskName"),
                             (Integer) event.getContext().get("pendingMinutes"),
-                            (String) event.getContext().get("roomNumber")
-                    );
+                            (String) event.getContext().get("roomNumber"));
                     break;
                 case "custom-workflow":
                     emailService.sendCustomWorkflowEmail(
                             (String) event.getContext().get("fromEmail"),
                             event.getToEmail(),
                             event.getSubject(),
-                            (String) event.getContext().get("htmlContent")
-                    );
+                            (String) event.getContext().get("htmlContent"));
                     break;
                 default:
-                    log.warn("[SystemEmailEventListener] Không tìm thấy handler cho template: {}", event.getTemplateName());
+                    log.warn("[SystemEmailEventListener] Không tìm thấy handler cho template: {}",
+                            event.getTemplateName());
                     break;
             }
             log.info("[SystemEmailEventListener] Gửi email thành công tới: {}", event.getToEmail());
