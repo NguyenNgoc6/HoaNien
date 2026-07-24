@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 public interface PosService {
     void chargeToRoom(String roomNumber, BigDecimal amount);
 
+    java.util.Map<String, Object> verifyRoomForCharge(String roomNumber);
+
     com.kawai.models.FoodOrder createOrder(com.kawai.dto.CreateFoodOrderRequest request, String userIdentifier);
 
-    com.kawai.models.FoodOrder payOrder(Long id);
+    com.kawai.models.FoodOrder payOrder(Long id, String paymentType, String roomNumber);
 
     void addItemsToOrder(Long orderId, java.util.List<com.kawai.dto.CartItemDto> items);
 
