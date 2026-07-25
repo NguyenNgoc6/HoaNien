@@ -68,7 +68,29 @@ INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, c
 (47, 'maintainer2_47', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
 (48, 'manager1_48', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
 (49, 'tourguide1_49', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(50, 'tourguide2_50', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP);
+(50, 'tourguide2_50', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(51, 'maintainer3_51', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(52, 'maintainer4_52', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(53, 'maintainer5_53', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(54, 'maintainer6_54', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(55, 'tourguide3_55', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(56, 'tourguide4_56', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(57, 'tourguide5_57', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(58, 'tourguide6_58', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(59, 'fnb_kitchen5_59', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(60, 'fnb_kitchen6_60', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(61, 'fnb_kitchen7_61', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(62, 'fnb_kitchen8_62', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(63, 'fnb_pos7_63', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(64, 'fnb_pos8_64', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(65, 'fnb_pos9_65', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(66, 'fnb_pos10_66', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(67, 'receptionist6_67', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(68, 'receptionist7_68', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(69, 'receptionist8_69', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(70, 'housekeeping11_70', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(71, 'housekeeping12_71', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(72, 'housekeeping13_72', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP);
 
 -- ── 3. Employees (10 rows) ───────────────────────────────────
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary) VALUES 
@@ -115,6 +137,28 @@ INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, 
 (40, 48, 'Phạm Ngọc Việt', 'Nam', '001214604610', '0912238661', 'manager1_48@hoanien.vn', 8000000),
 (41, 49, 'Đỗ Thu Bình', 'Nữ', '001268274071', '0912201144', 'tourguide1_49@hoanien.vn', 8000000),
 (42, 50, 'Ngô Minh Lan', 'Nữ', '001229629943', '0912733244', 'tourguide2_50@hoanien.vn', 9000000),
+(43, 51, 'Vũ Tuấn Kiệt', 'Nam', '001289112233', '0912111001', 'maintainer3_51@hoanien.vn', 8500000),
+(44, 52, 'Đinh Văn Mạnh', 'Nam', '001289112234', '0912111002', 'maintainer4_52@hoanien.vn', 8500000),
+(45, 53, 'Trịnh Đức Thắng', 'Nam', '001289112235', '0912111003', 'maintainer5_53@hoanien.vn', 8500000),
+(46, 54, 'Bùi Đức Anh', 'Nam', '001289112236', '0912111004', 'maintainer6_54@hoanien.vn', 8500000),
+(47, 55, 'Phan Thanh Hải', 'Nam', '001289112237', '0912111005', 'tourguide3_55@hoanien.vn', 9000000),
+(48, 56, 'Nguyễn Quỳnh Anh', 'Nữ', '001289112238', '0912111006', 'tourguide4_56@hoanien.vn', 9000000),
+(49, 57, 'Lê Hoàng Long', 'Nam', '001289112239', '0912111007', 'tourguide5_57@hoanien.vn', 9000000),
+(50, 58, 'Vũ Thu Trang', 'Nữ', '001289112240', '0912111008', 'tourguide6_58@hoanien.vn', 9000000),
+(51, 59, 'Đào Văn Nam', 'Nam', '001289112241', '0912111009', 'fnb_kitchen5_59@hoanien.vn', 9500000),
+(52, 60, 'Trần Thị Mai', 'Nữ', '001289112242', '0912111010', 'fnb_kitchen6_60@hoanien.vn', 9500000),
+(53, 61, 'Phạm Đức Huy', 'Nam', '001289112243', '0912111011', 'fnb_kitchen7_61@hoanien.vn', 9000000),
+(54, 62, 'Nguyễn Hương Giang', 'Nữ', '001289112244', '0912111012', 'fnb_kitchen8_62@hoanien.vn', 9000000),
+(56, 63, 'Trần Minh Triết', 'Nam', '001289112245', '0912111013', 'fnb_pos7_63@hoanien.vn', 8500000),
+(57, 64, 'Lê Hoàng Yến', 'Nữ', '001289112246', '0912111014', 'fnb_pos8_64@hoanien.vn', 8500000),
+(58, 65, 'Nguyễn Văn An', 'Nam', '001289112247', '0912111015', 'fnb_pos9_65@hoanien.vn', 8500000),
+(59, 66, 'Vũ Thị Linh', 'Nữ', '001289112248', '0912111016', 'fnb_pos10_66@hoanien.vn', 8500000),
+(60, 67, 'Phạm Nhật Minh', 'Nam', '001289112249', '0912111017', 'receptionist6_67@hoanien.vn', 8500000),
+(61, 68, 'Ngô Thảo Nguyên', 'Nữ', '001289112250', '0912111018', 'receptionist7_68@hoanien.vn', 8500000),
+(62, 69, 'Trần Anh Tuấn', 'Nam', '001289112251', '0912111019', 'receptionist8_69@hoanien.vn', 8500000),
+(63, 70, 'Bùi Thiện Nhân', 'Nam', '001289112252', '0912111020', 'housekeeping11_70@hoanien.vn', 8000000),
+(64, 71, 'Lê Khánh Linh', 'Nữ', '001289112253', '0912111021', 'housekeeping12_71@hoanien.vn', 8000000),
+(65, 72, 'Đặng Gia Bảo', 'Nam', '001289112254', '0912111022', 'housekeeping13_72@hoanien.vn', 8000000),
 (55, 19, 'Lê Quản Lý', 'Nam', '001211111119', '0912999919', 'manager1_19@hoanien.vn', 15000000);
 
 -- ── 3.5. Membership Tiers (4 rows) ───────────────────────────────────
@@ -323,7 +367,6 @@ INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, bookin
 (18, 3, '2026-06-12', 15000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (19, 4, '2026-06-12', 3000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (20, 5, '2026-06-12', 4500000, 'Confirmed', 'Direct_Web', NULL, 1),
-(24, 1, '2026-06-01', 3000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (25, 2, '2026-06-02', 1200000, 'Cancelled', 'Direct_Web', NULL, 1),
 (26, 3, '2026-06-03', 5400000, 'Confirmed', 'Direct_Web', NULL, 1),
 (27, 4, '2026-06-04', 2500000, 'Confirmed', 'OTA', NULL, 1),
@@ -385,8 +428,7 @@ INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_t
 (8, 8, 8, NULL, 'ADULT', TRUE),
 (9, 9, 12, NULL, 'ADULT', TRUE),
 (10, 10, 13, NULL, 'ADULT', TRUE),
-(11, 1, 1, 1, 'CHILD', FALSE),
-(12, 1, 1, 2, 'CHILD', FALSE),
+(11, 1, 1, NULL, 'ADULT', FALSE),
 (13, 11, 1, NULL, 'ADULT', TRUE);
 
 -- Force update tphuong to POS role in case DB already exists
@@ -675,11 +717,10 @@ INSERT INTO Booking_Services (booking_service_id, booking_id, service_id, quanti
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
 -- HOUSEKEEPING (CHECKOUT_CLEAN)
 
-(1, 2, 8, 4, 'CHECKOUT_CLEAN', 'High', 'Pending', '2026-06-28 08:00:00', NULL, NULL, 'Task created by workflow.'),
-(2, 4, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Pending', '2026-06-28 09:00:00', NULL, NULL, 'Task created by workflow.'),
+(1, 2, 8, 4, 'CHECKOUT_CLEAN', 'High', 'Pending', '2026-06-28 08:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
+(2, 4, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Pending', '2026-06-28 09:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
 (3, 3, 8, 4, 'GUEST_REQUEST', 'Normal', 'Completed', '2026-06-28 09:30:00', '2026-06-28 10:15:00', '2026-06-28 11:00:00', '[Khách Yêu Cầu Dọn Phòng] - Bổ sung khăn tắm và nước uống.\n[Ghi chú hoàn thành]: Đã thực hiện.'),
 (4, 13, 9, 4, 'URGENT_CLEAN', 'Lễ tân báo dọn khẩn', 'InProgress', '2026-06-28 10:00:00', '2026-06-28 10:20:00', NULL, '[Arrival] Dọn phòng khẩn để đón khách nhận phòng. \n[Khẩn cấp] Lễ tân hối thúc dọn ưu tiên để khách Check-in!'),
-(5, 1, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 07:00:00', '2026-06-28 07:15:00', '2026-06-28 08:45:00', 'Task created by workflow.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
 
 -- MAINTENANCE (MAINTENANCE)
 (6, 17, 10, 4, 'MAINTENANCE', 'High', 'Pending', '2026-06-28 10:30:00', NULL, NULL, 'Housekeeping báo: Điều hòa chảy nước ướt cả sàn gỗ, phòng 207.'),
@@ -690,7 +731,6 @@ INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operati
 
 -- ── 24. Folio Items (10 rows) ────────────────────────────────
 INSERT INTO Folio_Items (folio_item_id, booking_id, room_booking_detail_id, payer_customer_id, source_department, amount, description, is_settled_separately, created_by_staff_id, created_at, signature_img_url, revenue_code) VALUES 
-(2, 1, 1, 1, 'F&B', 180000, 'Súp Bí Đỏ Truffle Room Service', FALSE, 2, CURRENT_TIMESTAMP, NULL, 'FB_ROOMSERVICE'),
 (3, 2, 2, 2, 'TRANSPORTATION', 800000, 'Xe đón tiễn Limousine sân bay', FALSE, 4, CURRENT_TIMESTAMP, NULL, 'OTH_MISC');
 
 -- ── 27. Tours (10 rows) ──────────────────────────────────────
@@ -876,7 +916,6 @@ INSERT INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_char
 (11, 5, 1, 1200000, FALSE),
 (12, 5, 1, 1200000, FALSE),
 (13, 5, 1, 1200000, FALSE),
-(24, 1, 2, 3000000, FALSE),
 (25, 2, 1, 1200000, FALSE),
 (26, 3, 3, 5400000, FALSE),
 (27, 4, 1, 2500000, FALSE),
@@ -889,7 +928,6 @@ INSERT INTO Tour_Attendees (attendee_id, tour_booking_id, customer_id, dependent
 (3, 11, 9, NULL, 'Not_Show', NULL, NULL),
 (4, 12, 10, NULL, 'Not_Show', NULL, NULL),
 (5, 13, 11, NULL, 'Not_Show', NULL, NULL),
-(6, 24, 1, NULL, 'Not_Show', NULL, NULL),
 (7, 25, 2, NULL, 'Not_Show', NULL, NULL),
 (8, 26, 3, NULL, 'Not_Show', NULL, NULL),
 (9, 27, 4, NULL, 'Not_Show', NULL, NULL),
@@ -1212,20 +1250,20 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 
 -- 1. Thêm Booking quá hạn lưu trú (Overdue Checked_In ID: 301)
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-
+(301, 2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 2000000, 'Checked_In', 'Direct_Web', NULL, 1);
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (301, DATE_SUB(CURDATE(), INTERVAL 2 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 5000000, 'hash301');
 
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-
+(3011, 301, 1, 1, 2000000, 'Checked_In', 'KING_SIZE', NULL, TRUE, 5000000, 'BILL_TO_LEADER', 1, 0);
 
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
-(30111, 3011, 1, NULL, 'ADULT', TRUE);
+(30111, 3011, 2, NULL, 'ADULT', TRUE);
 
 -- Tác vụ phê duyệt dành cho Manager
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
-(902, 1, 1, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách trả phòng trễ 3 tiếng do trời mưa bão. Xin miễn phí phụ thu trả phòng trễ cho booking ID: 301');
+(902, 1, 2, 1, 'Late_Checkout_Waiver', 'Normal', 'Pending', CURRENT_TIMESTAMP, NULL, NULL, 'Khách xin miễn phụ thu trả phòng trễ 3 tiếng - Yêu cầu phê duyệt cho booking ID: 301');
 
 
 -- 2. Thêm các yêu cầu hoàn tiền (Refund Requests)
@@ -1930,14 +1968,7 @@ INSERT INTO workflows (workflow_name, trigger_event, conditions_json, actions_js
 
 -- Thêm Mock Reviews (dữ liệu thật với Integrity Checks)
 
--- Thêm data test Unreviewed cho Customer 1 (ID 9001, 9002)
-
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
-(9001, 1, '2026-07-10', 1200000.00, 'Completed', 'Direct_Web');
-INSERT IGNORE INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
-(9001, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '08:00:00.000000', 2, 'Completed', FALSE);
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge) VALUES
-(9001, 9001, 2, 1200000.00);
+-- Thêm data test Unreviewed cho Customer 1 (ID 9002)
 
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
 (9002, 1, '2026-07-05', 4500000.00, 'Checked_Out', 'Direct_Web');
@@ -2096,20 +2127,6 @@ INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transac
 INSERT IGNORE INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES 
 (8002, 13, 38, 36, 'MAKEUP_ROOM', 'Normal', 'In_Progress', CURDATE(), CURDATE(), NULL, 'Dọn phòng hàng ngày');
 
--- Tour Đang diễn ra
-INSERT IGNORE INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
-(8002, 2, CURDATE(), '08:00:00', 3, 'In_Progress', TRUE);
-
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
-(8004, 11, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 4500000, 'Confirmed', 'Direct_Web');
-
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, is_walk_in_tour) VALUES
-(8004, 8002, 3, 4500000, 8003, FALSE);
-
--- Run_Itinerary_Status cho Tour
-INSERT IGNORE INTO Run_Itinerary_Status (run_status_id, schedule_id, detail_id, actual_start_time, actual_end_time, current_stage_status, guide_notes) VALUES 
-(8001, 8002, 2, CURDATE(), NULL, 'IN_PROGRESS', 'Đoàn đang tham quan');
-
 -- F&B Order (Preparing)
 INSERT IGNORE INTO Food_Orders (order_id, booking_id, guest_id, staff_id, order_type, table_number, total_amount, order_status, payment_status, notes) VALUES
 (8002, 8003, NULL, 4, 'DINE_IN', 'T02', 1500000, 'PREPARING', 'UNPAID', 'Khách đang đợi');
@@ -2137,16 +2154,6 @@ INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is
 INSERT IGNORE INTO Table_Reservations (reservation_id, customer_id, table_id, reserve_date, reserve_time, end_time, deposit_amount, status) VALUES 
 (8001, 12, 5, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '19:00:00', '21:00:00', 500000, 'Confirmed');
 
--- Tour Tương lai
-INSERT IGNORE INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
-(8003, 3, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '09:00:00', 2, 'Open', FALSE);
-
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
-(8006, 12, CURDATE(), 3000000, 'Confirmed', 'OTA');
-
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, is_walk_in_tour) VALUES
-(8006, 8003, 2, 3000000, 8005, FALSE);
-
 -- Reconcile Bookings total_price
 UPDATE Bookings b SET total_price = (
     SELECT COALESCE(SUM(room_charge), 0) 
@@ -2165,16 +2172,6 @@ INSERT IGNORE INTO Food_Order_Details (detail_id, order_id, item_id, quantity, u
 (8004, 8004, 5, 2, 425000, 850000);
 INSERT IGNORE INTO Payment_Transactions (id, booking_id, food_order_id, amount, status, transaction_type, payment_method, gateway_status, transaction_ref, created_at, paid_at) VALUES
 (8004, NULL, 8004, 850000, 'SUCCESS', 'Payment', 'CASH', 'SUCCESS', 'PAY8004_FNB', CONCAT(CURDATE(), ' 10:30:00'), CONCAT(CURDATE(), ' 10:30:00'));
-
--- 2. Tour Booking lúc 14:15 (Khách đang lưu trú - Booking 8003 mua thêm Tour)
-INSERT IGNORE INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
-(8004, 4, CURDATE(), '15:00:00', 2, 'In_Progress', TRUE);
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
-(8007, 11, CURDATE(), 2000000, 'Confirmed', 'Direct_Web');
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, is_walk_in_tour) VALUES
-(8007, 8004, 2, 2000000, 8003, FALSE);
-INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transaction_type, payment_method, gateway_status, transaction_ref, created_at, paid_at) VALUES
-(8005, 8007, 2000000, 'SUCCESS', 'Payment', 'VNPAY', 'SUCCESS', 'PAY8005_TOUR', CONCAT(CURDATE(), ' 14:15:00'), CONCAT(CURDATE(), ' 14:15:00'));
 
 -- 3. Room Booking (Khách vãng lai Check-in) lúc 18:45
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
@@ -2202,11 +2199,6 @@ INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, bookin
 
 INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
 (910, DATE_SUB(CURDATE(), INTERVAL 4 DAY), DATE_SUB(CURDATE(), INTERVAL 1 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 5000000.00, 'hash910');
-
-INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, number_of_adults, number_of_children) VALUES
-
-
-INSERT INTO Room_Guests (guest_id, detail_id, customer_id, guest_type, is_primary_contact) VALUES
 
 
 INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operational_type, priority, status, created_at, started_at, completed_at, notes) VALUES

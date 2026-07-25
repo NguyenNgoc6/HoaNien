@@ -77,15 +77,6 @@ function openBookingModal(tableId, tableNumber, capacity) {
         flatpickrReserveDate.setDate(filterDate);
         flatpickrStartTime.setDate(filterStart);
         flatpickrEndTime.setDate(filterEnd);
-
-        // Disable inputs if pre-filled
-        document.getElementById('reserveDate').disabled = true;
-        document.getElementById('startTime').disabled = true;
-        document.getElementById('endTime').disabled = true;
-    } else {
-        document.getElementById('reserveDate').disabled = false;
-        document.getElementById('startTime').disabled = false;
-        document.getElementById('endTime').disabled = false;
     }
 
     document.getElementById('bookingModal').style.display = 'flex';

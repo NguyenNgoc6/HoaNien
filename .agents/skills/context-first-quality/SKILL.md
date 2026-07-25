@@ -242,6 +242,10 @@ Trọn vẹn các bài kiểm tra BẮT BUỘC trước khi có thể kết lu�
 - [ ] **Trường hợp biên (Edge Cases):** Đã bao phủ Happy path, Error path (validation, API error), Null/Empty data.
 - [ ] **Security & Performance:** Không lộ thông tin PII qua `log.TRACE`, không bị N+1 query (đọc thêm ở `security-baseline` & `jpa-performance`).
 - [ ] **Build Check:** Code phải chạy qua vòng build (`mvn compile` / test) thành công mà không phát sinh lỗi compile liên quan tới biến trùng lặp (Duplicate variables) hoặc vỡ HTML tag `</th:block>`.
+- [ ] **Xác minh Vận hành Thực tế (Empirical Runtime & URL Verification):**
+  - **Tuyệt đối KHÔNG chỉ dừng ở `mvn compile`**: Biên dịch thành công KHÔNG đảm bảo code chạy đúng ở Runtime (như lỗi 500 ném ra từ JPA proxy, lỗi 404 NoResourceFoundException do lệch URL endpoint).
+  - **Trace URL Mapping 1-to-1**: Đối chiếu URL action/fetch ở JS/HTML (`action='/maintenance/tasks/8/complete'`) khớp chính xác 100% với `@PostMapping`/`@GetMapping` ở Controller.
+  - **JS Error Resilience**: Đảm bảo tất cả lệnh `fetch()` đều có `if (!res.ok)` check để không vỡ script (`SyntaxError: Unexpected token '<'`) khi API lỗi/redirect.
 
 ### Bước 5: Bàn giao
 - Tóm tắt ngắn gọn những gì đã làm.

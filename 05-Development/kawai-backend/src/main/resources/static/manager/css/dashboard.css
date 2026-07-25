@@ -7,35 +7,36 @@
 
 /* ── CSS Custom Properties ─────────────────────────────────── */
 :root {
-    --primary: #C9A96E;
-    --primary-12: rgba(201, 169, 110, 0.12);
-    --primary-15: rgba(201, 169, 110, 0.15);
-    --primary-20: rgba(201, 169, 110, 0.20);
-    --primary-30: rgba(201, 169, 110, 0.30);
-    --dark-bg: #282926;
-    --darker-bg: #1A1814;
-    --bg-base: #dfbc6522;
-    --card-bg: #c7b8958e;
-    --foreground: #3B2D24;
-    --text-muted: #3B2D24;
-    --text-dim: #3B2D24;
-    --text-faint: #3B2D24;
-    --border-subtle: rgba(44, 42, 30, 0.08);
-    --border-light: rgba(44, 42, 30, 0.12);
-    --border-medium: rgba(44, 42, 30, 0.18);
+    --primary: #322720;
+    --primary-12: rgba(50, 39, 32, 0.08);
+    --primary-15: rgba(50, 39, 32, 0.12);
+    --primary-20: rgba(50, 39, 32, 0.16);
+    --primary-30: rgba(50, 39, 32, 0.25);
+    --accent-gold: #E5B869;
+    --dark-bg: #322720;
+    --darker-bg: #221A15;
+    --bg-base: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --foreground: #0F172A;
+    --text-muted: #475569;
+    --text-dim: #64748B;
+    --text-faint: #94A3B8;
+    --border-subtle: #E2E8F0;
+    --border-light: #CBD5E1;
+    --border-medium: #94A3B8;
     --sidebar-width: 240px;
     --header-height: 56px;
     --font-serif: 'Cormorant Garamond', serif;
     --font-sans: 'DM Sans', sans-serif;
     --font-mono: 'Inter', monospace;
 
-    /* Chart palette */
-    --chart-room: #C9A96E;
-    --chart-fnb: #7A9C7A;
-    --chart-tour: #6B8C9A;
-    --chart-room-15: rgba(201, 169, 110, 0.15);
-    --chart-fnb-15: rgba(122, 156, 122, 0.15);
-    --chart-tour-15: rgba(107, 140, 154, 0.15);
+    /* Executive Chart palette */
+    --chart-room: #2563EB;
+    --chart-fnb: #10B981;
+    --chart-tour: #F59E0B;
+    --chart-room-15: rgba(37, 99, 235, 0.15);
+    --chart-fnb-15: rgba(16, 185, 129, 0.15);
+    --chart-tour-15: rgba(245, 158, 11, 0.15);
 }
 
 /* ── Reset & Base ──────────────────────────────────────────── */
@@ -52,11 +53,11 @@ html {
 }
 
 body {
-    font-family: var(--font-sans);
     background-color: var(--bg-base);
     color: var(--foreground);
-    min-height: 100vh;
+    font-family: var(--font-sans);
     font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -367,15 +368,13 @@ body {
 
 /* ── Sidebar Nav ───────────────────────────────────────────── */
 .mgr-nav {
-    flex: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     padding: 0;
-    margin: 0 280px 0 24px;
+    margin: 0 0 0 16px;
     height: 100%;
-    overflow: visible;
 }
 
 .mgr-nav-item {
@@ -387,52 +386,56 @@ body {
 }
 
 .mgr-nav-link {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 0 16px;
-    height: 100%;
-    font-size: 14px;
-    font-family: var(--font-sans);
-    color: #f0e4c2;
+    padding: 8px 16px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #D6C8B8 !important;
     text-decoration: none;
-    border-bottom: 3px solid transparent;
-    transition: all 0.15s;
-    cursor: pointer;
+    transition: all 0.2s ease-in-out;
     background: transparent;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    width: auto;
-    text-align: left;
+    border: 1px solid transparent;
+    cursor: pointer;
+    box-sizing: border-box;
 }
 
 .mgr-nav-link:hover {
-    color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.08);
-    border-bottom-color: rgba(255, 255, 255, 0.25);
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .mgr-nav-link.active {
-    color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.12);
-    border-bottom-color: #FFFFFF;
-    font-weight: 600;
+    color: #FFFFFF !important;
+    background: #4F3D33 !important;
+    font-weight: 700 !important;
+    border: 1px solid #735C4D !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 -2px 0 0 #E5B869 !important;
 }
 
 .mgr-nav-icon {
-    color: #f0e4c2;
-    opacity: 0.8;
+    color: #D6C8B8;
+    opacity: 0.9;
     flex-shrink: 0;
-    width: 15px;
-    height: 15px;
-    transition: all 0.15s;
+    width: 16px;
+    height: 16px;
+    transition: all 0.2s;
 }
 
-.mgr-nav-link:hover .mgr-nav-icon,
-.mgr-nav-link.active .mgr-nav-icon {
+.mgr-nav-link:hover .mgr-nav-icon {
     color: #FFFFFF;
     opacity: 1;
+}
+
+.mgr-nav-link.active .mgr-nav-icon,
+.mgr-nav-link.active svg {
+    color: #E5B869 !important;
+    stroke: #E5B869 !important;
+    opacity: 1 !important;
 }
 
 .mgr-nav-arrow {
@@ -454,22 +457,25 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #67645c;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #3A2E26;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     z-index: 1000;
-    min-width: 180px;
-    margin-left: 0;
-    border-left: none;
+    min-width: 195px;
     max-height: 0;
+    opacity: 0;
+    visibility: hidden;
     overflow: hidden;
-    transition: max-height 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
+.mgr-nav-item:hover .mgr-submenu,
 .mgr-submenu.open {
     max-height: 400px;
     padding: 6px 0;
+    opacity: 1;
+    visibility: visible;
 }
 
 .mgr-submenu-link {

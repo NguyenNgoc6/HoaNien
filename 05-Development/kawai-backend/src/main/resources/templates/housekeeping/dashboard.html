@@ -17,32 +17,31 @@
             --primary: #8C6A41;
             --primary-light: #C6B5A2;
             --primary-dark: #6b4d2b;
-            --secondary: #2C2A1E;
-            --bg-color: #FDFBF7;
+            --secondary: #0F172A;
+            --bg-color: #F8FAFC;
             --surface: #FFFFFF;
-            --surface-hover: #F8F6F0;
-            --text-primary: #1A1814;
-            --text-secondary: #6A6256;
-            --text-tertiary: #9A9485;
-            --border-color: #EAE6DF;
+            --surface-hover: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --text-tertiary: #64748B;
+            --border-color: #CBD5E1;
 
-            --success: #2D6B4A;
-            --success-light: #E8F3ED;
-            --warning: #D98C2A;
-            --warning-light: #FDF4E7;
-            --danger: #570c0cb5;
-            --danger-light: #c08585d6;
-            --info: #3A6D8C;
-            --info-light: #EBF3F8;
-            --urgent-color: #783333;
-            /* Màu đỏ của thẻ khẩn cấp và văn bản liên quan */
+            --success: #15803D;
+            --success-light: #DCFCE7;
+            --warning: #B45309;
+            --warning-light: #FEF3C7;
+            --danger: #991B1B;
+            --danger-light: #FEE2E2;
+            --info: #0369A1;
+            --info-light: #E0F2FE;
+            --urgent-color: #DC2626;
 
             --font-serif: 'Playfair Display', serif;
             --font-sans: 'Inter', sans-serif;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --shadow-sm: 0 8px 24px rgba(26, 24, 20, 0.03);
-            --shadow-md: 0 16px 32px rgba(26, 24, 20, 0.05);
+            --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 12px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
         }
 
         * {
@@ -258,18 +257,35 @@
         .stat-card {
             background: var(--surface);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 22px 24px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-card:nth-child(1)::before { background: #3B82F6; }
+        .stat-card:nth-child(2)::before { background: #F59E0B; }
+        .stat-card:nth-child(3)::before { background: #10B981; }
+        .stat-card:nth-child(4)::before { background: #EF4444; }
+
         .stat-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: var(--shadow-md);
+            border-color: #94A3B8;
         }
 
         .stat-header {
@@ -280,18 +296,25 @@
 
         .stat-title {
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
         }
+
+        .stat-card:nth-child(1) .stat-icon { background: #EFF6FF; color: #2563EB; }
+        .stat-card:nth-child(2) .stat-icon { background: #FFFBEB; color: #D97706; }
+        .stat-card:nth-child(3) .stat-icon { background: #ECFDF5; color: #059669; }
+        .stat-card:nth-child(4) .stat-icon { background: #FEF2F2; color: #DC2626; }
 
         .stat-icon svg {
             width: 20px;
@@ -300,9 +323,9 @@
         }
 
         .stat-value {
-            font-family: var(--font-serif);
-            font-size: 36px;
-            font-weight: 700;
+            font-family: var(--font-sans);
+            font-size: 38px;
+            font-weight: 800;
             color: var(--secondary);
             line-height: 1;
         }
@@ -330,20 +353,21 @@
 
         .tab-btn {
             padding: 8px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border-color);
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
             border-radius: 20px;
             font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
+            font-weight: 600;
+            color: #475569;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .tab-btn.active {
-            background: #B9AA97;
-            color: #fff;
-            border-color: #B9AA97;
+            background: #0F172A;
+            color: #FFFFFF;
+            border-color: #0F172A;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
         }
 
         /* Room Grid */
@@ -372,7 +396,7 @@
             border: 1px solid var(--border-color);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex;
             flex-direction: column;
         }
@@ -380,11 +404,14 @@
         .room-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-md);
+            border-color: #94A3B8;
         }
 
         .room-card.urgent-task {
-            border-left: 3px solid var(--urgent-color) !important;
-            background: #fffcfc;
+            border: 1px solid #FCA5A5 !important;
+            border-left: 6px solid #DC2626 !important;
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F5 100%);
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.1);
         }
 
         .room-card-header {
@@ -404,43 +431,48 @@
 
         .room-number {
             font-family: var(--font-sans);
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--secondary);
+            font-size: 26px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.02em;
         }
 
         .room-type {
             font-size: 12px;
-            color: var(--text-tertiary);
-            font-weight: 500;
+            color: #64748B;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .status-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            letter-spacing: 0.02em;
         }
 
         .status-urgent {
-            background: var(--danger-light);
-            color: var(--danger);
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
         }
 
         .status-progress {
-            background: var(--warning-light);
-            color: var(--warning);
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FDE68A;
         }
 
         .status-done {
-            background: var(--success-light);
-            color: var(--success);
+            background: #DCFCE7;
+            color: #166534;
+            border: 1px solid #86EFAC;
         }
 
         .room-card-body {
@@ -453,45 +485,51 @@
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .stay-checkout {
-            color: var(--danger);
+            color: #BE123C;
+            font-weight: 700;
         }
 
         .stay-expected {
-            color: var(--primary);
+            color: #2563EB;
+            font-weight: 700;
         }
 
         .stay-over {
-            color: var(--info);
+            color: #0284C7;
+            font-weight: 600;
         }
 
         .guest-note {
-            background: var(--surface-hover);
-            padding: 12px 16px;
-            border-radius: 8px;
-            border-left: 3px solid var(--primary-light);
+            background: #F8FAFC;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+            border-left: 4px solid #6366F1;
             font-size: 13.5px;
             line-height: 1.5;
-            color: var(--text-secondary);
+            color: #1E293B;
+            font-weight: 500;
             display: flex;
             gap: 8px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
         }
 
         .guest-note i {
-            color: var(--primary-light);
+            color: #6366F1;
             margin-top: 2px;
         }
 
         .room-card-footer {
-            padding: 20px 24px;
-            background: var(--surface-hover);
+            padding: 16px 20px;
+            background: #F8FAFC;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
             border-top: 1px solid var(--border-color);
         }
@@ -507,28 +545,30 @@
         }
 
         .btn-minibar {
-            background: transparent;
-            color: var(--info);
-            border: 1px solid var(--info-light) !important;
+            background: #F0F9FF;
+            color: #0284C7;
+            border: 1px solid #BAE6FD !important;
+            font-weight: 600;
         }
 
         .btn-minibar:hover {
-            background: var(--info-light);
+            background: #E0F2FE;
+            border-color: #38BDF8 !important;
         }
 
         .btn {
-            height: 34px;
-            padding: 0 12px;
+            height: 38px;
+            padding: 0 14px;
             border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 12.5px;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
             border: 1px solid transparent;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             text-decoration: none;
             white-space: nowrap;
             flex-shrink: 0;
@@ -536,31 +576,39 @@
         }
 
         .btn-primary {
-            background: #3B2D24;
-            color: #fff;
+            background: #0F172A;
+            color: #FFFFFF;
+            border: 1px solid #0F172A;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
         }
 
         .btn-primary:hover {
-            background: #635547;
+            background: #1E293B;
+            border-color: #1E293B;
         }
 
         .btn-success {
-            background: #635547;
-            color: #fff;
+            background: #15803D;
+            color: #FFFFFF;
+            border: 1px solid #15803D;
+            box-shadow: 0 2px 4px rgba(21, 128, 61, 0.15);
         }
 
         .btn-success:hover {
-            background: #B9AA97;
+            background: #166534;
+            border-color: #166534;
         }
 
         .btn-report {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger-light);
+            background: #FEF2F2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5 !important;
+            font-weight: 600;
         }
 
         .btn-report:hover {
-            background: var(--danger-light);
+            background: #FEE2E2;
+            border-color: #F87171 !important;
         }
 
         /* Modal for Maintenance Report */
@@ -1142,12 +1190,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Hình ảnh sự cố (Tùy chọn)</label>
-                    <input type="file" name="image" accept="image/*" class="form-control" id="reportImageInput"
+                    <label class="form-label">Hình ảnh sự cố (Tùy chọn - Có thể chọn nhiều ảnh)</label>
+                    <input type="file" name="images" accept="image/*" multiple class="form-control" id="reportImageInput"
                         onchange="previewReportImage(this)">
-                    <div id="imagePreviewContainer" style="margin-top: 12px; display: none;">
-                        <img id="imagePreview" src="#" alt="Xem trước ảnh"
-                            style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: cover;">
+                    <div id="imagePreviewContainer" style="margin-top: 12px; display: none; flex-wrap: wrap; gap: 8px;">
                     </div>
                 </div>
 
@@ -1211,12 +1257,40 @@
             document.getElementById('reportModal').classList.add('active');
         }
 
+        function previewReportImage(input) {
+            const container = document.getElementById('imagePreviewContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            if (input.files && input.files.length > 0) {
+                container.style.display = 'flex';
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '80px';
+                        img.style.height = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '6px';
+                        img.style.border = '1px solid var(--border-color)';
+                        container.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
         function closeReportModal() {
             document.getElementById('reportModal').classList.remove('active');
             const imgInput = document.getElementById('reportImageInput');
             if (imgInput) imgInput.value = '';
             const previewContainer = document.getElementById('imagePreviewContainer');
-            if (previewContainer) previewContainer.style.display = 'none';
+            if (previewContainer) {
+                previewContainer.innerHTML = '';
+                previewContainer.style.display = 'none';
+            }
         }
 
         // Close modal on outside click
@@ -1300,14 +1374,39 @@
             }
         }
 
-        // Minibar Modal JS
-        function openMinibarModal(roomId, roomNumber) {
+        async function openMinibarModal(roomId, roomNumber) {
             document.getElementById('minibarRoomId').value = roomId;
             document.getElementById('minibarRoomNumber').innerText = roomNumber;
 
             // Reset form
             const inputs = document.querySelectorAll('#minibarModal input[type="number"]');
             inputs.forEach(input => input.value = '0');
+
+            try {
+                const res = await fetch(`/api/housekeeping/get-minibar-items?roomId=${roomId}`);
+                const data = await res.json();
+                if (data.success && data.items) {
+                    const evianInput = document.querySelector('input[name="item_evian"]');
+                    const cocaInput = document.querySelector('input[name="item_coca"]');
+                    const heinekenInput = document.querySelector('input[name="item_heineken"]');
+                    const snackInput = document.querySelector('input[name="item_snack"]');
+                    const tbInput = document.querySelector('input[name="amenity_toothbrush"]');
+                    const sgInput = document.querySelector('input[name="amenity_showergel"]');
+                    const spInput = document.querySelector('input[name="amenity_shampoo"]');
+                    const twInput = document.querySelector('input[name="amenity_towel"]');
+
+                    if (evianInput) evianInput.value = data.items.evian || 0;
+                    if (cocaInput) cocaInput.value = data.items.coca || 0;
+                    if (heinekenInput) heinekenInput.value = data.items.heineken || 0;
+                    if (snackInput) snackInput.value = data.items.snack || 0;
+                    if (tbInput) tbInput.value = data.items.toothbrush || 0;
+                    if (sgInput) sgInput.value = data.items.showergel || 0;
+                    if (spInput) spInput.value = data.items.shampoo || 0;
+                    if (twInput) twInput.value = data.items.towel || 0;
+                }
+            } catch (e) {
+                console.error("Error fetching minibar items:", e);
+            }
 
             document.getElementById('minibarModal').classList.add('active');
         }
@@ -1322,6 +1421,12 @@
             const coca = parseInt(document.querySelector('input[name="item_coca"]').value) || 0;
             const heineken = parseInt(document.querySelector('input[name="item_heineken"]').value) || 0;
             const snack = parseInt(document.querySelector('input[name="item_snack"]').value) || 0;
+
+            const toothbrush = parseInt(document.querySelector('input[name="amenity_toothbrush"]')?.value) || 0;
+            const showergel = parseInt(document.querySelector('input[name="amenity_showergel"]')?.value) || 0;
+            const shampoo = parseInt(document.querySelector('input[name="amenity_shampoo"]')?.value) || 0;
+            const towel = parseInt(document.querySelector('input[name="amenity_towel"]')?.value) || 0;
+
             const notes = "";
 
             // Mock prices for Minibar items
@@ -1331,40 +1436,70 @@
             const P_SNACK = 40000;
 
             const minibarFee = (evian * P_EVIAN) + (coca * P_COCA) + (heineken * P_HEINEKEN) + (snack * P_SNACK);
-
             const totalFee = minibarFee;
 
             let desc = [];
-            if (evian > 0) desc.push(`Nước suối Evian (x${evian})`);
-            if (coca > 0) desc.push(`Coca Cola (x${coca})`);
-            if (heineken > 0) desc.push(`Bia Heineken (x${heineken})`);
-            if (snack > 0) desc.push(`Snack khoai tây (x${snack})`);
+            let itemList = [];
+            if (evian > 0) {
+                desc.push(`Nước suối Evian (x${evian})`);
+                itemList.push({ name: 'Nước suối Evian', qty: evian, price: P_EVIAN, amount: evian * P_EVIAN });
+            }
+            if (coca > 0) {
+                desc.push(`Coca Cola (x${coca})`);
+                itemList.push({ name: 'Coca Cola', qty: coca, price: P_COCA, amount: coca * P_COCA });
+            }
+            if (heineken > 0) {
+                desc.push(`Bia Heineken (x${heineken})`);
+                itemList.push({ name: 'Bia Heineken', qty: heineken, price: P_HEINEKEN, amount: heineken * P_HEINEKEN });
+            }
+            if (snack > 0) {
+                desc.push(`Snack khoai tây (x${snack})`);
+                itemList.push({ name: 'Snack khoai tây', qty: snack, price: P_SNACK, amount: snack * P_SNACK });
+            }
+
+            // Amenities
+            if (toothbrush > 0) {
+                desc.push(`Bàn chải đánh răng (x${toothbrush})`);
+                itemList.push({ name: 'Bàn chải đánh răng', qty: toothbrush, price: 0, amount: 0 });
+            }
+            if (showergel > 0) {
+                desc.push(`Sữa tắm mini (x${showergel})`);
+                itemList.push({ name: 'Sữa tắm mini', qty: showergel, price: 0, amount: 0 });
+            }
+            if (shampoo > 0) {
+                desc.push(`Dầu gội mini (x${shampoo})`);
+                itemList.push({ name: 'Dầu gội mini', qty: shampoo, price: 0, amount: 0 });
+            }
+            if (towel > 0) {
+                desc.push(`Khăn tắm thay mới (x${towel})`);
+                itemList.push({ name: 'Khăn tắm thay mới', qty: towel, price: 0, amount: 0 });
+            }
 
             let fullDesc = "";
             if (desc.length > 0) {
-                fullDesc += `Phí sử dụng Minibar: ` + desc.join(", ");
+                fullDesc = "Phí sử dụng Minibar: " + desc.join(", ");
+            } else {
+                fullDesc = "Phí sử dụng Minibar: Không sử dụng";
             }
 
-            if (totalFee > 0) {
-                try {
-                    const response = await fetch('/api/housekeeping/save-minibar-only', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ roomId, minibarFee: totalFee, description: fullDesc, notes })
-                    });
-                    const res = await response.json();
-                    if (res.success) {
-                        alert('Đã lưu thông tin kiểm kê phòng thành công cho Phòng ' + document.getElementById('minibarRoomNumber').innerText);
-                        closeMinibarModal();
-                    } else {
-                        alert('Lỗi: ' + res.message);
-                    }
-                } catch (e) {
-                    alert('Lỗi kết nối.');
+            try {
+                const response = await fetch('/api/housekeeping/save-minibar-only', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roomId, minibarFee: totalFee, description: fullDesc, notes, items: itemList })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    const roomNumEl = document.getElementById('minibarRoomNumber');
+                    const roomNumText = roomNumEl ? roomNumEl.innerText : '';
+                    alert('Đã lưu thông tin kiểm kê phòng thành công cho Phòng ' + roomNumText);
+                    closeMinibarModal();
+                } else {
+                    alert('Lỗi: ' + res.message);
                 }
-            } else {
-                alert('Đã lưu thông tin (không phát sinh phí) cho Phòng ' + document.getElementById('minibarRoomNumber').innerText);
-                closeMinibarModal();
+            } catch (e) {
+                console.error("Error submitting minibar:", e);
+                alert('Lỗi kết nối: ' + e.message);
             }
         }
 
@@ -1437,46 +1572,36 @@
                     const lowerTag = tagText.toLowerCase();
 
                     if (lowerTag.includes('arrival') || lowerTag.includes('checkin') || lowerTag.includes('check-in')) {
-                        bg = '#f7f5f2'; // Pearl-like soft sand
-                        color = '#877f78'; // Pearl grey-brown
-                        border = '#eae5df';
-                        iconHtml = `<i class="fa-solid fa-user-check" style="margin-right: 5px; font-size: 10px; color: #877f78;"></i>`;
+                        bg = '#EFF6FF';
+                        color = '#1E40AF';
+                        border = '#BFDBFE';
+                        iconHtml = `<i class="fa-solid fa-user-check" style="margin-right: 5px; font-size: 10px; color: #1E40AF;"></i>`;
                     } else if (lowerTag.includes('checkout') || lowerTag.includes('check-out')) {
-                        bg = '#fcf9f5'; // Light gold sand
-                        color = '#b89b74'; // Gold bronze
-                        border = '#f2e9dc';
-                        iconHtml = `<i class="fa-solid fa-suitcase-rolling" style="margin-right: 5px; font-size: 10px; color: #b89b74;"></i>`;
+                        bg = '#FEF3C7';
+                        color = '#92400E';
+                        border = '#FDE68A';
+                        iconHtml = `<i class="fa-solid fa-suitcase-rolling" style="margin-right: 5px; font-size: 10px; color: #92400E;"></i>`;
                     } else if (lowerTag.includes('stayover') || lowerTag.includes('stay-over') || lowerTag.includes('stay')) {
-                        bg = '#f8f9fa';
-                        color = '#6c757d';
-                        border = '#e9ecef';
-                        iconHtml = `<i class="fa-solid fa-bed" style="margin-right: 5px; font-size: 10px; color: #6c757d;"></i>`;
+                        bg = '#F1F5F9';
+                        color = '#334155';
+                        border = '#CBD5E1';
+                        iconHtml = `<i class="fa-solid fa-bed" style="margin-right: 5px; font-size: 10px; color: #334155;"></i>`;
                     } else if (lowerTag.includes('urgent') || lowerTag.includes('khần') || lowerTag.includes('khẩn')) {
-                        bg = '#fff5f5';
-                        color = '#c92a2a';
-                        border = '#ffe3e3';
-                        iconHtml = `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px; font-size: 10px; color: #c92a2a;"></i>`;
+                        bg = '#FEE2E2';
+                        color = '#991B1B';
+                        border = '#FCA5A5';
+                        iconHtml = `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px; font-size: 10px; color: #991B1B;"></i>`;
+                    } else if (lowerTag.includes('khách yêu cầu qua app') || lowerTag.includes('khách yêu cầu')) {
+                        bg = '#F0FDF4';
+                        color = '#166534';
+                        border = '#BBF7D0';
+                        iconHtml = `<i class="fa-solid fa-mobile-screen-button" style="margin-right: 5px; font-size: 10px; color: #166534;"></i>`;
                     }
 
-                    const badgeHtml = `<span class="note-badge" style="display: inline-flex; align-items: center; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: ${bg}; color: ${color}; border: 1px solid ${border}; margin-right: 8px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">${iconHtml}${tagText}</span>`;
+                    const badgeHtml = `<span class="note-badge" style="display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 6px; background: ${bg}; color: ${color}; border: 1px solid ${border}; margin-right: 8px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 1px 2px rgba(15,23,42,0.04);">${iconHtml}${tagText}</span>`;
                     span.innerHTML = badgeHtml + restText.trim();
                 }
             });
-        }
-
-        function previewReportImage(input) {
-            const container = document.getElementById('imagePreviewContainer');
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    container.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                container.style.display = 'none';
-            }
         }
 
         if (document.readyState === 'loading') {

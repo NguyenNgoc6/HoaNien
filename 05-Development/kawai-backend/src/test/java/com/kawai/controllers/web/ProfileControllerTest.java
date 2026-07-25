@@ -75,8 +75,37 @@ public class ProfileControllerTest {
     private com.kawai.repositories.FolioItemRepository folioItemRepository;
 
     @MockBean
+    private com.kawai.repositories.BookingRepository bookingRepository;
+
+    @MockBean
+    private com.kawai.services.interfaces.TourBookingService tourBookingService;
+
+    @MockBean
+    private com.kawai.services.interfaces.EmailService emailService;
+
+    @MockBean
+    private com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo;
+
+    @MockBean
+    private com.kawai.services.impl.FileUploadService fileUploadService;
+
+    @MockBean
+    private com.kawai.repositories.RoomRepository roomRepo;
+
+    @MockBean
     private com.kawai.repositories.RoomGuestRepository roomGuestRepository;
 
+    @MockBean
+    private com.kawai.repositories.EmployeeRepository employeeRepository;
+
+    @MockBean
+    private com.kawai.services.interfaces.ShiftService shiftService;
+
+
+    @org.junit.jupiter.api.BeforeEach
+    public void setUp() {
+        when(shiftService.checkIsOnShift(any(), any())).thenReturn(true);
+    }
 
     @Test
     @WithMockUser(username = "hoangnam")
@@ -129,6 +158,97 @@ public class ProfileControllerTest {
         when(foodOrderRepository.findByCustomer(any())).thenReturn(java.util.Collections.emptyList());
         when(dependentRepository.findByCustomer(any())).thenReturn(java.util.Collections.emptyList());
         when(tableReservationRepository.findByCustomerOrderByIdDesc(any())).thenReturn(java.util.Collections.emptyList());
+
+        mockMvc.perform(get("/profile"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("guest/profile"));
+    }
+
+    @Test
+    @WithMockUser(username = "hoangnam")
+    public void testGetProfileWithFullComplexDataRendersSuccessfully() throws Exception {
+        Customer customer = new Customer();
+        customer.setId(505L);
+        customer.setFullName("Le Hoang Nam");
+        customer.setEmail("nam101@test.com");
+        customer.setGender("MALE");
+        customer.setPhone("0901234567");
+        customer.setLoyaltyPoints(1500);
+        customer.setCccdPassportEncrypted("001099000505");
+        
+        com.kawai.models.MembershipTier tier = new com.kawai.models.MembershipTier();
+        tier.setTierName("SILVER");
+        customer.setMembershipTier(tier);
+
+        com.kawai.models.RoomBooking booking1 = new com.kawai.models.RoomBooking();
+        booking1.setId(505L);
+        booking1.setCustomer(customer);
+        booking1.setBookingStatus("CHECKED_IN");
+        booking1.setBookingDate(java.time.LocalDate.now().minusDays(5));
+        booking1.setCheckInDate(java.time.LocalDate.now());
+        booking1.setCheckOutDate(java.time.LocalDate.now().plusDays(2));
+        booking1.setDepositAmount(new java.math.BigDecimal("1000000.00"));
+        booking1.setCreditLimit(new java.math.BigDecimal("5000000.00"));
+        booking1.setCancellationDeadline(java.time.LocalDateTime.now().plusDays(1));
+
+        com.kawai.models.RoomCategory category = new com.kawai.models.RoomCategory();
+        category.setId(1L);
+        category.setCategoryName("Deluxe Ocean View");
+        category.setCoverImgUrl("https://example.com/img1.jpg,https://example.com/img2.jpg");
+
+        com.kawai.models.Room room = new com.kawai.models.Room();
+        room.setId(101L);
+        room.setRoomNumber("P.201");
+
+        com.kawai.models.RoomBookingDetail detail1 = new com.kawai.models.RoomBookingDetail();
+        detail1.setId(5051L);
+        detail1.setRoomBooking(booking1);
+        detail1.setCustomer(customer);
+        detail1.setCategory(category);
+        detail1.setRoom(room);
+        detail1.setSubCreditLimit(new java.math.BigDecimal("2500000.00"));
+
+        com.kawai.models.FolioItem item1 = new com.kawai.models.FolioItem();
+        item1.setId(10L);
+        item1.setDescription("Dịch vụ Spa");
+        item1.setAmount(new java.math.BigDecimal("500000.00"));
+        item1.setIsSettledSeparately(false);
+
+        com.kawai.models.Dependent dep1 = new com.kawai.models.Dependent();
+        dep1.setId(1L);
+        dep1.setCustomer(customer);
+        dep1.setDependentName("Nguyễn Văn A");
+        dep1.setGender("Male");
+        dep1.setBirthDate(java.time.LocalDate.of(2000, 1, 1));
+        dep1.setCccdPassportEncrypted("001099000506");
+
+        com.kawai.models.FoodOrder foodOrder = new com.kawai.models.FoodOrder();
+        foodOrder.setId(100L);
+        foodOrder.setRoomBookingDetail(detail1);
+        foodOrder.setOrderStatus("CONFIRMED");
+        foodOrder.setOrderTime(java.time.LocalDateTime.now());
+        foodOrder.setTotalAmount(new java.math.BigDecimal("150000.00"));
+
+        com.kawai.models.TableReservation tableRes = new com.kawai.models.TableReservation();
+        tableRes.setId(200L);
+        tableRes.setCustomer(customer);
+        tableRes.setReserveDate(java.time.LocalDate.now().plusDays(1));
+        tableRes.setReserveTime(java.time.LocalTime.of(19, 0));
+        tableRes.setPartySize(4);
+        tableRes.setStatus("CONFIRMED");
+
+        when(customerRepository.findByAccount_Username("hoangnam")).thenReturn(Optional.of(customer));
+        when(roomBookingRepository.findByCustomerOrderByIdDesc(any())).thenReturn(java.util.List.of(booking1));
+        when(roomBookingDetailRepository.findByCustomer(any())).thenReturn(java.util.List.of(detail1));
+        when(roomBookingRepository.findById(505L)).thenReturn(Optional.of(booking1));
+        when(roomBookingDetailRepository.findByRoomBookingId(505L)).thenReturn(java.util.List.of(detail1));
+        when(folioItemRepository.findByRoomBookingDetailId(5051L)).thenReturn(java.util.List.of(item1));
+        when(roomGuestRepository.findByRoomBookingDetailId(any())).thenReturn(java.util.Collections.emptyList());
+        when(tourBookingRepository.findTourBookingsByCustomerId(any())).thenReturn(java.util.Collections.emptyList());
+        when(tourBookingRepository.findByRoomBookingId(any())).thenReturn(java.util.Collections.emptyList());
+        when(foodOrderRepository.findByCustomer(any())).thenReturn(java.util.List.of(foodOrder));
+        when(dependentRepository.findByCustomer(any())).thenReturn(java.util.List.of(dep1));
+        when(tableReservationRepository.findByCustomerOrderByIdDesc(any())).thenReturn(java.util.List.of(tableRes));
 
         mockMvc.perform(get("/profile"))
                 .andExpect(status().isOk())

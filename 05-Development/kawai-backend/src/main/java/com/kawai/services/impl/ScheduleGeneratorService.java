@@ -75,23 +75,20 @@ public class ScheduleGeneratorService {
         // Definition of quotas: Map<RoleName, Map<Shift, Integer>>
         Map<String, Map<Shift, Integer>> quotas = new HashMap<>();
 
-        // RECEPTIONIST: Sáng 3, Chiều 3, Đêm 2
-        quotas.put("RECEPTIONIST", Map.of(morningShift, 3, afternoonShift, 3, nightShift, 2));
+        // RECEPTIONIST: Sáng 3, Chiều 3, Đêm 1
+        quotas.put("RECEPTIONIST", Map.of(morningShift, 3, afternoonShift, 3, nightShift, 1));
 
-        // HOUSEKEEPING: Sáng 6, Chiều 6, Đêm 3
-        quotas.put("HOUSEKEEPING", Map.of(morningShift, 6, afternoonShift, 6, nightShift, 3));
+        // HOUSEKEEPING: Sáng 5, Chiều 5, Đêm 2
+        quotas.put("HOUSEKEEPING", Map.of(morningShift, 5, afternoonShift, 5, nightShift, 2));
 
-        // F&B POS: Sáng 4, Chiều 4, Đêm 2
-        quotas.put("F&B POS", Map.of(morningShift, 4, afternoonShift, 4, nightShift, 2));
+        // F&B POS: Sáng 4, Chiều 4, Đêm 1
+        quotas.put("F&B POS", Map.of(morningShift, 4, afternoonShift, 4, nightShift, 1));
 
         // F&B KITCHEN: Sáng 3, Chiều 3, Đêm 1
         quotas.put("F&B KITCHEN", Map.of(morningShift, 3, afternoonShift, 3, nightShift, 1));
 
-        // MAINTAINER: Sáng 2, Chiều 1, Đêm 1
-        quotas.put("MAINTAINER", Map.of(morningShift, 2, afternoonShift, 1, nightShift, 1));
-
-        // TOURGUIDE: Sáng 2, Chiều 2, Đêm 1
-        quotas.put("TOURGUIDE", Map.of(morningShift, 2, afternoonShift, 2, nightShift, 1));
+        // MAINTAINER: Sáng 2, Chiều 2, Đêm 1
+        quotas.put("MAINTAINER", Map.of(morningShift, 2, afternoonShift, 2, nightShift, 1));
 
         // MANAGER / ADMIN: Sáng 1, Chiều 1, Đêm 1
         quotas.put("MANAGER", Map.of(morningShift, 1, afternoonShift, 1, nightShift, 1));

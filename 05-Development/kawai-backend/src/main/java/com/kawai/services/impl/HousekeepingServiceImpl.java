@@ -202,6 +202,19 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         Employee staff = findEmployeeById(staffId);
         String priority = isEmergency ? "Urgent" : "Normal";
 
+        // Deduplication Guard: Check if a pending task for the same room was created in the last 10 seconds
+        java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().minusSeconds(10);
+        java.util.Optional<HotelOperation> recentTask = maintenanceRequestRepo.findAll().stream()
+                .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(roomId)
+                        && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
+                        && !"Completed".equalsIgnoreCase(t.getStatus())
+                        && t.getCreatedAt() != null && t.getCreatedAt().isAfter(recentCutoff))
+                .findFirst();
+        if (recentTask.isPresent()) {
+            log.warn("Prevented duplicate maintenance task creation for room ID: {}", roomId);
+            return recentTask.get();
+        }
+
         List<com.kawai.models.Workflow> activeWorkflows = workflowRepository
                 .findByTriggerEventAndIsActive("ROOM_REPORT_DAMAGE", true);
         if (!activeWorkflows.isEmpty()) {

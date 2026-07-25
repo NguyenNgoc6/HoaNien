@@ -251,6 +251,11 @@ public class TourBookingServiceImpl implements TourBookingService {
                 LOG.info("Created tour booking {} for schedule {} ({} pax)",
                                 savedBooking.getId(), schedule.getId(), request.getParticipantCount());
 
+                // Update bookedSeats on TourSchedule
+                int currentBooked = schedule.getBookedSeats() != null ? schedule.getBookedSeats() : 0;
+                schedule.setBookedSeats(currentBooked + request.getParticipantCount());
+                tourScheduleRepository.save(schedule);
+
                 // 5a. Sinh mã bảo hiểm và đánh dấu schedule (chỉ khi tour bắt
                 // buộc bảo hiểm)
                 if (Boolean.TRUE.equals(tour.getIsInsuranceRequired()) && request.isAcceptInsurance()) {

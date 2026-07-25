@@ -14,32 +14,32 @@
 
     <style>
         :root {
-            --primary: #B9AA97;
+            --primary: #8C6A41;
             --primary-light: #C6B5A2;
-            --secondary: #4A3E3D;
-            --bg-color: #FDFBF7;
+            --secondary: #0F172A;
+            --bg-color: #F8FAFC;
             --surface: #FFFFFF;
-            --surface-hover: #FDFBF7;
-            --text-primary: #2D2524;
-            --text-secondary: #5E504F;
-            --text-tertiary: #8A7E7D;
-            --border-color: #EFECE8;
+            --surface-hover: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --text-tertiary: #64748B;
+            --border-color: #CBD5E1;
 
-            --success: #4c7955d7;
-            --success-light: #EBFBEE;
-            --warning: #c7935c;
-            --warning-light: #FFF4E6;
-            --danger: #894c4ce6;
-            --danger-light: #FFF0F0;
-            --info: #1864AB;
-            --info-light: #E7F5FF;
+            --success: #15803D;
+            --success-light: #DCFCE7;
+            --warning: #B45309;
+            --warning-light: #FEF3C7;
+            --danger: #991B1B;
+            --danger-light: #FEE2E2;
+            --info: #0369A1;
+            --info-light: #E0F2FE;
 
             --font-serif: 'Playfair Display', serif;
             --font-sans: 'Inter', sans-serif;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 2px 8px rgba(74, 62, 61, 0.05);
-            --shadow-md: 0 4px 16px rgba(74, 62, 61, 0.08);
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 12px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
         }
 
         * {
@@ -210,20 +210,21 @@
         .tab-btn {
             text-decoration: none;
             padding: 8px 20px;
-            background: var(--surface);
-            border: 1px solid var(--border-color);
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #475569;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .tab-btn.active {
-            background: #B9AA97;
-            border-color: #B9AA97;
-            color: #fff;
+            background: #0F172A;
+            border-color: #0F172A;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
         }
 
         .tab-btn:hover:not(.active) {
@@ -240,12 +241,13 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
         }
 
         .task-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-md);
+            border-color: #94A3B8;
         }
 
         .task-card-header {
@@ -518,10 +520,10 @@
         <div class="pricing-tabs" style="display: flex; gap: 12px; margin-bottom: 24px;">
             <button class="pricing-tab-btn" onclick="switchPricingTab('unpriced', this)"
                 style="padding: 8px 20px; background: var(--primary); border: 1px solid var(--primary); border-radius: 20px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; transition: all 0.2s; outline: none;">Chưa
-                định giá (<span th:text="${unpricedTasks.size()}">0</span>)</button>
+                định giá (<span th:text="${unpricedTasks != null ? unpricedTasks.size() : 0}">0</span>)</button>
             <button class="pricing-tab-btn" onclick="switchPricingTab('priced', this)"
                 style="padding: 8px 20px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border-color: var(--border-color); outline: none;">Đã
-                định giá (<span th:text="${pricedTasks.size()}">0</span>)</button>
+                định giá (<span th:text="${pricedTasks != null ? pricedTasks.size() : 0}">0</span>)</button>
         </div>
 
         <!-- Unpriced Grid -->
@@ -529,31 +531,37 @@
             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
             <div th:each="t : ${unpricedTasks}" class="task-card">
                 <!-- Header -->
-                <div class="task-card-header" th:data-room-number="${t.room?.roomNumber}"
-                    th:data-room-type="${t.room?.category?.categoryName}"
-                    th:data-staff-name="${t.staff?.fullName ?: 'Chưa xác định'}"
+                <div class="task-card-header" th:data-room-number="${t.room != null ? t.room.roomNumber : ''}"
+                    th:data-room-type="${t.room != null and t.room.category != null ? t.room.category.categoryName : ''}"
+                    th:data-staff-name="${t.staff != null ? t.staff.fullName : 'Chưa xác định'}"
                     th:data-created-at="${t.createdAt != null ? #temporals.format(t.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa cập nhật'}"
                     th:data-priority="${t.priority}" data-status="Pending" onclick="openDetailModal(this)">
                     <div class="task-location">
                         <i class="fa-solid fa-hotel"></i>
-                        <span th:text="'Phòng ' + ${t.room?.roomNumber}">Phòng 101</span>
+                        <span th:text="${t.room != null ? 'Phòng ' + t.room.roomNumber : 'Không xác định'}">Phòng 101</span>
                         <span style="font-size: 12px; font-weight: 400; color: var(--text-tertiary); margin-left: 6px;"
-                            th:text="${t.room?.category?.categoryName}">Room Type</span>
+                            th:text="${t.room != null and t.room.category != null ? t.room.category.categoryName : ''}">Room Type</span>
                     </div>
                 </div>
 
                 <!-- Body -->
                 <div class="task-card-body">
-                    <!-- Damage Image -->
-                    <div th:if="${t.imageUrl != null and t.imageUrl != ''}"
-                        style="position: relative; overflow: hidden; border-radius: 8px; margin-bottom: 16px; background: #e9ecef; border: 1px solid var(--border-color);">
-                        <img th:src="${t.imageUrl}" alt="Ảnh hỏng hóc" onclick="openLightbox(this.src)"
-                            style="width: 100%; height: 180px; object-fit: cover; cursor: pointer; transition: transform 0.3s; display: block;"
-                            onmouseover="this.style.transform='scale(1.05)'"
-                            onmouseout="this.style.transform='scale(1.0)'">
-                        <span
-                            style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; pointer-events: none;"><i
-                                class="fa-solid fa-magnifying-glass-plus"></i> Click để phóng to</span>
+                    <!-- Damage Image Gallery -->
+                    <div th:if="${t.imageUrl != null and t.imageUrl != ''}" th:with="imgList=${#strings.arraySplit(t.imageUrl, ',')}">
+                        <div style="position: relative; overflow: hidden; border-radius: 8px; background: #e9ecef; border: 1px solid var(--border-color);">
+                            <img th:src="${imgList[0]}" alt="Ảnh hỏng hóc" th:data-img="${imgList[0]}" onclick="openLightbox(this.getAttribute('data-img'))"
+                                style="width: 100%; height: 180px; object-fit: cover; cursor: pointer; transition: transform 0.3s; display: block;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1.0)'">
+                            <span style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.65); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; pointer-events: none;">
+                                <i class="fa-solid fa-camera"></i> <span th:text="${#arrays.length(imgList)} + ' ảnh'">1 ảnh</span>
+                            </span>
+                        </div>
+                        <div th:if="${#arrays.length(imgList) > 1}" style="display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; padding-bottom: 4px;">
+                            <img th:each="imgUrl : ${imgList}" th:src="${imgUrl}" th:data-img="${imgUrl}" onclick="openLightbox(this.getAttribute('data-img'))"
+                                style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color); flex-shrink: 0; transition: opacity 0.2s;"
+                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        </div>
                     </div>
 
                     <!-- Placeholder if no image -->
@@ -603,29 +611,38 @@
             style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
             <div th:each="t : ${pricedTasks}" class="task-card">
                 <!-- Header -->
-                <div class="task-card-header" th:data-room-number="${t.room?.roomNumber}"
-                    th:data-room-type="${t.room?.category?.categoryName}"
-                    th:data-staff-name="${t.staff?.fullName ?: 'Chưa xác định'}"
+                <div class="task-card-header" th:data-room-number="${t.room != null ? t.room.roomNumber : ''}"
+                    th:data-room-type="${t.room != null and t.room.category != null ? t.room.category.categoryName : ''}"
+                    th:data-staff-name="${t.staff != null ? t.staff.fullName : 'Chưa xác định'}"
                     th:data-created-at="${t.createdAt != null ? #temporals.format(t.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa cập nhật'}"
                     th:data-priority="${t.priority}" th:data-damage-price="${t.damagePrice}" data-status="Priced"
                     onclick="openDetailModal(this)">
                     <div class="task-location">
                         <i class="fa-solid fa-hotel"></i>
-                        <span th:text="'Phòng ' + ${t.room?.roomNumber}">Phòng 101</span>
+                        <span th:text="${t.room != null ? 'Phòng ' + t.room.roomNumber : 'Không xác định'}">Phòng 101</span>
                         <span style="font-size: 12px; font-weight: 400; color: var(--text-tertiary); margin-left: 6px;"
-                            th:text="${t.room?.category?.categoryName}">Room Type</span>
+                            th:text="${t.room != null and t.room.category != null ? t.room.category.categoryName : ''}">Room Type</span>
                     </div>
                 </div>
 
                 <!-- Body -->
                 <div class="task-card-body">
-                    <!-- Damage Image -->
-                    <div th:if="${t.imageUrl != null and t.imageUrl != ''}"
-                        style="position: relative; overflow: hidden; border-radius: 8px; margin-bottom: 16px; background: #e9ecef; border: 1px solid var(--border-color);">
-                        <img th:src="${t.imageUrl}" alt="Ảnh hỏng hóc" onclick="openLightbox(this.src)"
-                            style="width: 100%; height: 180px; object-fit: cover; cursor: pointer; transition: transform 0.3s; display: block;"
-                            onmouseover="this.style.transform='scale(1.05)'"
-                            onmouseout="this.style.transform='scale(1.0)'">
+                    <!-- Damage Image Gallery -->
+                    <div th:if="${t.imageUrl != null and t.imageUrl != ''}" th:with="imgList=${#strings.arraySplit(t.imageUrl, ',')}">
+                        <div style="position: relative; overflow: hidden; border-radius: 8px; background: #e9ecef; border: 1px solid var(--border-color);">
+                            <img th:src="${imgList[0]}" alt="Ảnh hỏng hóc" th:data-img="${imgList[0]}" onclick="openLightbox(this.getAttribute('data-img'))"
+                                style="width: 100%; height: 180px; object-fit: cover; cursor: pointer; transition: transform 0.3s; display: block;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1.0)'">
+                            <span style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.65); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; pointer-events: none;">
+                                <i class="fa-solid fa-camera"></i> <span th:text="${#arrays.length(imgList)} + ' ảnh'">1 ảnh</span>
+                            </span>
+                        </div>
+                        <div th:if="${#arrays.length(imgList) > 1}" style="display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; padding-bottom: 4px;">
+                            <img th:each="imgUrl : ${imgList}" th:src="${imgUrl}" th:data-img="${imgUrl}" onclick="openLightbox(this.getAttribute('data-img'))"
+                                style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color); flex-shrink: 0; transition: opacity 0.2s;"
+                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        </div>
                     </div>
 
                     <!-- Placeholder if no image -->
@@ -651,7 +668,7 @@
                     <div
                         style="font-size: 14px; font-weight: 700; color: var(--success); padding: 10px 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <i class="fa-solid fa-tag"></i> Giá định mức: <span
-                            th:text="${#numbers.formatDecimal(t.damagePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150,000
+                            th:text="${t.damagePrice != null ? #numbers.formatDecimal(t.damagePrice, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">150,000
                             VNĐ</span>
                     </div>
                 </div>
@@ -831,10 +848,10 @@
                 modalImgEl.src = imageUrl;
                 modalImgEl.onclick = function () { openLightbox(imageUrl); };
                 imgContainer.style.display = 'block';
-                noImgEl.style.display = 'none';
+                if (noImgEl) noImgEl.style.display = 'none';
             } else {
                 imgContainer.style.display = 'none';
-                noImgEl.style.display = 'block';
+                if (noImgEl) noImgEl.style.display = 'block';
             }
 
             // Open modal
@@ -894,20 +911,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function showUserInfo(name, email, phone, role) {
-            Swal.fire({
-                title: 'Thông tin nhân viên',
-                html: `
-                    <div style="text-align: left; margin-top: 15px; font-size: 14px;">
-                        <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-user"></i> Họ và tên:</strong> ${name}</p>
-                        <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-id-badge"></i> Bộ phận:</strong> ${role}</p>
-                        <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-envelope"></i> Email:</strong> ${email}</p>
-                        <p style="margin-bottom: 8px;"><strong><i class="fa-solid fa-phone"></i> Số điện thoại:</strong> ${phone}</p>
-                    </div>
-                `,
-                icon: 'info',
-                confirmButtonText: 'Đóng',
-                confirmButtonColor: '#B9AA97'
-            });
+            const modal = document.getElementById('maintenanceProfileModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                const pwdInput = document.getElementById('maintenanceNewPassword');
+                if (pwdInput) pwdInput.value = '';
+                const msg = document.getElementById('maintenancePasswordMsg');
+                if (msg) msg.style.display = 'none';
+            }
         }
     </script>
 
@@ -927,10 +938,11 @@
                     </div>
                 </div>
                 <div style="font-size: 14px; line-height: 1.6; color: #374151;">
-                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentEmployee != null ? currentEmployee.email : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentEmployee != null ? currentEmployee.phone : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentEmployee != null ? currentEmployee.gender : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentEmployee != null ? currentEmployee.cccd : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>Họ và tên:</strong> <span th:text="${currentStaff != null ? currentStaff.fullName : (#authentication != null ? #authentication.name : 'Nhân viên')}">Nhân viên</span></p>
+                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentStaff != null ? currentStaff.email : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentStaff != null ? currentStaff.phone : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentStaff != null ? currentStaff.gender : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentStaff != null ? currentStaff.cccd : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
                 </div>
             </div>
 
