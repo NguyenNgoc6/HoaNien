@@ -47,7 +47,7 @@ public class HotelOperation {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "damage_price")

@@ -90,7 +90,14 @@ public class ProfileController {
     @Autowired
     private FileUploadService fileUploadService;
 
+    @Autowired
+    private com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo;
+
+    @Autowired
+    private com.kawai.repositories.RoomRepository roomRepo;
+
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public String viewProfile(Authentication authentication, Model model) {
         if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
             return "redirect:/booking";
@@ -163,8 +170,12 @@ public class ProfileController {
 
             java.util.Set<RoomBooking> uniqueBookings = new java.util.HashSet<>(masterBookings);
             for (RoomBookingDetail d : occupantDetails) {
-                if (d.getRoomBooking() != null) {
-                    uniqueBookings.add(d.getRoomBooking());
+                if (d.getRoomBooking() != null && d.getRoomBooking().getId() != null) {
+                    roomBookingRepository.findById(d.getRoomBooking().getId()).ifPresent(rb -> {
+                        rb.getCheckInDate();
+                        rb.getCheckOutDate();
+                        uniqueBookings.add(rb);
+                    });
                 }
             }
 
@@ -213,6 +224,12 @@ public class ProfileController {
                 visibleDetailsMap.put(rb.getId(), visibleDetails);
 
                 for (RoomBookingDetail d : visibleDetails) {
+                    if (d.getRoom() != null) {
+                        d.getRoom().getRoomNumber();
+                    }
+                    if (d.getCategory() != null) {
+                        d.getCategory().getCategoryName();
+                    }
                     java.math.BigDecimal subLimit = (d.getSubCreditLimit() != null && d.getSubCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0)
                             ? d.getSubCreditLimit()
                             : (rb.getCreditLimit() != null && rb.getCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0
@@ -581,5 +598,30 @@ public class ProfileController {
         }
         hasAttachedToursMap.put(rb.getId(), hasTours);
         hasRefundableItemsMap.put(rb.getId(), roomRefundable || anyTourRefundable);
+    }
+
+    @PostMapping("/request-service")
+    public String requestService(@RequestParam("roomId") Long roomId,
+                                 @RequestParam("type") String type,
+                                 @RequestParam("notes") String notes,
+                                 RedirectAttributes ra,
+                                 Authentication authentication) {
+        if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
+            return "redirect:/booking";
+        }
+        com.kawai.models.Room room = roomRepo.findById(roomId).orElse(null);
+        if (room != null) {
+            com.kawai.models.HotelOperation task = new com.kawai.models.HotelOperation();
+            task.setRoom(room);
+            task.setStatus("Pending");
+            task.setNotes("[Khách yêu cầu qua App] " + notes);
+            task.setPriority("Urgent");
+            task.setOperationalType(type);
+            housekeepingTaskRepo.save(task);
+            ra.addFlashAttribute("successMessage", "Đã gửi yêu cầu thành công, nhân viên sẽ đến hỗ trợ bạn ngay.");
+        } else {
+            ra.addFlashAttribute("errorMessage", "Phòng không tồn tại.");
+        }
+        return "redirect:/profile";
     }
 }

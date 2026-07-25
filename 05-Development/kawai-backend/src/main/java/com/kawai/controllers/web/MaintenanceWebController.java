@@ -121,7 +121,7 @@ public class MaintenanceWebController {
         return "redirect:/maintenance/dashboard";
     }
 
-    @PostMapping("/requests/{requestId}/complete")
+    @PostMapping({"/requests/{requestId}/complete", "/tasks/{requestId}/complete"})
     public String completeRequest(@PathVariable Long requestId, 
             @RequestParam(required=false) String notes, 
             @RequestParam(required=false) Double cost, RedirectAttributes ra, HttpSession session) {
@@ -133,12 +133,34 @@ public class MaintenanceWebController {
         try { 
             var t = maintenanceRequestRepo.findById(requestId).orElseThrow();
             if (notes != null && !notes.isEmpty()) {
-                t.setNotes(t.getNotes() + "\n[Đã sửa]: " + notes);
+                String curNotes = t.getNotes() != null ? t.getNotes() : "";
+                t.setNotes(curNotes + "\n[Đã sửa]: " + notes);
                 maintenanceRequestRepo.save(t);
             }
             housekeepingService.completeMaintenance(requestId);
             ra.addFlashAttribute("successMessage","Hoàn tất bảo trì, phòng đã sẵn sàng.");
         } catch(Exception e) { ra.addFlashAttribute("errorMessage","Lỗi: "+e.getMessage()); }
+        return "redirect:/maintenance/dashboard";
+    }
+
+    @PostMapping({"/tasks/{taskId}/pause", "/requests/{taskId}/pause"})
+    public String pauseTask(@PathVariable Long taskId, 
+            @RequestParam(required=false) String reason, RedirectAttributes ra, HttpSession session) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!shiftService.checkIsOnShift(auth, session)) {
+            ra.addFlashAttribute("errorMessage", "Lỗi: Bạn chưa vào ca làm việc.");
+            return "redirect:/maintenance/dashboard";
+        }
+        try {
+            var t = maintenanceRequestRepo.findById(taskId).orElseThrow();
+            t.setStatus("Paused");
+            if (reason != null && !reason.isEmpty()) {
+                String curNotes = t.getNotes() != null ? t.getNotes() : "";
+                t.setNotes(curNotes + "\n[Tạm dừng]: " + reason);
+            }
+            maintenanceRequestRepo.save(t);
+            ra.addFlashAttribute("successMessage", "Đã tạm dừng phiếu bảo trì.");
+        } catch(Exception e) { ra.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage()); }
         return "redirect:/maintenance/dashboard";
     }
 
@@ -166,22 +188,31 @@ public class MaintenanceWebController {
         populateCommonData(model, auth);
         model.addAttribute("isOnShift", isOnShift);
         
+        java.util.List<HotelOperation> unpriced = java.util.Collections.emptyList();
+        java.util.List<HotelOperation> priced = java.util.Collections.emptyList();
+
         if (isOnShift) {
             java.util.List<HotelOperation> allTasks = maintenanceRequestRepo.findByOperationalType("DAMAGE_CHECK");
             
-            java.util.List<HotelOperation> unpriced = allTasks.stream()
+            java.util.Comparator<HotelOperation> dateComparator = (t1, t2) -> {
+                java.time.LocalDateTime c1 = t1.getCreatedAt() != null ? t1.getCreatedAt() : java.time.LocalDateTime.MIN;
+                java.time.LocalDateTime c2 = t2.getCreatedAt() != null ? t2.getCreatedAt() : java.time.LocalDateTime.MIN;
+                return c2.compareTo(c1);
+            };
+
+            unpriced = allTasks.stream()
                 .filter(t -> t.getDamagePrice() == null)
-                .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
+                .sorted(dateComparator)
                 .collect(java.util.stream.Collectors.toList());
                 
-            java.util.List<HotelOperation> priced = allTasks.stream()
+            priced = allTasks.stream()
                 .filter(t -> t.getDamagePrice() != null)
-                .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
+                .sorted(dateComparator)
                 .collect(java.util.stream.Collectors.toList());
-                
-            model.addAttribute("unpricedTasks", unpriced);
-            model.addAttribute("pricedTasks", priced);
         }
+            
+        model.addAttribute("unpricedTasks", unpriced);
+        model.addAttribute("pricedTasks", priced);
         return "maintenance/pricing";
     }
 

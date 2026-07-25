@@ -415,10 +415,10 @@ public class TableReservationServiceImpl implements TableReservationService {
     @Override
     public void cancelReservation(Long reservationId, java.security.Principal principal, String reason) {
         TableReservation res = tableReservationRepository.findById(reservationId)
-                .orElseThrow(() -> new BusinessException("RES-001", "Không tìm thấy thông tin đặt bàn"));
+                .orElseThrow(() -> new BusinessException("FNB-MSG24", "Không tìm thấy thông tin đặt bàn"));
 
-        if (!"Pending".equalsIgnoreCase(res.getStatus()) && !"Confirmed".equalsIgnoreCase(res.getStatus())) {
-            throw new BusinessException("RES-005", "Chỉ có thể hủy đơn đặt bàn khi ở trạng thái Chờ xác nhận hoặc Đã xác nhận.");
+        if (!"Pending".equalsIgnoreCase(res.getStatus())) {
+            throw new BusinessException("FNB-MSG28", "Chỉ có thể hủy đơn đặt bàn khi ở trạng thái Chờ xác nhận.");
         }
 
         // Validate that the current user is the one who created the reservation

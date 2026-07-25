@@ -1101,6 +1101,11 @@
                                 <span class="label">Tổng tiền cần thanh toán</span>
                                 <span class="amount" id="originalOutstandingAmount">0 VNĐ</span>
                             </div>
+                            <div id="pendingMaintenanceAlert" style="display: none; background: #fff7ed; border: 1px solid #fdba74; color: #c2410c; padding: 12px; border-radius: 8px; font-size: 12.5px; margin-top: 12px; line-height: 1.4;">
+                                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 4px; color: #ea580c;"></i>
+                                <span id="pendingMaintenanceText">Phòng đang có phiếu kiểm tra hỏng hóc/bảo trì chưa định giá. Vui lòng định giá đền bù trước khi thanh toán.</span>
+                            </div>
+
                             <button class="btn-checkout no-print" id="btnProceedOriginal"
                                 onclick="openPaymentModal(globalOriginalOutstanding, true)">Thanh toán toàn bộ</button>
                             <button class="btn-secondary no-print" id="btnPrintOriginal"
@@ -1525,7 +1530,14 @@
             if (!desc || !desc.toLowerCase().includes('minibar')) return null;
 
             const parts = desc.split(':');
-            if (parts.length < 2) return null;
+            if (parts.length < 2) {
+                return [{
+                    name: desc,
+                    qty: 1,
+                    price: totalAmount || 0,
+                    amount: totalAmount || 0
+                }];
+            }
 
             const itemsPart = parts[1].trim();
             const itemTokens = itemsPart.split(',');
@@ -1544,39 +1556,57 @@
                 'khăn lạnh': 10000
             };
 
-            let parsedTotal = 0;
-
             for (let token of itemTokens) {
                 token = token.trim();
                 const match = token.match(/^(.*?)\s*\(x(\d+)\)$/);
                 if (match) {
                     const name = match[1].trim();
                     const qty = parseInt(match[2]);
-                    const price = minibarPrices[name.toLowerCase()] || 0;
-                    const amount = price * qty;
-                    parsedTotal += amount;
+                    let price = minibarPrices[name.toLowerCase()] || 0;
+                    let amount = price * qty;
                     parsedItems.push({
                         name: name,
                         qty: qty,
                         price: price,
                         amount: amount
                     });
+                } else if (token.length > 0) {
+                    parsedItems.push({
+                        name: token,
+                        qty: 1,
+                        price: 0,
+                        amount: 0
+                    });
                 }
             }
 
-            const zeroPriceItems = parsedItems.filter(i => i.price === 0);
-            if (zeroPriceItems.length === 1) {
-                const sumOther = parsedItems.filter(i => i.price > 0).reduce((sum, i) => sum + i.amount, 0);
-                const remaining = totalAmount - sumOther;
-                const item = zeroPriceItems[0];
-                item.price = Math.round(remaining / item.qty);
-                item.amount = remaining;
+            if (parsedItems.length === 1 && totalAmount > 0) {
+                const item = parsedItems[0];
+                item.amount = totalAmount;
+                item.price = item.qty > 0 ? Math.round(totalAmount / item.qty) : totalAmount;
+            } else if (parsedItems.length > 1 && totalAmount > 0) {
+                const zeroPriceItems = parsedItems.filter(i => i.price === 0);
+                if (zeroPriceItems.length > 0) {
+                    const sumOther = parsedItems.filter(i => i.price > 0).reduce((sum, i) => sum + i.amount, 0);
+                    const remaining = Math.max(0, totalAmount - sumOther);
+                    const totalZeroQty = zeroPriceItems.reduce((sum, i) => sum + (i.qty || 1), 0);
+                    const unitPriceForZero = totalZeroQty > 0 ? Math.round(remaining / totalZeroQty) : 0;
+                    zeroPriceItems.forEach(item => {
+                        item.price = unitPriceForZero;
+                        item.amount = unitPriceForZero * (item.qty || 1);
+                    });
+                }
             }
 
             if (parsedItems.length > 0) {
                 return parsedItems;
             }
-            return null;
+            return [{
+                name: desc,
+                qty: 1,
+                price: totalAmount || 0,
+                amount: totalAmount || 0
+            }];
         }
 
         function renderGuestInfo(data, roomCount) {
@@ -1824,104 +1854,128 @@
                                  <table class="charge-table">
                                      ${tableHeaders}
                                      <tbody>
-                                         ${group.items.map(i => {
-                        const isSplit = i.isSettledSeparately;
-                        const trClass = isSplit ? 'item-settled' : '';
-                        const dateStr = i.createdAt && i.createdAt.length >= 10 ? i.createdAt.substring(0, 10) : '';
-
-                        const minibarItems = parseMinibarDescription(i.description, i.amount);
-                        if (minibarItems) {
+                                         ${(() => {
+                        if (isMinibar) {
                             let rowsHtml = '';
-                            minibarItems.forEach(item => {
-                                const formattedUnitPrice = new Intl.NumberFormat('vi-VN').format(item.price);
-                                const formattedAmount = new Intl.NumberFormat('vi-VN').format(item.amount) + ' VNĐ';
-                                rowsHtml += `
-                                    <tr class="${trClass}" style="color: #6e655f;">
-                                        <td style="padding-left: 16px; font-style: italic; text-align: left;">${item.name}</td>
-                                        <td style="text-align: center; font-style: italic;">${item.qty}</td>
-                                        <td style="text-align: right; font-style: italic;">${formattedUnitPrice}</td>
-                                        <td style="text-align: right; font-style: italic;">${formattedAmount}</td>
-                                    </tr>
-                                `;
+                            let totalSum = 0;
+                            let dateStr = '';
+                            group.items.forEach(i => {
+                                const isSplit = i.isSettledSeparately;
+                                const trClass = isSplit ? 'item-settled' : '';
+                                if (!dateStr && i.createdAt && i.createdAt.length >= 10) {
+                                    dateStr = i.createdAt.substring(0, 10);
+                                }
+                                totalSum += (i.amount || 0);
+
+                                const minibarItems = parseMinibarDescription(i.description, i.amount);
+                                if (minibarItems) {
+                                    minibarItems.forEach(item => {
+                                        const formattedUnitPrice = new Intl.NumberFormat('vi-VN').format(item.price);
+                                        const formattedAmount = new Intl.NumberFormat('vi-VN').format(item.amount) + ' VNĐ';
+                                        rowsHtml += `
+                                            <tr class="${trClass}" style="color: #6e655f;">
+                                                <td style="padding-left: 16px; font-style: italic; text-align: left;">${item.name}</td>
+                                                <td style="text-align: center; font-style: italic;">${item.qty}</td>
+                                                <td style="text-align: right; font-style: italic;">${formattedUnitPrice}</td>
+                                                <td style="text-align: right; font-style: italic;">${formattedAmount}</td>
+                                            </tr>
+                                        `;
+                                    });
+                                } else {
+                                    rowsHtml += `
+                                        <tr class="${trClass}" style="color: #6e655f;">
+                                            <td style="padding-left: 16px; font-style: italic; text-align: left;">${formatItemDescription(i.description)}</td>
+                                            <td style="text-align: center; font-style: italic;">1</td>
+                                            <td style="text-align: right; font-style: italic;">${new Intl.NumberFormat('vi-VN').format(i.amount)}</td>
+                                            <td style="text-align: right; font-style: italic;">${formatCurrency(i.amount)}</td>
+                                        </tr>
+                                    `;
+                                }
                             });
+
                             rowsHtml += `
-                                <tr class="${trClass}" style="border-top: 1px dashed #efebe4; font-weight: 700;">
-                                    <td style="text-align: left;">TỔNG CỘNG (${dateStr})</td>
+                                <tr style="border-top: 1px dashed #efebe4; font-weight: 700;">
+                                    <td style="text-align: left;">TỔNG CỘNG ${dateStr ? '(' + dateStr + ')' : ''}</td>
                                     <td style="text-align: center;"></td>
                                     <td style="text-align: right;"></td>
-                                    <td style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                    <td style="text-align: right;">${formatCurrency(totalSum)}</td>
                                 </tr>
                             `;
                             return rowsHtml;
-                        } else {
+                        }
+
+                        return group.items.map(i => {
+                            const isSplit = i.isSettledSeparately;
+                            const trClass = isSplit ? 'item-settled' : '';
+                            const dateStr = i.createdAt && i.createdAt.length >= 10 ? i.createdAt.substring(0, 10) : '';
                             if (isTour && i.bookingId) {
                                 const tourBookingId = i.bookingId;
                                 return `
-                                                  <tr id="tour-booking-row-${tourBookingId}" class="tour-booking-placeholder ${trClass}" data-tour-booking="${tourBookingId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description}">
-                                                      <td colspan="3" style="text-align: left;">
-                                                          ${formatItemDescription(i.description)} 
-                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                          <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
-                                                              <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết tour...
-                                                          </div>
-                                                      </td>
-                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
-                                                  </tr>`;
+                                    <tr id="tour-booking-row-${tourBookingId}" class="tour-booking-placeholder ${trClass}" data-tour-booking="${tourBookingId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description}">
+                                        <td colspan="3" style="text-align: left;">
+                                            ${formatItemDescription(i.description)} 
+                                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                            <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
+                                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết tour...
+                                            </div>
+                                        </td>
+                                        <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                    </tr>`;
                             } else if (isTour) {
                                 return `
-                                                  <tr class="${trClass}">
-                                                      <td colspan="3" style="text-align: left;">
-                                                          ${formatItemDescription(i.description)} 
-                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                      </td>
-                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
-                                                  </tr>`;
+                                    <tr class="${trClass}">
+                                        <td colspan="3" style="text-align: left;">
+                                            ${formatItemDescription(i.description)} 
+                                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                        </td>
+                                        <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                    </tr>`;
                             }
 
                             let orderMatch = i.description ? i.description.match(/Order\s*(?:#|số)?\s*(\d+)/i) : null;
                             if (orderMatch && orderMatch[1]) {
                                 const fnbOrderId = orderMatch[1];
                                 return `
-                                                  <tr id="fnb-order-row-${fnbOrderId}" class="fnb-order-placeholder ${trClass}" data-fnb-order="${fnbOrderId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''}">
-                                                      <td colspan="3" style="text-align: left;">
-                                                          ${formatItemDescription(i.description)} 
-                                                          ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                          ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                          <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
-                                                              <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết món ăn...
-                                                          </div>
-                                                      </td>
-                                                      <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
-                                                  </tr>`;
+                                    <tr id="fnb-order-row-${fnbOrderId}" class="fnb-order-placeholder ${trClass}" data-fnb-order="${fnbOrderId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''}">
+                                        <td colspan="3" style="text-align: left;">
+                                            ${formatItemDescription(i.description)} 
+                                            ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                            ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                            <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
+                                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết món ăn...
+                                            </div>
+                                        </td>
+                                        <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                    </tr>`;
                             } else {
                                 if (isFnb) {
                                     return `
-                                                      <tr class="${trClass}">
-                                                          <td colspan="3" style="text-align: left;">
-                                                              ${formatItemDescription(i.description)} 
-                                                              ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                              ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                          </td>
-                                                          <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
-                                                      </tr>`;
+                                        <tr class="${trClass}">
+                                            <td colspan="3" style="text-align: left;">
+                                                ${formatItemDescription(i.description)} 
+                                                ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                            </td>
+                                            <td class="amount" style="text-align: right;">${formatCurrency(i.amount)}</td>
+                                        </tr>`;
                                 } else {
                                     return `
-                                                      <tr class="${trClass}">
-                                                          <td style="text-align: left;">
-                                                               ${formatItemDescription(i.description)} 
-                                                              ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
-                                                              ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
-                                                          </td>
-                                                          <td style="text-align: center; color: #2c2a29;">1</td>
-                                                          <td style="text-align: right; color: #2c2a29;">${new Intl.NumberFormat('vi-VN').format(i.amount)}</td>
-                                                          <td class="amount">${formatCurrency(i.amount)}</td>
-                                                      </tr>`;
+                                        <tr class="${trClass}">
+                                            <td style="text-align: left;">
+                                                 ${formatItemDescription(i.description)} 
+                                                ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
+                                                ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
+                                            </td>
+                                            <td style="text-align: center; color: #2c2a29;">1</td>
+                                            <td style="text-align: right; color: #2c2a29;">${new Intl.NumberFormat('vi-VN').format(i.amount)}</td>
+                                            <td class="amount">${formatCurrency(i.amount)}</td>
+                                        </tr>`;
                                 }
                             }
-                        }
-                    }).join('')}
+                        }).join('');
+                    })()}
                                      </tbody>
                                  </table>
                              </div>
@@ -1969,13 +2023,22 @@
                                       <span style="font-family: 'Inter', sans-serif; font-size: 15px; color: #2c2a29; font-weight: 700;">${formatCurrency(roomTotalWithVat)}</span>
                                   </div>
                                   <div style="display: flex; justify-content: flex-end; width: 100%;">
-                                      ${data.detailStatus !== 'Checked_Out' ? `
+                                      ${data.hasPendingMaintenance ? `
+                                      <div style="width: 100%; text-align: right;">
+                                          <div style="background: #fff7ed; border: 1px solid #fdba74; color: #c2410c; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; margin-bottom: 8px; font-family: 'Inter', sans-serif; text-align: left;">
+                                              <i class="fa-solid fa-triangle-exclamation"></i> ${data.pendingMaintenanceMsg}
+                                          </div>
+                                          <button disabled class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #94a3b8; color: white; border: none; border-radius: 4px; cursor: not-allowed; opacity: 0.6;" title="Chờ bảo trì định giá đền bù">
+                                              Đang chờ bảo trì định giá
+                                          </button>
+                                      </div>
+                                      ` : (data.detailStatus !== 'Checked_Out' ? `
                                       <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                                           Thanh toán Phòng ${data.roomNumber || 'N/A'}
                                       </button>
                                       ` : `
                                       <span style="color: #27ae60; font-weight: 600; font-family: 'Inter', sans-serif; font-size: 13px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
-                                      `}
+                                      `)}
                                   </div>
                               </div>
                           </div>
@@ -2090,6 +2153,40 @@
                 document.getElementById('otherPaymentsAmount').innerText = "-" + formatCurrency(globalOtherPayments);
             } else {
                 document.getElementById('row-other-payments').style.display = 'none';
+            }
+
+            let globalHasPendingMaint = false;
+            let globalPendingMaintMsg = '';
+            results.forEach((data) => {
+                if (data && data.hasPendingMaintenance) {
+                    globalHasPendingMaint = true;
+                    globalPendingMaintMsg = data.pendingMaintenanceMsg;
+                }
+            });
+
+            const alertEl = document.getElementById('pendingMaintenanceAlert');
+            const alertTxt = document.getElementById('pendingMaintenanceText');
+            const btnProceed = document.getElementById('btnProceedOriginal');
+
+            if (globalHasPendingMaint) {
+                if (alertEl && alertTxt) {
+                    alertTxt.innerText = globalPendingMaintMsg || 'Phòng đang có phiếu kiểm tra đền bù hỏng hóc/bảo trì chưa định giá. Vui lòng định giá đền bù trước khi thanh toán.';
+                    alertEl.style.display = 'block';
+                }
+                if (btnProceed) {
+                    btnProceed.disabled = true;
+                    btnProceed.style.opacity = '0.5';
+                    btnProceed.style.cursor = 'not-allowed';
+                    btnProceed.title = 'Không thể thanh toán do phòng đang chờ bảo trì định giá đền bù hỏng hóc.';
+                }
+            } else {
+                if (alertEl) alertEl.style.display = 'none';
+                if (btnProceed) {
+                    btnProceed.disabled = false;
+                    btnProceed.style.opacity = '1';
+                    btnProceed.style.cursor = 'pointer';
+                    btnProceed.title = '';
+                }
             }
 
             globalOriginalSubtotal = originalTaxable + originalNonTaxable;

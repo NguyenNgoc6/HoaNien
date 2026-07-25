@@ -1,4 +1,26 @@
 <div th:fragment="authModal">
+    <style>
+        #authModal input[type="text"],
+        #authModal input[type="password"],
+        #authModal input[type="email"] {
+            border: 1px solid rgba(58, 50, 48, 0.25) !important;
+            background-color: #ffffff !important;
+            border-radius: 1rem !important;
+            padding: 14px 16px !important;
+            color: #3a3230 !important;
+            font-size: 13px !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+            outline: none !important;
+            box-sizing: border-box !important;
+            height: auto !important;
+        }
+        #authModal input[type="text"]:focus,
+        #authModal input[type="password"]:focus,
+        #authModal input[type="email"]:focus {
+            border-color: #3a3230 !important;
+            box-shadow: 0 0 0 3px rgba(58, 50, 48, 0.15) !important;
+        }
+    </style>
     <!-- ============ AUTH MODAL (Login/Register) ============ -->
     <div id="authModal"
         class="fixed inset-0 z-[100] bg-black/60 items-center justify-center backdrop-blur-sm transition-opacity font-sans"

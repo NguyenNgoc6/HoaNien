@@ -74,7 +74,7 @@ description: Đảm bảo tính toàn vẹn của Frontend (Giao diện và Tư�
 |---|---|---|
 | **1. HTML/DOM** | Element có thật trong DOM không? | Trace `th:replace`/`th:insert` từ template cha |
 | **2. JS Binding** | Event listener tìm thấy element không? | `getElementById("id")` → null là lỗi; grep tên hàm xem có định nghĩa không |
-| **3. API Call** | URL, method, body có khớp Controller không? | So `fetch("/path/${id}")` vs `@GetMapping("/path/{id}")`, kiểm tra format id (E-5 vs 5) |
+| **3. API & Form Call** | URL, method, body có khớp Controller 100% không? | So `fetch()` / `form.action` (ví dụ `/maintenance/tasks/.../complete`) với Controller `@PostMapping`/`@PutMapping`. Tránh lệch danh từ (`tasks` vs `requests`) gây lỗi 404 NoResourceFoundException. |
 | **4. Backend** | Service/Repository xử lý được không? | Đọc method service, kiểm tra exception path |
 | **5. Response → UI** | JS nhận response và cập nhật UI đúng không? | Đọc `.then(res => ...)`, kiểm tra field name khớp |
 

@@ -35,12 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const status = row.dataset.status;
       
       // Nếu món đã được phục vụ (served), dừng đếm ngược và hiển thị Completed
-      if (status === 'served') {
+      if (status === 'served' || status === 'completed') {
         timer.textContent = 'Completed';
         timer.style.color = 'var(--status-ready-text)';
         row.style.border = '';
         return;
       }
+
+      // Nếu đơn bị huỷ (cancelled), hiển thị Cancelled
+      if (status === 'cancelled') {
+        timer.textContent = 'Cancelled';
+        timer.style.color = '#c62828';
+        row.style.border = '';
+        return;
+      }
+
       
       // Nếu vẫn còn thời gian (diffMs > 0)
       if (diffMs > 0) {
