@@ -300,10 +300,25 @@ public class TourGuideController {
         java.util.List<com.kawai.models.TourAttendee> attendees = new java.util.ArrayList<>();
         if (targetSchedule != null) {
             attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(targetSchedule.getId());
+            java.util.List<com.kawai.models.TourBooking> scheduleBookings = tourBookingRepository.findByScheduleId(targetSchedule.getId());
+            boolean hasNewAttendee = false;
+            for (com.kawai.models.TourBooking tb : scheduleBookings) {
+                if ("Cancelled".equalsIgnoreCase(tb.getBookingStatus())) continue;
+                boolean found = attendees.stream().anyMatch(a -> a.getTourBooking() != null && a.getTourBooking().getId().equals(tb.getId()));
+                if (!found) {
+                    com.kawai.models.TourAttendee newAttendee = new com.kawai.models.TourAttendee();
+                    newAttendee.setTourBooking(tb);
+                    newAttendee.setCustomer(tb.getCustomer());
+                    newAttendee.setStatus("Not_Checked_In");
+                    tourAttendeeRepository.saveAndFlush(newAttendee);
+                    hasNewAttendee = true;
+                }
+            }
+            if (hasNewAttendee) {
+                attendees = tourAttendeeRepository.findByTourBooking_Schedule_Id(targetSchedule.getId());
+            }
         }
 
-        // [Removed auto-reset logic here. The status will persist across reloads unless manually reset.]
-        
         model.addAttribute("attendees", attendees);
 
         // Lấy thông tin tour
@@ -956,7 +971,7 @@ public class TourGuideController {
         if (sched.getTour() != null) {
             String tn = sched.getTour().getTourName();
             if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
-                return "Ngọc Lan";
+                return "Nguyễn Ngọc";
             } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
                 return "Hoàng Nam";
             } else if (tn.contains("Di sản") || tn.contains("di sản") || tn.contains("disan")) {

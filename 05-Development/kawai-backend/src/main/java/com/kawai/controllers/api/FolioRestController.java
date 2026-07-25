@@ -515,6 +515,28 @@ public class FolioRestController {
         response.put("baseChildren", detail.getCategory() != null ? detail.getCategory().getBaseChildren() : 0);
         response.put("extraAdultSurcharge", detail.getCategory() != null ? detail.getCategory().getExtraAdultSurcharge() : BigDecimal.ZERO);
         response.put("subCreditLimit", detail.getSubCreditLimit());
+        boolean hasPendingMaintenance = false;
+        String pendingMaintenanceMsg = null;
+        if (detail.getRoom() != null) {
+            Long roomId = detail.getRoom().getId();
+            List<HotelOperation> pendingOps = housekeepingTaskRepo.findAll().stream()
+                    .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(roomId)
+                            && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
+                            && t.getDamagePrice() == null
+                            && !"Priced".equalsIgnoreCase(t.getStatus())
+                            && !"Completed".equalsIgnoreCase(t.getStatus())
+                            && !"ConvertedToRepair".equalsIgnoreCase(t.getStatus()))
+                    .collect(java.util.stream.Collectors.toList());
+            if (!pendingOps.isEmpty()) {
+                hasPendingMaintenance = true;
+                HotelOperation op = pendingOps.get(0);
+                String taskTypeName = "DAMAGE_CHECK".equalsIgnoreCase(op.getOperationalType()) ? "kiểm tra đền bù hỏng hóc" : "sửa chữa bảo trì";
+                pendingMaintenanceMsg = "Phòng đang có phiếu " + taskTypeName + " (" + (op.getNotes() != null ? op.getNotes() : "") + ") chưa định giá/hoàn tất. Vui lòng yêu cầu bộ phận Bảo trì định giá đền bù trước khi thanh toán.";
+            }
+        }
+        response.put("hasPendingMaintenance", hasPendingMaintenance);
+        response.put("pendingMaintenanceMsg", pendingMaintenanceMsg);
+
         response.put("items", itemDTOs);
         response.put("currentBalance", currentBalance);
         response.put("prePaidDeposit", deposit);
@@ -929,6 +951,22 @@ public class FolioRestController {
                         finalBalance = finalBalance.subtract(deposit);
                         booking.setDepositAmount(BigDecimal.ZERO);
                     }
+                }
+            }
+
+            if (detail.getRoom() != null) {
+                Long rId = detail.getRoom().getId();
+                boolean hasPendingMaint = housekeepingTaskRepo.findAll().stream()
+                        .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(rId)
+                                && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
+                                && t.getDamagePrice() == null
+                                && !"Priced".equalsIgnoreCase(t.getStatus())
+                                && !"Completed".equalsIgnoreCase(t.getStatus())
+                                && !"ConvertedToRepair".equalsIgnoreCase(t.getStatus()));
+                if (hasPendingMaint) {
+                    return ResponseEntity.badRequest().body(Map.of(
+                            "success", false,
+                            "message", "Không thể thanh toán / checkout: Phòng đang phát sinh phiếu kiểm tra hỏng hóc/bảo trì chưa hoàn tất định giá đền bù. Vui lòng yêu cầu bộ phận Bảo trì định giá đền bù trước khi thanh toán."));
                 }
             }
 

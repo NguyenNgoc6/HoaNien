@@ -130,6 +130,15 @@ public class ShiftServiceImpl implements ShiftService {
             if (currentStaff == null) {
                 return true; // Không phải nhân viên (khách) thì không bị chặn ca
             }
+            
+            // Nếu role không thuộc nhóm 6 ca trực hành chính (ví dụ TOURGUIDE), cho phép truy cập tự do 24/7
+            if (currentStaff.getAccount() != null && currentStaff.getAccount().getRole() != null) {
+                String roleName = currentStaff.getAccount().getRole().getRoleName();
+                if ("TOURGUIDE".equalsIgnoreCase(roleName) || !isShiftLockedRole(roleName)) {
+                    return true;
+                }
+            }
+
             if (currentStaff != null) {
                 var shifts = staffScheduleRepository.findByEmployeeIdAndWorkDate(currentStaff.getId(), LocalDate.now());
                 if (shifts != null && !shifts.isEmpty()) {
@@ -151,6 +160,13 @@ public class ShiftServiceImpl implements ShiftService {
             }
         }
         return false;
+    }
+
+    private boolean isShiftLockedRole(String roleName) {
+        if (roleName == null) return false;
+        String r = roleName.toUpperCase();
+        return r.contains("RECEPTIONIST") || r.contains("HOUSEKEEPING") || r.contains("POS") 
+            || r.contains("KITCHEN") || r.contains("MAINTAINER") || r.contains("MANAGER") || r.contains("ADMIN");
     }
 
     private boolean isGuideFree(Long employeeId, LocalDate date, java.time.LocalTime newStart,

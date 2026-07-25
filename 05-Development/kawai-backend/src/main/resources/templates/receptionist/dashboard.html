@@ -497,44 +497,10 @@
                         const today = new Date().toISOString().split('T')[0];
                         const todaySchedule = schedules.find(s => s.workDate === today);
 
-                        if (!todaySchedule) {
-                            // Cảnh báo nếu không có ca hôm nay
-                            Swal.fire({
-                                title: 'Cảnh báo Ngoài Ca!',
-                                text: 'Bạn không có ca làm việc trong ngày hôm nay. Vui lòng cẩn trọng khi thao tác.',
-                                icon: 'warning',
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 5000
-                            });
-                        } else {
-                            // Check giờ
-                            const now = new Date();
-                            const currentTime = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-                            if (currentTime < todaySchedule.startTime || currentTime > todaySchedule.endTime) {
-                                Swal.fire({
-                                    title: 'Lưu ý Giờ Làm Việc',
-                                    text: `Ca của bạn hôm nay là ${todaySchedule.shiftName} (${todaySchedule.startTime} - ${todaySchedule.endTime}). Bạn đang thao tác ngoài khung giờ này.`,
-                                    icon: 'info',
-                                    toast: true,
-                                    position: 'top-end',
-                                    showConfirmButton: false,
-                                    timer: 5000
-                                });
-                            }
+                        if (todaySchedule) {
+                            // Schedule checked silently
+                            console.log('Lịch làm việc hôm nay:', todaySchedule.shiftName);
                         }
-                    } else {
-                        // Không có lịch
-                        Swal.fire({
-                            title: 'Cảnh báo Ngoài Ca!',
-                            text: 'Bạn không có ca làm việc nào được phân công trong thời gian tới.',
-                            icon: 'warning',
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 5000
-                        });
                     }
                 })
                 .catch(err => console.log('Không thể lấy lịch làm việc:', err));

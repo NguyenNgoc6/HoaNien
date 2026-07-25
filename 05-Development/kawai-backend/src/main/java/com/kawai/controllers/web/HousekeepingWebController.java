@@ -142,6 +142,7 @@ public class HousekeepingWebController {
             @RequestParam(required = false, defaultValue = "false") boolean isEmergency,
             @RequestParam(required = false) String taskType,
             @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
             Authentication auth, RedirectAttributes ra, HttpSession session) {
         if (!shiftService.checkIsOnShift(auth, session)) {
             ra.addFlashAttribute("errorMessage", "Lỗi: Bạn chưa vào ca làm việc.");
@@ -166,14 +167,35 @@ public class HousekeepingWebController {
 
             HotelOperation task = housekeepingService.createMaintenanceRequest(roomId, sid, notes, emergency);
             
-            if (image != null && !image.isEmpty()) {
+            java.util.List<String> uploadedUrls = new java.util.ArrayList<>();
+            if (images != null && images.length > 0) {
+                for (MultipartFile img : images) {
+                    if (img != null && !img.isEmpty()) {
+                        try {
+                            String url = fileUploadService.uploadFile(img, "hoanien_housekeeping");
+                            if (url != null && !url.trim().isEmpty()) {
+                                uploadedUrls.add(url.trim());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Lỗi upload ảnh housekeeping: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+            if (uploadedUrls.isEmpty() && image != null && !image.isEmpty()) {
                 try {
-                    String secureUrl = fileUploadService.uploadFile(image, "hoanien_housekeeping");
-                    task.setImageUrl(secureUrl);
-                    housekeepingTaskRepo.save(task);
+                    String url = fileUploadService.uploadFile(image, "hoanien_housekeeping");
+                    if (url != null && !url.trim().isEmpty()) {
+                        uploadedUrls.add(url.trim());
+                    }
                 } catch (Exception e) {
                     System.err.println("Lỗi upload ảnh housekeeping: " + e.getMessage());
                 }
+            }
+
+            if (!uploadedUrls.isEmpty()) {
+                task.setImageUrl(String.join(",", uploadedUrls));
+                housekeepingTaskRepo.save(task);
             }
             
             ra.addFlashAttribute("successMessage", "Đã gửi yêu cầu bảo trì.");
