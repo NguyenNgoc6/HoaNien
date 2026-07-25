@@ -87,7 +87,7 @@
         </div>
         
         <div class="order-general-note" th:if="${order.note != null and !order.note.isEmpty()}">
-          <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">warning</span>
+
           <th:block th:if="${#strings.startsWith(order.note, 'GUEST:')}">
             <th:block th:with="pipeIndex=${#strings.indexOf(order.note, '|')}">
               <strong style="color: #b45309;" th:text="'Khách: ' + ${#strings.substring(order.note, 6, pipeIndex)}"></strong>
@@ -127,7 +127,7 @@
         </div>
         
         <div class="order-general-note" th:if="${order.note != null and !order.note.isEmpty()}">
-          <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">warning</span>
+
           <th:block th:if="${#strings.startsWith(order.note, 'GUEST:')}">
             <th:block th:with="pipeIndex=${#strings.indexOf(order.note, '|')}">
               <strong style="color: #b45309;" th:text="'Khách: ' + ${#strings.substring(order.note, 6, pipeIndex)}"></strong>
