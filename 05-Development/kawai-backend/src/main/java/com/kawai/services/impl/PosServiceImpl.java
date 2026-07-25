@@ -243,6 +243,11 @@ public class PosServiceImpl implements PosService {
                     .ifPresent(order::setCreatedByStaff);
         }
 
+        if (order.getCreatedByStaff() == null) {
+            // Fallback for customer orders to bypass DB NOT NULL constraint
+            employeeRepository.findById(1L).ifPresent(order::setCreatedByStaff);
+        }
+
         FoodOrder savedOrder = foodOrderRepository.save(order);
 
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -612,9 +617,45 @@ public class PosServiceImpl implements PosService {
             order.setDetails(newDetails);
         }
 
+        // Recalculate total amount
+        recalculateTotalAmount(order);
+
         // Reset order status to pending so kitchen sees new items
         order.setOrderStatus("Pending");
         foodOrderRepository.save(order);
+    }
+
+    private void recalculateTotalAmount(FoodOrder order) {
+        if (order.getDetails() == null || order.getDetails().isEmpty()) {
+            order.setTotalAmount(java.math.BigDecimal.ZERO);
+            return;
+        }
+
+        java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+        for (FoodOrderDetail detail : order.getDetails()) {
+            if (!"Cancelled".equalsIgnoreCase(detail.getKotStatus())) {
+                java.math.BigDecimal price = detail.getPriceAtOrder();
+                if (price == null) {
+                    price = detail.getMenuItem() != null ? detail.getMenuItem().getPrice() : java.math.BigDecimal.ZERO;
+                }
+                if (price == null) price = java.math.BigDecimal.ZERO;
+                Integer qty = detail.getQuantity() != null ? detail.getQuantity() : 1;
+                subtotal = subtotal.add(price.multiply(new java.math.BigDecimal(qty)));
+            }
+        }
+
+        java.math.BigDecimal finalTotal = subtotal;
+        String orderType = order.getOrderType();
+        String paymentType = order.getPaymentType();
+        if ("Room Service".equalsIgnoreCase(orderType) || "RoomService".equalsIgnoreCase(orderType)) {
+            java.math.BigDecimal feePercent = new java.math.BigDecimal("0.05");
+            if ("VNPAY".equalsIgnoreCase(paymentType) || "ONLINE".equalsIgnoreCase(paymentType)) {
+                feePercent = new java.math.BigDecimal("0.03");
+            }
+            java.math.BigDecimal fee = subtotal.multiply(feePercent);
+            finalTotal = subtotal.add(fee);
+        }
+        order.setTotalAmount(finalTotal);
     }
 
     @Override
@@ -660,48 +701,91 @@ public class PosServiceImpl implements PosService {
         FoodOrder order = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
 
-        if (!"Pending".equalsIgnoreCase(order.getOrderStatus())) {
-            throw new BusinessException("POS-007", "Chỉ có thể hủy đơn hàng ở trạng thái Pending");
-        }
-
-        order.setOrderStatus("Cancelled");
-
-        // Set kotStatus to Cancelled for all details
+        boolean hasPending = false;
+        boolean hasActive = false;
         for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
-            detail.setKotStatus("Cancelled");
+            String status = detail.getKotStatus();
+            if ("Pending".equalsIgnoreCase(status)) {
+                hasPending = true;
+            } else if (!"Cancelled".equalsIgnoreCase(status)) {
+                hasActive = true;
+            }
         }
 
-        // Handle refund logic based on payment method
-        String pType = order.getPaymentType();
-        if ("Post to Room".equalsIgnoreCase(pType) || "CHARGE_TO_ROOM".equalsIgnoreCase(pType)
-                || "Post_To_Room".equalsIgnoreCase(pType)) {
-            java.util.List<com.kawai.models.FolioItem> folios = null;
-            if (order.getRoomBookingDetail() != null) {
-                folios = folioItemRepository.findByRoomBookingDetailId(order.getRoomBookingDetail().getId());
-            } else if (order.getBooking() != null) {
-                folios = folioItemRepository.findByBookingId(order.getBooking().getId());
+        if (!hasPending) {
+            throw new BusinessException("POS-007", "Không có món ăn nào ở trạng thái chờ xử lý (Pending) để hủy");
+        }
+
+        // Set kotStatus to Cancelled only for Pending details
+        for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+            if ("Pending".equalsIgnoreCase(detail.getKotStatus())) {
+                detail.setKotStatus("Cancelled");
             }
-            if (folios != null) {
-                for (com.kawai.models.FolioItem folio : folios) {
-                    if (folio.getDescription() != null
-                            && folio.getDescription().contains("Order #" + order.getId() + ")")) {
-                        folioItemRepository.delete(folio);
-                    }
+        }
+
+        if (!hasActive) {
+            order.setOrderStatus("Cancelled");
+        } else {
+            // Re-evaluate order status based on remaining active items
+            boolean allCompletedOrServed = true;
+            boolean anyPreparing = false;
+            boolean anyPending = false;
+            for (com.kawai.models.FoodOrderDetail detail : order.getDetails()) {
+                String status = detail.getKotStatus();
+                if ("Cancelled".equalsIgnoreCase(status)) continue;
+                if ("Preparing".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status)) {
+                    anyPreparing = true;
+                    allCompletedOrServed = false;
+                } else if ("Pending".equalsIgnoreCase(status)) {
+                    anyPending = true;
+                    allCompletedOrServed = false;
+                } else if (!"Completed".equalsIgnoreCase(status) && !"Served".equalsIgnoreCase(status)) {
+                    allCompletedOrServed = false;
                 }
             }
-        } else if (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isEmpty()) {
-            // Online/Card payment: Save refund request
-            com.kawai.models.RefundRequest refund = new com.kawai.models.RefundRequest();
-            refund.setOrder(order);
-            refund.setBankName(dto.getBankName());
-            refund.setAccountNumber(dto.getAccountNumber());
-            refund.setAccountName(dto.getAccountName());
-            refund.setPhoneNumber(dto.getPhoneNumber());
-            refund.setAmount(order.getTotalAmount());
-            refund.setStatus("Pending");
-            refundRequestRepository.save(refund);
+            if (anyPending) {
+                order.setOrderStatus("Pending");
+            } else if (anyPreparing) {
+                order.setOrderStatus("Preparing");
+            } else if (allCompletedOrServed) {
+                order.setOrderStatus("Completed");
+            }
         }
 
+        // Handle refund logic based on payment method (only if entire order is cancelled)
+        String pType = order.getPaymentType();
+        if (!hasActive) {
+            if ("Post to Room".equalsIgnoreCase(pType) || "CHARGE_TO_ROOM".equalsIgnoreCase(pType)
+                    || "Post_To_Room".equalsIgnoreCase(pType)) {
+                java.util.List<com.kawai.models.FolioItem> folios = null;
+                if (order.getRoomBookingDetail() != null) {
+                    folios = folioItemRepository.findByRoomBookingDetailId(order.getRoomBookingDetail().getId());
+                } else if (order.getBooking() != null) {
+                    folios = folioItemRepository.findByBookingId(order.getBooking().getId());
+                }
+                if (folios != null) {
+                    for (com.kawai.models.FolioItem folio : folios) {
+                        if (folio.getDescription() != null
+                                && folio.getDescription().contains("Order #" + order.getId() + ")")) {
+                            folioItemRepository.delete(folio);
+                        }
+                    }
+                }
+            } else if (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isEmpty()) {
+                // Online/Card payment: Save refund request
+                com.kawai.models.RefundRequest refund = new com.kawai.models.RefundRequest();
+                refund.setOrder(order);
+                refund.setBankName(dto.getBankName());
+                refund.setAccountNumber(dto.getAccountNumber());
+                refund.setAccountName(dto.getAccountName());
+                refund.setPhoneNumber(dto.getPhoneNumber());
+                refund.setAmount(order.getTotalAmount());
+                refund.setStatus("Pending");
+                refundRequestRepository.save(refund);
+            }
+        }
+
+        recalculateTotalAmount(order);
         foodOrderRepository.save(order);
 
         // Fetch customer for email
