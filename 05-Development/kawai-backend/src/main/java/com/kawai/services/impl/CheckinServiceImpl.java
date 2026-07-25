@@ -232,13 +232,31 @@ public class CheckinServiceImpl implements CheckinService {
                                                         dependent.getCccdPassportEncrypted());
                         if (existingCustomerOpt.isPresent()) {
                                 targetCustomer = existingCustomerOpt.get();
-                                username = targetCustomer.getAccount() != null
-                                                ? targetCustomer.getAccount().getUsername()
-                                                : "";
-                                password = null;
-                                isExistingCustomer = true;
+                                if (targetCustomer.getAccount() != null) {
+                                        // Customer đã có Account → tái sử dụng, không tạo mới
+                                        username = targetCustomer.getAccount().getUsername();
+                                        password = null;
+                                        isExistingCustomer = true;
+                                } else {
+                                        Role customerRole = findCustomerRole();
+                                        String randomSuffix = UUID.randomUUID().toString().replace("-", "").substring(0,
+                                                        8);
+                                        String newUsername = "guest_" + randomSuffix.substring(0, 4);
+                                        String rawPwd = randomSuffix.substring(4, 8)
+                                                        + UUID.randomUUID().toString().replace("-", "").substring(0, 4);
+                                        Account newAcct = new Account();
+                                        newAcct.setUsername(newUsername);
+                                        newAcct.setPasswordHash(passwordEncoder.encode(rawPwd));
+                                        newAcct.setIsActive(true);
+                                        newAcct.setRole(customerRole);
+                                        Account savedAcct = accountRepo.save(newAcct);
+                                        targetCustomer.setAccount(savedAcct);
+                                        customerRepo.save(targetCustomer);
+                                        username = newUsername;
+                                        password = rawPwd;
+                                        isExistingCustomer = false;
+                                }
                         } else {
-                                // CCCD chưa có Customer → tạo mới
                                 String[] creds = new String[2];
                                 targetCustomer = createNewCustomerFromDependent(dependent, creds);
                                 username = creds[0];
@@ -252,12 +270,7 @@ public class CheckinServiceImpl implements CheckinService {
                         password = creds[1];
                 }
 
-                // Unlink RoomGuest CỦA BOOKING HIỆN TẠI (theo roomBookingDetailId)
-                // → Chỉ gán Customer, không xóa Dependent nếu booking khác vẫn dùng
                 unlinkCurrentBookingRoomGuest(dependentId, roomBookingDetailId, targetCustomer);
-
-                // Kiểm tra còn booking nào khác dùng Dependent này không
-                // Nếu không còn → xóa Dependent để tránh rác DB
                 long remainingRefs = roomGuestRepo.findAllByDependentId(dependentId).size();
                 if (remainingRefs == 0) {
                         dependentRepo.delete(dependent);
