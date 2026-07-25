@@ -14,32 +14,32 @@
 
     <style>
         :root {
-            --primary: #B9AA97;
+            --primary: #8C6A41;
             --primary-light: #C6B5A2;
-            --secondary: #4A3E3D;
-            --bg-color: #FDFBF7;
+            --secondary: #0F172A;
+            --bg-color: #F8FAFC;
             --surface: #FFFFFF;
-            --surface-hover: #FDFBF7;
-            --text-primary: #2D2524;
-            --text-secondary: #5E504F;
-            --text-tertiary: #8A7E7D;
-            --border-color: #EFECE8;
+            --surface-hover: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --text-tertiary: #64748B;
+            --border-color: #CBD5E1;
 
-            --success: #4c7955d7;
-            --success-light: #EBFBEE;
-            --warning: #c7935c;
-            --warning-light: #FFF4E6;
-            --danger: #894c4ce6;
-            --danger-light: #FFF0F0;
-            --info: #1864AB;
-            --info-light: #E7F5FF;
+            --success: #15803D;
+            --success-light: #DCFCE7;
+            --warning: #B45309;
+            --warning-light: #FEF3C7;
+            --danger: #991B1B;
+            --danger-light: #FEE2E2;
+            --info: #0369A1;
+            --info-light: #E0F2FE;
 
             --font-serif: 'Playfair Display', serif;
             --font-sans: 'Inter', sans-serif;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 2px 8px rgba(74, 62, 61, 0.05);
-            --shadow-md: 0 4px 16px rgba(74, 62, 61, 0.08);
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 12px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
         }
 
         * {
@@ -273,12 +273,28 @@
         }
 
         .column {
-            background: #E9ECEF;
+            background: #F1F5F9;
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .col-todo {
+            background: #FEF2F2;
+            border-color: #FCA5A5;
+        }
+
+        .col-progress {
+            background: #FFFBEB;
+            border-color: #FDE68A;
+        }
+
+        .col-done {
+            background: #F0FDF4;
+            border-color: #BBF7D0;
         }
 
         .column-header {
@@ -290,85 +306,98 @@
 
         .column-title {
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: -0.01em;
         }
 
         .column-badge {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 2px 8px;
+            background: #FFFFFF;
+            padding: 3px 10px;
             border-radius: 12px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(15, 23, 42, 0.08);
         }
 
         .col-todo .column-title {
-            color: var(--danger);
+            color: #DC2626;
         }
 
         .col-progress .column-title {
-            color: var(--warning);
+            color: #D97706;
         }
 
         .col-done .column-title {
-            color: var(--success);
+            color: #166534;
         }
 
         /* Task Cards */
         .task-card {
             background: var(--surface);
             border-radius: var(--radius-md);
-            padding: 16px;
+            padding: 20px;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
             position: relative;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: #94A3B8;
         }
 
         .task-priority {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 20px;
+            right: 20px;
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
 
         .priority-high {
-            background: var(--danger);
-            box-shadow: 0 0 0 4px var(--danger-light);
+            background: #DC2626;
+            box-shadow: 0 0 0 4px #FEE2E2;
         }
 
         .priority-normal {
-            background: var(--warning);
-            box-shadow: 0 0 0 4px var(--warning-light);
+            background: #F59E0B;
+            box-shadow: 0 0 0 4px #FEF3C7;
         }
 
         .priority-low {
-            background: var(--info);
+            background: #0284C7;
+            box-shadow: 0 0 0 4px #E0F2FE;
         }
 
         .task-location {
             font-family: var(--font-sans);
-            font-size: 18px;
-            font-weight: 700;
-            color: #2C2A1E;
-            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 6px;
+            letter-spacing: -0.02em;
         }
 
         .task-location i {
-            color: var(--text-tertiary);
-            font-size: 14px;
+            color: #64748B;
+            font-size: 15px;
         }
 
         .task-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: 13.5px;
+            color: #334155;
+            font-weight: 500;
             margin-bottom: 16px;
             line-height: 1.5;
         }
@@ -376,18 +405,19 @@
         .task-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 11px;
-            color: var(--text-tertiary);
-            margin-bottom: 16px;
+            gap: 14px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #64748B;
+            margin-bottom: 14px;
             padding-bottom: 12px;
-            border-bottom: 1px solid var(--surface-hover);
+            border-bottom: 1px solid #F1F5F9;
         }
 
         .task-meta div {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
 
         .task-actions {
@@ -397,44 +427,54 @@
 
         .btn {
             flex: 1;
-            padding: 8px;
-            border-radius: 6px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 8px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            border: none;
-            transition: background 0.2s;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
 
         .btn-primary {
-            background: #3B2D24;
-            color: #fff;
+            background: #0F172A;
+            color: #FFFFFF;
+            border: 1px solid #0F172A;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
         }
 
         .btn-primary:hover {
-            background: #635547;
+            background: #1E293B;
+            border-color: #1E293B;
         }
 
         .btn-success {
-            background: #5C5043;
-            color: #fff;
+            background: #15803D;
+            color: #FFFFFF;
+            border: 1px solid #15803D;
+            box-shadow: 0 2px 4px rgba(21, 128, 61, 0.15);
         }
 
         .btn-success:hover {
-            background: #756859;
+            background: #166534;
+            border-color: #166534;
         }
 
         .btn-warning {
-            background: #B9AA97;
-            color: #fff;
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+            font-weight: 700;
         }
 
         .btn-warning:hover {
-            background: #A89986;
+            background: #FDE68A;
+            border-color: #F59E0B;
         }
 
         /* Alerts */
@@ -446,7 +486,7 @@
             align-items: center;
             gap: 12px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .alert-success {
@@ -468,7 +508,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             display: none;
             align-items: center;
@@ -515,26 +555,25 @@
         }
 
         @keyframes flash-red {
-
-            0%,
-            100% {
-                color: var(--danger);
+            0%, 100% {
+                color: #DC2626;
                 opacity: 1;
             }
-
             50% {
-                color: var(--danger);
+                color: #DC2626;
                 opacity: 0.4;
             }
         }
 
         .sla-warning {
-            color: var(--danger) !important;
+            color: #DC2626 !important;
+            font-weight: 700 !important;
             animation: flash-red 1.2s infinite;
         }
 
         .sla-near-warning {
-            color: var(--warning) !important;
+            color: #D97706 !important;
+            font-weight: 700 !important;
         }
 
         .task-timer {
@@ -548,17 +587,15 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 3px 9px;
+            border-radius: 6px;
             margin-left: 8px;
             vertical-align: middle;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
         }
 
         /* Navigation Tabs */
@@ -573,20 +610,21 @@
         .tab-btn {
             text-decoration: none;
             padding: 8px 20px;
-            background: var(--surface);
-            border: 1px solid var(--border-color);
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #475569;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .tab-btn.active {
-            background: #B9AA97;
-            border-color: #B9AA97;
-            color: #fff;
+            background: #0F172A;
+            border-color: #0F172A;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
         }
 
         .tab-btn:hover:not(.active) {
@@ -944,31 +982,31 @@
             }
 
             function categorizeTask(notes) {
-                if (!notes) return { emoji: "🛠️", label: "Khác", bg: "#e9ecef", color: "#495057" };
+                if (!notes) return { emoji: "🛠️", label: "Khác", bg: "#F1F5F9", color: "#334155", border: "#CBD5E1" };
                 const text = notes.toLowerCase();
 
                 // AC/Cooling
                 if (text.includes("điều hòa") || text.includes("máy lạnh") || text.includes("cục nóng") || text.includes("gas") || text.includes("bơm ga") || text.includes("không mát")) {
-                    return { emoji: "❄️", label: "Điều hòa", bg: "#e7f5ff", color: "#1864ab" };
+                    return { emoji: "❄️", label: "Điều hòa", bg: "#EFF6FF", color: "#1E40AF", border: "#BFDBFE" };
                 }
 
                 // Water/Plumbing
                 if (text.includes("nước") || text.includes("vòi") || text.includes("bồn") || text.includes("toilet") || text.includes("wc") || text.includes("tắc") || text.includes("nghẹt") || text.includes("rò rỉ") || text.includes("sen")) {
-                    return { emoji: "💧", label: "Nước", bg: "#eef9ff", color: "#0077cc" };
+                    return { emoji: "💧", label: "Nước", bg: "#E0F2FE", color: "#0369A1", border: "#BAE6FD" };
                 }
 
                 // Electricity
                 if (text.includes("điện") || text.includes("đèn") || text.includes("ổ cắm") || text.includes("công tắc") || text.includes("chập") || text.includes("cháy") || text.includes("sáng") || text.includes("tivi") || text.includes("tv") || text.includes("wifi")) {
-                    return { emoji: "⚡", label: "Điện", bg: "#fff9db", color: "#f59f00" };
+                    return { emoji: "⚡", label: "Điện", bg: "#FEF3C7", color: "#92400E", border: "#FDE68A" };
                 }
 
                 // Furniture/Interior
-                if (text.includes("cửa") || text.includes("giường") || text.includes("tủ") || text.includes("bàn") || text.includes("ghế") || text.includes("khóa") || text.includes("tường") || text.includes("trần") || text.includes("sơn") || text.includes("kính") || text.includes("rèm") || text.includes("nệm")) {
-                    return { emoji: "🛋️", label: "Nội thất", bg: "#f3f0ff", color: "#845ef7" };
+                if (text.includes("cửa") || text.includes("giường") || text.includes("tủ") || text.includes("bàn") || text.includes("ghế") || text.includes("khóa") || text.includes("tường") || text.includes("trần") || text.includes("sơn") || text.includes("kính") || text.includes("rèm") || text.includes("nệm") || text.includes("tay nắm")) {
+                    return { emoji: "🛋️", label: "Nội thất", bg: "#F3E8FF", color: "#6B21A8", border: "#E9D5FF" };
                 }
 
                 // Default General
-                return { emoji: "🛠️", label: "Khác", bg: "#f1f3f5", color: "#495057" };
+                return { emoji: "🛠️", label: "Khác", bg: "#F1F5F9", color: "#334155", border: "#CBD5E1" };
             }
 
             function applyCategoryTags() {
@@ -980,6 +1018,9 @@
                         const cat = categorizeTask(notes);
                         const tag = document.createElement('span');
                         tag.className = 'category-tag';
+                        tag.style.backgroundColor = cat.bg;
+                        tag.style.color = cat.color;
+                        tag.style.border = `1px solid ${cat.border}`;
                         tag.innerHTML = `${cat.emoji} ${cat.label}`;
                         locEl.appendChild(tag);
                     }
@@ -1038,10 +1079,11 @@
                     </div>
                 </div>
                 <div style="font-size: 14px; line-height: 1.6; color: #374151;">
-                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentEmployee != null ? currentEmployee.email : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentEmployee != null ? currentEmployee.phone : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentEmployee != null ? currentEmployee.gender : 'Chưa cập nhật'}"></span></p>
-                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentEmployee != null ? currentEmployee.cccd : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>Họ và tên:</strong> <span th:text="${currentStaff != null ? currentStaff.fullName : (#authentication != null ? #authentication.name : 'Nhân viên')}">Nhân viên</span></p>
+                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentStaff != null ? currentStaff.email : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentStaff != null ? currentStaff.phone : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentStaff != null ? currentStaff.gender : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
+                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentStaff != null ? currentStaff.cccd : 'Chưa cập nhật'}">Chưa cập nhật</span></p>
                 </div>
             </div>
 

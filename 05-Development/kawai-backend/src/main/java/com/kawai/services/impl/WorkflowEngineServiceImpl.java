@@ -168,6 +168,20 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
                             }
                         } 
                         else if ("CREATE_OPERATION_TASK".equals(type)) {
+                            Long rIdCheck = safeLong(payload.get("room_id"));
+                            if (rIdCheck != null) {
+                                java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().minusSeconds(10);
+                                boolean existsRecent = hotelOperationRepository.findAll().stream()
+                                        .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(rIdCheck)
+                                                && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
+                                                && !"Completed".equalsIgnoreCase(t.getStatus())
+                                                && t.getCreatedAt() != null && t.getCreatedAt().isAfter(recentCutoff));
+                                if (existsRecent) {
+                                    System.out.println("WorkflowEngine: Skipped duplicate task creation for room ID " + rIdCheck);
+                                    return;
+                                }
+                            }
+
                             String taskType = (String) action.get("value");
                             Boolean isEmergency = null;
                             if (payload.containsKey("is_emergency")) {

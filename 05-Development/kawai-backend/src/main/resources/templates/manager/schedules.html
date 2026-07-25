@@ -10,6 +10,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         
+        .schedule-tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #786C62;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .schedule-tab-btn:hover {
+            color: #322720;
+        }
+
+        .schedule-tab-btn.active {
+            color: #8C6D3B;
+            border-bottom-color: #C5A059;
+            background: rgba(197, 160, 89, 0.06);
+            border-radius: 8px 8px 0 0;
+        }
+
         .schedule-container {
             padding: 24px 48px;
             max-width: 100%;
@@ -218,39 +244,6 @@
 
     <!-- MAIN -->
     <div class="mgr-main">
-        <header class="mgr-header">
-            <div class="mgr-header-left">
-                <button class="mgr-header-icon-btn mgr-sidebar-toggle"
-                    onclick="document.body.classList.toggle('sidebar-hidden')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="3" y1="12" x2="21" y2="12" />
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
-                <span style="color:#4A4740;font-size:12px">MANAGER</span>
-                <span class="mgr-breadcrumb-sep">/</span>
-                <span style="color:#C9A96E;font-size:12px;font-weight:500">Lịch trực Nhân sự</span>
-            </div>
-            <div class="mgr-header-right">
-                <button class="mgr-header-icon-btn" style="position:relative"><svg width="15" height="15"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                    </svg><span class="mgr-notif-dot"></span></button>
-                <div class="mgr-header-user-box">
-                    <div class="mgr-header-avatar">MG</div>
-                    <span class="mgr-header-username">Manager</span>
-                </div>
-                <div class="mgr-divider-v"></div>
-                <a href="/logout" class="mgr-header-logout"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" x2="9" y1="12" y2="12" />
-                    </svg>Đăng xuất</a>
-            </div>
-        </header>
 
         <div style="padding: 24px;">
             <h2 class="mgr-page-title" style="margin-bottom: 24px;">Quản lý Lịch làm việc</h2>
@@ -276,14 +269,50 @@
                 </div>
             </div>
 
-            <div class="matrix-board" id="matrixBoard">
-                <!-- Headers -->
-                <div class="matrix-header dept">Phòng Ban</div>
-                <div class="matrix-header">Ca Sáng (06:00 - 14:00)</div>
-                <div class="matrix-header">Ca Chiều (14:00 - 22:00)</div>
-                <div class="matrix-header">Ca Đêm (22:00 - 06:00)</div>
+            <!-- TAB SWITCHER -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid #EBE4D8; padding-bottom: 2px;">
+                <button class="schedule-tab-btn active" id="tabBtnStaff" onclick="switchScheduleTab('staff')">
+                    <i data-lucide="users" style="width: 16px; height: 16px; display: inline-block; vertical-align: -2px;"></i> Lịch Trực Ca Nhân Sự
+                </button>
+                <button class="schedule-tab-btn" id="tabBtnTour" onclick="switchScheduleTab('tour')">
+                    <i data-lucide="compass" style="width: 16px; height: 16px; display: inline-block; vertical-align: -2px;"></i> Lịch Trình Hướng Dẫn Viên Tour
+                </button>
+            </div>
 
-                <!-- Content will be injected by JS -->
+            <!-- TAB 1: CA TRỰC NHÂN SỰ -->
+            <div id="tabStaffView">
+                <div class="matrix-board" id="matrixBoard">
+                    <!-- Headers -->
+                    <div class="matrix-header dept">Phòng Ban</div>
+                    <div class="matrix-header">Ca Sáng (06:00 - 14:00)</div>
+                    <div class="matrix-header">Ca Chiều (14:00 - 22:00)</div>
+                    <div class="matrix-header">Ca Đêm (22:00 - 06:00)</div>
+
+                    <!-- Content will be injected by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 2: LỊCH TRÌNH HDV TOUR -->
+            <div id="tabTourView" style="display: none; background: white; padding: 28px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #E8E2D9;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #F0EAE1;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(197, 160, 89, 0.15); display: flex; align-items: center; justify-content: center; color: #8C6D3B;">
+                            <i data-lucide="compass" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #322720;">Lịch Trình Phân Công Hướng Dẫn Viên Tour</h3>
+                            <p style="margin: 2px 0 0 0; font-size: 13px; color: #786C62;">Quản lý lịch trình dẫn tour theo yêu cầu trải nghiệm thực tế của du khách (Không cố định theo ca trực hành chính)</p>
+                        </div>
+                    </div>
+                    <span style="background: rgba(197, 160, 89, 0.12); color: #8C6D3B; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(197, 160, 89, 0.25);">
+                        <i data-lucide="map-pin" style="width: 13px; height: 13px; display: inline-block; vertical-align: -2px; margin-right: 4px;"></i> Đang có 6 Hướng dẫn viên
+                    </span>
+                </div>
+
+                <!-- Tour Guides Grid -->
+                <div class="tour-guide-grid" id="tourGuideGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px;">
+                    <!-- Injected by JS -->
+                </div>
             </div>
         </div>
     </main>
@@ -331,12 +360,27 @@
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
-                <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
                     <label style="font-weight: 500; font-size: 14px;">Chọn Nhân viên</label>
-                    <select id="leaveEmployeeId" style="padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px;">
-                        <option value="">-- Chọn nhân viên --</option>
-                        <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.fullName} + ' (' + ${emp.account?.role?.roleName} + ')'"></option>
-                    </select>
+                    <div style="position: relative;">
+                        <input type="text" id="leaveEmpSearchInput" placeholder="🔍 Gõ tên hoặc vai trò để tìm kiếm nhanh..." 
+                            style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 14px; box-sizing: border-box; background: #f8fafc; transition: all 0.2s;"
+                            onkeyup="filterLeaveEmployees()" onfocus="showLeaveEmpDropdown()" />
+                        <input type="hidden" id="leaveEmployeeId" name="employeeId" value="" />
+                        <div id="leaveEmpDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; margin-top: 4px;">
+                            <div th:each="emp : ${employees}" 
+                                 class="leave-emp-item" 
+                                 th:data-id="${emp.id}" 
+                                 th:data-text="${emp.fullName} + ' (' + (${emp.account?.role?.roleName} != null ? ${emp.account.role.roleName} : 'N/A') + ')'"
+                                 style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; transition: background 0.15s;"
+                                 onmouseover="this.style.background='#f1f5f9'" 
+                                 onmouseout="this.style.background='transparent'"
+                                 onclick="selectLeaveEmployee(this)">
+                                <span th:text="${emp.fullName}" style="font-weight: 600;"></span>
+                                <span th:text="' (' + (${emp.account?.role?.roleName} != null ? ${emp.account.role.roleName} : 'N/A') + ')'" style="color: #64748b; font-size: 12px;"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -360,10 +404,29 @@
             { id: 'HOUSEKEEPING', name: 'Buồng Phòng', icon: 'spray-can' },
             { id: 'F&B KITCHEN', name: 'Bếp Nhà Hàng', icon: 'chef-hat' },
             { id: 'F&B POS', name: 'Phục Vụ F&B', icon: 'coffee' },
-            { id: 'TOURGUIDE', name: 'Hướng Dẫn Viên', icon: 'map' },
             { id: 'MAINTAINER', name: 'Bảo Trì', icon: 'wrench' },
             { id: 'MANAGER', name: 'Quản Lý', icon: 'briefcase' }
         ];
+
+        function switchScheduleTab(tab) {
+            const staffView = document.getElementById('tabStaffView');
+            const tourView = document.getElementById('tabTourView');
+            const btnStaff = document.getElementById('tabBtnStaff');
+            const btnTour = document.getElementById('tabBtnTour');
+
+            if (tab === 'staff') {
+                staffView.style.display = 'block';
+                tourView.style.display = 'none';
+                btnStaff.classList.add('active');
+                btnTour.classList.remove('active');
+            } else {
+                staffView.style.display = 'none';
+                tourView.style.display = 'block';
+                btnStaff.classList.remove('active');
+                btnTour.classList.add('active');
+            }
+            lucide.createIcons();
+        }
 
         // Initialize date — dùng local date tránh lệch múi giờ UTC+7
         function getLocalDateStr(d) {
@@ -372,26 +435,115 @@
             const day = String(d.getDate()).padStart(2, '0');
             return `${y}-${m}-${day}`;
         }
-        let currentDate = getLocalDateStr(new Date());
-        const datePicker = document.getElementById('datePicker');
-        datePicker.value = currentDate;
 
         function changeDate(days) {
-            const date = new Date(datePicker.value + 'T12:00:00');
+            const datePicker = document.getElementById('datePicker');
+            if (!datePicker) return;
+            const curVal = datePicker.value || getLocalDateStr(new Date());
+            const date = new Date(curVal + 'T12:00:00');
             date.setDate(date.getDate() + days);
             datePicker.value = getLocalDateStr(date);
             fetchSchedules();
         }
 
         async function fetchSchedules() {
-            const date = datePicker.value;
+            const datePicker = document.getElementById('datePicker');
+            if (datePicker && !datePicker.value) {
+                datePicker.value = getLocalDateStr(new Date());
+            }
+            const date = (datePicker && datePicker.value) ? datePicker.value : getLocalDateStr(new Date());
             try {
                 const response = await fetch(`/api/manager/schedules?date=${date}`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
                 const data = await response.json();
-                renderMatrix(data);
+                if (Array.isArray(data)) {
+                    renderMatrix(data);
+                } else if (data && data.schedules) {
+                    renderMatrix(data.schedules);
+                    renderTourGuideBoard(data.tourGuides || []);
+                }
+                lucide.createIcons();
             } catch (error) {
                 console.error("Failed to fetch schedules:", error);
             }
+        }
+
+        function renderTourGuideBoard(tourGuidesList) {
+            const grid = document.getElementById('tourGuideGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (!tourGuidesList || tourGuidesList.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #9A9485; padding: 32px;">Chưa có dữ liệu Hướng dẫn viên Tour cho ngày này</div>';
+                return;
+            }
+
+            tourGuidesList.forEach(guide => {
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    background: #FAF8F5;
+                    border: 1px solid #EBE4D8;
+                    border-radius: 12px;
+                    padding: 18px;
+                    transition: all 0.2s ease;
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                `;
+                card.onmouseover = () => { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 16px rgba(50,39,32,0.08)'; card.style.borderColor = '#C5A059'; };
+                card.onmouseout = () => { card.style.transform = 'none'; card.style.boxShadow = 'none'; card.style.borderColor = '#EBE4D8'; };
+
+                const initials = guide.name ? guide.name.split(' ').pop().substring(0, 2).toUpperCase() : 'NV';
+                const roleDisplay = (guide.level === 'TOURGUIDE' || guide.level === 'TOUR_GUIDE') ? 'Hướng Dẫn Viên Tour' : (guide.level || 'Hướng Dẫn Viên Tour');
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #4F3D33; color: #F5E6D3; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #735C4D;">
+                                ${initials}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #322720;">${guide.name || 'HDV'}</h4>
+                                <span style="font-size: 11px; color: #8C6D3B; font-weight: 600;">${roleDisplay}</span>
+                            </div>
+                        </div>
+                        <span style="background: ${guide.badgeBg || '#FEF3C7'}; color: ${guide.badgeColor || '#D97706'}; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                            ${guide.status || 'Sẵn sàng'}
+                        </span>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #EAE4DA; border-radius: 8px; padding: 10px 12px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #322720; margin-bottom: 4px;">
+                            <i data-lucide="map" style="width: 14px; height: 14px; color: #C5A059;"></i>
+                            <span>${guide.activeTour || 'Tour Khám Phá'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #786C62; margin-top: 6px;">
+                            <span><i data-lucide="clock" style="width: 12px; height: 12px; display: inline-block; vertical-align: -1px;"></i> ${guide.time || '08:00 - 12:00'}</span>
+                            <span><i data-lucide="users" style="width: 12px; height: 12px; display: inline-block; vertical-align: -1px;"></i> ${guide.guests || '10 Khách'}</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #8C7C70; padding-top: 4px;">
+                        <span><i data-lucide="phone" style="width: 12px; height: 12px; display: inline-block; vertical-align: -1px;"></i> ${guide.phone || 'Chưa cập nhật'}</span>
+                        <span style="color: #C5A059; font-weight: 600; display: flex; align-items: center; gap: 2px;">
+                            Chi tiết <i data-lucide="chevron-right" style="width: 12px; height: 12px;"></i>
+                        </span>
+                    </div>
+                `;
+
+                card.onclick = () => openModal({
+                    fullName: guide.name,
+                    roleName: 'HƯỚNG DẪN VIÊN (' + guide.level + ')',
+                    phone: guide.phone,
+                    email: guide.email,
+                    shiftName: guide.activeTour,
+                    startTime: guide.time,
+                    endTime: guide.guests
+                });
+
+                grid.appendChild(card);
+            });
         }
 
         function renderMatrix(schedules) {
@@ -414,9 +566,12 @@
                     const cell = document.createElement('div');
                     cell.className = 'matrix-cell';
                     
-                    const staffInCell = schedules.filter(s => 
-                        (s.roleName === dept.id || s.roleName.replace('&', 'N') === dept.id) && s.shiftId === shiftId
-                    );
+                    const staffInCell = schedules.filter(s => {
+                        if (!s.roleName) return false;
+                        const r = s.roleName.trim().toUpperCase();
+                        const d = dept.id.trim().toUpperCase();
+                        return (r === d || r.replace(/&/g, 'N') === d || r.replace(/N/g, '&') === d || r.replace(/ /g, '_') === d || r.replace(/_/g, ' ') === d) && s.shiftId === shiftId;
+                    });
 
                     if (staffInCell.length === 0) {
                         cell.innerHTML = `<div class="empty-state">Không có lịch</div>`;
@@ -459,13 +614,83 @@
             }
         });
 
-                // Manual Leave Logic
+                // Realtime Searchable Employee Dropdown Logic
+        function showLeaveEmpDropdown() {
+            const dropdown = document.getElementById('leaveEmpDropdown');
+            if (dropdown) dropdown.style.display = 'block';
+        }
+
+        function filterLeaveEmployees() {
+            const input = document.getElementById('leaveEmpSearchInput');
+            const filter = input ? input.value.toLowerCase().trim() : '';
+            const items = document.querySelectorAll('.leave-emp-item');
+            const dropdown = document.getElementById('leaveEmpDropdown');
+            
+            if (!dropdown) return;
+            dropdown.style.display = 'block';
+            let hasResult = false;
+            
+            items.forEach(item => {
+                const text = (item.getAttribute('data-text') || '').toLowerCase();
+                if (text.includes(filter)) {
+                    item.style.display = 'block';
+                    hasResult = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            let noResultDiv = document.getElementById('leaveEmpNoResult');
+            if (!hasResult) {
+                if (!noResultDiv) {
+                    noResultDiv = document.createElement('div');
+                    noResultDiv.id = 'leaveEmpNoResult';
+                    noResultDiv.style.padding = '12px';
+                    noResultDiv.style.textAlign = 'center';
+                    noResultDiv.style.color = '#94a3b8';
+                    noResultDiv.style.fontSize = '13px';
+                    noResultDiv.innerText = 'Không tìm thấy nhân viên phù hợp';
+                    dropdown.appendChild(noResultDiv);
+                }
+                noResultDiv.style.display = 'block';
+            } else if (noResultDiv) {
+                noResultDiv.style.display = 'none';
+            }
+        }
+
+        function selectLeaveEmployee(el) {
+            const id = el.getAttribute('data-id');
+            const text = el.getAttribute('data-text');
+            document.getElementById('leaveEmployeeId').value = id;
+            document.getElementById('leaveEmpSearchInput').value = text;
+            document.getElementById('leaveEmpDropdown').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            const input = document.getElementById('leaveEmpSearchInput');
+            const dropdown = document.getElementById('leaveEmpDropdown');
+            if (input && dropdown && !input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Manual Leave Logic
         function openMockPrefModal() {
             document.getElementById('mockPrefModal').classList.add('active');
+            document.getElementById('leaveEmployeeId').value = '';
+            document.getElementById('leaveEmpSearchInput').value = '';
+            if (document.getElementById('leaveEmpDropdown')) {
+                document.getElementById('leaveEmpDropdown').style.display = 'none';
+            }
         }
 
         function closeMockPrefModal() {
             document.getElementById('mockPrefModal').classList.remove('active');
+            document.getElementById('leaveEmployeeId').value = '';
+            document.getElementById('leaveEmpSearchInput').value = '';
+            if (document.getElementById('leaveEmpDropdown')) {
+                document.getElementById('leaveEmpDropdown').style.display = 'none';
+            }
         }
 
         async function submitManualLeave(btn) {
@@ -510,6 +735,9 @@
         }
 
         // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSchedules();
+        });
         fetchSchedules();
     </script>
     <th:block th:replace="~{manager/fragments/incident-modal :: incident-modal}"></th:block>

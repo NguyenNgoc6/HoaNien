@@ -237,7 +237,7 @@
           <div class="order-summary">
             <div class="summary-row total">
               <span>Tổng số món:</span>
-              <span id="food-total" th:text="${foodOrder.details.size()}">0</span>
+              <span id="food-total" th:text="${#lists.size(foodOrder.details.?[kotStatus != 'Cancelled'])}">0</span>
             </div>
             <div class="summary-row total" style="margin-top: 10px; font-size: 1.2rem; color: var(--text-dark);">
               <span>Tổng cộng:</span>
@@ -643,10 +643,12 @@
     }
 
     let currentPayOrderId = null;
+    let currentPayTableId = null;
     let isRoomVerified = false;
 
     function openPaymentModal(id, tableId) {
       currentPayOrderId = id;
+      currentPayTableId = tableId;
       document.getElementById('paymentModal').style.display = 'flex';
 
       // Reset state
@@ -818,7 +820,7 @@
     </div>
 
     <div class="receipt-table">
-      <div class="receipt-item" th:each="detail : ${foodOrder.details}">
+      <div class="receipt-item" th:each="detail : ${foodOrder.details}" th:if="${detail.kotStatus != 'Cancelled'}">
         <div class="receipt-item-name" th:text="${detail.menuItem != null ? detail.menuItem.itemName : 'Món ăn'}">Tên
           món</div>
         <div class="receipt-item-qty" th:text="${detail.quantity}">1</div>
@@ -828,7 +830,7 @@
     </div>
 
     <div class="receipt-totals">
-      <p><span>Tổng số lượng:</span> <span th:text="${foodOrder.details.size()}">0</span></p>
+      <p><span>Tổng số lượng:</span> <span th:text="${#lists.size(foodOrder.details.?[kotStatus != 'Cancelled'])}">0</span></p>
       <p class="receipt-total-bold"><span>TỔNG CỘNG:</span> <span
           th:text="${#numbers.formatDecimal(foodOrder.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span></p>
     </div>

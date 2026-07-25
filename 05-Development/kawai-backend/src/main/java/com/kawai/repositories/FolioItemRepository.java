@@ -1,6 +1,7 @@
 package com.kawai.repositories;
 
 import com.kawai.models.FolioItem;
+import com.kawai.models.RoomBookingDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,8 @@ import java.util.List;
  */
 @Repository
 public interface FolioItemRepository extends JpaRepository<FolioItem, Long> {
+    List<FolioItem> findByRoomBookingDetail(RoomBookingDetail roomBookingDetail);
+
     List<FolioItem> findByRoomBookingDetailId(Long roomBookingDetailId);
 
     List<FolioItem> findByBookingId(Long bookingId);
