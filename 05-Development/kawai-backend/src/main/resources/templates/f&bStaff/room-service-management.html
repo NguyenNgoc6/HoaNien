@@ -190,6 +190,7 @@
                 <span class="order-status-chip chip-ready" th:if="${order.rawStatus == 'ready'}"><span class="dot"></span>Ready</span>
                 <span class="order-status-chip chip-delivering" th:if="${order.rawStatus == 'delivering'}" style="background:#e0f7fa; color:#006064; border-color:#006064;"><span class="dot" style="background:#006064;"></span>Delivering</span>
                 <span class="order-status-chip chip-served" th:if="${order.rawStatus == 'served'}"><span class="dot"></span>Served</span>
+                <span class="order-status-chip" th:if="${order.rawStatus == 'cancelled'}" style="background:#ffebee; color:#c62828; border-color:#c62828;"><span class="dot" style="background:#c62828;"></span>Cancelled</span>
               </td>
               <td class="col-action">
                 <button th:if="${order.rawStatus == 'ready'}" class="btn btn-sm btn-outline" th:data-id="${order.id}" onclick="updateStatus(this.getAttribute('data-id'), 'delivering')"><span class="material-symbols-outlined" style="font-size:1rem; margin-right:4px;">local_shipping</span> Đi Giao</button>
