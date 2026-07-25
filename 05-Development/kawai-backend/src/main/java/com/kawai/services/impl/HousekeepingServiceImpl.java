@@ -107,9 +107,14 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         Room room = task.getRoom();
         String currentStatus = room.getRoomStatus();
         boolean isOccupied = currentStatus != null && currentStatus.toLowerCase().contains("occupied");
+        boolean isFromMaintenance = currentStatus != null && currentStatus.equalsIgnoreCase("Maintenance");
 
         if (isOccupied) {
             room.setRoomStatus("Occupied");
+        } else if (isFromMaintenance) {
+            // BR-MT-03: Sau khi bảo trì xong, phòng phải về Vacant_Dirty để đội HK dọn lại
+            // trước khi đón khách
+            room.setRoomStatus("Vacant_Dirty");
         } else {
             room.setRoomStatus(STATUS_VACANT_CLEAN);
         }
@@ -129,7 +134,8 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
             messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of(
                     "message", wsMessage,
-                    "type", "ROOM_CLEANED"));
+                    "type", "ROOM_CLEANED",
+                    "roomNumber", room.getRoomNumber()));
         } catch (Exception e) {
             log.error("Failed to send WebSocket message", e);
         }
@@ -282,14 +288,14 @@ public class HousekeepingServiceImpl implements HousekeepingService {
 
         try {
             String msg = "Phòng " + room.getRoomNumber() + " đã hoàn thành bảo trì và sẵn sàng sử dụng!";
-            messagingTemplate.convertAndSend("/topic/operations", java.util.Map.of("message", msg, "type", "TASK_COMPLETED"));
+            messagingTemplate.convertAndSend("/topic/operations",
+                    java.util.Map.of("message", msg, "type", "TASK_COMPLETED", "roomNumber", room.getRoomNumber()));
         } catch (Exception e) {
             log.error("Failed to send WebSocket notification", e);
         }
 
         return room;
     }
-
 
     // ========================================================================
     // Private helpers

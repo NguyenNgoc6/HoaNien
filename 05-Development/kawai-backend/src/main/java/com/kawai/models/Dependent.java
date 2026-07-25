@@ -1,10 +1,13 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "Dependents")
+@Audited
 public class Dependent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -103,6 +106,12 @@ public class Dependent {
 
     public String getCccdPassportEncrypted() {
         return cccdPassportEncrypted;
+    }
+
+    public String getCccdPassportDecrypted() {
+        if (cccdPassportEncrypted == null || cccdPassportEncrypted.isBlank()) return "--";
+        if (cccdPassportEncrypted.startsWith("PHONE_") || cccdPassportEncrypted.startsWith("AUTO_CHILD_")) return "--";
+        return com.kawai.utils.EncryptionUtils.decrypt(cccdPassportEncrypted);
     }
 
     public void setCccdPassportEncrypted(String v) {

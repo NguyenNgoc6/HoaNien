@@ -221,7 +221,8 @@ public class EmailServiceImpl implements EmailService {
             String insurancePolicyNumber = "Đang cập nhật (chờ cấp đơn)";
             boolean hasInsurance = false;
             if (booking.getSchedule() != null) {
-                if (booking.getSchedule().getTour() != null && Boolean.TRUE.equals(booking.getSchedule().getTour().getIsInsuranceRequired())) {
+                if (booking.getSchedule().getTour() != null
+                        && Boolean.TRUE.equals(booking.getSchedule().getTour().getIsInsuranceRequired())) {
                     hasInsurance = true;
                     if (booking.getSchedule().getInsurancePolicyNumber() != null) {
                         insurancePolicyNumber = booking.getSchedule().getInsurancePolicyNumber();
@@ -231,7 +232,8 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("hasInsurance", hasInsurance);
             ctx.setVariable("insurancePolicyNumber", insurancePolicyNumber);
 
-            java.util.List<com.kawai.models.TourAttendee> attendeesList = tourAttendeeRepository.findByTourBookingId(booking.getId());
+            java.util.List<com.kawai.models.TourAttendee> attendeesList = tourAttendeeRepository
+                    .findByTourBookingId(booking.getId());
             java.util.List<java.util.Map<String, String>> formattedAttendees = new java.util.ArrayList<>();
             if (attendeesList != null) {
                 for (com.kawai.models.TourAttendee att : attendeesList) {
@@ -323,7 +325,7 @@ public class EmailServiceImpl implements EmailService {
                         roomDetail = noteMap.get("roomDetail");
                 } catch (Exception parseEx) {
                     logger.warn("Lỗi phân tích notes metadata cho booking {}: {}", booking.getId(),
-                             parseEx.getMessage());
+                            parseEx.getMessage());
                 }
             }
 
@@ -374,7 +376,8 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("departureDate", departureDate);
             ctx.setVariable("departureTime", departureTime);
             ctx.setVariable("participantCount", booking.getParticipantCount());
-            ctx.setVariable("bookingDate", booking.getBookingDate() != null ? booking.getBookingDate().format(DATE_FMT) : java.time.LocalDate.now().format(DATE_FMT));
+            ctx.setVariable("bookingDate", booking.getBookingDate() != null ? booking.getBookingDate().format(DATE_FMT)
+                    : java.time.LocalDate.now().format(DATE_FMT));
             ctx.setVariable("resortPhone", resortPhone);
             ctx.setVariable("resortWebsite", resortWebsite);
 
@@ -404,7 +407,9 @@ public class EmailServiceImpl implements EmailService {
 
             String refundMethodDetail = "Số tiền hoàn trả sẽ được chuyển trả vào phương thức thanh toán gốc của Quý khách. Vui lòng chờ 3-7 ngày làm việc để ngân hàng xử lý giao dịch.";
             if ("post-room".equalsIgnoreCase(paymentMethod)) {
-                refundMethodDetail = "Số tiền hoàn đã được cộng (ghi âm) trực tiếp vào Folio phòng nghỉ số " + roomDetail + " của Quý khách. Số tiền này sẽ được trừ trực tiếp khi Quý khách làm thủ tục thanh toán checkout phòng nghỉ.";
+                refundMethodDetail = "Số tiền hoàn đã được cộng (ghi âm) trực tiếp vào Folio phòng nghỉ số "
+                        + roomDetail
+                        + " của Quý khách. Số tiền này sẽ được trừ trực tiếp khi Quý khách làm thủ tục thanh toán checkout phòng nghỉ.";
             } else if ("vnpay".equalsIgnoreCase(paymentMethod)) {
                 refundMethodDetail = "Số tiền hoàn trả sẽ được chuyển trả trực tiếp vào tài khoản ngân hàng / ví điện tử gốc Quý khách đã sử dụng thanh toán qua VNPay. Vui lòng chờ từ 3-7 ngày làm việc để ngân hàng xử lý.";
             } else if ("counter".equalsIgnoreCase(paymentMethod)) {
@@ -433,9 +438,24 @@ public class EmailServiceImpl implements EmailService {
     @org.springframework.beans.factory.annotation.Autowired
     private com.kawai.repositories.RoomBookingDetailRepository roomBookingDetailRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.FolioItemRepository folioItemRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.TourBookingRepository tourBookingRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.repositories.FoodOrderRepository foodOrderRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.kawai.services.interfaces.PaymentService paymentService;
+
     @Override
     public void sendInvoiceEmail(String toEmail, ConsolidatedInvoice invoice, String pdfAttachmentPath) {
-        if (!"Paid".equalsIgnoreCase(invoice.getInvoiceStatus())) {
+        if (!"Paid".equalsIgnoreCase(invoice.getInvoiceStatus()) && !"Partial_Paid".equalsIgnoreCase(invoice.getInvoiceStatus())) {
             throw new IllegalStateException(
                     "Không thể gửi Email cho hóa đơn chưa được thanh toán (Trạng thái hiện tại: "
                             + invoice.getInvoiceStatus() + ")");
@@ -444,54 +464,406 @@ public class EmailServiceImpl implements EmailService {
         try {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
 
-            // Set basic info
             ctx.setVariable("customerName",
                     invoice.getBooking() != null && invoice.getBooking().getCustomer() != null
                             ? invoice.getBooking().getCustomer().getFullName()
                             : "Khách hàng");
             ctx.setVariable("invoiceNumber", invoice.getInvoiceNumber());
-            ctx.setVariable("issuedDate", invoice.getIssuedAt() != null ? invoice.getIssuedAt().format(DATE_FMT)
-                    : java.time.LocalDate.now().format(DATE_FMT));
-
+            
             // Collect items from booking details
-            java.util.List<java.util.Map<String, String>> items = new java.util.ArrayList<>();
+            java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
             String roomNumber = "";
             java.math.BigDecimal depositAmount = java.math.BigDecimal.ZERO;
             String paymentMethod = "Chuyển khoản / Tiền mặt";
+            int guestCount = 0;
+            String checkInDateStr = "N/A";
+            String checkOutDateStr = "N/A";
 
-            if (invoice.getBooking() instanceof com.kawai.models.RoomBooking rb) {
-                if (rb.getDepositAmount() != null) {
+            com.kawai.models.Booking baseBooking = invoice.getBooking();
+            if (baseBooking instanceof org.hibernate.proxy.HibernateProxy proxy) {
+                baseBooking = (com.kawai.models.Booking) proxy.getHibernateLazyInitializer().getImplementation();
+            }
+
+            if (baseBooking instanceof com.kawai.models.RoomBooking rb) {
+                checkInDateStr = rb.getCheckInDate() != null ? rb.getCheckInDate().format(DATE_FMT) : "N/A";
+                checkOutDateStr = rb.getCheckOutDate() != null ? rb.getCheckOutDate().format(DATE_FMT) : "N/A";
+
+                // Retrieve all payment transactions to get deposit amount
+                try {
+                    java.util.List<com.kawai.models.PaymentTransaction> payments = paymentService.getPaymentsByBookingId(rb.getId());
+                    if (payments != null) {
+                        for (com.kawai.models.PaymentTransaction pt : payments) {
+                            if (pt.getStatus() == com.kawai.models.PaymentStatus.SUCCESS && pt.getAmount() != null) {
+                                if ("ROOM_BOOKING".equalsIgnoreCase(pt.getTransactionType())
+                                        || "DEPOSIT".equalsIgnoreCase(pt.getTransactionType())) {
+                                    depositAmount = depositAmount.add(pt.getAmount());
+                                }
+                                if (pt.getPaymentMethod() != null) {
+                                    paymentMethod = pt.getPaymentMethod();
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {}
+                if (depositAmount.compareTo(java.math.BigDecimal.ZERO) == 0 && rb.getDepositAmount() != null) {
                     depositAmount = rb.getDepositAmount();
                 }
 
-                java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository.findAll()
+                // Filter details by Checked_Out status (and map guest counts)
+                java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(rb.getId())
                         .stream()
-                        .filter(d -> d.getRoomBooking() != null && d.getRoomBooking().getId().equals(rb.getId()))
+                        .filter(d -> "Checked_Out".equalsIgnoreCase(d.getDetailStatus()))
                         .toList();
 
                 if (!details.isEmpty()) {
+                    java.util.List<TempItem> groupedItems = new java.util.ArrayList<>();
+
                     for (com.kawai.models.RoomBookingDetail detail : details) {
                         if (detail.getRoom() != null) {
                             roomNumber += detail.getRoom().getRoomNumber() + " ";
                         }
-                        java.util.Map<String, String> item = new java.util.HashMap<>();
-                        item.put("date", rb.getCheckInDate() != null ? rb.getCheckInDate().format(DATE_FMT) : "");
-                        item.put("description", "Tiền phòng ("
-                                + (detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Standard")
-                                + ")");
-                        item.put("amount", formatVnd(detail.getRoomCharge()));
-                        items.add(item);
+                        if (detail.getNumberOfAdults() != null) guestCount += detail.getNumberOfAdults();
+                        if (detail.getNumberOfChildren() != null) guestCount += detail.getNumberOfChildren();
+
+                        long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                                rb.getCheckInDate(),
+                                rb.getCheckOutDate()
+                        );
+                        if (nights <= 0) nights = 1;
+
+                        String originalCategoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Room";
+                        java.math.BigDecimal pricePerNight = detail.getRoomCharge().divide(java.math.BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP);
+                        
+                        if (detail.getCategory() != null && detail.getCategory().getBasePrice() != null 
+                                && detail.getCategory().getBasePrice().compareTo(pricePerNight) != 0) {
+                            originalCategoryName = roomCategoryRepository.findAll().stream()
+                                    .filter(cat -> cat.getBasePrice() != null && cat.getBasePrice().compareTo(pricePerNight) == 0)
+                                    .map(com.kawai.models.RoomCategory::getCategoryName)
+                                    .findFirst()
+                                    .orElse(originalCategoryName);
+                        }
+
+                        // Fetch FolioItems for this roomBookingDetailId
+                        java.util.List<com.kawai.models.FolioItem> folioItems = folioItemRepository.findByRoomBookingDetailId(detail.getId());
+                        if (folioItems == null) {
+                            folioItems = new java.util.ArrayList<>();
+                        }
+
+                        // Check if a main Room Charge was already posted to FolioItem
+                        boolean hasRoomCharge = folioItems.stream()
+                                .anyMatch(fi -> "Room".equalsIgnoreCase(fi.getSourceDepartment()) 
+                                        && fi.getDescription() != null 
+                                        && fi.getDescription().contains("Room Charge"));
+
+                        // If not, virtually add the expected base room charge
+                        java.util.List<com.kawai.models.FolioItem> allItemsToProcess = new java.util.ArrayList<>(folioItems);
+                        if (!hasRoomCharge) {
+                            com.kawai.models.FolioItem virtualRoomCharge = new com.kawai.models.FolioItem();
+                            virtualRoomCharge.setSourceDepartment("Room");
+                            virtualRoomCharge.setAmount(detail.getRoomCharge());
+                            virtualRoomCharge.setDescription("Room Charge - " + originalCategoryName);
+                            virtualRoomCharge.setIsSettledSeparately(false);
+                            virtualRoomCharge.setCreatedAt(rb.getCheckInDate().atStartOfDay());
+                            allItemsToProcess.add(0, virtualRoomCharge); // add to top
+                        }
+
+                        // Group all items
+                        for (com.kawai.models.FolioItem fi : allItemsToProcess) {
+                            if (Boolean.TRUE.equals(fi.getIsSettledSeparately())) {
+                                continue;
+                            }
+
+                            String dateStr = fi.getCreatedAt() != null ? fi.getCreatedAt().format(DATE_FMT) : "";
+
+                            if ("Tour".equalsIgnoreCase(fi.getSourceDepartment()) && fi.getBooking() instanceof com.kawai.models.TourBooking tb) {
+                                // Let's resolve participant details
+                                int adultCount = 0;
+                                int childCount = 0;
+                                int infantCount = 0;
+
+                                java.util.List<com.kawai.models.TourAttendee> attendees = tourAttendeeRepository.findByTourBookingId(tb.getId());
+                                if (attendees != null && !attendees.isEmpty()) {
+                                    for (com.kawai.models.TourAttendee attendee : attendees) {
+                                        if (attendee.getCustomer() != null) {
+                                            adultCount++;
+                                        } else if (attendee.getDependent() != null) {
+                                            com.kawai.models.Dependent dep = attendee.getDependent();
+                                            String cccd = dep.getCccdPassportEncrypted();
+                                            if (cccd != null && cccd.startsWith("AUTO_CHILD_")) {
+                                                if (cccd.contains("Dưới_2_tuổi") || cccd.contains("Dưới 2 tuổi")) {
+                                                    infantCount++;
+                                                } else {
+                                                    childCount++;
+                                                }
+                                            } else if (dep.getBirthDate() != null) {
+                                                int age = java.time.Period.between(dep.getBirthDate(), java.time.LocalDate.now()).getYears();
+                                                if (age < 2) {
+                                                    infantCount++;
+                                                } else if (age < 12) {
+                                                    childCount++;
+                                                } else {
+                                                    adultCount++;
+                                                }
+                                            } else {
+                                                childCount++;
+                                            }
+                                        } else {
+                                            adultCount++;
+                                        }
+                                    }
+                                } else {
+                                    adultCount = tb.getParticipantCount() != null ? tb.getParticipantCount() : 0;
+                                }
+
+                                java.math.BigDecimal totalCharge = tb.getTourCharge() != null ? tb.getTourCharge() : java.math.BigDecimal.ZERO;
+                                double weight = adultCount + 0.5 * childCount;
+                                java.math.BigDecimal adultPrice = java.math.BigDecimal.ZERO;
+                                java.math.BigDecimal childPrice = java.math.BigDecimal.ZERO;
+
+                                com.kawai.models.TourSchedule sched = tb.getSchedule();
+                                com.kawai.models.Tour tourObj = sched != null ? sched.getTour() : null;
+
+                                if (weight > 0) {
+                                    adultPrice = totalCharge.divide(java.math.BigDecimal.valueOf(weight), 2, java.math.RoundingMode.HALF_UP);
+                                    childPrice = adultPrice.multiply(new java.math.BigDecimal("0.5")).setScale(2, java.math.RoundingMode.HALF_UP);
+                                } else if (tourObj != null && tourObj.getBasePrice() != null) {
+                                    adultPrice = tourObj.getBasePrice();
+                                    childPrice = adultPrice.multiply(new java.math.BigDecimal("0.5")).setScale(2, java.math.RoundingMode.HALF_UP);
+                                }
+
+                                java.math.BigDecimal insuranceFee = java.math.BigDecimal.ZERO;
+                                String notes = tb.getNotes();
+                                if (notes != null) {
+                                    String[] parts = notes.split(";");
+                                    for (String part : parts) {
+                                        if (part.startsWith("insuranceFee=")) {
+                                            try {
+                                                insuranceFee = new java.math.BigDecimal(part.substring("insuranceFee=".length()).trim());
+                                            } catch (Exception e) {}
+                                        }
+                                    }
+                                }
+
+                                String insurancePolicyNumber = null;
+                                if (sched != null && Boolean.TRUE.equals(sched.getIsInsuranceProcessed())) {
+                                    insurancePolicyNumber = sched.getInsurancePolicyNumber();
+                                }
+
+                                int qty = tb.getParticipantCount() != null ? tb.getParticipantCount() : (adultCount + childCount + infantCount);
+                                if (qty <= 0) qty = 1;
+                                java.math.BigDecimal unitPrice = totalCharge.divide(java.math.BigDecimal.valueOf(qty), 2, java.math.RoundingMode.HALF_UP);
+
+                                String departureTimeStr = sched != null && sched.getDepartureTime() != null ? sched.getDepartureTime().toString().substring(0, 5) : "";
+                                String departureDateStr = sched != null && sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "";
+                                String tourName = tourObj != null ? tourObj.getTourName() : "Tour";
+
+                                TempItem tourParent = new TempItem();
+                                tourParent.date = dateStr;
+                                tourParent.description = "Tour Charge - " + tourName + " (Khởi hành: " + departureTimeStr + " - " + departureDateStr + ")";
+                                tourParent.qty = qty;
+                                tourParent.unitVal = unitPrice;
+                                tourParent.amount = totalCharge;
+                                tourParent.isParentTour = true;
+
+                                if (adultCount > 0) {
+                                    TempItem adultRow = new TempItem();
+                                    adultRow.description = "- người lớn";
+                                    adultRow.qty = adultCount;
+                                    adultRow.unitVal = adultPrice;
+                                    adultRow.amount = adultPrice.multiply(java.math.BigDecimal.valueOf(adultCount));
+                                    adultRow.isChild = true;
+                                    tourParent.children.add(adultRow);
+                                }
+                                if (childCount > 0) {
+                                    TempItem childRow = new TempItem();
+                                    childRow.description = "- trẻ em (2-11 tuổi)";
+                                    childRow.qty = childCount;
+                                    childRow.unitVal = childPrice;
+                                    childRow.amount = childPrice.multiply(java.math.BigDecimal.valueOf(childCount));
+                                    childRow.isChild = true;
+                                    tourParent.children.add(childRow);
+                                }
+                                if (infantCount > 0) {
+                                    TempItem infantRow = new TempItem();
+                                    infantRow.description = "- em bé (dưới 2 tuổi)";
+                                    infantRow.qty = infantCount;
+                                    infantRow.unitVal = java.math.BigDecimal.ZERO;
+                                    infantRow.amount = java.math.BigDecimal.ZERO;
+                                    infantRow.isChild = true;
+                                    tourParent.children.add(infantRow);
+                                }
+                                if (tourObj != null && (Boolean.TRUE.equals(tourObj.getIsInsuranceRequired()) || insuranceFee.compareTo(java.math.BigDecimal.ZERO) > 0)) {
+                                    String policySuffix = insurancePolicyNumber != null ? " (" + insurancePolicyNumber + ")" : "";
+                                    TempItem insRow = new TempItem();
+                                    insRow.description = "- bảo hiểm du lịch bắt buộc" + policySuffix;
+                                    insRow.qty = qty;
+                                    insRow.unitVal = tourObj.getInsurancePrice() != null ? tourObj.getInsurancePrice() : new java.math.BigDecimal("50000");
+                                    insRow.amount = java.math.BigDecimal.ZERO; // "Đã bao gồm"
+                                    insRow.isChild = true;
+                                    tourParent.children.add(insRow);
+                                }
+                                groupedItems.add(tourParent);
+
+                            } else if ("F&B".equalsIgnoreCase(fi.getSourceDepartment()) || (fi.getDescription() != null && fi.getDescription().toUpperCase().contains("ORDER #"))) {
+                                String desc = fi.getDescription();
+                                Long orderId = null;
+                                java.util.regex.Matcher m = java.util.regex.Pattern.compile("Order\\s*(?:#|số)?\\s*(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(desc);
+                                if (m.find()) {
+                                    try {
+                                        orderId = Long.parseLong(m.group(1));
+                                    } catch (Exception e) {}
+                                }
+
+                                com.kawai.models.FoodOrder foodOrder = null;
+                                if (orderId != null) {
+                                    foodOrder = foodOrderRepository.findById(orderId).orElse(null);
+                                }
+
+                                if (foodOrder != null && foodOrder.getDetails() != null && !foodOrder.getDetails().isEmpty()) {
+                                    java.math.BigDecimal dishesTotal = java.math.BigDecimal.ZERO;
+                                    for (com.kawai.models.FoodOrderDetail od : foodOrder.getDetails()) {
+                                        dishesTotal = dishesTotal.add(od.getTotalPrice());
+                                    }
+
+                                    TempItem fnbParent = new TempItem();
+                                    fnbParent.date = dateStr;
+                                    fnbParent.description = "F&B CHARGES (Order #" + orderId + ")";
+                                    fnbParent.qty = 1;
+                                    fnbParent.unitVal = dishesTotal;
+                                    fnbParent.amount = dishesTotal;
+                                    fnbParent.isParentFnb = true;
+
+                                    for (com.kawai.models.FoodOrderDetail od : foodOrder.getDetails()) {
+                                        TempItem dishRow = new TempItem();
+                                        dishRow.description = "- " + (od.getMenuItem() != null ? od.getMenuItem().getItemName() : "Món ăn");
+                                        dishRow.qty = od.getQuantity();
+                                        dishRow.unitVal = od.getPriceAtOrder();
+                                        dishRow.amount = od.getTotalPrice();
+                                        dishRow.isChild = true;
+                                        fnbParent.children.add(dishRow);
+                                    }
+                                    groupedItems.add(fnbParent);
+                                } else {
+                                    TempItem normalRow = new TempItem();
+                                    normalRow.key = desc + "_" + fi.getAmount();
+                                    normalRow.date = dateStr;
+                                    normalRow.description = desc;
+                                    normalRow.qty = 1;
+                                    normalRow.unitVal = fi.getAmount();
+                                    normalRow.amount = fi.getAmount();
+                                    groupedItems.add(normalRow);
+                                }
+                            } else {
+                                // Room or Others
+                                String desc = fi.getDescription() != null ? fi.getDescription() : "";
+                                desc = desc.replaceAll("(?i)\\s*\\(Expected\\)", "").replaceAll("(?i)\\s*Expected\\s*", "").trim();
+
+                                boolean isMainRoomCharge = "Room".equalsIgnoreCase(fi.getSourceDepartment()) 
+                                        && !desc.contains("surcharge") 
+                                        && !desc.contains("phụ phí") 
+                                        && !desc.contains("nâng hạng");
+
+                                int itemQty = isMainRoomCharge ? (int) nights : 1;
+                                java.math.BigDecimal itemUnitVal = isMainRoomCharge 
+                                        ? fi.getAmount().divide(java.math.BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP)
+                                        : fi.getAmount();
+
+                                String key = desc + "_" + itemUnitVal;
+
+                                TempItem existing = null;
+                                for (TempItem g : groupedItems) {
+                                    if (key.equals(g.key) && !g.isChild && !g.isParentTour && !g.isParentFnb && !g.isParentMinibar) {
+                                        existing = g;
+                                        break;
+                                    }
+                                }
+
+                                if (existing != null) {
+                                    existing.qty += itemQty;
+                                    existing.amount = existing.amount.add(fi.getAmount());
+                                } else {
+                                    TempItem normalRow = new TempItem();
+                                    normalRow.key = key;
+                                    normalRow.date = dateStr;
+                                    normalRow.description = desc;
+                                    normalRow.qty = itemQty;
+                                    normalRow.unitVal = itemUnitVal;
+                                    normalRow.amount = fi.getAmount();
+                                    groupedItems.add(normalRow);
+                                }
+                            }
+                        }
                     }
+
+                    // Sum up computed subtotal from non-child grouped items
+                    java.math.BigDecimal computedSubtotal = java.math.BigDecimal.ZERO;
+                    String lastDateStr = "";
+                    for (TempItem g : groupedItems) {
+                        computedSubtotal = computedSubtotal.add(g.amount);
+                        
+                        // Map grouped items into final variables list for template
+                        String displayDate = g.date.equals(lastDateStr) ? "" : g.date;
+                        if (!g.date.isEmpty()) {
+                            lastDateStr = g.date;
+                        }
+
+                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        map.put("date", displayDate);
+                        map.put("description", g.description);
+                        map.put("qty", String.valueOf(g.qty));
+                        map.put("unitPrice", formatVnd(g.unitVal));
+                        map.put("amount", formatVnd(g.amount));
+                        map.put("isChild", false);
+                        items.add(map);
+
+                        if (g.children != null) {
+                            for (TempItem c : g.children) {
+                                java.util.Map<String, Object> childMap = new java.util.HashMap<>();
+                                childMap.put("date", "");
+                                childMap.put("description", c.description);
+                                childMap.put("qty", String.valueOf(c.qty));
+                                
+                                String formattedVal = c.unitVal.compareTo(java.math.BigDecimal.ZERO) == 0 ? "Miễn phí" : formatVnd(c.unitVal);
+                                String formattedAmt = formatVnd(c.amount);
+                                if (c.description.contains("bảo hiểm du lịch")) {
+                                    formattedVal = formatVnd(c.unitVal);
+                                    formattedAmt = "Đã bao gồm";
+                                }
+
+                                childMap.put("unitPrice", formattedVal);
+                                childMap.put("amount", formattedAmt);
+                                childMap.put("isChild", true);
+                                items.add(childMap);
+                            }
+                        }
+                    }
+
+                    java.math.BigDecimal computedVat = computedSubtotal.multiply(new java.math.BigDecimal("0.10")).setScale(0, java.math.RoundingMode.HALF_UP);
+                    java.math.BigDecimal computedTotal = computedSubtotal.add(computedVat).subtract(depositAmount);
+
+                    ctx.setVariable("subtotal", formatVnd(computedSubtotal));
+                    ctx.setVariable("vatAmount", formatVnd(computedVat));
+                    ctx.setVariable("depositAmount", formatVnd(depositAmount));
+                    ctx.setVariable("totalAmount", formatVnd(computedTotal));
+                } else {
+                    // Fallback to defaults
+                    ctx.setVariable("subtotal", formatVnd(invoice.getSubtotalBeforeVat()));
+                    ctx.setVariable("vatAmount", formatVnd(invoice.getVatAmount()));
+                    ctx.setVariable("depositAmount", formatVnd(depositAmount));
+                    ctx.setVariable("totalAmount", formatVnd(invoice.getTotalAmount().subtract(depositAmount)));
                 }
             }
 
             ctx.setVariable("roomNumber", roomNumber.trim());
+            ctx.setVariable("guestCount", guestCount);
+            ctx.setVariable("checkInDate", checkInDateStr);
+            ctx.setVariable("checkOutDate", checkOutDateStr);
             ctx.setVariable("items", items);
             ctx.setVariable("paymentMethod", paymentMethod);
-            ctx.setVariable("subtotal", formatVnd(invoice.getSubtotalBeforeVat()));
             ctx.setVariable("vatAmount", formatVnd(invoice.getVatAmount()));
             ctx.setVariable("depositAmount", formatVnd(depositAmount));
             ctx.setVariable("totalAmount", formatVnd(invoice.getTotalAmount().subtract(depositAmount)));
+            ctx.setVariable("issuedDate", invoice.getIssuedAt() != null ? invoice.getIssuedAt().format(DATE_FMT) : java.time.LocalDate.now().format(DATE_FMT));
 
             String html = templateEngine.process("email/invoice", ctx);
             sendEmail(toEmail, "Hóa đơn thanh toán - " + invoice.getInvoiceNumber() + " | Hòa Niên Retreat & Resort",
@@ -527,6 +899,15 @@ public class EmailServiceImpl implements EmailService {
     }
 
     public void sendEmail(String toEmail, String subject, String htmlContent) {
+        // Write a debug copy to a local file in the project directory for immediate verification
+        try {
+            java.nio.file.Path debugPath = java.nio.file.Paths.get("debug_email_invoice.html");
+            java.nio.file.Files.writeString(debugPath, htmlContent, java.nio.charset.StandardCharsets.UTF_8);
+            logger.info("[DEBUG] Đã ghi nội dung email ra file cục bộ để kiểm tra: {}", debugPath.toAbsolutePath());
+        } catch (Exception e) {
+            logger.error("[DEBUG] Không thể ghi file email debug: {}", e.getMessage());
+        }
+
         boolean sentViaSmtp = false;
 
         if (mailSender != null) {
@@ -735,7 +1116,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     @org.springframework.scheduling.annotation.Async
     public void sendCancelTableBooking(com.kawai.models.TableReservation reservation,
-            com.kawai.models.Customer customer) {
+            com.kawai.models.Customer customer, String cancelledBy, String reason) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank())
             return;
         try {
@@ -746,11 +1127,45 @@ public class EmailServiceImpl implements EmailService {
                     reservation.getReserveTime() != null ? reservation.getReserveTime().toString() : "");
             ctx.setVariable("reservationDate",
                     reservation.getReserveDate() != null ? reservation.getReserveDate().format(DATE_FMT) : "");
+            ctx.setVariable("tableNumber", reservation.getTable() != null ? reservation.getTable().getTableNumber() : "N/A");
+            ctx.setVariable("guestCount", reservation.getPartySize() != null ? reservation.getPartySize() : 0);
+            ctx.setVariable("cancelledBy", cancelledBy != null && !cancelledBy.isBlank() ? cancelledBy : "Khách hàng");
+            ctx.setVariable("reason", reason != null && !reason.isBlank() ? reason : "Không có");
 
-            String html = templateEngine.process("email/cancel-booking", ctx);
-            sendEmail(customer.getEmail(), "Thông báo hủy đặt bàn #" + reservation.getId(), html);
+            String html = templateEngine.process("email/cancel-table-booking", ctx);
+            sendEmail(customer.getEmail(), "Xác nhận Hủy Đặt Bàn #" + reservation.getId(), html);
         } catch (Exception e) {
             logger.error("Lỗi gửi email hủy đặt bàn #{}: {}", reservation.getId(), e.getMessage());
+        }
+    }
+
+    @Override
+    @org.springframework.scheduling.annotation.Async
+    public void sendCancelFoodOrderEmail(com.kawai.models.FoodOrder order, com.kawai.models.Customer customer, String cancelledBy, String reason, java.math.BigDecimal refundAmount, String bankName, String accountName, String accountLast3) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank())
+            return;
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            ctx.setVariable("customerName", customer.getFullName());
+            ctx.setVariable("orderId", order.getId());
+            ctx.setVariable("cancelTime", java.time.LocalDateTime.now().format(fmt));
+            ctx.setVariable("orderTime", order.getOrderTime() != null ? order.getOrderTime().format(fmt) : "");
+            ctx.setVariable("totalAmount", order.getTotalAmount());
+            ctx.setVariable("cancelledBy", cancelledBy != null && !cancelledBy.isBlank() ? cancelledBy : "Khách hàng");
+            ctx.setVariable("reason", reason != null && !reason.isBlank() ? reason : "Không có");
+            
+            ctx.setVariable("refundAmount", refundAmount);
+            if (refundAmount != null && refundAmount.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                ctx.setVariable("bankName", bankName != null ? bankName : "N/A");
+                ctx.setVariable("accountName", accountName != null ? accountName : "N/A");
+                ctx.setVariable("accountLast3", accountLast3 != null ? accountLast3 : "N/A");
+            }
+
+            String html = templateEngine.process("email/cancel-food-order", ctx);
+            sendEmail(customer.getEmail(), "[HoaNien Resort] Xác nhận hủy đơn hàng Dịch vụ Ẩm thực #ORD-" + order.getId(), html);
+        } catch (Exception e) {
+            logger.error("Lỗi gửi email hủy đơn hàng #{}: {}", order.getId(), e.getMessage());
         }
     }
 
@@ -855,7 +1270,8 @@ public class EmailServiceImpl implements EmailService {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
             String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
             String rawTourName = booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                    ? booking.getSchedule().getTour().getTourName() : "Hành trình trải nghiệm";
+                    ? booking.getSchedule().getTour().getTourName()
+                    : "Hành trình trải nghiệm";
             ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
             ctx.setVariable("tourName", java.text.Normalizer.normalize(rawTourName, java.text.Normalizer.Form.NFC));
             ctx.setVariable("bookingId", booking.getId());
@@ -881,29 +1297,32 @@ public class EmailServiceImpl implements EmailService {
         try {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
             String rawCustName = customer.getFullName() != null ? customer.getFullName() : "Quý khách";
-            String rawTourName = review.getTourBooking() != null && review.getTourBooking().getSchedule() != null && review.getTourBooking().getSchedule().getTour() != null
-                    ? review.getTourBooking().getSchedule().getTour().getTourName() : "Hành trình trải nghiệm";
-            
+            String rawTourName = review.getTourBooking() != null && review.getTourBooking().getSchedule() != null
+                    && review.getTourBooking().getSchedule().getTour() != null
+                            ? review.getTourBooking().getSchedule().getTour().getTourName()
+                            : "Hành trình trải nghiệm";
+
             ctx.setVariable("customerName", java.text.Normalizer.normalize(rawCustName, java.text.Normalizer.Form.NFC));
             ctx.setVariable("tourName", java.text.Normalizer.normalize(rawTourName, java.text.Normalizer.Form.NFC));
-            
+
             String replierName = "Quản trị viên";
             if (review.getRepliedBy() != null) {
                 replierName = review.getRepliedBy().getFullName();
             } else if (review.getTourBooking() != null && review.getTourBooking().getSchedule() != null) {
                 Long scheduleId = review.getTourBooking().getSchedule().getId();
-                java.util.List<com.kawai.models.TourStaffAssignment> assigns = tourStaffAssignmentRepository.findByScheduleId(scheduleId);
+                java.util.List<com.kawai.models.TourStaffAssignment> assigns = tourStaffAssignmentRepository
+                        .findByScheduleId(scheduleId);
                 if (assigns != null && !assigns.isEmpty()) {
                     com.kawai.models.TourStaffAssignment lead = assigns.stream()
-                        .filter(a -> Boolean.TRUE.equals(a.getIsLeadGuide()))
-                        .findFirst()
-                        .orElse(assigns.get(0));
+                            .filter(a -> Boolean.TRUE.equals(a.getIsLeadGuide()))
+                            .findFirst()
+                            .orElse(assigns.get(0));
                     if (lead.getEmployee() != null) {
                         replierName = lead.getEmployee().getFullName();
                     }
                 }
             }
-            
+
             ctx.setVariable("replierName", replierName);
             ctx.setVariable("reviewText", review.getReviewText());
             ctx.setVariable("replyText", review.getReplyText());
@@ -966,23 +1385,24 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private String getGuideForSchedule(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "NguynNgoc";
-        
+        if (sched == null)
+            return "NguynNgoc";
+
         if (sched.getId() != null && sched.getId() < 100L) {
             return getPreferredGuide(sched);
         }
-        
+
         java.time.LocalDate depDate = sched.getDepartureDate();
         java.time.LocalTime depTime = sched.getDepartureTime();
-        
+
         if (depDate == null || depTime == null) {
             return "NguynNgoc";
         }
-        
+
         if (tourScheduleRepository == null) {
             return "NguynNgoc";
         }
-        
+
         java.util.List<com.kawai.models.TourSchedule> allSchedules = tourScheduleRepository.findAll();
         java.util.List<com.kawai.models.TourSchedule> conflictSchedules = new java.util.ArrayList<>();
         for (com.kawai.models.TourSchedule s : allSchedules) {
@@ -995,14 +1415,14 @@ public class EmailServiceImpl implements EmailService {
             Long id2 = s2.getId() != null ? s2.getId() : 0L;
             return id1.compareTo(id2);
         });
-        
+
         java.util.Set<String> taken = new java.util.HashSet<>();
         for (com.kawai.models.TourSchedule s : conflictSchedules) {
             if (s.getId() != null && s.getId() < 100L) {
                 taken.add(getPreferredGuide(s));
             }
         }
-        
+
         String assigned = null;
         for (com.kawai.models.TourSchedule s : conflictSchedules) {
             if (s.getId() != null && s.getId() < 100L) {
@@ -1011,7 +1431,7 @@ public class EmailServiceImpl implements EmailService {
                 }
                 continue;
             }
-            
+
             String g;
             if (!taken.contains("NguynNgoc")) {
                 g = "NguynNgoc";
@@ -1021,18 +1441,19 @@ public class EmailServiceImpl implements EmailService {
                 g = "Hoàng Nam";
             }
             taken.add(g);
-            
+
             if (s.getId() != null && s.getId().equals(sched.getId())) {
                 assigned = g;
                 break;
             }
         }
-        
+
         return assigned != null ? assigned : "NguynNgoc";
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "Ngọc Lan";
+        if (sched == null)
+            return "Ngọc Lan";
         if (sched.getId() != null && sched.getId() < 100L) {
             if (sched.getId() % 2 == 0) {
                 return "Ngọc Lan";
@@ -1133,6 +1554,32 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @Async
+    public void sendRoomNoShowEmail(com.kawai.models.RoomBooking booking, com.kawai.models.Customer customer) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
+            ctx.setVariable("customerName", customer.getFullName());
+
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String checkInDateStr = booking.getCheckInDate() != null ? booking.getCheckInDate().format(formatter)
+                    : "N/A";
+            String cancelDateStr = java.time.LocalDate.now().format(formatter);
+
+            ctx.setVariable("checkInDate", checkInDateStr);
+            ctx.setVariable("cancelDate", cancelDateStr);
+
+            String htmlContent = templateEngine.process("email/no-show-room-booking", ctx);
+            sendEmail(customer.getEmail(), "[HOANIEN] Thông báo hủy đặt phòng - Khách không đến", htmlContent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
     public void sendWalkInCheckInEmail(com.kawai.models.RoomBooking booking, com.kawai.models.RoomBookingDetail detail,
             com.kawai.models.Customer customer, boolean isNewAccount, String username, String password) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
@@ -1164,11 +1611,13 @@ public class EmailServiceImpl implements EmailService {
             e.printStackTrace();
         }
     }
+
     @org.springframework.scheduling.annotation.Async
     @Override
     public void sendProfileUpdateEmail(com.kawai.models.Customer customer) {
         if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
-            logger.warn("Bỏ qua gửi email cập nhật hồ sơ: customer {} không có email", customer != null ? customer.getId() : "null");
+            logger.warn("Bỏ qua gửi email cập nhật hồ sơ: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
             return;
         }
         try {
@@ -1187,7 +1636,8 @@ public class EmailServiceImpl implements EmailService {
 
     @org.springframework.scheduling.annotation.Async
     @Override
-    public void sendWeeklyScheduleEmail(String toEmail, String employeeName, java.util.List<com.kawai.models.StaffSchedule> schedules) {
+    public void sendWeeklyScheduleEmail(String toEmail, String employeeName,
+            java.util.List<com.kawai.models.StaffSchedule> schedules) {
         try {
             org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context();
             ctx.setVariable("employeeName", employeeName);
@@ -1199,4 +1649,72 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    private static class TempItem {
+        String key = "";
+        String date = "";
+        String description = "";
+        int qty = 1;
+        java.math.BigDecimal unitVal = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal amount = java.math.BigDecimal.ZERO;
+        boolean isChild = false;
+        boolean isParentTour = false;
+        boolean isParentFnb = false;
+        boolean isParentMinibar = false;
+        java.util.List<TempItem> children = new java.util.ArrayList<>();
+    }
+
+    @org.springframework.scheduling.annotation.Async
+    @Override
+    public void sendRoomBookingConfirmation(com.kawai.models.RoomBooking booking, com.kawai.models.Customer customer) {
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            logger.warn("Bỏ qua gửi email xác nhận đặt phòng: customer {} không có email",
+                    customer != null ? customer.getId() : "null");
+            return;
+        }
+
+        try {
+            long numberOfNights = 0;
+            if (booking.getCheckInDate() != null && booking.getCheckOutDate() != null) {
+                numberOfNights = java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckInDate(),
+                        booking.getCheckOutDate());
+                if (numberOfNights < 1)
+                    numberOfNights = 1;
+            }
+
+            int numberOfGuests = 0;
+            java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository
+                    .findByRoomBookingId(booking.getId());
+            if (details != null && !details.isEmpty()) {
+                for (com.kawai.models.RoomBookingDetail detail : details) {
+                    if (detail.getNumberOfAdults() != null)
+                        numberOfGuests += detail.getNumberOfAdults();
+                    if (detail.getNumberOfChildren() != null)
+                        numberOfGuests += detail.getNumberOfChildren();
+                }
+            }
+            if (numberOfGuests == 0)
+                numberOfGuests = 1; // Default if not found
+
+            org.thymeleaf.context.Context ctx = new org.thymeleaf.context.Context(new java.util.Locale("vi", "VN"));
+            ctx.setVariable("customerName", customer.getFullName());
+            ctx.setVariable("bookingId", booking.getId());
+            ctx.setVariable("checkInDate",
+                    booking.getCheckInDate() != null ? booking.getCheckInDate().format(DATE_FMT) : "");
+            ctx.setVariable("checkOutDate",
+                    booking.getCheckOutDate() != null ? booking.getCheckOutDate().format(DATE_FMT) : "");
+            ctx.setVariable("numberOfNights", numberOfNights);
+            ctx.setVariable("numberOfGuests", numberOfGuests);
+            ctx.setVariable("depositAmount", formatVnd(booking.getDepositAmount()));
+            ctx.setVariable("resortPhone", resortPhone);
+            ctx.setVariable("resortWebsite", resortWebsite);
+
+            String html = templateEngine.process("email/room-booking-confirmation", ctx);
+            sendEmail(customer.getEmail(), "Xác nhận đặt phòng thành công | Hòa Niên Retreat & Resort", html);
+            logger.info("Gửi email xác nhận đặt phòng thành công → {} (booking #{})", customer.getEmail(),
+                    booking.getId());
+        } catch (Exception e) {
+            logger.error("Lỗi khi gửi email xác nhận đặt phòng cho booking #{}: {}", booking.getId(), e.getMessage(),
+                    e);
+        }
+    }
 }

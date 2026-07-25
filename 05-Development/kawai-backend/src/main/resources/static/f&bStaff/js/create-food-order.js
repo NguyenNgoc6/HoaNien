@@ -94,13 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dineInFields.style.display = 'grid';
         roomSvcFields.style.display = 'none';
 
-        // Show normal payment options
-        paymentSection.innerHTML = `
-          <label class="form-label">Thanh toán</label>
-          <div class="room-charge-info">
-            <div class="rc-row"><span class="rc-label">Hình thức</span><span class="rc-val">Thanh toán tại quầy</span></div>
-          </div>
-        `;
+        paymentSection.style.display = 'none';
         const btnSaveDraft = document.getElementById('btn-save-draft');
         if (btnSaveDraft) btnSaveDraft.style.display = 'none';
       } else {
@@ -109,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (feeLabel) feeLabel.textContent = 'Phí dịch vụ (5%)';
         dineInFields.style.display = 'none';
         roomSvcFields.style.display = 'grid';
+
+        paymentSection.style.display = 'block';
 
         // Show charge to room info
         paymentSection.innerHTML = `

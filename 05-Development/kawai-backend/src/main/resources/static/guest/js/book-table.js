@@ -23,14 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Flatpickr for dates
     flatpickrFilterDate = flatpickr("#filterDate", {
         dateFormat: "Y-m-d",
-        minDate: "today",
-        maxDate: new Date().fp_incr(7)
+        minDate: minDateVal,
+        maxDate: maxDateVal || new Date().fp_incr(7),
+        defaultDate: "today"
     });
 
     flatpickrReserveDate = flatpickr("#reserveDate", {
         dateFormat: "Y-m-d",
-        minDate: "today",
-        maxDate: new Date().fp_incr(7)
+        minDate: minDateVal,
+        maxDate: maxDateVal || new Date().fp_incr(7),
+        defaultDate: "today"
     });
 
     // Initialize Flatpickr for times (24-hour format)
@@ -41,8 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
         time_24hr: true
     };
 
-    flatpickrFilterStart = flatpickr("#filterStart", timeConfig);
-    flatpickrFilterEnd = flatpickr("#filterEnd", timeConfig);
+    const now = new Date();
+    const currentHour = String(now.getHours()).padStart(2, '0');
+    const currentMin = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${currentHour}:${currentMin}`;
+
+    flatpickrFilterStart = flatpickr("#filterStart", Object.assign({}, timeConfig, { defaultDate: currentTimeStr }));
+    flatpickrFilterEnd = flatpickr("#filterEnd", Object.assign({}, timeConfig, { defaultDate: "23:59" }));
     flatpickrStartTime = flatpickr("#startTime", timeConfig);
     flatpickrEndTime = flatpickr("#endTime", timeConfig);
 });
@@ -104,7 +111,7 @@ async function checkAvailability() {
     }
 
     if (filterStart >= filterEnd) {
-        alert("Giờ kết thúc phải lớn hơn Giờ bắt đầu.");
+        alert("Giờ kết thúc phải lớn hơn giờ bắt đầu.");
         return;
     }
 
@@ -200,11 +207,17 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     let endMins = endH * 60 + endM;
 
     if (endMins <= startMins) {
-        endMins += 24 * 60;
+        alert('Giờ kết thúc phải lớn hơn giờ bắt đầu.');
+        return;
     }
 
-    if (endMins - startMins > 12 * 60) {
-        alert('Thời gian đặt bàn quá dài hoặc giờ kết thúc không hợp lệ.');
+    if (endMins > 23 * 60) {
+        alert('Nhà hàng đóng cửa lúc 23:00, quý khách vui lòng chọn giờ kết thúc sớm hơn.');
+        return;
+    }
+
+    if (endMins - startMins < 30) {
+        alert('Thời gian đặt bàn tối thiểu là 30 phút.');
         return;
     }
 

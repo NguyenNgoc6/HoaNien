@@ -264,16 +264,16 @@ window.escalateDirtyRoom = function (roomNumber, assignAfter) {
                         assignBtn.style.cursor = 'pointer';
                     }
                 }
+                try {
+                    const pendingRaw = sessionStorage.getItem('walkInPendingCleanRooms');
+                    const pendingRooms = pendingRaw ? JSON.parse(pendingRaw) : {};
+                    pendingRooms[roomNumber] = true;
+                    sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
+                } catch (e) { }
 
                 if (assignAfter) {
                     const selectedType = typeSelect.value;
                     const selectedRoomOpt = roomSelect.options[roomSelect.selectedIndex];
-                    try {
-                        const pendingRaw = sessionStorage.getItem('walkInPendingCleanRooms');
-                        const pendingRooms = pendingRaw ? JSON.parse(pendingRaw) : {};
-                        pendingRooms[roomNumber] = true;
-                        sessionStorage.setItem('walkInPendingCleanRooms', JSON.stringify(pendingRooms));
-                    } catch (e) { }
                     proceedAssignRoom(typeSelect, selectedType, roomNumber, selectedRoomOpt);
                 } else {
                     roomSelect.value = "";
@@ -654,20 +654,14 @@ function addDependent() {
     });
 
     if (age >= 12) {
-        if (actualAdultCount >= maxTotalAdults) {
-            showToast(`Số lượng Người Lớn đã đạt sức chứa tối đa (${maxTotalAdults}) của các phòng!`, 'error');
-            return;
-        }
         if (actualAdultCount >= expectedTotalAdults) {
-            showToast(`Khách thêm vượt tiêu chuẩn đơn (${expectedTotalAdults}), hệ thống sẽ tự động tính phụ thu.`, 'warning');
+            showToast(`Số lượng Người Lớn đã đạt tiêu chuẩn (${expectedTotalAdults}) của đơn! Không thể thêm thừa.`, 'error');
+            return;
         }
     } else {
-        if (actualChildCount >= maxTotalChildren) {
-            showToast(`Số lượng Trẻ Em đã đạt sức chứa tối đa (${maxTotalChildren}) của các phòng!`, 'error');
-            return;
-        }
         if (actualChildCount >= expectedTotalChildren) {
-            showToast(`Trẻ em thêm vượt tiêu chuẩn đơn (${expectedTotalChildren}), hệ thống sẽ tự động tính phụ thu.`, 'warning');
+            showToast(`Số lượng Trẻ Em đã đạt tiêu chuẩn (${expectedTotalChildren}) của đơn! Không thể thêm thừa.`, 'error');
+            return;
         }
     }
 
@@ -1165,30 +1159,26 @@ function handleQrScan(val, target, inputEl) {
             document.querySelectorAll('#dependentsList tr').forEach(tr => {
                 if (tr.querySelector('input')) {
                     const trDob = tr.getAttribute('data-dob');
-                    const trAge = calculateAge(trDob);
-                    if (trAge >= 12) actualAdultCount++;
-                    else actualChildCount++;
+                    if (trDob) {
+                        const trAge = calculateAge(trDob);
+                        if (trAge >= 12) actualAdultCount++;
+                        else actualChildCount++;
+                    }
                 }
             });
 
             const newAge = calculateAge(dob);
             if (newAge >= 12) {
-                if (actualAdultCount >= maxTotalAdults) {
-                    showToast(`Số lượng Người Lớn đã đạt sức chứa tối đa (${maxTotalAdults}) của các phòng!`, 'error');
+                if (actualAdultCount >= expectedTotalAdults) {
+                    showToast(`Số lượng Người Lớn đã đạt tiêu chuẩn (${expectedTotalAdults}) của đơn! Không thể thêm thừa.`, 'error');
                     if (inputEl) inputEl.value = '';
                     return;
-                }
-                if (actualAdultCount >= expectedTotalAdults) {
-                    showToast(`Khách thêm vượt tiêu chuẩn đơn (${expectedTotalAdults}), hệ thống sẽ tự động tính phụ thu.`, 'warning');
                 }
             } else {
-                if (actualChildCount >= maxTotalChildren) {
-                    showToast(`Số lượng Trẻ Em đã đạt sức chứa tối đa (${maxTotalChildren}) của các phòng!`, 'error');
+                if (actualChildCount >= expectedTotalChildren) {
+                    showToast(`Số lượng Trẻ Em đã đạt tiêu chuẩn (${expectedTotalChildren}) của đơn! Không thể thêm thừa.`, 'error');
                     if (inputEl) inputEl.value = '';
                     return;
-                }
-                if (actualChildCount >= expectedTotalChildren) {
-                    showToast(`Trẻ em thêm vượt tiêu chuẩn đơn (${expectedTotalChildren}), hệ thống sẽ tự động tính phụ thu.`, 'warning');
                 }
             }
 

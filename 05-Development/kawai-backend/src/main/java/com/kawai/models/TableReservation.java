@@ -1,10 +1,13 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.math.BigDecimal;
 @Entity @Table(name="Table_Reservations") @Data
+@Audited
 public class TableReservation {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="reservation_id") private Long id;
     @ManyToOne @JoinColumn(name="customer_id", nullable=false) private Customer customer;

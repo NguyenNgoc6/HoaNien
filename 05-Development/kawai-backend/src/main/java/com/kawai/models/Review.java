@@ -1,8 +1,11 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 @Entity @Table(name="Reviews") @Data
+@Audited
 public class Review {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="review_id") private Long id;
     @ManyToOne @JoinColumn(name="customer_id", nullable=false) private Customer customer;

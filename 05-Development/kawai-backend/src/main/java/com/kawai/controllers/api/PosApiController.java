@@ -84,11 +84,24 @@ public class PosApiController {
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_ORDER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/orders/charge-to-room/verify")
+    public ResponseEntity<?> verifyRoomForCharge(@org.springframework.web.bind.annotation.RequestParam String roomNumber) {
+        try {
+            java.util.Map<String, Object> data = posService.verifyRoomForCharge(roomNumber);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Lỗi xác thực"));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_ORDER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @PostMapping("/orders/{id}/pay")
 
-    public ResponseEntity<?> payOrder(@PathVariable Long id) {
+    public ResponseEntity<?> payOrder(@PathVariable Long id, 
+                                      @org.springframework.web.bind.annotation.RequestParam(required = false) String paymentType, 
+                                      @org.springframework.web.bind.annotation.RequestParam(required = false) String roomNumber) {
         try {
-            posService.payOrder(id);
+            posService.payOrder(id, paymentType, roomNumber);
             return ResponseEntity.ok().body(Map.of("status", "success", "message", "Thanh toán thành công"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,9 +166,9 @@ public class PosApiController {
     @PostMapping("/orders/{id}/cancel")
 
     public ResponseEntity<?> cancelOrder(@PathVariable Long id,
-            @RequestBody(required = false) com.kawai.dtos.CancelOrderRequestDTO dto) {
+            @RequestBody(required = false) com.kawai.dto.CancelOrderRequestDTO dto) {
         try {
-            posService.cancelOrder(id, dto);
+            posService.cancelOrder(id, dto, "Nhân viên F&B", null);
             return ResponseEntity.ok().body(Map.of("status", "success", "message", "Cập nhật trạng thái thành công"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,7 +186,7 @@ public class PosApiController {
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_GUEST', 'ROLE_CUSTOMER')")
     @PostMapping("/guest/orders/{id}/cancel")
     public ResponseEntity<?> guestCancelOrder(@PathVariable Long id,
-            @RequestBody(required = false) com.kawai.dtos.CancelOrderRequestDTO dto,
+            @RequestBody(required = false) com.kawai.dto.CancelOrderRequestDTO dto,
             java.security.Principal principal) {
         try {
             if (principal == null) {

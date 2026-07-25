@@ -101,6 +101,7 @@ public class ProfileController {
         if (customer != null && customer.getMembershipTier() == null) {
             com.kawai.models.MembershipTier defaultTier = new com.kawai.models.MembershipTier();
             defaultTier.setTierName("REGULAR");
+            defaultTier.setCreditLimit(new java.math.BigDecimal("5000000.00"));
             customer.setMembershipTier(defaultTier);
         }
         model.addAttribute("customer", customer);
@@ -212,8 +213,11 @@ public class ProfileController {
                 visibleDetailsMap.put(rb.getId(), visibleDetails);
 
                 for (RoomBookingDetail d : visibleDetails) {
-                    java.math.BigDecimal subLimit = d.getSubCreditLimit() != null ? d.getSubCreditLimit()
-                            : java.math.BigDecimal.ZERO;
+                    java.math.BigDecimal subLimit = (d.getSubCreditLimit() != null && d.getSubCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0)
+                            ? d.getSubCreditLimit()
+                            : (rb.getCreditLimit() != null && rb.getCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0
+                                    ? rb.getCreditLimit()
+                                    : new java.math.BigDecimal("5000000.00"));
                     List<com.kawai.models.FolioItem> folioItems = folioItemRepository
                             .findByRoomBookingDetailId(d.getId());
 
@@ -234,6 +238,7 @@ public class ProfileController {
             model.addAttribute("activeStays", activeStays);
             model.addAttribute("hasAttachedToursMap", hasAttachedToursMap);
             model.addAttribute("hasRefundableItemsMap", hasRefundableItemsMap);
+
 
             List<TourBooking> tourBookings = bookingRepository.findByCustomerId(customer.getId()).stream()
                     .filter(b -> b instanceof TourBooking)
@@ -317,6 +322,7 @@ public class ProfileController {
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String cccd,
+            @RequestParam(required = false) String birthDate,
             RedirectAttributes redirectAttributes) {
         if (!com.kawai.utils.SecurityUtils.isCustomerLoggedIn(authentication)) {
             return "redirect:/booking";
@@ -335,10 +341,10 @@ public class ProfileController {
             if (phone != null && !phone.trim().isEmpty()) {
                 if (!com.kawai.utils.ValidationUtils.isValidPhone(phone)) {
                     redirectAttributes.addFlashAttribute("error",
-                            "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0)");
+                            "Số điện thoại không hợp lệ (Phải gồm 10 số và bắt đầu bằng 0 hoặc +84)");
                     return "redirect:/profile";
                 }
-                customer.setPhone(phone);
+                customer.setPhone(com.kawai.utils.ValidationUtils.normalizePhone(phone));
             }
             if (cccd != null && !cccd.trim().isEmpty() && !"********".equals(cccd)) {
                 if (!com.kawai.utils.ValidationUtils.isValidDocument(cccd)) {
@@ -347,6 +353,14 @@ public class ProfileController {
                     return "redirect:/profile";
                 }
                 customer.setCccdPassportEncrypted(EncryptionUtils.encrypt(cccd.trim()));
+            }
+            if (birthDate != null && !birthDate.trim().isEmpty()) {
+                try {
+                    customer.setBirthDate(java.time.LocalDate.parse(birthDate));
+                } catch (Exception e) {
+                    redirectAttributes.addFlashAttribute("error", "Ngày sinh không đúng định dạng!");
+                    return "redirect:/profile";
+                }
             }
             customerRepository.save(customer);
 
@@ -375,7 +389,7 @@ public class ProfileController {
             if (passwordEncoder.matches(oldPassword, account.getPasswordHash())) {
                 account.setPasswordHash(passwordEncoder.encode(newPassword));
                 accountRepository.save(account);
-                redirectAttributes.addFlashAttribute("success", "Äá»•i máº­t kháº©u thÃ nh cÃ´ng!");
+                redirectAttributes.addFlashAttribute("success", "Đổi mật khẩu thành công!");
             } else {
                 redirectAttributes.addFlashAttribute("error", "Mật khẩu cũ không chính xác!");
             }

@@ -1,7 +1,10 @@
 package com.kawai.models;
+
+import org.hibernate.envers.Audited;
 import jakarta.persistence.*;
 import lombok.Data;
 @Entity @Table(name="Restaurant_Tables") @Data
+@Audited
 public class RestaurantTable {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="table_id") private Long id;
     @Column(name="table_number", unique=true, nullable=false) private String tableNumber;

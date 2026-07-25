@@ -23,25 +23,91 @@ public class AuditApiController {
     private final EntityManager entityManager;
     private final javax.sql.DataSource dataSource;
 
-    private Class<?> getEntityClass(String entityType) {
-        switch (entityType) {
-            case "accounts":
-            case "account":
-                return com.kawai.models.Account.class;
-            case "rooms":
-                return Room.class;
-            case "room-categories":
-                return RoomCategory.class;
-            case "menu-items":
-                return MenuItem.class;
-            case "tours":
-                return Tour.class;
-            case "promotions":
-                return Promotion.class;
-
-            default:
-                return null;
+    private String getDisplayString(Object obj) {
+        if (obj == null) return "";
+        if (obj instanceof String || obj instanceof Number || obj instanceof Boolean || obj instanceof Enum || obj instanceof java.time.temporal.Temporal) {
+            return obj.toString();
         }
+        try {
+            if (obj instanceof com.kawai.models.RoomCategory) return ((com.kawai.models.RoomCategory) obj).getCategoryName();
+            if (obj instanceof com.kawai.models.Account) return ((com.kawai.models.Account) obj).getUsername();
+            if (obj instanceof com.kawai.models.Customer) return ((com.kawai.models.Customer) obj).getFullName();
+            if (obj instanceof com.kawai.models.Employee) return ((com.kawai.models.Employee) obj).getFullName();
+            if (obj instanceof com.kawai.models.Room) return ((com.kawai.models.Room) obj).getRoomNumber();
+            if (obj instanceof com.kawai.models.Role) return ((com.kawai.models.Role) obj).getRoleName();
+            
+            try {
+                java.lang.reflect.Method getId = obj.getClass().getMethod("getId");
+                Object id = getId.invoke(obj);
+                return obj.getClass().getSimpleName().replaceAll("\\$HibernateProxy.*", "") + " (ID: " + id + ")";
+            } catch (Exception e) {}
+            
+            return obj.getClass().getSimpleName().replaceAll("\\$HibernateProxy.*", "");
+        } catch (Throwable e) {
+            return "Unreadable Reference";
+        }
+    }
+
+    private Class<?> getEntityClass(String entityType) {
+        if (entityType == null) return null;
+        String type = entityType.toLowerCase();
+        if (type.endsWith("s")) type = type.substring(0, type.length() - 1); // rough singularization
+
+        switch (type) {
+            case "account": return com.kawai.models.Account.class;
+            case "authorized_device": return com.kawai.models.AuthorizedDevice.class;
+            case "employee": return com.kawai.models.Employee.class;
+            case "role": return com.kawai.models.Role.class;
+            case "room_category": case "room-categorie": case "room_categorie": return com.kawai.models.RoomCategory.class;
+            case "room": return com.kawai.models.Room.class;
+            case "hotel_operation": return com.kawai.models.HotelOperation.class;
+            case "hotel_service": return com.kawai.models.HotelService.class;
+            case "menu_item": case "menu-item": return com.kawai.models.MenuItem.class;
+            case "promotion": return com.kawai.models.Promotion.class;
+            case "tour": return com.kawai.models.Tour.class;
+            case "membership-tier": case "membership_tier": return com.kawai.models.MembershipTier.class;
+            case "tour-location": case "tour_location": return com.kawai.models.TourLocation.class;
+            case "tour-price": case "tour_price": return com.kawai.models.TourPrice.class;
+            case "restaurant-table": case "restaurant_table": return com.kawai.models.RestaurantTable.class;
+            case "workflow": return com.kawai.models.Workflow.class;
+            case "food_order": case "order_food": return com.kawai.models.FoodOrder.class;
+            case "food_order_detail": return com.kawai.models.FoodOrderDetail.class;
+            case "booking": return com.kawai.models.Booking.class;
+            case "booking_service": return com.kawai.models.BookingService.class;
+            case "room_booking_detail": return com.kawai.models.RoomBookingDetail.class;
+            case "tour_booking": return com.kawai.models.TourBooking.class;
+            case "refund_request": return com.kawai.models.RefundRequest.class;
+            case "review": return com.kawai.models.Review.class;
+            case "customer": return com.kawai.models.Customer.class;
+            case "consolidated_invoice": case "invoice": return com.kawai.models.ConsolidatedInvoice.class;
+            case "payment_transaction": return com.kawai.models.PaymentTransaction.class;
+            case "folio_item": return com.kawai.models.FolioItem.class;
+            case "room_surcharge": return com.kawai.models.RoomSurcharge.class;
+            case "tour_schedule": return com.kawai.models.TourSchedule.class;
+            case "tour_itinerarie": case "tour_itinerary": return com.kawai.models.TourItinerary.class;
+            case "tour_itinerary_detail": return com.kawai.models.TourItineraryDetail.class;
+            case "tour_staff_assignment": return com.kawai.models.TourStaffAssignment.class;
+            case "tour_attendee": return com.kawai.models.TourAttendee.class;
+            case "daily_rate": return com.kawai.models.DailyRate.class;
+            case "shift": return com.kawai.models.Shift.class;
+            case "staff_schedule": return com.kawai.models.StaffSchedule.class;
+            case "table_reservation": return com.kawai.models.TableReservation.class;
+            case "fnb_daily_report": return com.kawai.models.FnBDailyReport.class;
+            case "run_itinerary_statu": case "run_itinerary_status": return com.kawai.models.RunItineraryStatus.class;
+        }
+
+        // Auto fallback reflection
+        String[] parts = entityType.split("_");
+        StringBuilder camelCase = new StringBuilder();
+        for (String p : parts) {
+            if(p.length() > 0) camelCase.append(p.substring(0, 1).toUpperCase()).append(p.substring(1));
+        }
+        String className = camelCase.toString();
+        if (className.endsWith("s")) className = className.substring(0, className.length() - 1);
+        try { return Class.forName("com.kawai.models." + className); } catch (Exception e) {}
+        try { return Class.forName("com.kawai.models." + camelCase.toString()); } catch (Exception e) {}
+
+        return null;
     }
 
     @GetMapping("/{entityType}/{id}/history")
@@ -53,15 +119,47 @@ public class AuditApiController {
             }
 
             AuditReader reader = AuditReaderFactory.get(entityManager);
-            List<Number> revisions = reader.getRevisions(clazz, id);
+            List<Number> revisions = new ArrayList<>();
+            try {
+                revisions = reader.getRevisions(clazz, id);
+            } catch (Exception e) {
+                // If not audited, it will throw NotAuditedException. We catch it and leave revisions empty.
+            }
 
             if (revisions == null || revisions.isEmpty()) {
+                Object currentEntity = entityManager.find(clazz, id);
+                if (currentEntity != null) {
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("revisionNumber", 1);
+                    map.put("timestamp", "--");
+                    map.put("username", "System (Dữ liệu gốc)");
+                    map.put("action", "CREATE");
+
+                    Map<String, Object> changes = new LinkedHashMap<>();
+                    for (var field : clazz.getDeclaredFields()) {
+                        if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                        field.setAccessible(true);
+                        String fieldName = field.getName();
+                        if (fieldName.equals("currentBookingDetailId") || fieldName.equals("id")) continue;
+                        try {
+                            Object newVal = field.get(currentEntity);
+                            String newStr = getDisplayString(newVal);
+                            changes.put(fieldName, Map.of("old", "-", "new", newStr));
+                        } catch (Exception ignored) {}
+                    }
+                    map.put("changes", changes);
+                    return ResponseEntity.ok(List.of(map));
+                }
                 return ResponseEntity.ok(Collections.emptyList());
             }
 
             List<Map<String, Object>> history = new ArrayList<>();
+            
+            // Limit to the most recent 5 revisions to improve performance and UI smoothness
+            int limit = 5;
+            int startIdx = Math.max(0, revisions.size() - limit);
 
-            for (int i = 0; i < revisions.size(); i++) {
+            for (int i = startIdx; i < revisions.size(); i++) {
                 Number rev = revisions.get(i);
                 Number prevRev = (i > 0) ? revisions.get(i - 1) : null;
 
@@ -88,6 +186,7 @@ public class AuditApiController {
                     Map<String, Object> changes = new LinkedHashMap<>();
                     if (entity != null) {
                         for (var field : clazz.getDeclaredFields()) {
+                            if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
                             field.setAccessible(true);
                             String fieldName = field.getName();
                             if (fieldName.equals("currentBookingDetailId") || fieldName.equals("id")) {
@@ -97,23 +196,8 @@ public class AuditApiController {
                                 Object newVal = field.get(entity);
                                 Object oldVal = prevEntity != null ? field.get(prevEntity) : null;
 
-                                String newStr = "";
-                                if (newVal != null) {
-                                    if (newVal instanceof com.kawai.models.RoomCategory) {
-                                        newStr = ((com.kawai.models.RoomCategory) newVal).getCategoryName();
-                                    } else {
-                                        newStr = newVal.toString();
-                                    }
-                                }
-
-                                String oldStr = "";
-                                if (oldVal != null) {
-                                    if (oldVal instanceof com.kawai.models.RoomCategory) {
-                                        oldStr = ((com.kawai.models.RoomCategory) oldVal).getCategoryName();
-                                    } else {
-                                        oldStr = oldVal.toString();
-                                    }
-                                }
+                                String newStr = getDisplayString(newVal);
+                                String oldStr = getDisplayString(oldVal);
 
                                 if (!newStr.equals(oldStr)) {
                                     changes.put(fieldName, Map.of("old", oldStr, "new", newStr));

@@ -22,12 +22,15 @@ public class RoomBookingCleanupTask {
     private static final Logger log = LoggerFactory.getLogger(RoomBookingCleanupTask.class);
     private final RoomBookingRepository roomBookingRepository;
     private final RoomBookingDetailRepository roomBookingDetailRepository;
+    private final com.kawai.services.interfaces.EmailService emailService;
 
     public RoomBookingCleanupTask(
             RoomBookingRepository roomBookingRepository,
-            RoomBookingDetailRepository roomBookingDetailRepository) {
+            RoomBookingDetailRepository roomBookingDetailRepository,
+            com.kawai.services.interfaces.EmailService emailService) {
         this.roomBookingRepository = roomBookingRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
+        this.emailService = emailService;
     }
 
     // Quản lý qua DynamicJobManager và tự động chạy khi khởi động app
@@ -50,27 +53,16 @@ public class RoomBookingCleanupTask {
                     d.setDetailStatus("No_Show");
                     roomBookingDetailRepository.save(d);
                 }
-            }
-        }
 
-        // 2. Pending bookings past check-in -> Cancelled
-        List<RoomBooking> pendingExpired = roomBookingRepository.findByBookingStatusAndCheckInDateBefore("Pending",
-                today);
-        if (!pendingExpired.isEmpty()) {
-            log.info("Bắt đầu giải phóng {} đơn phòng Pending quá hạn sang Cancelled.", pendingExpired.size());
-            for (RoomBooking rb : pendingExpired) {
-                rb.setBookingStatus("Cancelled");
-                roomBookingRepository.save(rb);
-
-                List<RoomBookingDetail> details = roomBookingDetailRepository.findByRoomBookingId(rb.getId());
-                for (RoomBookingDetail d : details) {
-                    d.setDetailStatus("Cancelled");
-                    roomBookingDetailRepository.save(d);
+                try {
+                    emailService.sendRoomNoShowEmail(rb, rb.getCustomer());
+                } catch (Exception e) {
+                    log.error("Lỗi gửi email No_Show cho đặt phòng ID {}: ", rb.getId(), e);
                 }
             }
         }
 
-        // 3. Pending_Approval bookings past check-in -> Cancelled
+        // 2. Pending_Approval bookings past check-in -> Cancelled
         List<RoomBooking> pendingAppExpired = roomBookingRepository
                 .findByBookingStatusAndCheckInDateBefore("Pending_Approval", today);
         if (!pendingAppExpired.isEmpty()) {

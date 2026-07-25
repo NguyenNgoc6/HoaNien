@@ -222,6 +222,7 @@
             text-align: right;
             font-weight: 700;
             color: #2c2a29;
+            white-space: nowrap;
         }
 
         .bill-summary-card {
@@ -1105,6 +1106,9 @@
                             <button class="btn-secondary no-print" id="btnPrintOriginal"
                                 onclick="printInvoiceFromSummary()" disabled
                                 style="opacity: 0.5; pointer-events: none; cursor: not-allowed;">In hóa đơn</button>
+                            <button class="btn-secondary no-print" id="btnGDPRAnonymize"
+                                onclick="anonymizeCustomerGDPR()" sec:authorize="hasAnyAuthority('OP_RECEPTION_CHECKOUT', 'ROLE_ADMIN', 'ROLE_MANAGER')"
+                                style="margin-top: 10px; background-color: #e74c3c; color: white; border: none; padding: 12px 24px; font-weight: 600; cursor: pointer; border-radius: 4px; display: none;">Xóa dữ liệu (GDPR)</button>
                         </div>
                     </div>
 
@@ -1322,6 +1326,19 @@
             const isMaintenance = dep === 'maintenance';
             const isHousekeepingDamage = dep === 'housekeeping' && desc.includes('đền bù hỏng hóc');
             return isMaintenance || isHousekeepingDamage || desc.includes('đền bù hỏng hóc');
+        }
+
+        function formatItemDescription(rawDesc) {
+            if (!rawDesc) return '';
+            let desc = rawDesc.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng').replace('[Đền bù hỏng hóc]', 'Phụ thu tài sản:');
+            if (desc.includes('. Sự cố:')) {
+                const parts = desc.split('. Sự cố:');
+                return `<div>${parts[0]}</div><div style="font-size: 0.82rem; color: #7f8c8d; margin-top: 3px; font-style: italic;">↳ Sự cố: ${parts[1]}</div>`;
+            } else if (desc.includes('Sự cố:')) {
+                const parts = desc.split('Sự cố:');
+                return `<div>${parts[0]}</div><div style="font-size: 0.82rem; color: #7f8c8d; margin-top: 3px; font-style: italic;">↳ Sự cố: ${parts[1]}</div>`;
+            }
+            return desc;
         }
 
 
@@ -1589,10 +1606,15 @@
             let originalTaxable = 0;
             let originalNonTaxable = 0;
             window.folioNegatives = 0;
+            window.allRoomsChecked = true;
             globalServiceChargeTotal = 0;
 
             results.forEach((data, index) => {
                 if (!data.success) return;
+
+                if (data.roomCheckStatus !== 'Completed' && data.detailStatus !== 'Checked_Out') {
+                    window.allRoomsChecked = false;
+                }
 
                 const items = data.items || [];
                 const allGroups = {};
@@ -1610,7 +1632,7 @@
                     if (!isRoom && (item.amount > 0 || (item.amount < 0 && !isDeposit))) {
                         if (!allGroups[dep]) allGroups[dep] = { items: [] };
                         allGroups[dep].items.push(item);
-                        if (isDamageOrMaintenanceItem(item) || item.amount < 0) {
+                        if (isDamageOrMaintenanceItem(item)) {
                             roomNonTaxable += item.amount;
                         } else {
                             roomTaxable += item.amount;
@@ -1643,7 +1665,7 @@
                                 globalServiceChargeTotal += fnbServiceCharge;
                             }
 
-                            if (isDamageOrMaintenanceItem(item) || item.amount < 0) {
+                            if (isDamageOrMaintenanceItem(item)) {
                                 originalNonTaxable += (item.amount - fnbServiceCharge);
                             } else {
                                 originalTaxable += (item.amount - fnbServiceCharge);
@@ -1757,6 +1779,11 @@
                     })()}
                                   </div>
                                  ${data.detailStatus === 'Checked_Out' ? '<div style="margin-top: 2px;"><span class="status-badge" style="background-color: #e6e2db; color: #5a544f; padding: 4px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; display: inline-block; letter-spacing: 0.5px; text-transform: uppercase; font-family: \'Inter\', sans-serif;">Checked-Out</span></div>' : ''}
+                                 <div style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
+                                     ${data.roomCheckStatus === 'Completed' ? '<span style="color: #27ae60; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-check-circle"></i> Đã kiểm phòng</span>' : 
+                                       data.roomCheckStatus === 'Pending' ? '<span style="color: #f39c12; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ kiểm phòng...</span>' : 
+                                       (data.detailStatus !== 'Checked_Out' ? `<button onclick="requestRoomCheck(${roomId}, event)" style="background: transparent; border: 1px solid #d35400; color: #d35400; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#d35400'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#d35400';">Yêu cầu kiểm phòng</button>` : '')}
+                                 </div>
                              </div>
                          </div>
                          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
@@ -1832,7 +1859,7 @@
                                 return `
                                                   <tr id="tour-booking-row-${tourBookingId}" class="tour-booking-placeholder ${trClass}" data-tour-booking="${tourBookingId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description}">
                                                       <td colspan="3" style="text-align: left;">
-                                                          ${i.description} 
+                                                          ${formatItemDescription(i.description)} 
                                                           ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
                                                           ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
                                                           <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
@@ -1845,7 +1872,7 @@
                                 return `
                                                   <tr class="${trClass}">
                                                       <td colspan="3" style="text-align: left;">
-                                                          ${i.description} 
+                                                          ${formatItemDescription(i.description)} 
                                                           ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
                                                           ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
                                                       </td>
@@ -1859,7 +1886,7 @@
                                 return `
                                                   <tr id="fnb-order-row-${fnbOrderId}" class="fnb-order-placeholder ${trClass}" data-fnb-order="${fnbOrderId}" data-amount="${i.amount}" data-date="${dateStr}" data-split="${isSplit ? 'true' : 'false'}" data-desc="${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''}">
                                                       <td colspan="3" style="text-align: left;">
-                                                          ${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''} 
+                                                          ${formatItemDescription(i.description)} 
                                                           ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
                                                           ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
                                                           <div style="font-size: 0.8rem; font-style: italic; color: #8e8a86; margin-top: 4px;">
@@ -1873,7 +1900,7 @@
                                     return `
                                                       <tr class="${trClass}">
                                                           <td colspan="3" style="text-align: left;">
-                                                              ${i.description ? i.description.replace('Ký bill đồ ăn F&B', 'Dịch vụ Nhà hàng') : ''} 
+                                                              ${formatItemDescription(i.description)} 
                                                               ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
                                                               ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
                                                           </td>
@@ -1883,7 +1910,7 @@
                                     return `
                                                       <tr class="${trClass}">
                                                           <td style="text-align: left;">
-                                                               ${i.description ? i.description.replace('[Đền bù hỏng hóc]', 'Phụ thu tài sản:') : ''} 
+                                                               ${formatItemDescription(i.description)} 
                                                               ${dateStr ? `<div style="font-size: 0.8rem; color: #95a5a6;">${dateStr}</div>` : ''}
                                                               ${isSplit ? '<span style="color:#e74c3c; font-size: 0.8rem; font-weight: 500;">(Đã tách)</span>' : ''}
                                                           </td>
@@ -1907,6 +1934,7 @@
                     prePaidDeposit: data.prePaidDeposit || 0,
                     currentBalance: data.currentBalance || 0,
                     detailStatus: data.detailStatus || 'Checked_In',
+                    roomCheckStatus: data.roomCheckStatus || 'Not_Requested',
                     summary: {},
                     appliedPromoCode: null,
                     appliedPromoType: null,
@@ -1983,10 +2011,10 @@
 
                 if (data.roomCharge && data.roomCharge > 0) {
                     const isWalkIn = data.bookingSource === 'WALK_IN';
-                    const key = `${data.categoryName || 'N/A'}_${data.roomCharge}`;
+                    const key = `${data.originalCategoryName || data.categoryName || 'N/A'}_${data.roomCharge}`;
                     if (!breakdownGroups[key]) {
                         breakdownGroups[key] = {
-                            categoryName: data.categoryName || 'Room',
+                            categoryName: data.originalCategoryName || data.categoryName || 'Room',
                             roomCharge: isWalkIn ? data.roomCharge : (data.roomCharge / nights),
                             extraSurcharge: isWalkIn ? (data.extraSurcharge || 0) : ((data.extraSurcharge || 0) / nights),
                             nights: nights,
@@ -2167,8 +2195,18 @@
             if (roomInfo.detailStatus === 'Checked_Out') {
                 btn.style.display = 'none';
                 document.getElementById('roomPromoSection').style.display = 'none';
+            } else if (roomInfo.roomCheckStatus !== 'Completed') {
+                btn.style.display = 'block';
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.innerText = 'Chưa kiểm phòng ' + roomInfo.roomNumber;
+                document.getElementById('roomPromoSection').style.display = 'block';
             } else {
                 btn.style.display = 'block';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
                 document.getElementById('roomPromoSection').style.display = 'block';
                 btn.innerText = 'Thanh toán phòng ' + roomInfo.roomNumber;
             }
@@ -2300,7 +2338,13 @@
             const btn = document.getElementById('btnProceedOriginal');
             if (btn) {
                 btn.style.display = 'block';
-                if (outstanding < 1) {
+                if (!window.allRoomsChecked) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerHTML = 'Chưa kiểm phòng';
+                    btn.onclick = null;
+                } else if (outstanding < 1) {
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
@@ -2334,6 +2378,17 @@
                     btnPrint.style.opacity = '0.5';
                     btnPrint.style.pointerEvents = 'none';
                     btnPrint.style.cursor = 'not-allowed';
+                }
+            }
+            
+            const btnGDPR = document.getElementById('btnGDPRAnonymize');
+            if (btnGDPR) {
+                const status = (bookingGroupData && bookingGroupData.status) || (currentFolioData && currentFolioData.status);
+                const custId = (bookingGroupData && bookingGroupData.customerId) || (currentFolioData && currentFolioData.customerId);
+                if (outstanding < 1 && status === 'Checked_Out' && custId) {
+                    btnGDPR.style.display = 'block';
+                } else {
+                    btnGDPR.style.display = 'none';
                 }
             }
         }
@@ -2530,7 +2585,7 @@
         }
 
         function showSuccessModal(data) {
-            const invoiceNo = "INV-" + (data.invoiceId || Math.floor(Math.random() * 10000 + 1000));
+            const invoiceNo = data.invoiceNumber || ("INV-" + (data.invoiceId || Math.floor(Math.random() * 10000 + 1000)));
             document.getElementById('successInvoiceId').innerText = "#" + invoiceNo;
 
             // 1. Basic invoice metadata
@@ -2630,7 +2685,7 @@
                         let children = [];
                         if (tourDetail.adultCount > 0) {
                             children.push({
-                                description: `- Người lớn`,
+                                description: `- người lớn`,
                                 qty: tourDetail.adultCount,
                                 unitVal: tourDetail.adultPrice,
                                 amount: tourDetail.adultCount * tourDetail.adultPrice,
@@ -2639,7 +2694,7 @@
                         }
                         if (tourDetail.childCount > 0) {
                             children.push({
-                                description: `- Trẻ em (2-11 tuổi)`,
+                                description: `- trẻ em (2-11 tuổi)`,
                                 qty: tourDetail.childCount,
                                 unitVal: tourDetail.childPrice,
                                 amount: tourDetail.childCount * tourDetail.childPrice,
@@ -2648,7 +2703,7 @@
                         }
                         if (tourDetail.infantCount > 0) {
                             children.push({
-                                description: `- Em bé (dưới 2 tuổi)`,
+                                description: `- em bé (dưới 2 tuổi)`,
                                 qty: tourDetail.infantCount,
                                 unitVal: 0,
                                 amount: 0,
@@ -2660,7 +2715,7 @@
                             const insurancePolicy = tourDetail.insurancePolicyNumber ? ` (${tourDetail.insurancePolicyNumber})` : '';
                             const insuredCount = tourDetail.participantCount || (tourDetail.adultCount + tourDetail.childCount + tourDetail.infantCount);
                             children.push({
-                                description: `- Bảo hiểm du lịch bắt buộc${insurancePolicy}`,
+                                description: `- bảo hiểm du lịch bắt buộc${insurancePolicy}`,
                                 qty: insuredCount,
                                 unitVal: tourDetail.insurancePrice,
                                 amount: 0,
@@ -2669,15 +2724,28 @@
                             });
                         }
 
-                        groupedItems.push({
-                            description: `${tourDetail.tourName} (Khởi hành: ${departureTime} - ${departureDate})`,
-                            qty: "",
-                            unitVal: "",
-                            amount: tourDetail.tourCharge,
-                            itemDate: itemDate,
-                            isParentTour: true,
-                            children: children
-                        });
+                        const qty = tourDetail.participantCount || (tourDetail.adultCount + tourDetail.childCount + tourDetail.infantCount) || 1;
+                        const unitVal = Number(item.amount) / qty;
+
+                        const desc = `Tour Charge - ${tourDetail.tourName} (Khởi hành: ${departureTime} - ${departureDate})`;
+                        const key = `${desc}_${unitVal}`;
+
+                        let existing = groupedItems.find(g => g.key === key);
+                        if (existing) {
+                            existing.qty += qty;
+                            existing.amount += Number(item.amount);
+                        } else {
+                            groupedItems.push({
+                                key: key,
+                                description: desc,
+                                qty: qty,
+                                unitVal: unitVal,
+                                amount: Number(item.amount),
+                                itemDate: itemDate,
+                                isParentTour: true,
+                                children: children
+                            });
+                        }
                         return; // Done with Tour
                     }
                 }
@@ -2776,7 +2844,7 @@
                     lastDateStr = g.itemDate;
                 }
 
-                if (g.isParentFnb || g.isParentTour || g.isParentMinibar) {
+                if (g.isParentFnb || g.isParentMinibar) {
                     // Parent row: Normal description, blank qty and price, normal amount
                     tbodyHtml += `
                         <tr>
@@ -2784,6 +2852,39 @@
                             <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${g.description}</td>
                             <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: center;"></td>
                             <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;"></td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.amount)}</td>
+                        </tr>
+                    `;
+                    printSubtotal += g.amount;
+
+                    // Children rows: Indented, normal description, standard qty, price, and amount
+                    if (g.children) {
+                        g.children.forEach(c => {
+                            let formattedVal = c.isInfant ? 'Miễn phí' : formatNumber(c.unitVal);
+                            let formattedAmt = formatNumber(c.amount) + ' VNĐ';
+                            if (c.isInsurance) {
+                                formattedVal = formatNumber(c.unitVal);
+                                formattedAmt = 'Đã bao gồm';
+                            }
+                            tbodyHtml += `
+                                <tr style="color: #2F1F17; font-family: 'Times New Roman', serif; font-size: 14px;">
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee;"></td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; padding-left: 20px; font-style: italic;">${c.description}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: center; font-style: italic;">${c.qty}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: italic;">${formattedVal}</td>
+                                    <td style="padding: 8px 0; border-bottom: 1px dashed #eee; text-align: right; font-style: italic;">${formattedAmt}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } else if (g.isParentTour) {
+                    // Parent row for Tour: Normal description, with Qty and Unit Price, normal amount
+                    tbodyHtml += `
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${displayDate}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd;">${g.description}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: center;">${g.qty}</td>
+                            <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.unitVal)}</td>
                             <td style="padding: 10px 0; border-bottom: 1px dashed #ddd; text-align: right;">${formatNumber(g.amount)}</td>
                         </tr>
                     `;
@@ -3297,6 +3398,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script th:inline="javascript">
+        async function anonymizeCustomerGDPR() {
+            const custId = (bookingGroupData && bookingGroupData.customerId) || (currentFolioData && currentFolioData.customerId);
+            if (!custId) {
+                alert('Không tìm thấy thông tin khách hàng để xóa dữ liệu.');
+                return;
+            }
+            
+            if (!confirm('BẠN CÓ CHẮC CHẮN MUỐN XÓA DỮ LIỆU CÁ NHÂN?\n\nHành động này không thể hoàn tác, nhưng sẽ không ảnh hưởng đến số liệu kế toán. Tên khách sẽ đổi thành "Anonymous Customer".')) {
+                return;
+            }
+            
+            try {
+                const btnGDPR = document.getElementById('btnGDPRAnonymize');
+                btnGDPR.disabled = true;
+                btnGDPR.innerText = 'Đang xử lý...';
+                
+                const res = await fetch(`/admin/api/v1/customers/${custId}/anonymize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (res.ok) {
+                    alert('Dữ liệu khách hàng đã được xóa (ẩn danh) thành công.');
+                    window.location.reload();
+                } else {
+                    const data = await res.json();
+                    alert('Lỗi: ' + (data.error || 'Không thể xóa dữ liệu'));
+                    btnGDPR.disabled = false;
+                    btnGDPR.innerText = 'Xóa dữ liệu (GDPR)';
+                }
+            } catch (err) {
+                alert('Lỗi kết nối: ' + err);
+            }
+        }
+
         (function () {
             var staffId = /*[[${staffId}]]*/ 0;
 
@@ -3354,7 +3490,36 @@
                 showPersistentToast(notif);
             }
 
-            document.addEventListener("DOMContentLoaded", function () {
+        async function requestRoomCheck(roomId, event) {
+            if (event) event.stopPropagation();
+            if (!confirm("Bạn có chắc chắn muốn yêu cầu bộ phận buồng phòng kiểm tra phòng này?")) return;
+            try {
+                const response = await fetch(`/api/folios/room/${roomId}/request-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ note: "Yêu cầu kiểm tra phòng đơn" })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message || "Đã gửi yêu cầu kiểm tra phòng thành công!");
+                    // Refresh data
+                    if (window.bookingGroupData && window.bookingGroupData.id) {
+                        fetchGroupFolioData(window.bookingGroupData.id);
+                    } else if (window.currentFolioData && window.currentFolioData.roomBookingDetailId) {
+                        fetchFolioData(window.currentFolioData.roomBookingDetailId);
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert("Lỗi: " + (data.message || "Không thể yêu cầu kiểm tra phòng"));
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Lỗi kết nối khi yêu cầu kiểm tra phòng");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
                 if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') {
                     console.warn('[WS] SockJS or Stomp not loaded');
                     return;
@@ -3370,6 +3535,9 @@
                     stompClient.subscribe('/topic/operations', function (msg) {
                         try {
                             var payload = JSON.parse(msg.body);
+                            var isInternalTask = (payload.taskType && (payload.taskType.toUpperCase().includes('MAINTENANCE') || payload.taskType.toUpperCase().includes('CLEAN') || payload.taskType.toUpperCase().includes('DAMAGE')))
+                                || (payload.message && (payload.message.toUpperCase().includes('MAINTENANCE') || payload.message.includes('dọn khẩn') || payload.message.includes('sửa chữa') || payload.message.includes('bảo trì')));
+                            if (payload.type === 'NEW_TASK' && isInternalTask) return;
                             console.log('[WS] Nhận tin nhắn từ kênh Chung (/topic/operations):', payload);
                             if (payload.type === 'NEW_TASK') return;
                             saveAndShow(`📢 THÔNG BÁO HỆ THỐNG:\n` + payload.message, false);
@@ -3380,6 +3548,9 @@
                         stompClient.subscribe('/topic/operations/' + staffId, function (msg) {
                             try {
                                 var payload = JSON.parse(msg.body);
+                                var isInternalTask = (payload.taskType && (payload.taskType.toUpperCase().includes('MAINTENANCE') || payload.taskType.toUpperCase().includes('CLEAN') || payload.taskType.toUpperCase().includes('DAMAGE')))
+                                    || (payload.message && (payload.message.toUpperCase().includes('MAINTENANCE') || payload.message.includes('dọn khẩn') || payload.message.includes('sửa chữa') || payload.message.includes('bảo trì')));
+                                if (payload.type === 'NEW_TASK' && isInternalTask) return;
                                 console.log('[WS] Nhận tin nhắn từ kênh Đích danh (/topic/operations/' + staffId + '):', payload);
                                 saveAndShow(`🔔 NHIỆM VỤ MỚI:\n` + payload.message, true);
                             } catch (e) { console.error('[WS] parse error', e); }
@@ -3393,7 +3564,120 @@
             });
         })();
     </script>
+
+<!-- RECEPTIONIST PROFILE MODAL -->
+<div id="receptionistProfileModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: white; padding: 24px; border-radius: 8px; width: 600px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Inter', sans-serif;">
+        <h2 style="margin-top: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; color: #111827; font-size: 1.25rem; font-weight: 600;">Hồ sơ Cá nhân</h2>
+        
+        <div style="display: flex; gap: 24px; margin-top: 16px;">
+            <!-- Left col: Info -->
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div class="user-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: #c19b6c; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px; font-weight: bold;" th:text="${staffName != null && staffName.length() >= 2 ? staffName.substring(0, 2).toUpperCase() : 'NV'}">NV</div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; color: #111827;" th:text="${staffName != null ? staffName : 'Nhân viên'}">Nhân viên</h3>
+                        <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;" th:text="${staffRole != null ? staffRole : 'Receptionist'}">Receptionist</p>
+                    </div>
+                </div>
+                <div style="font-size: 14px; line-height: 1.6; color: #374151;">
+                    <p style="margin: 4px 0;"><strong>Email:</strong> <span th:text="${currentEmployee != null ? currentEmployee.email : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>SĐT:</strong> <span th:text="${currentEmployee != null ? currentEmployee.phone : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>Giới tính:</strong> <span th:text="${currentEmployee != null ? currentEmployee.gender : 'Chưa cập nhật'}"></span></p>
+                    <p style="margin: 4px 0;"><strong>CCCD:</strong> <span th:text="${currentEmployee != null ? currentEmployee.cccd : 'Chưa cập nhật'}"></span></p>
+                </div>
+            </div>
+
+            <!-- Right col: Password -->
+            <div style="flex: 1; border-left: 1px solid #e5e7eb; padding-left: 24px;">
+                <h3 style="margin-top: 0; font-size: 16px; color: #111827;">Đổi mật khẩu</h3>
+                <div style="margin-top: 12px;">
+                    <label style="display: block; font-size: 13px; color: #4b5563; margin-bottom: 4px;">Mật khẩu mới</label>
+                    <input type="password" id="receptionistNewPassword" placeholder="Nhập mật khẩu mới" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; font-size: 14px; margin-bottom: 8px;">
+                    <button id="receptionistSavePasswordBtn" style="padding: 8px 16px; background: #c19b6c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 14px; width: 100%;">Cập nhật ngay</button>
+                    <div id="receptionistPasswordMsg" style="margin-top: 8px; font-size: 13px; display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; text-align: right; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+            <button onclick="document.getElementById('receptionistProfileModal').style.display='none'" style="padding: 8px 16px; background: white; color: #374151; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; font-weight: 500;">Đóng</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatars = document.querySelectorAll('.sidebar-user, .user-profile-btn');
+        avatars.forEach(avatar => {
+            avatar.style.cursor = 'pointer';
+            avatar.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                document.getElementById('receptionistProfileModal').style.display = 'flex';
+                document.getElementById('receptionistNewPassword').value = '';
+                document.getElementById('receptionistPasswordMsg').style.display = 'none';
+            });
+        });
+        
+        const modal = document.getElementById('receptionistProfileModal');
+        if(modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        const saveBtn = document.getElementById('receptionistSavePasswordBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function() {
+                const newPwd = document.getElementById('receptionistNewPassword').value;
+                const msg = document.getElementById('receptionistPasswordMsg');
+                
+                if (!newPwd || newPwd.trim() === '') {
+                    msg.style.display = 'block';
+                    msg.style.color = '#dc2626';
+                    msg.innerText = 'Vui lòng nhập mật khẩu mới';
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.innerText = 'Đang lưu...';
+
+                fetch('/api/staff/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newPassword: newPwd })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = 'Cập nhật ngay';
+                    msg.style.display = 'block';
+                    if (data.success) {
+                        msg.style.color = '#16a34a';
+                        msg.innerText = 'Đổi mật khẩu thành công!';
+                        document.getElementById('receptionistNewPassword').value = '';
+                    } else {
+                        msg.style.color = '#dc2626';
+                        msg.innerText = data.message || 'Có lỗi xảy ra';
+                    }
+                })
+                .catch(err => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = 'Cập nhật ngay';
+                    msg.style.display = 'block';
+                    msg.style.color = '#dc2626';
+                    msg.innerText = 'Lỗi kết nối mạng';
+                });
+            });
+        }
+    });
+</script>
 </body>
+
 
 </html>
 

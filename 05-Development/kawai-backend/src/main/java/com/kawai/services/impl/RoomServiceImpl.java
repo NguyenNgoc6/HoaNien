@@ -30,18 +30,18 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final RoomBookingRepository roomBookingRepository;
     private final com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+    private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
 
     public RoomServiceImpl(RoomRepository roomRepository,
             RoomBookingRepository roomBookingRepository,
-            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository) {
+            com.kawai.repositories.RoomCategoryRepository roomCategoryRepository,
+            com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository) {
         this.roomRepository = roomRepository;
         this.roomBookingRepository = roomBookingRepository;
         this.roomCategoryRepository = roomCategoryRepository;
+        this.roomSurchargeRepository = roomSurchargeRepository;
     }
 
-    /**
-     * Trả về danh sách rỗng (không null) nếu không có phòng khả dụng.
-     */
     @Override
     public List<RoomSearchResponseDTO> searchAvailableRooms(RoomSearchRequestDTO request) {
         LocalDate checkIn = request.getCheckInDate();
@@ -154,13 +154,6 @@ public class RoomServiceImpl implements RoomService {
         return available;
     }
 
-    /**
-     * Lấy sơ đồ phòng (Room Matrix) thời gian thực cho Front Desk Dashboard.
-     * Cung cấp cái nhìn tổng quan về trạng thái phòng, giá trị và thông tin cơ bản
-     * (UC11).
-     * 
-     * @return Danh sách RoomDashboardDTO, rỗng nếu không có dữ liệu
-     */
     @Override
     public List<RoomDashboardDTO> getRoomDashboard() {
         List<Room> allRooms = roomRepository.findAll();
@@ -190,14 +183,6 @@ public class RoomServiceImpl implements RoomService {
         room.setCategory(category);
         room.setRoomStatus("Available");
         return roomRepository.save(room);
-    }
-
-    // ── Private helpers ────────────────────────────────────────────────────
-
-    private boolean isRoomAvailable(String roomNumber, LocalDate checkIn, LocalDate checkOut) {
-        long overlappingCount = roomBookingRepository.countOverlappingBookings(
-                roomNumber, checkIn, checkOut);
-        return overlappingCount == NO_OVERLAPPING;
     }
 
     private RoomDashboardDTO toDashboardDTO(Room room) {
@@ -238,6 +223,23 @@ public class RoomServiceImpl implements RoomService {
             dto.setMaxChildren(cat.getMaxChildren());
             dto.setExtraAdultSurcharge(cat.getExtraAdultSurcharge());
             dto.setExtraChildSurcharge(cat.getExtraChildSurcharge());
+
+            java.util.List<com.kawai.models.RoomSurcharge> surcharges = roomSurchargeRepository.findByCategoryAndIsActiveTrue(cat);
+            if (!surcharges.isEmpty()) {
+                try {
+                    java.util.List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
+                    for (com.kawai.models.RoomSurcharge s : surcharges) {
+                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        map.put("ageFrom", s.getAgeFrom());
+                        map.put("ageTo", s.getAgeTo());
+                        map.put("priceModifier", s.getPriceModifier());
+                        list.add(map);
+                    }
+                    dto.setSurchargesJson(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(list));
+                } catch (Exception e) {}
+            } else {
+                dto.setSurchargesJson("[]");
+            }
 
             dto.setDescription(cat.getDescription());
 

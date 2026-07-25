@@ -1,5 +1,7 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,6 +10,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "Room_Bookings")
 @PrimaryKeyJoinColumn(name = "room_booking_id")
+@Audited
 public class RoomBooking extends Booking {
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;

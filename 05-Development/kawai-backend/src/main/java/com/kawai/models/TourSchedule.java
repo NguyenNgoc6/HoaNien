@@ -1,11 +1,14 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
 @Table(name = "Tour_Schedules")
+@Audited
 public class TourSchedule {
 
     @Id

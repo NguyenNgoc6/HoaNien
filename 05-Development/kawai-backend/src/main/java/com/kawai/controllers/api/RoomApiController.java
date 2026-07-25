@@ -170,7 +170,7 @@ public class RoomApiController {
 
         java.util.Optional<com.kawai.models.Account> accountOpt = accountRepository.findByUsername(username);
         if (accountOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(java.util.Map.of("message", "Không tìm thấy tài khoản"));
+            return ResponseEntity.ok(java.util.Collections.emptyList());
         }
 
         List<RoomBookingDetail> activeDetails = roomBookingDetailRepository
@@ -314,9 +314,17 @@ public class RoomApiController {
             if (detail.getCustomer() != null) {
                 dto.setGuestName(detail.getCustomer().getFullName());
                 dto.setCustomerId(detail.getCustomer().getId());
+                try {
+                    dto.setIdentityCard(com.kawai.utils.EncryptionUtils.decrypt(detail.getCustomer().getCccdPassportEncrypted()));
+                } catch (Exception e) {}
+                dto.setPhoneNumber(detail.getCustomer().getPhone());
             } else if (detail.getRoomBooking() != null && detail.getRoomBooking().getCustomer() != null) {
                 dto.setGuestName(detail.getRoomBooking().getCustomer().getFullName());
                 dto.setCustomerId(detail.getRoomBooking().getCustomer().getId());
+                try {
+                    dto.setIdentityCard(com.kawai.utils.EncryptionUtils.decrypt(detail.getRoomBooking().getCustomer().getCccdPassportEncrypted()));
+                } catch (Exception e) {}
+                dto.setPhoneNumber(detail.getRoomBooking().getCustomer().getPhone());
             }
         }
 

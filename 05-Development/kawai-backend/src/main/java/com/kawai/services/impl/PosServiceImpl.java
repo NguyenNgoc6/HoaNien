@@ -13,6 +13,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @Service
 @Transactional
 public class PosServiceImpl implements PosService {
@@ -166,9 +169,7 @@ public class PosServiceImpl implements PosService {
                             java.time.LocalDateTime resEndDT;
                             if (res.getEndTime() != null) {
                                 resEndDT = java.time.LocalDateTime.of(today, res.getEndTime());
-                                if (resEndDT.isBefore(resStartDT)) {
-                                    resEndDT = resEndDT.plusDays(1);
-                                }
+                                // plusDays(1) removed
                             } else {
                                 resEndDT = resStartDT.plusHours(1);
                             }
@@ -236,11 +237,10 @@ public class PosServiceImpl implements PosService {
         }
         order.setNote(finalNote);
 
-        Optional<Employee> empOpt = employeeRepository.findById(2L);
-        if (empOpt.isPresent()) {
-            order.setCreatedByStaff(empOpt.get());
-        } else {
-            employeeRepository.findAll().stream().findFirst().ifPresent(order::setCreatedByStaff);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            employeeRepository.findByAccountUsername(auth.getName())
+                    .ifPresent(order::setCreatedByStaff);
         }
 
         FoodOrder savedOrder = foodOrderRepository.save(order);
@@ -301,6 +301,12 @@ public class PosServiceImpl implements PosService {
         savedOrder.setTotalAmount(finalTotal);
         foodOrderRepository.save(savedOrder);
         // -----------------------------------------------------------------
+
+        // =========================================================
+        // GUARD CLAUSE — NGHIỆP VỤ: Dine-in CHỈ thanh toán tại quầy POS.
+        // CHARGE_TO_ROOM chỉ được phép cho Room Service.
+        // Chặn cả trường hợp gọi API trực tiếp (Postman/curl) để bypass Frontend.
+        // =========================================================
 
         if ("CHARGE_TO_ROOM".equalsIgnoreCase(request.getPaymentType()) && activeBooking != null
                 && activeBooking instanceof RoomBooking) {
@@ -420,9 +426,20 @@ public class PosServiceImpl implements PosService {
     }
 
     @Override
-    public FoodOrder payOrder(Long id) {
+    public FoodOrder payOrder(Long id, String paymentType, String roomNumber) {
         FoodOrder order = foodOrderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
+
+        if ("CHARGE_TO_ROOM".equalsIgnoreCase(paymentType)) {
+            if (roomNumber == null || roomNumber.trim().isEmpty()) {
+                throw new BusinessException("POS-007", "Vui lòng cung cấp số phòng để ghi nợ");
+            }
+            chargeToRoom(roomNumber, order.getTotalAmount());
+            order.setPaymentType("CHARGE_TO_ROOM");
+        } else if (paymentType != null && !paymentType.trim().isEmpty()) {
+            order.setPaymentType(paymentType);
+        }
+
         if ("AWAITING_PAYMENT".equalsIgnoreCase(order.getOrderStatus())) {
             order.setOrderStatus("Pending");
         }
@@ -460,6 +477,40 @@ public class PosServiceImpl implements PosService {
         postChargeToFolio(detail, amount);
     }
 
+    @Override
+    public java.util.Map<String, Object> verifyRoomForCharge(String roomNumber) {
+        Room room = getOccupiedRoom(roomNumber);
+        RoomBookingDetail detail = getBookingDetail(room.getCurrentBookingDetailId());
+
+        com.kawai.models.Customer payer = detail.getCustomer();
+        if (payer == null) {
+            payer = detail.getRoomBooking().getCustomer();
+        }
+
+        String name = payer.getFullName();
+        String idCard = payer.getCccdPassportDecrypted();
+        if (idCard == null || idCard.trim().isEmpty() || "--".equals(idCard)) {
+            idCard = "N/A";
+        }
+
+        String maskedIdCard = maskString(idCard, 3);
+
+        return java.util.Map.of(
+                "guestName", name,
+                "idCard", maskedIdCard);
+    }
+
+    private String maskString(String str, int unmaskedCharsAtEnd) {
+        if (str == null || str.length() <= unmaskedCharsAtEnd || "N/A".equals(str))
+            return str;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length() - unmaskedCharsAtEnd; i++) {
+            sb.append("*");
+        }
+        sb.append(str.substring(str.length() - unmaskedCharsAtEnd));
+        return sb.toString();
+    }
+
     private Room getOccupiedRoom(String roomNumber) {
         Room room = roomRepository.findByRoomNumber(roomNumber)
                 .orElseThrow(() -> new BusinessException("ROOM_NOT_FOUND", "Phòng không tồn tại"));
@@ -489,6 +540,12 @@ public class PosServiceImpl implements PosService {
     private void postChargeToFolio(RoomBookingDetail detail, BigDecimal amount) {
         FolioItem folioItem = new FolioItem();
         folioItem.setRoomBookingDetail(detail);
+        folioItem.setBooking(detail.getRoomBooking());
+        com.kawai.models.Customer payer = detail.getCustomer();
+        if (payer == null) {
+            payer = detail.getRoomBooking().getCustomer();
+        }
+        folioItem.setPayerCustomer(payer);
         folioItem.setSourceDepartment("POS");
         folioItem.setAmount(amount);
         folioItem.setDescription("Ký gửi hóa đơn từ nhà hàng");
@@ -598,7 +655,8 @@ public class PosServiceImpl implements PosService {
         foodOrderRepository.save(order);
     }
 
-    public void cancelOrder(Long orderId, com.kawai.dtos.CancelOrderRequestDTO dto) {
+    public void cancelOrder(Long orderId, com.kawai.dto.CancelOrderRequestDTO dto, String cancelledBy,
+            Customer explicitCustomer) {
         FoodOrder order = foodOrderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException("POS-006", "Đơn hàng không tồn tại"));
 
@@ -645,10 +703,38 @@ public class PosServiceImpl implements PosService {
         }
 
         foodOrderRepository.save(order);
+
+        // Fetch customer for email
+        com.kawai.models.Customer customer = explicitCustomer;
+        if (customer == null) {
+            if (order.getRoomBookingDetail() != null && order.getRoomBookingDetail().getRoomBooking() != null) {
+                customer = order.getRoomBookingDetail().getRoomBooking().getCustomer();
+            } else if (order.getBooking() != null) {
+                customer = order.getBooking().getCustomer();
+            }
+        }
+
+        if (customer != null) {
+            java.math.BigDecimal refundAmount = java.math.BigDecimal.ZERO;
+            if (pType != null && (pType.toUpperCase().contains("VNPAY") || pType.toUpperCase().contains("ONLINE"))) {
+                refundAmount = order.getTotalAmount();
+            }
+
+            String bankName = dto != null ? dto.getBankName() : null;
+            String accountName = dto != null ? dto.getAccountName() : null;
+            String accountNumber = dto != null ? dto.getAccountNumber() : null;
+            String accountLast3 = (accountNumber != null && accountNumber.length() >= 3)
+                    ? accountNumber.substring(accountNumber.length() - 3)
+                    : null;
+
+            emailService.sendCancelFoodOrderEmail(order, customer, cancelledBy,
+                    dto != null ? dto.getReason() : "",
+                    refundAmount, bankName, accountName, accountLast3);
+        }
     }
 
     @Override
-    public void cancelOrderByGuest(Long orderId, com.kawai.dtos.CancelOrderRequestDTO dto, String username) {
+    public void cancelOrderByGuest(Long orderId, com.kawai.dto.CancelOrderRequestDTO dto, String username) {
         // [AUTHORIZATION CHECK] Bước 1: Lấy thông tin Khách hàng (Customer) từ username
         // hiện tại
         Customer customer = customerRepository.findByAccount_Username(username)
@@ -685,6 +771,6 @@ public class PosServiceImpl implements PosService {
         // lý.
         // Tuyệt đối không lặp lại code hủy đơn (xử lý KOT, refund, v.v...) ở đây để đảm
         // bảo DRY.
-        cancelOrder(orderId, dto);
+        cancelOrder(orderId, dto, "Khách hàng", customer);
     }
 }

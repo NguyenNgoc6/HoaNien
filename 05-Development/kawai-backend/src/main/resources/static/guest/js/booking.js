@@ -37,8 +37,6 @@ let bookingState = {
 };
 
 let selectedRoomsCart = {};
-let cartHoldConfirmedBookingId = null;
-let isRedirectingToPayment = false;
 let showAllRooms = false;
 
 // Modal Room Gallery State
@@ -265,11 +263,34 @@ function renderChildAgesHTML(count, existingValues = []) {
     return html;
 }
 
-function renderChildAges(inputElem) {
-    const container = inputElem.closest('.booking-action-block').querySelector('.children-ages-container');
-    let count = parseInt(inputElem.value, 10);
-    if (isNaN(count) || count < 0) count = 0;
+function clampGuestInput(inputElem) {
+    if (!inputElem) return 0;
+    if (inputElem.value === '') return 0;
 
+    let val = parseInt(inputElem.value, 10);
+    const min = parseInt(inputElem.getAttribute('min') || 0, 10);
+    const max = parseInt(inputElem.getAttribute('max') || 10, 10);
+
+    if (isNaN(val)) val = min;
+    if (val < min) val = min;
+    if (val > max) val = max;
+
+    if (inputElem.value !== val.toString()) {
+        inputElem.value = val;
+    }
+    return val;
+}
+
+function renderChildAges(inputElem) {
+    if (!inputElem) return;
+
+    // Nếu rỗng thì coi như 0 nhưng không ép value về 0 ngay để dễ gõ
+    let count = 0;
+    if (inputElem.value !== '') {
+        count = clampGuestInput(inputElem);
+    }
+
+    const container = inputElem.closest('.booking-action-block').querySelector('.children-ages-container');
     const existingSelects = Array.from(container.querySelectorAll('.child-age-select')).map(s => s.value);
     container.innerHTML = renderChildAgesHTML(count, existingSelects);
 }
@@ -307,7 +328,7 @@ function createRoomCardHTML(room, availableCount) {
                 <ul class="room-specs">
                     <li>
                         ${CONFIG.icons.capacity}
-                        <span>${room.capacity} Người / phòng</span>
+                        <span>Tiêu chuẩn: ${room.baseAdults || 2} Người | Tối đa: ${room.maxAdults || room.capacity} Người</span>
                     </li>
                 </ul>
                 <div class="room-foot mt-auto pt-4 flex flex-col gap-4 border-t border-gray-100">
@@ -329,11 +350,11 @@ function createRoomCardHTML(room, availableCount) {
                             <div class="flex gap-2">
                                 <div class="flex flex-col flex-1 justify-end">
                                     <span class="text-[10px] text-gray-500 mb-1.5 font-bold uppercase tracking-widest text-center">Người lớn</span>
-                                    <input type="number" min="1" max="${(room.maxAdults || 4) + 2}" value="${room.baseAdults || 2}" class="adults-input w-full border border-gray-200 rounded-lg p-2 text-sm bg-gray-50 text-[#3a322b] font-bold text-center focus:outline-none focus:border-[#3a322b] transition-all" />
+                                    <input type="number" min="1" max="${room.maxAdults || 4}" value="${room.baseAdults || 2}" class="adults-input w-full border border-gray-200 rounded-lg p-2 text-sm bg-gray-50 text-[#3a322b] font-bold text-center focus:outline-none focus:border-[#3a322b] transition-all" oninput="clampGuestInput(this)" onblur="if(this.value==='') this.value=this.min" />
                                 </div>
                                 <div class="flex flex-col flex-1 justify-end">
                                     <span class="text-[10px] text-gray-500 mb-1.5 font-bold uppercase tracking-widest text-center">Trẻ em</span>
-                                    <input type="number" min="0" max="${(room.maxChildren || 2) + 2}" value="${room.baseChildren || 0}" class="children-input w-full border border-gray-200 rounded-lg p-2 text-sm bg-gray-50 text-[#3a322b] font-bold text-center focus:outline-none focus:border-[#3a322b] transition-all" oninput="renderChildAges(this)" />
+                                    <input type="number" min="0" max="${room.maxChildren || 2}" value="${room.baseChildren || 0}" class="children-input w-full border border-gray-200 rounded-lg p-2 text-sm bg-gray-50 text-[#3a322b] font-bold text-center focus:outline-none focus:border-[#3a322b] transition-all" oninput="renderChildAges(this)" onblur="if(this.value==='') {this.value=this.min; renderChildAges(this);}" />
                                 </div>
                             </div>
                         </div>
@@ -349,6 +370,7 @@ function createRoomCardHTML(room, availableCount) {
                                     data-base-children="${room.baseChildren || 0}"
                                     data-extra-adult="${room.extraAdultSurcharge || 0}"
                                     data-extra-child="${room.extraChildSurcharge || 0}"
+                                    data-surcharges='${room.surchargesJson || "[]"}'
                                     onclick="handleSelectRoomClick(this)">
                                 Select Room
                             </button>
@@ -443,28 +465,36 @@ function toggleShowMoreRooms() {
 function prevRoomDetailImage(e) {
     if (e) e.stopPropagation();
     if (currentRoomImages.length <= 1) return;
+    document.getElementById(`gallery-img-${currentRoomImageIndex}`).classList.replace('opacity-100', 'opacity-0');
     currentRoomImageIndex = (currentRoomImageIndex - 1 + currentRoomImages.length) % currentRoomImages.length;
-    document.getElementById('detailRoomImg').src = currentRoomImages[currentRoomImageIndex];
+    document.getElementById(`gallery-img-${currentRoomImageIndex}`).classList.replace('opacity-0', 'opacity-100');
 }
 
 function nextRoomDetailImage(e) {
     if (e) e.stopPropagation();
     if (currentRoomImages.length <= 1) return;
+    document.getElementById(`gallery-img-${currentRoomImageIndex}`).classList.replace('opacity-100', 'opacity-0');
     currentRoomImageIndex = (currentRoomImageIndex + 1) % currentRoomImages.length;
-    document.getElementById('detailRoomImg').src = currentRoomImages[currentRoomImageIndex];
+    document.getElementById(`gallery-img-${currentRoomImageIndex}`).classList.replace('opacity-0', 'opacity-100');
 }
 
 function openRoomInfoModal(roomJsonStr) {
     const room = JSON.parse(decodeURIComponent(roomJsonStr));
     currentRoomImages = room.coverImgUrl ? room.coverImgUrl.split(',') : CONFIG.defaultImages;
 
-    if (currentRoomImages.length > 1) {
-        currentRoomImages.forEach(src => { (new Image()).src = src; });
-    }
-
     currentRoomImageIndex = 0;
     document.getElementById('detailRoomName').innerText = room.categoryName;
-    document.getElementById('detailRoomImg').src = currentRoomImages[currentRoomImageIndex];
+    const gallery = document.getElementById('detailRoomImageGallery');
+    if (gallery) {
+        gallery.innerHTML = '';
+        currentRoomImages.forEach((src, idx) => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.id = `gallery-img-${idx}`;
+            img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${idx === 0 ? 'opacity-100' : 'opacity-0'}`;
+            gallery.appendChild(img);
+        });
+    }
 
     const prevBtn = document.getElementById('prevRoomImageBtn');
     const nextBtn = document.getElementById('nextRoomImageBtn');
@@ -541,7 +571,7 @@ function updateCartUI() {
     const container = document.getElementById('cartItemsContainer');
     const cartDatesSummary = document.getElementById('cartDatesSummary');
     const cartTotalPrice = document.getElementById('cartTotalPrice');
-    const btnCheckout = document.getElementById('btnCartCheckout');
+    const btnCheckout = document.getElementById('btnCreateCart');
 
     if (!cartWrapper) return;
 
@@ -610,11 +640,18 @@ function handleSelectRoomClick(button) {
     const allRoomNumbers = JSON.parse(button.getAttribute('data-room-numbers'));
     const baseAdults = parseInt(button.getAttribute('data-base-adults') || '0', 10);
     const baseChildren = parseInt(button.getAttribute('data-base-children') || '0', 10);
+    const extraAdultSurcharge = parseFloat(button.getAttribute('data-extra-adult') || '0');
+    const extraChildSurcharge = parseFloat(button.getAttribute('data-extra-child') || '0');
 
     const bookingActionBlock = button.closest('.booking-action-block');
     const quantity = parseInt(bookingActionBlock.querySelector('.room-quantity-select').value, 10);
     const adultsInput = bookingActionBlock.querySelector('.adults-input');
     const childrenInput = bookingActionBlock.querySelector('.children-input');
+
+    // Đảm bảo clamp lại 1 lần nữa phòng khi user chưa blur mà bấm nút luôn
+    if (adultsInput) clampGuestInput(adultsInput);
+    if (childrenInput) clampGuestInput(childrenInput);
+
     const adultsPerRoom = adultsInput ? parseInt(adultsInput.value, 10) : baseAdults;
     const childrenPerRoom = childrenInput ? parseInt(childrenInput.value, 10) : baseChildren;
     const childrenAges = Array.from(bookingActionBlock.querySelectorAll('.child-age-select')).map(s => parseInt(s.value, 10));
@@ -628,10 +665,38 @@ function handleSelectRoomClick(button) {
     }
 
     const diffDays = Math.ceil(Math.abs(bookingState.checkOut - bookingState.checkIn) / (1000 * 60 * 60 * 24)) || 1;
+    const extraAdults = Math.max(0, adultsPerRoom - baseAdults);
+    const adultSurchargePerNight = extraAdultSurcharge * extraAdults;
+    const surchargesData = JSON.parse(button.getAttribute('data-surcharges') || '[]');
+    let childSurchargePerNight = 0;
+
+    // Sort ages youngest first (ascending)
+    const sortedAges = [...childrenAges].sort((a, b) => a - b);
+    const chargeableChildrenCount = Math.max(0, childrenPerRoom - baseChildren);
+    const skipCount = Math.max(0, childrenPerRoom - chargeableChildrenCount); // Free allowance for youngest
+
+    for (let idx = skipCount; idx < sortedAges.length; idx++) {
+        const childAge = sortedAges[idx];
+        const matchedRule = surchargesData.find(s => childAge >= s.ageFrom && childAge <= s.ageTo);
+        if (matchedRule) {
+            childSurchargePerNight += parseFloat(matchedRule.priceModifier);
+        } else {
+            childSurchargePerNight += extraChildSurcharge;
+        }
+    }
+
+    const surchargePerNightPerRoom = adultSurchargePerNight + childSurchargePerNight;
+    const estimatedSurchargeTotal = surchargePerNightPerRoom * quantity * diffDays;
+    const roomBaseTotal = pricePerNight * quantity * diffDays;
+
     selectedRoomsCart[categoryName] = {
         quantity, pricePerNight, adultsPerRoom, childrenPerRoom, childrenAges,
+        baseAdults, baseChildren,
+        extraAdultSurcharge, extraChildSurcharge,
         roomNumbers: allRoomNumbers.slice(0, quantity),
-        estimatedTotal: pricePerNight * quantity * diffDays,
+        estimatedSurchargePerNight: surchargePerNightPerRoom,
+        estimatedSurchargeFee: estimatedSurchargeTotal,
+        estimatedTotal: roomBaseTotal + estimatedSurchargeTotal,
         diffDays
     };
 
@@ -718,82 +783,65 @@ function confirmCartBooking() {
         if (typeof openLoginModal === 'function') openLoginModal();
         return;
     }
+    const roomSelections = [];
+    let totalCartPrice = 0;
+    let totalSurchargeFee = 0;
+    const roomCategories = [];
+    let totalAdults = 0;
+    let totalChildren = 0;
 
-    const btnCheckout = document.getElementById('btnCartCheckout');
-    btnCheckout.disabled = true;
-    const originalText = btnCheckout.innerText;
-    btnCheckout.innerText = "ĐANG XỬ LÝ...";
-
-    let roomSelections = [];
     for (const catName in selectedRoomsCart) {
         const item = selectedRoomsCart[catName];
+        if (!item || item.quantity <= 0) continue;
+
         item.roomNumbers.forEach(roomNo => {
             roomSelections.push({
                 categoryName: catName,
                 roomNumber: roomNo,
                 numberOfAdults: item.adultsPerRoom,
                 numberOfChildren: item.childrenPerRoom,
-                childrenAges: item.childrenAges
+                childrenAges: item.childrenAges || []
             });
         });
+
+        totalCartPrice += item.estimatedTotal || 0;
+        totalSurchargeFee += item.estimatedSurchargeFee || 0;
+        roomCategories.push(`${item.quantity}x ${catName}`);
+        totalAdults += (item.adultsPerRoom || 0) * item.quantity;
+        totalChildren += (item.childrenPerRoom || 0) * item.quantity;
     }
 
     if (roomSelections.length === 0) {
         showToast('Chưa chọn phòng nào!', 'error');
-        btnCheckout.disabled = false;
-        btnCheckout.innerText = originalText;
         return;
     }
 
-    const payload = {
-        roomSelections: roomSelections,
+    const cartSnapshot = {
+        roomSelections,
         checkInDate: formatLocalDate(bookingState.checkIn),
         checkOutDate: formatLocalDate(bookingState.checkOut),
-        promotionCode: null
+        estimatedTotalPrice: totalCartPrice,
+        estimatedSurchargeFee: totalSurchargeFee,
+        estimatedDepositAmount: Math.round(totalCartPrice * 0.3),
+        roomCategories,
+        totalAdults,
+        totalChildren,
+        nights: bookingState.checkIn && bookingState.checkOut
+            ? Math.max(0, Math.round((new Date(bookingState.checkOut) - new Date(bookingState.checkIn)) / 86400000))
+            : 0
     };
 
-    fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-        .then(async res => {
-            if (!res.ok) throw new Error((await res.json().catch(() => { })).message || 'Có lỗi xảy ra trong quá trình đặt phòng.');
-            return res.json();
-        })
-        .then(data => {
-            btnCheckout.innerText = originalText;
-            btnCheckout.disabled = false;
+    sessionStorage.setItem('hoanien_room_cart', JSON.stringify(cartSnapshot));
+    sessionStorage.removeItem('kawai_cart');
+    sessionStorage.removeItem('kawai_bookingState');
+    selectedRoomsCart = {};
 
-            const status = data.bookingStatus ? data.bookingStatus.toUpperCase() : (data.status ? data.status.toUpperCase() : '');
-            if (['CONFIRMED', 'PENDING', 'PENDING_PAYMENT'].includes(status) && data.bookingId) {
-                cartHoldConfirmedBookingId = data.bookingId;
-                sessionStorage.removeItem('kawai_cart');
-                sessionStorage.removeItem('kawai_bookingState');
-                selectedRoomsCart = {};
-
-                showToast('Đặt phòng thành công! Đang chuyển đến trang thanh toán...', 'success');
-                setTimeout(() => {
-                    isRedirectingToPayment = true;
-                    window.location.href = `/payment?bookingId=${data.bookingId}`;
-                }, 1200);
-            } else {
-                showToast('Lỗi đặt phòng: ' + (data.message || 'Phòng đã được đặt hoặc không khả dụng!'), 'error');
-            }
-        })
-        .catch(err => {
-            btnCheckout.innerText = originalText;
-            btnCheckout.disabled = false;
-            console.error(err);
-            showToast(err.message || 'Lỗi kết nối Server! Vui lòng thử lại.', 'error');
-        });
+    window.location.href = '/payment';
 }
 
 async function cancelCartHold() {
+    // Không còn cần hủy record ở DB — giỏ phòng chỉ tồn tại trong sessionStorage
     if (!confirm('Bạn có chắc muốn hủy và xóa giỏ phòng không?')) return;
-    if (cartHoldConfirmedBookingId) {
-        try { await fetch(`/api/bookings/${cartHoldConfirmedBookingId}/cancel`, { method: 'POST' }); } catch (e) { }
-    }
     clearCartAndGoHome();
 }
 
@@ -864,15 +912,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-window.addEventListener('beforeunload', (e) => {
-    if (cartHoldConfirmedBookingId && !isRedirectingToPayment) {
-        e.preventDefault();
-        e.returnValue = 'Đơn đặt phòng của bạn sẽ bị hủy nếu bạn rời khỏi trang này. Bạn có chắc chắn muốn thoát?';
-    }
-});
-
-window.addEventListener('pagehide', () => {
-    if (cartHoldConfirmedBookingId && !isRedirectingToPayment) {
-        fetch(`/api/bookings/${cartHoldConfirmedBookingId}/cancel`, { method: 'POST', keepalive: true });
-    }
-});

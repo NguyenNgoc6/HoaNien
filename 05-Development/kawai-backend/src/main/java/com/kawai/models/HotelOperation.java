@@ -1,10 +1,13 @@
 package com.kawai.models;
 
+import org.hibernate.envers.Audited;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Hotel_Operations")
+@Audited
 public class HotelOperation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -39,14 +39,17 @@ public class HousekeepingWebController {
     private final EmployeeRepository employeeRepository;
     private final StaffScheduleRepository staffScheduleRepository;
     private final com.kawai.services.interfaces.ShiftService shiftService;
+    private final com.kawai.services.impl.FileUploadService fileUploadService;
 
     public HousekeepingWebController(HousekeepingService hs,
             HousekeepingTaskRepository htr, RoomRepository rr, EmployeeRepository er, StaffScheduleRepository ssr,
-            com.kawai.services.interfaces.ShiftService shiftService) {
+            com.kawai.services.interfaces.ShiftService shiftService,
+            com.kawai.services.impl.FileUploadService fileUploadService) {
         this.housekeepingService = hs; this.housekeepingTaskRepo = htr;
         this.roomRepository = rr; this.employeeRepository = er;
         this.staffScheduleRepository = ssr;
         this.shiftService = shiftService;
+        this.fileUploadService = fileUploadService;
     }
 
     @ModelAttribute("todayLabel")
@@ -164,22 +167,13 @@ public class HousekeepingWebController {
             HotelOperation task = housekeepingService.createMaintenanceRequest(roomId, sid, notes, emergency);
             
             if (image != null && !image.isEmpty()) {
-                String UPLOAD_DIR = com.kawai.utils.UploadPathResolver.resolvePath("uploads/");
-                File directory = new File(UPLOAD_DIR);
-                if (!directory.exists()) {
-                    directory.mkdirs();
+                try {
+                    String secureUrl = fileUploadService.uploadFile(image, "hoanien_housekeeping");
+                    task.setImageUrl(secureUrl);
+                    housekeepingTaskRepo.save(task);
+                } catch (Exception e) {
+                    System.err.println("Lỗi upload ảnh housekeeping: " + e.getMessage());
                 }
-                
-                String originalFilename = image.getOriginalFilename();
-                String extension = originalFilename != null && originalFilename.contains(".") ? 
-                                   originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
-                String newFilename = UUID.randomUUID().toString() + extension;
-                
-                Path filePath = Paths.get(UPLOAD_DIR + newFilename);
-                Files.write(filePath, image.getBytes());
-                
-                task.setImageUrl("/uploads/" + newFilename);
-                housekeepingTaskRepo.save(task);
             }
             
             ra.addFlashAttribute("successMessage", "Đã gửi yêu cầu bảo trì.");
