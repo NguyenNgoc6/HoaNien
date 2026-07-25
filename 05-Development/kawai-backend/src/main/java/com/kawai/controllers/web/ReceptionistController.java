@@ -19,7 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @AllArgsConstructor
 // Cho phép vào controller nếu có bất kỳ quyền lễ tân nào — từng endpoint sẽ
 // kiểm tra chi tiết hơn
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE', 'OP_NIGHT_AUDIT', 'OP_HOUSEKEEPING')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE', 'OP_NIGHT_AUDIT', 'OP_HOUSEKEEPING')")
 public class ReceptionistController {
 
     private final RoomRepository roomRepository;
@@ -55,7 +55,7 @@ public class ReceptionistController {
     }
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_DASHBOARD', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_DASHBOARD', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE')")
     public String dashboard(Model model, java.security.Principal principal) {
         // KPI
         long totalRooms = 0, occupied = 0, dirty = 0;
@@ -164,7 +164,7 @@ public class ReceptionistController {
     }
 
     @GetMapping("/walk-in")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_WALKIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_WALKIN')")
     public String walkIn(Model model) {
         java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
         model.addAttribute("todayStr", today.toString());
@@ -222,7 +222,7 @@ public class ReceptionistController {
     private static final org.slf4j.Logger checkinLog = org.slf4j.LoggerFactory.getLogger(ReceptionistController.class);
 
     @GetMapping("/check-in")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_CHECKIN')")
     public String checkIn(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword,
             @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate dateFilter,
@@ -454,7 +454,7 @@ public class ReceptionistController {
      * để hiển thị modal "Chi tiết" qua AJAX fetch.
      */
     @GetMapping("/in-house/detail/{bookingId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_INHOUSE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_INHOUSE')")
     @org.springframework.web.bind.annotation.ResponseBody
     public org.springframework.http.ResponseEntity<Map<String, Object>> getInHouseDetail(
             @org.springframework.web.bind.annotation.PathVariable Long bookingId) {
@@ -694,7 +694,7 @@ public class ReceptionistController {
     }
 
     @GetMapping("/in-house")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_INHOUSE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_INHOUSE')")
     public String inHouse(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
             @org.springframework.web.bind.annotation.RequestParam(required = false) String keyword,
             Model model) {
@@ -865,13 +865,13 @@ public class ReceptionistController {
     }
 
     @GetMapping("/folio")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKOUT')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_CHECKOUT')")
     public String folio(Model model) {
         return "receptionist/folio";
     }
 
     @GetMapping("/folio/detail")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKOUT')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_CHECKOUT')")
     public String folioDetail(Model model) {
         return "receptionist/folio-detail";
     }
@@ -956,7 +956,7 @@ public class ReceptionistController {
      */
     @DeleteMapping("/api/room-guests/by-dependent/{dependentId}")
     @ResponseBody
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_WALKIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_WALKIN')")
     public org.springframework.http.ResponseEntity<Map<String, String>> deleteRoomGuest(
             @PathVariable Long dependentId) {
         com.kawai.models.RoomGuest guest = roomGuestRepository.findFirstByDependentId(dependentId).orElse(null);

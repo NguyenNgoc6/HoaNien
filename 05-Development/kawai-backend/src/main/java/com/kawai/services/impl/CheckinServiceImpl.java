@@ -95,7 +95,7 @@ public class CheckinServiceImpl implements CheckinService {
         // UC12.1: Check-in
         @Override
         @Transactional
-        public RoomBookingDetail checkIn(Long bookingDetailId, Long roomId, java.math.BigDecimal allocatedCreditLimit) {
+        public RoomBookingDetail checkIn(Long bookingDetailId, Long roomId) {
                 RoomBookingDetail detail = findBookingDetail(bookingDetailId);
 
                 if (STATUS_CHECKED_IN.equalsIgnoreCase(detail.getDetailStatus())) {
@@ -110,29 +110,30 @@ public class CheckinServiceImpl implements CheckinService {
 
                 validateRoomAvailableForCheckin(room);
 
-                assignRoomToGuest(detail, room, allocatedCreditLimit);
+                assignRoomToGuest(detail, room);
 
                 return roomBookingDetailRepo.save(detail);
         }
 
-        private void assignRoomToGuest(RoomBookingDetail detail, Room room, java.math.BigDecimal allocatedCreditLimit) {
+        private void assignRoomToGuest(RoomBookingDetail detail, Room room) {
                 detail.setRoom(room);
-                if (allocatedCreditLimit != null && allocatedCreditLimit.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                        detail.setSubCreditLimit(allocatedCreditLimit);
-                } else if (detail.getSubCreditLimit() == null
-                                || detail.getSubCreditLimit().compareTo(java.math.BigDecimal.ZERO) == 0) {
-                        java.math.BigDecimal defaultLimit = (detail.getRoomBooking() != null
-                                        && detail.getRoomBooking().getCreditLimit() != null)
+                // subCreditLimit đã được gán từ lúc tạo booking (= booking.creditLimit hoặc 5tr mặc định)
+                // Không ghi đè tại đây để đảm bảo hạn mức luôn khớp với tier của khách
+                if (detail.getSubCreditLimit() == null) {
+                        // Fallback an toàn: nếu vì lý do nào đó vẫn null thì lấy từ booking cha
+                        java.math.BigDecimal fallback = (detail.getRoomBooking() != null
+                                        && detail.getRoomBooking().getCreditLimit() != null
+                                        && detail.getRoomBooking().getCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0)
                                                         ? detail.getRoomBooking().getCreditLimit()
                                                         : new java.math.BigDecimal("5000000.00");
-                        detail.setSubCreditLimit(defaultLimit);
+                        detail.setSubCreditLimit(fallback);
                 }
                 detail.setDetailStatus(STATUS_CHECKED_IN);
 
                 room.setRoomStatus(STATUS_OCCUPIED);
                 room.setCurrentBookingDetailId(detail.getId());
 
-                roomBookingDetailRepo.save(detail);
+                // Lưu room trước, detail sẽ được save bởi caller (checkIn dòng 115)
                 roomRepo.save(room);
 
                 // Cập nhật trạng thái của toàn bộ Booking sang Checked_In
@@ -192,21 +193,6 @@ public class CheckinServiceImpl implements CheckinService {
                 }
                 RoomBookingDetail detail = findBookingDetail(bookingDetailId);
                 RoomBooking parent = detail.getRoomBooking();
-
-                BigDecimal currentTotal = BigDecimal.ZERO;
-                java.util.List<RoomBookingDetail> allDetails = roomBookingDetailRepo
-                                .findByRoomBookingId(parent.getId());
-                for (RoomBookingDetail d : allDetails) {
-                        if (!d.getId().equals(detail.getId()) && d.getSubCreditLimit() != null) {
-                                currentTotal = currentTotal.add(d.getSubCreditLimit());
-                        }
-                }
-
-                if (parent.getCreditLimit() != null
-                                && currentTotal.add(newCreditLimit).compareTo(parent.getCreditLimit()) > 0) {
-                        throw new com.kawai.exceptions.BusinessException("MOD2-UC14-016",
-                                        "Tổng hạn mức phân bổ vượt quá hạn mức tổng");
-                }
 
                 detail.setSubCreditLimit(newCreditLimit);
                 roomBookingDetailRepo.save(detail);
@@ -455,35 +441,6 @@ public class CheckinServiceImpl implements CheckinService {
                 }
                 form.getAssignedRoomNumbers().removeIf(String::isEmpty);
 
-                java.math.BigDecimal totalRequested = java.math.BigDecimal.ZERO;
-                if (form.getAllocatedCreditLimits() != null && !form.getAllocatedCreditLimits().isEmpty()) {
-                        for (java.math.BigDecimal limit : form.getAllocatedCreditLimits()) {
-                                if (limit != null && limit.compareTo(java.math.BigDecimal.ZERO) < 0) {
-                                        throw new com.kawai.exceptions.BusinessException("CHECKIN-008",
-                                                        "Hạn mức không được là số âm!");
-                                }
-                                if (limit != null) {
-                                        totalRequested = totalRequested.add(limit);
-                                }
-                        }
-                }
-                java.math.BigDecimal existingUsed = java.math.BigDecimal.ZERO;
-                for (com.kawai.models.RoomBookingDetail d : details) {
-                        if (!pendingDetails.contains(d) && d.getSubCreditLimit() != null) {
-                                existingUsed = existingUsed.add(d.getSubCreditLimit());
-                        }
-                }
-                com.kawai.models.RoomBooking roomBooking = (com.kawai.models.RoomBooking) booking;
-                java.math.BigDecimal masterCreditLimit = roomBooking.getCreditLimit() != null
-                                ? roomBooking.getCreditLimit()
-                                : new java.math.BigDecimal("5000000.00");
-                if (existingUsed.add(totalRequested).compareTo(masterCreditLimit) > 0) {
-                        throw new com.kawai.exceptions.BusinessException("CHECKIN-007",
-                                        "Tổng hạn mức cấp cho các phòng vượt quá hạn mức của tài khoản (Master: "
-                                                        + masterCreditLimit
-                                                        + ")");
-                }
-
                 if (form.getAssignedRoomNumbers().size() != pendingDetails.size()) {
                         throw new com.kawai.exceptions.BusinessException("CHECKIN-005",
                                         "Bạn phải phân đủ " + pendingDetails.size()
@@ -513,13 +470,8 @@ public class CheckinServiceImpl implements CheckinService {
                         }
                         pendingDetails.remove(matchedDetail);
 
-                        java.math.BigDecimal allocatedLimit = null;
-                        int roomIdx = form.getAssignedRoomNumbers().indexOf(roomNumber);
-                        if (form.getAllocatedCreditLimits() != null
-                                        && roomIdx < form.getAllocatedCreditLimits().size()) {
-                                allocatedLimit = form.getAllocatedCreditLimits().get(roomIdx);
-                        }
-                        this.checkIn(matchedDetail.getId(), room.getId(), allocatedLimit);
+                        // subCreditLimit đã được gán tự động từ lúc tạo booking — không cần truyền thêm
+                        this.checkIn(matchedDetail.getId(), room.getId());
                         roomNumberToDetailIdMap.put(roomNumber, matchedDetail.getId());
                 }
 
@@ -624,8 +576,10 @@ public class CheckinServiceImpl implements CheckinService {
                         }
                 }
 
-                // Gửi email xác nhận Check-in cho Khách đặt phòng chính (Sử dụng template
-                // walkin-checkin-existing)
+                // Gửi email xác nhận Check-in cho Khách đặt phòng chính
+                com.kawai.models.RoomBooking roomBooking = (booking instanceof com.kawai.models.RoomBooking)
+                                ? (com.kawai.models.RoomBooking) booking
+                                : null;
                 if (emailService != null && customer != null && roomBooking != null) {
                         try {
                                 com.kawai.models.RoomBookingDetail mailDetail = null;

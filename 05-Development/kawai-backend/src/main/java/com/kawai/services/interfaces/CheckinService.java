@@ -20,7 +20,7 @@ public interface CheckinService {
     /**
      * Check-in khách vào phòng (UC12.1).
      */
-    RoomBookingDetail checkIn(Long bookingDetailId, Long roomId, BigDecimal allocatedCreditLimit);
+    RoomBookingDetail checkIn(Long bookingDetailId, Long roomId);
 
     /**
      * Bulk Check-in từ form (gán nhiều phòng và tạo dependent)

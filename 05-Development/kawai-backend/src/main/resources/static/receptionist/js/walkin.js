@@ -101,18 +101,22 @@ document.addEventListener('DOMContentLoaded', () => {
         typeSelect.appendChild(opt);
     }
 
-    // Tính ngày hôm nay theo múi giờ local
     const localDate = new Date();
     const year = localDate.getFullYear();
     const month = String(localDate.getMonth() + 1).padStart(2, '0');
     const day = String(localDate.getDate()).padStart(2, '0');
     todayStrGlobal = `${year}-${month}-${day}`;
 
-    // Ràng buộc: ngày trả phòng phải >= hôm nay
+    // Tính ngày mai
+    const tmrDate = new Date(localDate);
+    tmrDate.setDate(tmrDate.getDate() + 1);
+    const tmrYear = tmrDate.getFullYear();
+    const tmrMonth = String(tmrDate.getMonth() + 1).padStart(2, '0');
+    const tmrDay = String(tmrDate.getDate()).padStart(2, '0');
+    const tomorrowStrGlobal = `${tmrYear}-${tmrMonth}-${tmrDay}`;
     const checkoutDateInput = document.getElementById('checkoutDate');
     if (checkoutDateInput) {
-        checkoutDateInput.min = todayStrGlobal;
-        // Khi đổi ngày trả phòng mà bước thanh toán đang hiện → tính lại
+        checkoutDateInput.min = tomorrowStrGlobal;
         checkoutDateInput.addEventListener('change', () => {
             if (document.getElementById('step4Container').style.display === 'block') {
                 showPaymentStep();
@@ -273,9 +277,6 @@ function escalateDirtyRoomWalkIn(roomNum, assignAfter) {
 /** Danh sách phòng đã chọn để check-in. Mỗi phần tử: { roomId, roomNum, category, price, allocatedCreditLimit }. */
 let walkInCart = [];
 
-/** Hạn mức tín dụng (credit limit) của khách chính. Được set sau khi tìm thấy khách trong hệ thống. */
-let masterCreditLimit = 0;
-
 /** Cờ đánh dấu khách đã được xác thực (tìm thấy hoặc xác nhận thông tin mới). */
 let isGuestVerified = false;
 
@@ -363,34 +364,6 @@ function unlockStep2() {
 }
 
 /**
- * Cập nhật hiển thị hạn mức tín dụng còn lại (tổng masterCreditLimit trừ đã phân bổ).
- */
-function updateCreditLimitDisplay() {
-    const totalAllocated = walkInCart.reduce((sum, r) => sum + (r.allocatedCreditLimit || 0), 0);
-    const remaining = masterCreditLimit - totalAllocated;
-
-    const displayEl = document.getElementById('remainingCreditDisplay');
-    if (displayEl) {
-        displayEl.innerText = remaining.toLocaleString() + ' VND';
-        displayEl.style.color = remaining < 0 ? 'red' : '#16a34a';
-    }
-}
-
-/**
- * Xử lý khi người dùng nhập hạn mức tín dụng cho một phòng trong cart.
- * @param {HTMLInputElement} input - Input hạn mức
- * @param {number}           index - Vị trí phòng trong walkInCart
- */
-function handleCreditInput(input, index) {
-    walkInCart[index].allocatedCreditLimit = parseFloat(input.value) || 0;
-    updateCreditLimitDisplay();
-
-    // Highlight đỏ nếu tổng vượt quá hạn mức master
-    const totalAllocated = walkInCart.reduce((s, r) => s + (r.allocatedCreditLimit || 0), 0);
-    input.style.borderColor = totalAllocated > masterCreditLimit ? '#ef4444' : '#cbd5e1';
-}
-
-/**
  * Xử lý nút "Thêm phòng vào cart": lấy giá trị từ dropdown rồi gọi proceedAddRoomToCart.
  */
 function addRoomToCart() {
@@ -474,32 +447,14 @@ function renderRoomCart() {
 
     container.style.display = 'block';
 
-    // Ẩn/hiện cột hạn mức tín dụng tùy theo trạng thái xác thực khách
-    const remainingCreditWrapper = document.getElementById('remainingCreditWrapper');
-    const creditLimitHeader = document.getElementById('creditLimitHeader');
-    if (isGuestVerified) {
-        if (remainingCreditWrapper) remainingCreditWrapper.style.display = 'inline';
-        if (creditLimitHeader) creditLimitHeader.style.display = 'table-cell';
-    } else {
-        if (remainingCreditWrapper) remainingCreditWrapper.style.display = 'none';
-        if (creditLimitHeader) creditLimitHeader.style.display = 'none';
-    }
-
     walkInCart.forEach((room, index) => {
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px dashed #e2e8f0';
-
-        const creditCell = isGuestVerified
-            ? `<td style="padding: 10px 16px;">
-                <input type="number" class="form-control room-credit-input" data-index="${index}" value="${room.allocatedCreditLimit || ''}" min="0" oninput="handleCreditInput(this, ${index})" style="width:120px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
-               </td>`
-            : `<td style="display: none;"></td>`;
 
         tr.innerHTML = `
             <td style="padding: 10px 16px; font-weight: 500;">${room.roomNum}</td>
             <td style="padding: 10px 16px;">${room.category}</td>
             <td style="padding: 10px 16px; font-weight: 500; color: #16a34a;">${room.price}</td>
-            ${creditCell}
             <td style="padding: 10px 16px; text-align: right;">
                 <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; border-color: #fca5a5;" onclick="removeRoomFromCart(${index})"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -512,8 +467,6 @@ function renderRoomCart() {
         opt.innerText = room.roomNum;
         depRoomSelect.appendChild(opt);
     });
-
-    updateCreditLimitDisplay();
 }
 
 
@@ -521,13 +474,12 @@ function renderRoomCart() {
 // 5. THÔNG TIN KHÁCH HÀNG & XÁC THỰC
 // =============================================================================
 
-/**
- * Mở khóa nút "Tiếp tục thanh toán" và hiển thị Customer ID.
- * @param {string} customerId - ID khách hàng dạng "CUST-123" hoặc "NEW-GUEST"
- */
 function unlockFinalButton(customerId) {
     document.getElementById('guestStatusMsg').style.display = 'inline-block';
-    document.getElementById('mockCustomerId').innerText = customerId;
+    const mockIdEl = document.getElementById('mockCustomerId');
+    if (mockIdEl) {
+        mockIdEl.innerText = customerId;
+    }
 
     const continueBtn = document.getElementById('continueToPaymentBtn');
     if (continueBtn) {
@@ -536,10 +488,6 @@ function unlockFinalButton(customerId) {
     }
 }
 
-/**
- * Tìm kiếm khách hàng cũ theo số điện thoại hoặc CCCD.
- * Tự động điền thông tin nếu tìm thấy.
- */
 function searchCustomer() {
     const phone = document.getElementById('guestPhone').value;
     const cccd = document.getElementById('guestId').value;
@@ -568,7 +516,6 @@ function searchCustomer() {
 
             isGuestVerified = true;
             renderRoomCart();
-            updateCreditLimitDisplay();
 
             if (data.dateOfBirth) {
                 document.getElementById('guestDob').value = data.dateOfBirth;
@@ -580,6 +527,15 @@ function searchCustomer() {
             statusEl.innerHTML = `<i class="fa-solid fa-check-circle"></i> Đã tìm thấy khách hàng cũ (ID: <span id="mockCustomerId">${data.id}</span>)`;
             statusEl.style.color = '#16a34a';
             statusEl.style.background = '#dcfce7';
+
+            // Chặn không cho ấn Create Account nữa
+            const createBtn = document.getElementById('btnCreateNewCustomer');
+            if (createBtn) {
+                createBtn.disabled = true;
+                createBtn.style.opacity = '0.5';
+                createBtn.style.cursor = 'not-allowed';
+                createBtn.title = "Tài khoản đã tồn tại, không thể tạo mới";
+            }
         })
         .catch(error => {
             alert(error.message);
@@ -653,10 +609,9 @@ function validateGuestInfo() {
 function validateNewCustomer() {
     if (!validateGuestInfo()) return;
 
-    masterCreditLimit = 5000000; // Hạn mức mặc định cho khách vãng lai mới
+    masterCreditLimit = 5000000; // Giữ lại cho tương thích nhưng không dùng để display
     isGuestVerified = true;
     renderRoomCart();
-    updateCreditLimitDisplay();
 
     unlockFinalButton('NEW-GUEST');
 
@@ -795,7 +750,6 @@ function backToStep3() {
 function buildRoomSelections() {
     return walkInCart.map(r => ({
         roomId: r.roomId,
-        allocatedCreditLimit: r.allocatedCreditLimit || 0,
         accompaniedGuests: walkInDependents.filter(d => d.roomId == r.roomId)
     }));
 }
@@ -815,11 +769,11 @@ function submitCheckIn() {
         return;
     }
 
-    // Ngày trả phòng không được ở quá khứ
+    // Ngày trả phòng phải từ ngày mai trở đi
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(checkOutDate);
-    if (selectedDate < today) {
-        alert('LỖI: Ngày trả phòng (Checkout Date) không thể ở trong quá khứ!');
+    if (selectedDate <= today) {
+        alert('LỖI: Ngày trả phòng (Checkout Date) phải từ ngày mai trở đi!');
         return;
     }
 

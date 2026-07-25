@@ -192,39 +192,16 @@ public class BookingServiceImpl implements BookingService {
         holdBooking.setDepositAmount(BigDecimal.ZERO);
         holdBooking.setCancellationDeadline(checkIn.atTime(14, 0).minusHours(48));
         holdBooking.setPersonalPinHash("HOLD_PENDING");
+        holdBooking.setNotes(request.getNotes());
 
         BigDecimal maxTierLimit = new BigDecimal("5000000.00"); // Mặc định 5 triệu
         if (customer.getMembershipTier() != null && customer.getMembershipTier().getCreditLimit() != null) {
             maxTierLimit = customer.getMembershipTier().getCreditLimit();
         }
 
-        // Tính tổng hạn mức đã sử dụng của các Đơn hàng (của khách này) đang có khoảng
-        // thời gian lưu trú giao nhau
-        java.util.List<RoomBooking> existingBookings = roomBookingRepository.findByCustomerOrderByIdDesc(customer);
-        BigDecimal utilizedLimit = BigDecimal.ZERO;
-        for (RoomBooking b : existingBookings) {
-            if (b.getId() != null && holdBooking.getId() != null && b.getId().equals(holdBooking.getId())) {
-                continue;
-            }
-            String st = b.getBookingStatus() != null ? b.getBookingStatus().toUpperCase() : "";
-            if (st.startsWith("CANCEL") || st.equals("CHECKED_OUT")) {
-                continue;
-            }
-            // Ktra giao nhau: b.checkIn < new.checkOut AND b.checkOut > new.checkIn
-            if (b.getCheckInDate() != null && b.getCheckOutDate() != null) {
-                if (b.getCheckInDate().isBefore(checkOut) && b.getCheckOutDate().isAfter(checkIn)) {
-                    if (b.getCreditLimit() != null && b.getCreditLimit().compareTo(BigDecimal.ZERO) > 0) {
-                        utilizedLimit = utilizedLimit.add(b.getCreditLimit());
-                    }
-                }
-            }
-        }
-
-        BigDecimal creditLimit = maxTierLimit.subtract(utilizedLimit);
-        if (creditLimit.compareTo(BigDecimal.ZERO) <= 0) {
-            creditLimit = (maxTierLimit != null && maxTierLimit.compareTo(BigDecimal.ZERO) > 0) ? maxTierLimit
-                    : new BigDecimal("5000000.00");
-        }
+        BigDecimal creditLimit = (maxTierLimit != null && maxTierLimit.compareTo(BigDecimal.ZERO) > 0) 
+                ? maxTierLimit 
+                : new BigDecimal("5000000.00");
 
         holdBooking.setCreditLimit(creditLimit);
 
@@ -653,14 +630,13 @@ public class BookingServiceImpl implements BookingService {
                         "Đơn đặt phòng không thuộc về tài khoản này hoặc không tồn tại!"));
 
         String status = booking.getBookingStatus() != null ? booking.getBookingStatus().toUpperCase() : "";
-        if ("CHECKED_IN".equals(status)
-                || "CANCELLED".equals(status)
+        if ("CHECKED_IN".equalsIgnoreCase(status)
+                || "CANCELLED".equalsIgnoreCase(status)
                 || status.startsWith("CANCEL")) {
             throw new BusinessException("BKG-005", "Invalid booking status");
         }
 
-        if ("Pending".equalsIgnoreCase(booking.getBookingStatus())
-                || "Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
+        if ("Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
             deletePendingBooking(bookingId, customerId);
             BookingResponseDTO response = new BookingResponseDTO();
             response.setBookingId(bookingId);
@@ -1087,8 +1063,7 @@ public class BookingServiceImpl implements BookingService {
         RoomBooking booking = roomBookingRepository.findByIdAndCustomerId(bookingId, customerId)
                 .orElseThrow(() -> new BusinessException("BOOKING_NOT_FOUND", "Không tìm thấy đơn đặt phòng"));
 
-        if (!"Pending".equalsIgnoreCase(booking.getBookingStatus())
-                && !"Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
+        if (!"Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
             throw new BusinessException("INVALID_STATE", "Chỉ có thể xóa đơn đang ở trạng thái chờ");
         }
 

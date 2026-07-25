@@ -111,7 +111,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
 
-        String returnUrl = vnPayConfig.getReturnUrl();
+        String returnUrl = getDynamicReturnUrl();
         if (returnUrl.contains("?")) {
             returnUrl += "&bId=" + bookingId;
         } else {
@@ -196,7 +196,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -273,7 +273,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -352,7 +352,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -408,7 +408,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -560,15 +560,11 @@ public class VnPayServiceImpl implements VnPayService {
                         for (com.kawai.models.RoomBookingDetail detail : details) {
                             if ("Pending_Payment".equals(detail.getDetailStatus())) {
                                 detail.setDetailStatus("Checked_In");
-                                // Thêm FolioItem cọc VNPay
-                                folioService.addFolioItem(detail.getId(), "FRONT_DESK", txn.getAmount().negate(),
-                                        "Tiền cọc Walk-in (Chuyển khoản VNPay)");
                             }
                         }
                         roomBookingDetailRepository.saveAll(details);
                     }
-                } else if ("Pending".equals(booking.getBookingStatus())
-                        || "Pending_Payment".equals(booking.getBookingStatus())) {
+                } else if ("Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Confirmed");
                     if (emailService != null && booking instanceof com.kawai.models.RoomBooking
                             && booking.getCustomer() != null) {
@@ -585,8 +581,6 @@ public class VnPayServiceImpl implements VnPayService {
                     String[] parts = txnRef.split("_");
                     if (parts.length >= 2) {
                         Long detailId = Long.parseLong(parts[1]);
-                        // Ghi nhận như FolioItem âm (đồng nhất với luồng CASH)
-                        // → Checkout sẽ tự động cấn trừ: chi tiêu(+) + đã nạp(-) = số thực nợ
                         folioService.addFolioItem(detailId, "FRONT_DESK", txn.getAmount().negate(),
                                 "Nạp tiền nâng hạn mức (Chuyển khoản VNPay)");
                     }
@@ -640,5 +634,15 @@ public class VnPayServiceImpl implements VnPayService {
         response.put("RspCode", "00");
         response.put("Message", "Confirm Success");
         return response;
+    }
+
+    private String getDynamicReturnUrl() {
+        try {
+            return org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/v1/payments/vnpay-return").build().toUriString();
+        } catch (Exception e) {
+            // Fallback in case it's not called within a web request context
+            return vnPayConfig.getReturnUrl();
+        }
     }
 }
