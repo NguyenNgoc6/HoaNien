@@ -614,22 +614,30 @@ public class TourBookingServiceImpl implements TourBookingService {
                         booking.setBookingStatus(newStatus);
                         tourBookingRepository.save(booking);
 
-                        // A. Nếu là khách lưu trú (có phòng nghỉ): Hoàn tiền vào Folio phòng
+                        // A. Nếu là khách lưu trú (có phòng nghỉ): Xóa FolioItem của Tour ra khỏi Folio phòng do hoàn 100%
                         if (booking.getRoomBookingDetail() != null) {
                                 Long detailId = booking.getRoomBookingDetail().getId();
-                                String desc = String.format("Hoàn 100%% tiền Tour '%s' do Resort hủy tour. Sự cố: %s",
-                                                booking.getSchedule() != null && booking.getSchedule().getTour() != null
-                                                                ? booking.getSchedule().getTour().getTourName()
-                                                                : "Lữ hành",
-                                                reason != null ? reason : "");
-
-                                if (folioService != null) {
-                                        folioService.addFolioItem(detailId, "TOUR", refundAmount.negate(), desc);
+                                if (folioItemRepository != null) {
+                                        List<FolioItem> items = folioItemRepository.findByRoomBookingDetailId(detailId);
+                                        if (items != null) {
+                                                String tourName = (booking.getSchedule() != null && booking.getSchedule().getTour() != null)
+                                                                ? booking.getSchedule().getTour().getTourName() : "";
+                                                for (FolioItem item : items) {
+                                                        boolean isTourItem = "Tour".equalsIgnoreCase(item.getSourceDepartment())
+                                                                        || "OTH_TOUR".equalsIgnoreCase(item.getRevenueCode())
+                                                                        || (item.getDescription() != null && item.getDescription().contains("Tour:"));
+                                                        if (isTourItem) {
+                                                                if (tourName.isEmpty() || (item.getDescription() != null && item.getDescription().contains(tourName))) {
+                                                                        folioItemRepository.delete(item);
+                                                                }
+                                                        }
+                                                }
+                                        }
                                 }
 
                                 String currentNotes = booking.getNotes() != null ? booking.getNotes() : "";
-                                booking.setNotes(currentNotes + "\n[ĐÃ HOÀN TIỀN] Hoàn 100% tiền Tour (" + refundAmount
-                                                + " VNĐ) vào Folio phòng "
+                                booking.setNotes(currentNotes + "\n[ĐÃ HỦY TOUR & HOÀN 100%] Đã xóa khoản Tour (" + refundAmount
+                                                + " VNĐ) khỏi Folio phòng "
                                                 + (booking.getRoomBookingDetail().getRoom() != null ? booking
                                                                 .getRoomBookingDetail().getRoom().getRoomNumber() : "")
                                                 + " lúc " + java.time.LocalDateTime.now() + ". Lý do: " + reason);

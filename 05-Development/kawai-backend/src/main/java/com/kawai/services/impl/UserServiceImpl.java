@@ -12,7 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.kawai.repositories.CustomerRepository;
+import com.kawai.repositories.DependentRepository;
 import com.kawai.models.Customer;
+import com.kawai.models.Dependent;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,17 +25,20 @@ public class UserServiceImpl implements UserService {
     private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DependentRepository dependentRepository;
 
     public UserServiceImpl(AccountRepository accountRepository, 
                            EmployeeRepository employeeRepository, 
                            CustomerRepository customerRepository,
                            RoleRepository roleRepository, 
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           DependentRepository dependentRepository) {
         this.accountRepository = accountRepository;
         this.employeeRepository = employeeRepository;
         this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.dependentRepository = dependentRepository;
     }
 
     @Override
@@ -218,11 +224,30 @@ public class UserServiceImpl implements UserService {
         customer.setFaceImgUrl(null);
         customer.setBirthDate(null);
         customer.setAvatarUrl(null);
+        customer.setAddress(null);
 
         if (customer.getAccount() != null) {
             Account account = customer.getAccount();
-            customer.setAccount(null);
-            accountRepository.delete(account);
+            account.setIsActive(false);
+            account.setUsername("deleted_" + java.util.UUID.randomUUID().toString());
+            account.setPasswordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            account.setResetPasswordToken(null);
+            account.setTwoFactorCode(null);
+            accountRepository.save(account);
+        }
+
+        if (dependentRepository != null) {
+            List<Dependent> dependents = dependentRepository.findByCustomer(customer);
+            if (dependents != null) {
+                for (Dependent dep : dependents) {
+                    dep.setDependentName("Anonymous Dependent");
+                    dep.setCccdPassportEncrypted(null);
+                    dep.setFaceVectorData(null);
+                    dep.setFaceImgUrl(null);
+                    dep.setIsDeleted(true);
+                    dependentRepository.save(dep);
+                }
+            }
         }
 
         customerRepository.save(customer);

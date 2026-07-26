@@ -64,7 +64,7 @@ public class AdminAccountRestController {
         } catch (Exception e) {
             System.err.println("========== ERROR IN ANONYMIZE API: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Internal server error"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Internal server error"));
         }
     }
     @PostMapping("/accounts")
