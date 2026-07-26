@@ -320,7 +320,7 @@ public class HousekeepingApiController {
     }
 
     @PostMapping("/housekeeping/reception/escalate-task")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_INHOUSE', 'OP_RECEPTION_CHECKIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_INHOUSE', 'OP_RECEPTION_CHECKIN')")
     public ResponseEntity<?> escalateTask(@RequestBody Map<String, String> request) {
         String roomNumber = request.get("roomNumber");
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
@@ -391,7 +391,7 @@ public class HousekeepingApiController {
     }
 
     @PostMapping("/housekeeping/reception/create-urgent-maintenance")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_RECEPTIONIST', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RECEPTIONIST', 'OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'OP_RECEPTION_CHECKOUT', 'OP_RECEPTION_INHOUSE')")
     public ResponseEntity<?> createUrgentMaintenance(@RequestBody Map<String, String> request) {
         String roomNumber = request.get("roomNumber");
         if (roomNumber == null || roomNumber.trim().isEmpty()) {
