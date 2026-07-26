@@ -146,8 +146,8 @@ class ChangeRoomCategoryServiceUC44Test {
          * TC-UC44-001-A: Phụ phí = (newRate - oldRate) × remainingNights = 4,500,000 VND
          */
         @Test
-        @DisplayName("001-A | FolioItem amount = (3,500,000 - 2,000,000) × 3 = 4,500,000 VND")
-        void upgrade_shouldCreateFolioItemWithCorrectAmount() {
+        @DisplayName("001-A | Upgrade — KHÔNG tạo FolioItem gộp ngay, phụ phí sẽ được tính theo từng đêm khi Night Audit chạy")
+        void upgrade_shouldNotCreateUpfrontFolioItem() {
             // Arrange
             when(roomBookingDetailRepository.findById(BOOKING_DETAIL_ID))
                     .thenReturn(Optional.of(activeDetail));
@@ -155,7 +155,6 @@ class ChangeRoomCategoryServiceUC44Test {
                     .thenReturn(Optional.of(newRoom));
             when(roomBookingDetailRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             when(roomRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(folioItemRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             when(auditLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             ChangeRoomCategoryRequest request = ChangeRoomCategoryRequest.builder()
@@ -168,14 +167,9 @@ class ChangeRoomCategoryServiceUC44Test {
             // Act
             ChangeRoomCategoryResponse response = changeRoomCategoryService.changeCategory(request);
 
-            // Assert — FolioItem phụ phí
-            ArgumentCaptor<FolioItem> folioCaptor = ArgumentCaptor.forClass(FolioItem.class);
-            verify(folioItemRepository, times(1)).save(folioCaptor.capture());
-            FolioItem createdFolio = folioCaptor.getValue();
-
-            assertNotNull(createdFolio, "FolioItem phải được tạo khi upgrade");
-            assertEquals(new BigDecimal("4500000"), createdFolio.getAmount(),
-                    "Phụ phí upgrade = (3,500,000 - 2,000,000) × 3 = 4,500,000 VND");
+            // Assert — No upfront folio item saved on changeCategory
+            verify(folioItemRepository, never()).save(any(FolioItem.class));
+            assertNull(response.getFolioItemId(), "Upgrade không tạo FolioItem gộp ngay, chờ Night Audit cộng dồn mỗi đêm");
         }
 
         /**

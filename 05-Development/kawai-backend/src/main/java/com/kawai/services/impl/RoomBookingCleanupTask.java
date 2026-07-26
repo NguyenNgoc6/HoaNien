@@ -34,7 +34,7 @@ public class RoomBookingCleanupTask {
     }
 
     // Quản lý qua DynamicJobManager và tự động chạy khi khởi động app
-    @EventListener(ApplicationReadyEvent.class)
+    // [TẠM TẮT] @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void cleanupNoShowRoomBookings() {
         LocalDate today = LocalDate.now();

@@ -34,15 +34,32 @@ public class ChangeRoomCategoryServiceImpl implements ChangeRoomCategoryService 
         validatePricing(newCategory);
 
         BigDecimal newRate = newCategory.getBasePrice() != null ? newCategory.getBasePrice() : BigDecimal.ZERO;
-        BigDecimal oldRate = detail.getCategory() != null && detail.getCategory().getBasePrice() != null
-                ? detail.getCategory().getBasePrice()
+        RoomCategory oldCategory = detail.getCategory();
+        BigDecimal oldRate = oldCategory != null && oldCategory.getBasePrice() != null
+                ? oldCategory.getBasePrice()
                 : (detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO);
+        BigDecimal oldExtraSurcharge = detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
 
         Room oldRoom = detail.getRoom();
         updateRoomStatuses(oldRoom, newRoom, detail.getId());
         updateAndSaveBookingDetail(detail, newRoom, newCategory);
 
-        Long folioItemId = handleSurchargeFolioItem(detail, newRate, oldRate, oldRoom, newCategory);
+        BigDecimal newExtraSurcharge = detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
+
+        BigDecimal dailyRoomDiff = newRate.subtract(oldRate);
+        BigDecimal dailySurchargeDiff = newExtraSurcharge.subtract(oldExtraSurcharge);
+        BigDecimal totalDailyDiff = dailyRoomDiff.add(dailySurchargeDiff);
+
+        long nights = 1;
+        RoomBooking booking = detail.getRoomBooking();
+        if (booking != null && booking.getCheckInDate() != null && booking.getCheckOutDate() != null) {
+            long n = java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
+            if (n > 0) nights = n;
+        }
+
+        BigDecimal totalUpgradeDiff = totalDailyDiff.multiply(BigDecimal.valueOf(nights)).setScale(0, java.math.RoundingMode.HALF_UP);
+
+        Long folioItemId = handleSurchargeFolioItem(detail, totalUpgradeDiff, oldCategory, newCategory);
         createAuditLog(request.getReceptionistAccountId(), detail.getId(), oldRoom, newRoom, newCategory);
 
         return ChangeRoomCategoryResponse.builder()
@@ -167,9 +184,21 @@ public class ChangeRoomCategoryServiceImpl implements ChangeRoomCategoryService 
         }
     }
 
-    private Long handleSurchargeFolioItem(RoomBookingDetail detail, BigDecimal newRate, BigDecimal oldRate,
-            Room oldRoom, RoomCategory newCategory) {
-        return null; // Không sinh folio chênh lệch lúc đổi phòng, để Night Audit tự tính hằng đêm
+    private Long handleSurchargeFolioItem(RoomBookingDetail detail, BigDecimal totalUpgradeDiff,
+            RoomCategory oldCategory, RoomCategory newCategory) {
+        java.util.List<FolioItem> existingItems = folioItemRepository.findByRoomBookingDetailId(detail.getId());
+        if (existingItems != null) {
+            for (FolioItem item : existingItems) {
+                // Xóa các khoản chênh lệch gộp cũ (nếu có từ dữ liệu cũ/upfront)
+                if (item.getDescription() != null && (item.getDescription().contains("gộp chênh lệch phụ thu") || (item.getDescription().contains("hạng phòng") && !item.getDescription().contains("(Đêm")))) {
+                    folioItemRepository.delete(item);
+                }
+            }
+        }
+
+        // Theo quy định: Phụ phí / hoàn tiền nâng hạ hạng phòng KHÔNG cộng gộp ngay lập tức.
+        // Khoản chênh lệch sẽ được Night Audit tự động tính và cộng dồn vào Folio theo từng đêm lưu trú thực tế.
+        return null;
     }
 
     private void createAuditLog(Long accountId, Long detailId, Room oldRoom, Room newRoom, RoomCategory newCategory) {

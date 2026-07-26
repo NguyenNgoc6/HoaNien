@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" style="scroll-behavior: smooth;">
 
 <head>
@@ -32,7 +32,7 @@
         function updateAdultSelectOptions() {
             const selects = document.querySelectorAll('.adult-companion-select');
             const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
-            
+
             selects.forEach(select => {
                 const options = select.querySelectorAll('option');
                 options.forEach(opt => {
@@ -67,14 +67,17 @@
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.05);
             border-radius: 2px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #C5A059;
             border-radius: 2px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #2D2926;
         }
@@ -179,7 +182,7 @@
         /* ── Guest Nav chuẩn (theo feedback.html) ── */
         #header-wrapper {
             background: rgba(18, 16, 15, 0.65) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-bottom: none !important;
             backdrop-filter: blur(14px) !important;
             -webkit-backdrop-filter: blur(14px) !important;
         }
@@ -470,25 +473,26 @@
             <a href="javascript:void(0)" onclick="loadTour('disan')" class="sub-nav-link" data-tour="disan">Di Sản</a>
             <a href="javascript:void(0)" onclick="loadTour('tinhlang')" class="sub-nav-link" data-tour="tinhlang">Tĩnh
                 Lặng</a>
-            <a href="javascript:void(0)" onclick="loadTour('halong')" class="sub-nav-link" data-tour="halong">Hạ
-                Long</a>
-            <a href="javascript:void(0)" onclick="loadTour('sapa')" class="sub-nav-link" data-tour="sapa">Sapa</a>
-            <a href="javascript:void(0)" onclick="loadTour('cattien')" class="sub-nav-link" data-tour="cattien">Cát
-                Tiên</a>
-            <a href="javascript:void(0)" onclick="loadTour('muine')" class="sub-nav-link" data-tour="muine">Mũi Né</a>
-            <a href="javascript:void(0)" onclick="loadTour('phuquoc')" class="sub-nav-link" data-tour="phuquoc">Phú
-                Quốc</a>
-            <a href="javascript:void(0)" onclick="loadTour('cantho')" class="sub-nav-link" data-tour="cantho">Cần
-                Thơ</a>
+            <a href="javascript:void(0)" onclick="loadTour('halong')" class="sub-nav-link" data-tour="halong">Sóng
+                Xanh</a>
+            <a href="javascript:void(0)" onclick="loadTour('sapa')" class="sub-nav-link" data-tour="sapa">Sương
+                Phủ</a>
+            <a href="javascript:void(0)" onclick="loadTour('cattien')" class="sub-nav-link" data-tour="cattien">Nhịp
+                Đập</a>
+            <a href="javascript:void(0)" onclick="loadTour('muine')" class="sub-nav-link" data-tour="muine">Cồn Cát</a>
+            <a href="javascript:void(0)" onclick="loadTour('phuquoc')" class="sub-nav-link" data-tour="phuquoc">Lục
+                Bảo</a>
+            <a href="javascript:void(0)" onclick="loadTour('cantho')" class="sub-nav-link" data-tour="cantho">Hương
+                Sắc</a>
         </div>
     </div>
     <!-- END: MainHeader -->
 
     <main class="flex min-h-screen bg-brand-bg"
-        style="padding-top: 112px; background-image: url('/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg'); background-size: cover; background-position: center center; background-attachment: fixed;">
+        style="padding-top: 104px; background-image: url('https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg'); background-size: cover; background-position: center center; background-attachment: fixed;">
         <!-- BEGIN: LeftHeroSection -->
         <section id="leftHeroSection" class="w-1/2 px-12 py-16 overflow-y-auto relative"
-            style="background-image: url('/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;">
+            style="background-image: url('https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;">
             <div class="max-w-xl mx-auto mb-10 relative z-10" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5)">
                 <div class="flex items-center space-x-4 mb-6">
                     <div class="w-8 h-[1px] bg-white/80"></div>
@@ -635,7 +639,7 @@
                             oninput="updateTotalPrice(); validateCompanions(false, false)"
                             onchange="validateCompanions(true, false)">
                     </div>
-                    
+
                     <!-- Companion Section -->
                     <div data-purpose="accompanying-section">
                         <label class="text-[10px] font-bold uppercase tracking-widest mb-4 block text-black">Người cùng
@@ -760,7 +764,8 @@
                             </label>
                         </div>
                         <label for="tourConsent" class="flex items-start space-x-3 cursor-pointer select-none group">
-                            <input class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark cursor-pointer"
+                            <input
+                                class="mt-1 rounded border-gray-300 text-brand-dark focus:ring-brand-dark cursor-pointer"
                                 id="tourConsent" type="checkbox" onchange="validateConsentAndEnableButtons()">
                             <span class="text-[10px] leading-relaxed text-gray-500 group-hover:text-gray-700">
                                 Tôi đồng ý cung cấp thông tin cá nhân và hành trình để resort thực hiện dịch vụ đặt tour
@@ -957,9 +962,8 @@
                         <div class="mt-4 border border-blue-100 bg-blue-50/60 rounded-sm overflow-hidden">
                             <!-- VNPay logo header -->
                             <div class="flex items-center gap-3 px-5 py-3 bg-white border-b border-blue-100">
-                                <img alt="VNPay" class="h-7"
-                                    src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0ttn4n4s0o6y1685957358991.png"
-                                    onerror="this.onerror=null; this.alt='VNPay';">
+                                <img alt="VNPay" class="h-7 object-contain" src="https://vnpay.vn/assets/images/logo-vnpay.svg"
+                                    onerror="this.onerror=null; this.src='https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR.png';">
                                 <div>
                                     <p class="text-[10px] font-bold uppercase tracking-widest text-brand-dark">Cổng
                                         thanh toán VNPay</p>
@@ -1252,7 +1256,7 @@
         function updateAdultSelectOptions() {
             const selects = document.querySelectorAll('.adult-companion-select');
             const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
-            
+
             selects.forEach(select => {
                 const options = select.querySelectorAll('option');
                 options.forEach(opt => {
@@ -1289,9 +1293,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 15 khách",
                 capacityEn: "Max 15 guests",
-                quoteVi: `Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.`,
-                quoteEn: `Return to the complete warmth of gratitude and connection.`,
-                image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                quoteVi: "Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.",
+                quoteEn: "Return to the complete warmth of gratitude and connection.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                 price: 7500000,
                 weatherVi: "☀️ 28°C • Nắng nhẹ",
                 weatherEn: "☀️ 28°C • Mild Sunlight"
@@ -1306,8 +1310,8 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 12 khách",
                 capacityEn: "Max 12 guests",
-                quoteVi: `Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.`,
-                quoteEn: `Listen to the rustic rhythm of motherland and Quang's rural soul.`,
+                quoteVi: "Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.",
+                quoteEn: "Listen to the rustic rhythm of motherland and Quang's rural soul.",
                 image: "/AnhTour/com.jfif",
                 price: 5800000,
                 weatherVi: "☀️ 32°C • Nắng ấm",
@@ -1323,9 +1327,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 12 khách",
                 capacityEn: "Max 12 guests",
-                quoteVi: `Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.`,
-                quoteEn: `Touch the essence of time through creations from artisan hands.`,
-                image: "/AnhTour/ThuCong.jpg",
+                quoteVi: "Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.",
+                quoteEn: "Touch the essence of time through creations from artisan hands.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg",
                 price: 6500000,
                 weatherVi: "⛅ 26°C • Nhiều mây",
                 weatherEn: "⛅ 26°C • Partly Cloudy"
@@ -1340,9 +1344,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 8 khách (riêng tư trọn vẹn)",
                 capacityEn: "Max 8 guests (full privacy)",
-                quoteVi: `Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.`,
-                quoteEn: `Pure purification for body - mind - spirit.`,
-                image: "/AnhTour/ThapMuoi.jpg",
+                quoteVi: "Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.",
+                quoteEn: "Pure purification for body - mind - spirit.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                 price: 8200000,
                 weatherVi: "☀️ 30°C • Nắng ráo",
                 weatherEn: "☀️ 30°C • Clear Sky"
@@ -1357,9 +1361,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 15 khách",
                 capacityEn: "Max 15 guests",
-                quoteVi: `Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.`,
-                quoteEn: `Cruising gently on the blue waves, admiring the splendid natural wonder.`,
-                image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                quoteVi: "Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.",
+                quoteEn: "Cruising gently on the blue waves, admiring the splendid natural wonder.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011580/kawai_assets/AnhTour/1.SongXanh-HaLong-HoangHon.png",
                 price: 7500000,
                 weatherVi: "☀️ 27°C • Lộng gió",
                 weatherEn: "☀️ 27°C • Windy"
@@ -1374,9 +1378,9 @@
                 durationEn: "11 Hours",
                 capacityVi: "Tối đa 10 khách",
                 capacityEn: "Max 10 guests",
-                quoteVi: `Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.`,
-                quoteEn: `Encountering warm smiles amidst the misty highland trails.`,
-                image: "/AnhTour/ThapMuoi.jpg",
+                quoteVi: "Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.",
+                quoteEn: "Encountering warm smiles amidst the misty highland trails.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011581/kawai_assets/AnhTour/2.SuongPhu-SaPa-RuongBacThang.png",
                 price: 8200000,
                 weatherVi: "🌫️ 18°C • Sương mù",
                 weatherEn: "🌫️ 18°C • Foggy"
@@ -1391,9 +1395,9 @@
                 durationEn: "14 Hours",
                 capacityVi: "Tối đa 8 khách",
                 capacityEn: "Max 8 guests",
-                quoteVi: `Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.`,
-                quoteEn: `Listen to the whispering call from the deep green jungle.`,
-                image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                quoteVi: "Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.",
+                quoteEn: "Listen to the whispering call from the deep green jungle.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011582/kawai_assets/AnhTour/3.NhipDap-CatTien-Rung.png",
                 price: 9500000,
                 weatherVi: "⛅ 29°C • Râm mát",
                 weatherEn: "⛅ 29°C • Cool"
@@ -1408,9 +1412,9 @@
                 durationEn: "11 Hours",
                 capacityVi: "Tối đa 10 khách",
                 capacityEn: "Max 10 guests",
-                quoteVi: `Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.`,
-                quoteEn: `Catching the first radiant sunlight on the vast desert sand.`,
-                image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                quoteVi: "Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.",
+                quoteEn: "Catching the first radiant sunlight on the vast desert sand.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011585/kawai_assets/AnhTour/4.ConCat-MuiNe-DoiCat.png",
                 price: 6500000,
                 weatherVi: "☀️ 33°C • Nắng rực rỡ",
                 weatherEn: "☀️ 33°C • Sunny"
@@ -1425,9 +1429,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 12 khách",
                 capacityEn: "Max 12 guests",
-                quoteVi: `Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.`,
-                quoteEn: `Immerse in the emerald waters and the vibrant dance under the ocean.`,
-                image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                quoteVi: "Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.",
+                quoteEn: "Immerse in the emerald waters and the vibrant dance under the ocean.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011586/kawai_assets/AnhTour/5.LucBao-PhuQuoc-GiangLuoi.png",
                 price: 8500000,
                 weatherVi: "☀️ 31°C • Biển êm",
                 weatherEn: "☀️ 31°C • Calm Sea"
@@ -1442,9 +1446,9 @@
                 durationEn: "10 Hours",
                 capacityVi: "Tối đa 12 khách",
                 capacityEn: "Max 12 guests",
-                quoteVi: `Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.`,
-                quoteEn: `Fully savor the sweetness of ripe fruit on heavy branches.`,
-                image: "/AnhTour/com.jfif",
+                quoteVi: "Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.",
+                quoteEn: "Fully savor the sweetness of ripe fruit on heavy branches.",
+                image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011587/kawai_assets/AnhTour/6.HuongSac-CanTho-LamThuyen.png",
                 price: 6800000,
                 weatherVi: "☀️ 30°C • Gió mát",
                 weatherEn: "☀️ 30°C • Breezy"
@@ -1508,7 +1512,7 @@
                     time: "08:30 - 11:00",
                     title: "Hồn của đất – Làng gốm Thanh Hà",
                     desc: "Bên dòng sông Thu Bồn lộng gió, bạn sẽ được ngắm nhìn các nghệ nhân thổi hồn vào đất và tự tay xoay vần, nhào nặn nên một món quà kỷ niệm của riêng mình.",
-                    image: "/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg",
                     coords: { top: '40%', left: '46%' },
                     mapQuery: "Làng gốm Thanh Hà, Điện Biên Phủ, Thanh Hà, Hội An"
                 },
@@ -1524,7 +1528,7 @@
                     time: "13:00 - 15:30",
                     title: "Vị quê đậm đà – Ẩm thực sân vườn",
                     desc: "Thưởng thức bữa trưa ấm cúng với những món ăn đặc sản xứ Quảng, được chế biến từ chính nguồn nông sản tươi ngon vừa thu hoạch tại vườn.",
-                    image: "/AnhTour/Com.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011567/kawai_assets/AnhTour/Com.jpg",
                     coords: { top: '55%', left: '44%' },
                     mapQuery: "Phố cổ Hội An, Minh An, Hội An, Quảng Nam"
                 },
@@ -1532,7 +1536,7 @@
                     time: "15:30 - 18:30",
                     title: "Hoài phố rêu phong – Tản bộ và thưởng trà chiều",
                     desc: "Di chuyển về trung tâm Phố cổ Hội An, thong thả dạo bước qua những nếp nhà vàng cổ kính và dừng chân thưởng thức trà thảo mộc ngắm hoàng hôn buông trên dòng sông Hoài.",
-                    image: "/AnhTour/Com.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011567/kawai_assets/AnhTour/Com.jpg",
                     coords: { top: '60%', left: '48%' },
                     mapQuery: "Phố cổ Hội An, Minh An, Hội An, Quảng Nam"
                 }
@@ -1542,7 +1546,7 @@
                     time: "09:00 - 11:30",
                     title: "Sợi cói dệt nắng – Làng chiếu Kim Sơn",
                     desc: "Ngắm nhìn quy trình dệt nên những chiếc chiếu cói tự nhiên đượm hương đồng nội. Bạn sẽ hiểu vì sao những sợi cỏ mềm mại qua tay người thợ lại trở thành những tác phẩm tinh xảo đến vậy.",
-                    image: "/AnhTour/ThuCong.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg",
                     coords: { top: '42%', left: '48%' },
                     mapQuery: "Làng chiếu cói Kim Sơn, Ninh Bình"
                 },
@@ -1550,7 +1554,7 @@
                     time: "11:30 - 14:00",
                     title: "Hương vị cố đô – Thưởng thức đặc sản",
                     desc: "Ghé thăm nhà hàng cao cấp ven sông để thưởng thức bữa trưa đậm đà vị núi rừng với thịt dê truyền thống, cơm cháy giòn rụm và các sản vật địa phương.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '49%', left: '51%' },
                     mapQuery: "Khu du lịch sinh thái Tràng An, Ninh Bình"
                 },
@@ -1558,7 +1562,7 @@
                     time: "14:00 - 16:30",
                     title: "Đốm hoa trên gấm – Làng thêu Văn Lâm",
                     desc: "Thu mình vào không gian yên ắng của làng thêu cổ, lắng nghe những câu chuyện xưa và học cách đưa thoi, điểm nhụy để tự tay dệt nên những nét hoa văn truyền thống tinh tế.",
-                    image: "/AnhTour/ThuCong.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg",
                     coords: { top: '56%', left: '45%' },
                     mapQuery: "Làng nghề thêu ren Văn Lâm, Ninh Hải, Hoa Lư, Ninh Bình"
                 },
@@ -1566,7 +1570,7 @@
                     time: "16:30 - 19:00",
                     title: "Sơn thủy hữu tình – Thuyền nan lướt bóng hoàng hôn",
                     desc: "Di chuyển đến đầm bảo tồn Vân Long, ngồi trên chiếc thuyền nan mộc mạc rẽ nước qua những hốc đá, ngắm nhìn đàn voọc quý hiếm và đón chiều tà buông xuống lòng thung lũng tĩnh mịch.",
-                    image: "/AnhTour/ThuCong.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg",
                     coords: { top: '62%', left: '50%' },
                     mapQuery: "Đầm Vân Long, Gia Viễn, Ninh Bình"
                 }
@@ -1576,7 +1580,7 @@
                     time: "08:00 - 11:00",
                     title: "Đón sương sớm – Thả thuyền ngắm sen",
                     desc: "Ngồi trên chiếc xuồng ba lá lướt nhẹ giữa đầm sương, ngắm nhìn những đóa sen hồng bung nở trong nắng sớm và hít hà hương thơm tinh khôi của đất trời.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '44%', left: '46%' },
                     mapQuery: "Đồng Sen Tháp Mười, Mỹ Hòa, Tháp Mười, Đồng Tháp"
                 },
@@ -1584,7 +1588,7 @@
                     time: "11:00 - 13:30",
                     title: "Tâm an giữa đầm – Thiền hành và thưởng trà",
                     desc: "Thong thả dạo bước trên những cây cầu gỗ nhỏ giữa lòng đầm, rũ bỏ những lo toan. Sau đó, tĩnh lặng thưởng thức ngụm trà sen ủ qua đêm ngọt hậu, thơm dịu.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '52%', left: '52%' },
                     mapQuery: "Khu du lịch Đồng Sen Tháp Mười, Tháp Mười, Đồng Tháp"
                 },
@@ -1592,7 +1596,7 @@
                     time: "13:30 - 16:00",
                     title: "Hương sen kết tinh – Mỹ tiệc bách hoa",
                     desc: "Thưởng thức bữa trưa độc đáo với thực đơn sáng tạo trọn vẹn từ sen: từ cơm hấp lá sen dẻo thơm, súp hạt sen bổ dưỡng cho đến đĩa gỏi ngó sen thanh mát, giòn rụm.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '60%', left: '42%' },
                     mapQuery: "Tháp Mười, Đồng Tháp"
                 },
@@ -1600,7 +1604,7 @@
                     time: "16:00 - 18:00",
                     title: "Sông nước tịch mịch – Nghỉ ngơi tĩnh tại",
                     desc: "Thư giãn tự do bên hiên nhà tre lộng gió, ngắm hoàng hôn nhuộm đỏ cánh đồng sen và lắng nghe tiếng chim bay về tổ, khép lại ngày bình yên.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '65%', left: '48%' },
                     mapQuery: "Tháp Mười, Đồng Tháp"
                 }
@@ -1610,7 +1614,7 @@
                     time: "08:00 - 09:30",
                     title: "Hải trình sóng vỗ – Rẽ nước thưởng ngoạn",
                     desc: "Du thuyền hạng sang khởi hành đưa bạn hòa mình vào không gian bao la của vịnh Hạ Long, ngắm nhìn những hòn đảo đá vôi mang muôn vàn hình dáng kỳ thú.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '40%', left: '44%' },
                     mapQuery: "Đảo Ti Tốp Hạ Long, Quảng Ninh"
                 },
@@ -1618,7 +1622,7 @@
                     time: "09:30 - 12:00",
                     title: "Tuyệt tác giấu kín – Khám phá động Thiên Cung",
                     desc: "Dạo bước vào lòng động cùng hướng dẫn viên riêng, chiêm ngưỡng những khối thạch nhũ lấp lánh và lắng nghe những câu chuyện huyền thoại cổ xưa.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '48%', left: '50%' },
                     mapQuery: "Động Thiên Cung, Vịnh Hạ Long, Quảng Ninh"
                 },
@@ -1626,7 +1630,7 @@
                     time: "12:00 - 14:30",
                     title: "Mỹ vị giữa trùng khơi – Thưởng thức tiệc trưa",
                     desc: "Dùng bữa trưa hải sản cao cấp được chế biến tinh tế bởi đầu bếp trên tàu, trong khi du thuyền chầm chậm lướt qua những vùng vịnh tĩnh lặng, hoang sơ.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '55%', left: '45%' },
                     mapQuery: "Vịnh Hạ Long, Quảng Ninh"
                 },
@@ -1634,7 +1638,7 @@
                     time: "14:30 - 16:30",
                     title: "Góc nhỏ tĩnh lặng – Chèo thuyền Kayak & Tắm biển",
                     desc: "Tàu neo lại tại một bãi biển hoang vắng, bạn tự do chèo thuyền kayak len lỏi qua các hang luồn hoặc ngâm mình trong làn nước xanh mát.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '60%', left: '40%' },
                     mapQuery: "Vịnh Hạ Long, Quảng Ninh"
                 },
@@ -1642,7 +1646,7 @@
                     time: "16:30 - 18:00",
                     title: "Khúc ca lộng gió – Tiệc trà ngắm hoàng hôn",
                     desc: "Thư giãn trên boong tàu đón gió biển mát lành, thưởng thức tiệc trà chiều, bánh ngọt và ngắm ánh chiều tà vàng rực buông chậm xuống vịnh biển ngàn năm.",
-                    image: "/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011574/kawai_assets/AnhTour/z7930578251310_cb227ca09c0f3c7a04a3ab6beb933d35.jpg",
                     coords: { top: '65%', left: '48%' },
                     mapQuery: "Vịnh Hạ Long, Quảng Ninh"
                 }
@@ -1652,7 +1656,7 @@
                     time: "08:00 - 11:30",
                     title: "Nẻo đường mây phủ – Thăm bản Cát Cát",
                     desc: "Thong thả đi bộ dọc theo những lối mòn dẫn vào bản, ngắm nhìn những chiếc cối xay nước khổng lồ quay đều bên suối và trải nghiệm nghệ thuật nhuộm chàm cùng nghệ nhân bản địa.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '42%', left: '45%' },
                     mapQuery: "Bản Cát Cát Sapa, Lào Cai"
                 },
@@ -1660,7 +1664,7 @@
                     time: "11:30 - 14:00",
                     title: "Bếp lửa vùng cao – Ẩm thực Tây Bắc",
                     desc: "Dừng chân nghỉ ngơi tại không gian nhà hàng cao cấp view toàn cảnh thung lũng, thưởng thức bữa trưa ấm cúng với những món ăn đậm đà hương vị núi rừng.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '50%', left: '52%' },
                     mapQuery: "Bản Cát Cát Sapa, Lào Cai"
                 },
@@ -1668,7 +1672,7 @@
                     time: "14:00 - 16:30",
                     title: "Tiếng hát của dòng suối – Thác Tiên Sa",
                     desc: "Check-in dòng thác Tiên Sa bọt tung trắng xóa, tản bộ dọc bờ suối và lắng nghe những giai điệu khèn môi mộc mạc của người bản địa.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '58%', left: '48%' },
                     mapQuery: "Thác Tiên Sa, Sapa, Lào Cai"
                 },
@@ -1676,7 +1680,7 @@
                     time: "16:30 - 19:00",
                     title: "Tĩnh lặng đại ngàn – Thưởng trà chiều ngắm hoàng hôn",
                     desc: "Di chuyển về một quán trà bản địa không gian mở trên đỉnh đồi, thưởng thức ngụm trà cổ thụ, ngắm nhìn thung lũng Mường Hoa chìm dần vào sương mờ hoàng hôn.",
-                    image: "/AnhTour/ThapMuoi.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg",
                     coords: { top: '65%', left: '42%' },
                     mapQuery: "Thung lũng Mường Hoa, Sapa, Lào Cai"
                 }
@@ -1686,7 +1690,7 @@
                     time: "08:00 - 12:00",
                     title: "Dưới bóng đại ngàn – Trekking Bàu Sấu",
                     desc: "Lội bộ dưới những tán cây cổ thụ trăm tuổi, hít hà bầu không khí trong lành của rừng nguyên sinh để đến với vùng đầm lầy Bàu Sấu hoang sơ.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '44%', left: '46%' },
                     mapQuery: "Bàu Sấu Cát Tiên, Đồng Nai"
                 },
@@ -1694,7 +1698,7 @@
                     time: "12:00 - 14:30",
                     title: "Bên bờ đầm vắng – Trưa xanh tĩnh lặng",
                     desc: "Thưởng thức bữa trưa tinh tế được chuẩn bị riêng bên trạm kiểm lâm, ngắm nhìn những chú chim quý hiếm và cá sấu tự nhiên bơi lội dưới làn nước.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '50%', left: '50%' },
                     mapQuery: "Bàu Sấu Cát Tiên, Đồng Nai"
                 },
@@ -1702,7 +1706,7 @@
                     time: "14:30 - 18:00",
                     title: "Khúc giao mùa rừng già – Tản bộ lượt về",
                     desc: "Quay trở lại trung tâm bằng đường rừng, đón ánh nắng chiều xuyên qua những kẽ lá và nghỉ ngơi, ngâm chân thảo mộc thư giãn tại resort bìa rừng.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '58%', left: '44%' },
                     mapQuery: "Vườn quốc gia Cát Tiên, Đồng Nai"
                 },
@@ -1710,7 +1714,7 @@
                     time: "18:00 - 20:00",
                     title: "Hương vị đại ngàn – Bữa tối lãng mạn",
                     desc: "Thưởng thức bữa tối ấm cúng tại nhà hàng ven sông của resort với các món ăn mang phong vị địa phương, lắng nghe tiếng côn trùng reo vang.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '62%', left: '48%' },
                     mapQuery: "Vườn quốc gia Cát Tiên, Đồng Nai"
                 },
@@ -1718,7 +1722,7 @@
                     time: "20:00 - 22:00",
                     title: "Thanh âm bóng tối – Đi xe mui trần xem thú đêm",
                     desc: "Lên xe chuyên dụng mui trần len lỏi vào bìa rừng, dưới ánh đèn chuyên dụng, bạn sẽ được tận mắt ngắm nhìn cuộc sống kiếm ăn ban đêm đầy thú vị của các loài thú hoang dã.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '68%', left: '52%' },
                     mapQuery: "Vườn quốc gia Cát Tiên, Đồng Nai"
                 }
@@ -1728,7 +1732,7 @@
                     time: "04:30 - 05:30",
                     title: "Đường chạy ban mai – Hành trình ra đồi cát",
                     desc: "Xe hạng sang đón bạn từ sớm khi trời còn đẫm sương để kịp di chuyển ra Đồi Cát Trắng xinh đẹp.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '42%', left: '44%' },
                     mapQuery: "Đồi Cát Trắng Mũi Né, Bình Thuận"
                 },
@@ -1736,7 +1740,7 @@
                     time: "05:30 - 07:30",
                     title: "Nắng ấm sa mạc – Xe địa hình & Đón bình minh",
                     desc: "Riêng tư trải nghiệm xe địa hình ATV lao vút qua những đụn cát nhấp nhô, ngắm mặt trời nhô lên từ phía biển và chơi trượt cát bằng máng từ đỉnh đồi.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '50%', left: '50%' },
                     mapQuery: "Đồi Cát Trắng Mũi Né, Bình Thuận"
                 },
@@ -1744,7 +1748,7 @@
                     time: "07:30 - 09:30",
                     title: "Bức họa của gió – Đồi Cát Đỏ & Suối Tiên",
                     desc: "Tiếp tục check-in Đồi Cát Đỏ lộng gió và dạo bước chân trần dưới làn nước mát rượi của dòng Suối Tiên, ngắm nhìn những bức vách đất sét màu cam rực rỡ.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '56%', left: '46%' },
                     mapQuery: "Suối Tiên Mũi Né, Phan Thiết, Bình Thuận"
                 },
@@ -1752,7 +1756,7 @@
                     time: "09:30 - 12:30",
                     title: "Sóng vỗ rì rào – Thư giãn tại Beach Club",
                     desc: "Di chuyển về một resort sát biển cao cấp, tự do tắm hồ bơi, tắm biển hoặc nằm nghỉ ngơi dưới bóng mát, thưởng thức ly nước dừa mát lạnh.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '60%', left: '42%' },
                     mapQuery: "Hàm Tiến, Phan Thiết, Bình Thuận"
                 },
@@ -1760,7 +1764,7 @@
                     time: "12:30 - 15:30",
                     title: "Vị mặn biển khơi – Bữa trưa hải sản thượng hạng",
                     desc: "Thưởng thức bữa trưa với thực đơn hải sản tươi sống được đánh bắt trong ngày tại nhà hàng view biển sang trọng trước khi xe đưa bạn về lại điểm đón ban đầu.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '65%', left: '48%' },
                     mapQuery: "Hàm Tiến, Phan Thiết, Bình Thuận"
                 }
@@ -1770,7 +1774,7 @@
                     time: "08:30 - 10:30",
                     title: "Lướt sóng trùng khơi – Khám phá các hòn đảo hoang",
                     desc: "Cano tốc độ cao thế mới đưa bạn rời bến cảng, băng qua làn nước xanh ngắt để ghé thăm những hòn đảo nhỏ còn giữ nguyên nét hoang sơ.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '44%', left: '45%' },
                     mapQuery: "Hòn Thơm Phú Quốc, Kiên Giang"
                 },
@@ -1778,7 +1782,7 @@
                     time: "10:30 - 13:00",
                     title: "Vũ điệu đại dương – Bơi lặn ngắm san hô",
                     desc: "Đeo ống thở và kính lặn chuyên dụng, thỏa thích hòa mình vào làn nước trong vắt để ngắm nhìn những rạn san hô đung đưa cùng từng đàn cá nhỏ rực rỡ sắc màu.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '50%', left: '52%' },
                     mapQuery: "Hòn Thơm Phú Quốc, Kiên Giang"
                 },
@@ -1786,7 +1790,7 @@
                     time: "13:00 - 15:30",
                     title: "Vị mặn của biển – Bữa trưa trên đảo hoang",
                     desc: "Thưởng thức bữa trưa hải sản cao cấp tươi ngon ngay trên bãi biển cát trắng mịn, ngả lưng dưới bóng dừa mát rượi.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '58%', left: '48%' },
                     mapQuery: "Hòn Thơm Phú Quốc, Kiên Giang"
                 },
@@ -1794,7 +1798,7 @@
                     time: "15:30 - 18:30",
                     title: "Đảo ngọc hoàng hôn – Tiệc cocktail chiều tà",
                     desc: "Cano đưa bạn đến một hòn đảo ngắm hoàng hôn đẹp nhất. Tại đây, bạn có thể thong thả đi dạo, thưởng thức ly cocktail mát lạnh và đón khoảnh khắc mặt trời lặn nhuộm hồng cả đường chân trời trước khi trở về bến cảng lúc 18:30.",
-                    image: "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
+                    image: "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg",
                     coords: { top: '65%', left: '42%' },
                     mapQuery: "Hòn Thơm Phú Quốc, Kiên Giang"
                 }
@@ -1857,11 +1861,11 @@
                         const isDropoff = dbAct.title.includes("Trả khách");
 
                         if (isPickup) {
-                            dbAct.image = "/AnhTour/DuAm.jpg";
+                            dbAct.image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011568/kawai_assets/AnhTour/DuAm.jpg";
                             dbAct.coords = { top: '32%', left: '42%' };
                             dbAct.mapQuery = "Hòa Niên Retreat & Spa, Việt Nam";
                         } else if (isDropoff) {
-                            dbAct.image = "/AnhTour/DuAm.jpg";
+                            dbAct.image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011568/kawai_assets/AnhTour/DuAm.jpg";
                             dbAct.coords = { top: '72%', left: '42%' };
                             dbAct.mapQuery = "Hòa Niên Retreat & Spa, Việt Nam";
                         } else {
@@ -1878,7 +1882,7 @@
                                 originalAct = originalList[j - 1] || {};
                             }
 
-                            dbAct.image = dbAct.image || originalAct.image || "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
+                            dbAct.image = dbAct.image || originalAct.image || "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
                             dbAct.coords = dbAct.coords || originalAct.coords || { top: '50%', left: '50%' };
                             dbAct.mapQuery = dbAct.mapQuery || originalAct.mapQuery || dbAct.title;
                         }
@@ -2275,7 +2279,7 @@
 
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-1 gap-2 child-row animate-in fade-in slide-in-from-top-1 duration-300 border-b border-brand-border/30 pb-4 mb-3';
-                
+
                 row.innerHTML = `
                   <div class="mb-1">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-brand-gold mb-1 block">Chọn trẻ em đi cùng ${i + 1}</label>
@@ -2288,6 +2292,7 @@
                 `;
                 container.appendChild(row);
             }
+            updateChildSelectOptions();
         }
 
         function autoFillChildCompanion(rowIdx, val) {
@@ -2302,6 +2307,7 @@
             if (val === '' || !userDependentsList[val]) {
                 if (nameInput) nameInput.value = '';
                 if (ageInput) ageInput.value = '';
+                updateChildSelectOptions();
                 return;
             }
 
@@ -2309,6 +2315,7 @@
             if (nameInput) nameInput.value = dep.name || '';
             const ageStr = (dep.age < 2) ? 'Dưới 2 tuổi' : '2 - 11 tuổi';
             if (ageInput) ageInput.value = ageStr;
+            updateChildSelectOptions();
         }
 
         function generateAdultCompanionRows(count) {
@@ -2339,7 +2346,7 @@
 
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-1 gap-2 adult-companion-row animate-in fade-in slide-in-from-top-1 duration-300 border-b border-brand-border/30 pb-4 mb-3';
-                
+
                 row.innerHTML = `
                   <div class="mb-1">
                     <label class="text-[9px] font-bold uppercase tracking-widest text-brand-gold mb-1 block">Chọn người lớn đi cùng ${i + 1}</label>
@@ -2354,6 +2361,7 @@
                 `;
                 container.appendChild(row);
             }
+            updateAdultSelectOptions();
         }
 
         function autoFillAdultCompanion(rowIdx, val) {
@@ -2373,8 +2381,8 @@
                 if (idInput) idInput.value = '';
                 if (phoneInput) phoneInput.value = '';
 
-             updateAdultSelectOptions();
-            return;
+                updateAdultSelectOptions();
+                return;
             }
 
             const dep = userDependentsList[val];
@@ -2382,8 +2390,10 @@
             if (ageInput) ageInput.value = dep.age || 18;
             if (idInput) idInput.value = dep.cccd || '';
             if (phoneInput) phoneInput.value = dep.phone || '';
-        }
+
             updateAdultSelectOptions();
+        }
+        updateAdultSelectOptions();
 
         function validateAgeInput(input) {
             const val = parseInt(input.value);
@@ -2693,8 +2703,12 @@
                     return;
                 }
 
+                const departureDateInput = document.getElementById('departureDate');
+                const departureDate = departureDateInput ? departureDateInput.value : '';
+                const myActiveUrl = departureDate ? '/api/rooms/my-active?date=' + encodeURIComponent(departureDate) : '/api/rooms/my-active';
+
                 // Fetch active rooms for the currently logged in customer
-                fetch('/api/rooms/my-active')
+                fetch(myActiveUrl)
                     .then(response => {
                         console.log("my-active API response status:", response.status);
                         if (response.status === 401) {
@@ -3674,7 +3688,7 @@
                         if (compPhone.startsWith('84')) {
                             compPhone = '0' + compPhone.substring(2);
                         }
-                        
+
                         let depId = null;
                         if (selectEl && selectEl.value !== '') {
                             const idx = parseInt(selectEl.value, 10);
@@ -3754,7 +3768,9 @@
                             lang === 'vi' ? 'Đặt tour thành công!' : 'Booking confirmed!',
                             lang === 'vi' ? `Mã đặt chỗ: #${data.bookingId} — Email xác nhận đã được gửi.` : `Booking #${data.bookingId} confirmed. Check your email.`
                         );
-                        setTimeout(() => window.location.reload(), 3000);
+                        setTimeout(() => {
+                            window.location.href = window.location.pathname + "?booked=true" + window.location.hash;
+                        }, 3000);
                     }
                 })
                 .catch(error => {
@@ -3763,7 +3779,7 @@
                         confirmBtn.disabled = false;
                         confirmBtn.textContent = lang === 'vi' ? 'XÁC NHẬN ĐẶT CHỖ' : 'CONFIRM BOOKING';
                     }
-                    if (error.message.includes('phòng') || error.message.includes('Phòng')) {
+                    if (error.message && (error.message.includes('thực hiện đặt phòng') || error.message.includes('chưa đăng ký phòng') || error.message.includes('TOUR-004') || error.message.includes('TOUR-005')) && !error.message.includes('Hạn mức') && !error.message.includes('hạn mức')) {
                         window.pendingRoomChargeRedirect = true;
                     }
                     showWarningAlertPopup(lang === 'vi' ? 'Thông báo từ hệ thống' : 'System Alert', error.message);
@@ -4021,9 +4037,14 @@
             }
         });
 
-        
+
+
+        let blockedDependentIds = [];
 
         function checkDuplicateTourRegistration() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('booked')) return; // Ngăn cảnh báo khi vừa đặt xong
+
             const tourInfo = tourData[currentTour];
             const dateInput = document.getElementById('departureDate');
             if (!tourInfo || !dateInput || !dateInput.value) return;
@@ -4031,6 +4052,7 @@
 
             if (!isLoggedIn) {
                 isCustomerAlreadyRegisteredInTour = false;
+                blockedDependentIds = [];
                 validateCompanions(false, false);
                 return;
             }
@@ -4040,7 +4062,7 @@
                 .then(data => {
                     isCustomerAlreadyRegisteredInTour = data.registered;
                     console.log("isCustomerAlreadyRegisteredInTour updated:", isCustomerAlreadyRegisteredInTour);
-                    
+
                     if (isCustomerAlreadyRegisteredInTour) {
                         showWarningAlertPopup(
                             lang === 'vi' ? 'Thông báo đặt trùng' : 'Duplicate Booking Notice',
@@ -4057,9 +4079,28 @@
                             chk.disabled = false;
                         }
                     }
-                    
-                    // Cập nhật lại form gõ companion để đồng bộ số lượng ô nhập
-                    validateCompanions(false, false);
+
+                    // Tải danh sách khách bị chặn (do đã tham gia tour trong ngày này)
+                    fetch(`/api/tour-bookings/blocked-dependents?departureDate=${dateInput.value}`)
+                        .then(res2 => res2.ok ? res2.json() : { blockedIds: [] })
+                        .then(data2 => {
+                            blockedDependentIds = data2.blockedIds || [];
+                            updateAdultSelectOptions();
+                            if (typeof updateChildSelectOptions === 'function') {
+                                updateChildSelectOptions();
+                            }
+                            // Cập nhật lại form gõ companion để đồng bộ số lượng ô nhập
+                            validateCompanions(false, false);
+                        })
+                        .catch(err2 => {
+                            console.warn("Lỗi tải blocked dependents:", err2);
+                            blockedDependentIds = [];
+                            updateAdultSelectOptions();
+                            if (typeof updateChildSelectOptions === 'function') {
+                                updateChildSelectOptions();
+                            }
+                            validateCompanions(false, false);
+                        });
                 })
                 .catch(err => {
                     console.warn("Lỗi kiểm tra đăng ký trùng lặp:", err);
@@ -4102,12 +4143,51 @@
         function updateAdultSelectOptions() {
             const selects = document.querySelectorAll('.adult-companion-select');
             const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
-            
+
             selects.forEach(select => {
                 const options = select.querySelectorAll('option');
                 options.forEach(opt => {
                     if (opt.value === '') return;
-                    if (selectedValues.includes(opt.value) && opt.value !== select.value) {
+                    
+                    const depIdx = parseInt(opt.value);
+                    let isBlocked = false;
+                    if (!isNaN(depIdx) && userDependentsList[depIdx]) {
+                        const depIdStr = String(userDependentsList[depIdx].id);
+                        if (blockedDependentIds.includes(depIdStr)) {
+                            isBlocked = true;
+                        }
+                    }
+
+                    if (isBlocked || (selectedValues.includes(opt.value) && opt.value !== select.value)) {
+                        opt.style.display = 'none';
+                        opt.disabled = true;
+                    } else {
+                        opt.style.display = '';
+                        opt.disabled = false;
+                    }
+                });
+            });
+        }
+
+        function updateChildSelectOptions() {
+            const selects = document.querySelectorAll('.child-companion-select');
+            const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
+
+            selects.forEach(select => {
+                const options = select.querySelectorAll('option');
+                options.forEach(opt => {
+                    if (opt.value === '') return;
+                    
+                    const depIdx = parseInt(opt.value);
+                    let isBlocked = false;
+                    if (!isNaN(depIdx) && userDependentsList[depIdx]) {
+                        const depIdStr = String(userDependentsList[depIdx].id);
+                        if (blockedDependentIds.includes(depIdStr)) {
+                            isBlocked = true;
+                        }
+                    }
+
+                    if (isBlocked || (selectedValues.includes(opt.value) && opt.value !== select.value)) {
                         opt.style.display = 'none';
                         opt.disabled = true;
                     } else {
@@ -4237,9 +4317,4 @@
 
 </body>
 
-</html>
-
-
-
-
-
+</html>

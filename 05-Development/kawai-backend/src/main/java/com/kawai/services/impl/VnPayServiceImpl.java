@@ -111,13 +111,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
 
-        String returnUrl = vnPayConfig.getReturnUrl();
-        if (returnUrl.contains("?")) {
-            returnUrl += "&bId=" + bookingId;
-        } else {
-            returnUrl += "?bId=" + bookingId;
-        }
-        vnp_Params.put("vnp_ReturnUrl", returnUrl);
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
 
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
@@ -196,7 +190,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -273,7 +267,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -352,7 +346,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -408,7 +402,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_OrderType", "250000");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
@@ -446,6 +440,16 @@ public class VnPayServiceImpl implements VnPayService {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
 
         return vnPayConfig.getPayUrl() + "?" + queryUrl;
+    }
+
+    private String getDynamicReturnUrl() {
+        try {
+            return org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/v1/payments/vnpay-return").build().toUriString();
+        } catch (Exception e) {
+            // Fallback in case it's not called within a web request context
+            return vnPayConfig.getReturnUrl();
+        }
     }
 
     @Override

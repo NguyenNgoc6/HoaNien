@@ -163,59 +163,175 @@ public class NightAuditServiceImpl implements NightAuditService {
         return item;
     }
 
+    @Autowired
+    private com.kawai.repositories.RoomGuestRepository roomGuestRepository;
+
+    @Autowired
+    private com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
+
+    @Autowired
+    private com.kawai.repositories.RoomCategoryRepository roomCategoryRepository;
+
+    private BigDecimal calculateExtraSurchargeForCategory(RoomBookingDetail detail, com.kawai.models.RoomCategory category) {
+        if (category == null || roomGuestRepository == null) {
+            return BigDecimal.ZERO;
+        }
+        java.util.List<com.kawai.models.RoomGuest> guests = roomGuestRepository.findByRoomBookingDetailId(detail.getId());
+        if (guests == null || guests.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        int adults = 0;
+        java.util.List<Integer> childAges = new java.util.ArrayList<>();
+        for (com.kawai.models.RoomGuest rg : guests) {
+            java.time.LocalDate birthDate = null;
+            if (rg.getCustomer() != null) {
+                birthDate = rg.getCustomer().getBirthDate();
+            } else if (rg.getDependent() != null) {
+                birthDate = rg.getDependent().getBirthDate();
+            }
+            int age = birthDate != null ? java.time.Period.between(birthDate, java.time.LocalDate.now()).getYears() : 18;
+            if (age >= 18) {
+                adults++;
+            } else {
+                childAges.add(age);
+            }
+        }
+
+        int baseAdults = category.getBaseAdults() != null ? category.getBaseAdults() : (category.getCapacity() != null ? category.getCapacity() : 2);
+        int baseChildren = category.getBaseChildren() != null ? category.getBaseChildren() : 0;
+
+        BigDecimal surcharge = BigDecimal.ZERO;
+        int extraAdults = Math.max(0, adults - baseAdults);
+        if (extraAdults > 0 && category.getExtraAdultSurcharge() != null) {
+            surcharge = surcharge.add(category.getExtraAdultSurcharge().multiply(BigDecimal.valueOf(extraAdults)));
+        }
+
+        int chargeableChildren = Math.max(0, childAges.size() - baseChildren);
+        if (chargeableChildren > 0 && roomSurchargeRepository != null) {
+            java.util.Collections.sort(childAges);
+            int skipCount = childAges.size() - chargeableChildren;
+            for (int i = skipCount; i < childAges.size(); i++) {
+                surcharge = surcharge.add(
+                        roomSurchargeRepository.findSurchargeForAge(category, childAges.get(i))
+                                .map(com.kawai.models.RoomSurcharge::getPriceModifier)
+                                .orElse(BigDecimal.ZERO));
+            }
+        }
+        return surcharge;
+    }
+
+    @Autowired
+    private com.kawai.repositories.AuditLogRepository auditLogRepository;
+
     private void handleNightAuditRoomUpgradeSurcharge(RoomBookingDetail detail, LocalDate auditDate) {
-        BigDecimal baseRate = detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO;
+        if (auditLogRepository == null) return;
+
+        // CHỈ xử lý phụ thu/hoàn tiền nâng hạ hạng phòng NẾU phòng này ĐÃ TỪNG CÓ THAO TÁC NÂNG HẠ HẠNG PHÒNG trong AuditLog
+        com.kawai.models.AuditLog categoryChangeLog = auditLogRepository.findAll().stream()
+                .filter(log -> "ROOM_CATEGORY_CHANGED".equals(log.getAction())
+                        && "Room_Booking_Details".equals(log.getTableName())
+                        && detail.getId().equals(log.getRecordId()))
+                .findFirst()
+                .orElse(null);
+
+        if (categoryChangeLog == null) {
+            // Phòng này CHƯA TỪNG bị đổi hạng phòng -> KHÔNG tạo bất kỳ khoản phụ thu/hoàn tiền chênh lệch nào!
+            return;
+        }
+
         RoomBooking booking = detail.getRoomBooking();
-        if (booking != null) {
-            long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
-            if (nights > 0 && "DIRECT_WEB".equalsIgnoreCase(booking.getBookingSource())) {
-                baseRate = baseRate.divide(BigDecimal.valueOf(nights), 2, RoundingMode.HALF_UP);
+
+        // Parse hạng phòng gốc từ auditLog (được lưu với định dạng "Room: X, Category: Y")
+        String originalCategoryName = null;
+        if (categoryChangeLog.getOldValue() != null) {
+            String oldValue = categoryChangeLog.getOldValue();
+            int catIndex = oldValue.indexOf("Category: ");
+            if (catIndex != -1) {
+                originalCategoryName = oldValue.substring(catIndex + "Category: ".length()).trim();
             }
         }
 
-        BigDecimal currentRate = detail.getCategory() != null && detail.getCategory().getBasePrice() != null
-                ? detail.getCategory().getBasePrice()
-                : baseRate;
-
-        BigDecimal dailyDifference = currentRate.subtract(baseRate);
-        if (dailyDifference.compareTo(BigDecimal.ZERO) == 0) {
-            return; // Đêm nay không có chênh lệch so với giá gốc
+        com.kawai.models.RoomCategory origCat = null;
+        if (originalCategoryName != null && roomCategoryRepository != null) {
+            final String targetName = originalCategoryName;
+            origCat = roomCategoryRepository.findAll().stream()
+                    .filter(cat -> cat.getCategoryName().equalsIgnoreCase(targetName))
+                    .findFirst()
+                    .orElse(null);
         }
 
-        // Kiểm tra xem đã có phụ phí nâng/hạ hạng phòng cho đêm này chưa
+        BigDecimal origRate = origCat != null && origCat.getBasePrice() != null ? origCat.getBasePrice() : BigDecimal.ZERO;
+        BigDecimal currentRate = detail.getCategory() != null && detail.getCategory().getBasePrice() != null ? detail.getCategory().getBasePrice() : origRate;
+
+        // 1. Chênh lệch tiền phòng cơ bản 1 đêm
+        BigDecimal dailyRoomDiff = currentRate.subtract(origRate);
+
+        // 2. Chênh lệch phụ thu người lớn/trẻ em 1 đêm theo hạng phòng mới vs hạng phòng gốc
+        BigDecimal origExtraSurcharge = origCat != null ? calculateExtraSurchargeForCategory(detail, origCat) : BigDecimal.ZERO;
+        BigDecimal currentExtraSurcharge = calculateExtraSurchargeForCategory(detail, detail.getCategory());
+        BigDecimal dailySurchargeDiff = currentExtraSurcharge.subtract(origExtraSurcharge);
+
         List<FolioItem> existingItems = getFolioItems(detail.getId());
-        if (existingItems != null) {
-            String suffix = " (Đêm " + auditDate.toString() + ")";
-            boolean alreadyHasSurcharge = existingItems.stream()
-                    .anyMatch(item -> item.getDescription() != null && item.getDescription().endsWith(suffix));
-            if (alreadyHasSurcharge) {
-                logger.info(
-                        "[NIGHT AUDIT] Đã tồn tại phụ phí đổi hạng phòng cho RoomBookingDetail ID: {} ngày {}, bỏ qua tạo trùng.",
-                        detail.getId(), auditDate);
-                return;
+        String dateSuffix = " (Đêm " + auditDate.toString() + ")";
+
+        // -------------------------------------------------------------
+        // Khoản 1: Phụ phí / Hoàn tiền đổi hạng phòng cơ bản (nếu có chênh lệch)
+        // -------------------------------------------------------------
+        if (dailyRoomDiff.compareTo(BigDecimal.ZERO) != 0) {
+            boolean alreadyHasRoomDiff = existingItems != null && existingItems.stream()
+                    .anyMatch(item -> item.getDescription() != null && item.getDescription().endsWith(dateSuffix)
+                            && (item.getDescription().contains("nâng hạng phòng") || item.getDescription().contains("hạ hạng phòng")));
+
+            if (!alreadyHasRoomDiff) {
+                FolioItem folioItem = new FolioItem();
+                folioItem.setBooking(booking);
+                folioItem.setRoomBookingDetail(detail);
+                folioItem.setPayerCustomer(booking != null ? booking.getCustomer() : null);
+                folioItem.setSourceDepartment("FRONT_DESK");
+                folioItem.setAmount(dailyRoomDiff.setScale(0, RoundingMode.HALF_UP));
+                folioItem.setIsSettledSeparately(false);
+                long roomCount = booking != null ? roomBookingDetailRepository.findByRoomBookingId(booking.getId()).size() : 1;
+                folioItem.setRevenueCode(roomCount > 1 ? "ROOM_GROUP" : "ROOM_TRANSIENT");
+
+                String categoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "";
+                if (dailyRoomDiff.compareTo(BigDecimal.ZERO) > 0) {
+                    folioItem.setDescription("Phụ phí nâng hạng phòng lên " + categoryName + dateSuffix);
+                } else {
+                    folioItem.setDescription("Hoàn tiền chênh lệch hạ hạng phòng xuống " + categoryName + dateSuffix);
+                }
+                folioItemRepository.save(folioItem);
             }
         }
 
-        FolioItem folioItem = new FolioItem();
-        folioItem.setBooking(booking);
-        folioItem.setRoomBookingDetail(detail);
-        folioItem.setPayerCustomer(booking != null ? booking.getCustomer() : null);
-        folioItem.setSourceDepartment("FRONT_DESK");
-        folioItem.setAmount(dailyDifference.setScale(0, RoundingMode.HALF_UP));
-        folioItem.setIsSettledSeparately(false);
-        long roomCount = booking != null ? roomBookingDetailRepository.findByRoomBookingId(booking.getId()).size() : 1;
-        folioItem.setRevenueCode(roomCount > 1 ? "ROOM_GROUP" : "ROOM_TRANSIENT");
+        // -------------------------------------------------------------
+        // Khoản 2: Chênh lệch phụ thu người lớn & trẻ em theo hạng phòng mới (nếu có chênh lệch)
+        // -------------------------------------------------------------
+        if (dailySurchargeDiff.compareTo(BigDecimal.ZERO) != 0) {
+            boolean alreadyHasGuestDiff = existingItems != null && existingItems.stream()
+                    .anyMatch(item -> item.getDescription() != null && item.getDescription().endsWith(dateSuffix)
+                            && item.getDescription().contains("phụ thu người lớn/trẻ em"));
 
-        String categoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "";
-        if (dailyDifference.compareTo(BigDecimal.ZERO) > 0) {
-            folioItem.setDescription(
-                    "Phụ phí nâng hạng phòng lên " + categoryName + " (Đêm " + auditDate.toString() + ")");
-        } else {
-            folioItem.setDescription(
-                    "Hoàn tiền chênh lệch hạ hạng phòng xuống " + categoryName + " (Đêm " + auditDate.toString() + ")");
+            if (!alreadyHasGuestDiff) {
+                FolioItem surchargeItem = new FolioItem();
+                surchargeItem.setBooking(booking);
+                surchargeItem.setRoomBookingDetail(detail);
+                surchargeItem.setPayerCustomer(booking != null ? booking.getCustomer() : null);
+                surchargeItem.setSourceDepartment("FRONT_DESK");
+                surchargeItem.setAmount(dailySurchargeDiff.setScale(0, RoundingMode.HALF_UP));
+                surchargeItem.setIsSettledSeparately(false);
+                long roomCount = booking != null ? roomBookingDetailRepository.findByRoomBookingId(booking.getId()).size() : 1;
+                surchargeItem.setRevenueCode(roomCount > 1 ? "ROOM_GROUP" : "ROOM_TRANSIENT");
+
+                String categoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "";
+                if (dailySurchargeDiff.compareTo(BigDecimal.ZERO) > 0) {
+                    surchargeItem.setDescription("Phụ thu thêm người lớn/trẻ em theo hạng phòng mới " + categoryName + dateSuffix);
+                } else {
+                    surchargeItem.setDescription("Giảm trừ phụ thu người lớn/trẻ em theo hạng phòng mới " + categoryName + dateSuffix);
+                }
+                folioItemRepository.save(surchargeItem);
+            }
         }
-
-        folioItemRepository.save(folioItem);
     }
 
     @Override
