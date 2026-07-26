@@ -179,9 +179,6 @@
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <h4 style="margin: 0; color: #1e293b; font-size: 15px;"><i class="fa-solid fa-bed"
                                     style="color: #3b82f6;"></i> Các phòng đã chọn</h4>
-                            <span style="font-size: 14px; font-weight: 600; color: #64748b; display: none;"
-                                id="remainingCreditWrapper">Hạn mức tổng còn lại: <span id="remainingCreditDisplay"
-                                    style="color: #16a34a;">5,000,000 VND</span></span>
                         </div>
                         <table
                             style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; background: white;">
@@ -190,8 +187,6 @@
                                     <th style="padding: 10px 16px;">Số phòng</th>
                                     <th style="padding: 10px 16px;">Hạng phòng</th>
                                     <th style="padding: 10px 16px;">Giá tiền</th>
-                                    <th id="creditLimitHeader" style="padding: 10px 16px; display: none;">Hạn mức
-                                        (Credit Limit)</th>
                                     <th style="padding: 10px 16px; text-align: right;">Hành động</th>
                                 </tr>
                             </thead>
@@ -239,9 +234,9 @@
                         </div>
                     </div>
                     <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
-                        <button type="button" class="btn btn-secondary" onclick="searchCustomer()"><i
+                        <button type="button" id="btnSearchCustomer" class="btn btn-secondary" onclick="searchCustomer()"><i
                                 class="fa-solid fa-search"></i> Check Existing</button>
-                        <button type="button" class="btn btn-primary" onclick="validateNewCustomer()"><i
+                        <button type="button" id="btnCreateNewCustomer" class="btn btn-primary" onclick="validateNewCustomer()"><i
                                 class="fa-solid fa-user-plus"></i> Create Profile & Account</button>
                         <span id="guestStatusMsg"
                             style="color: #16a34a; font-weight: 500; display: none; background: #dcfce7; padding: 8px 12px; border-radius: 4px;"><i

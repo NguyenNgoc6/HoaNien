@@ -240,7 +240,7 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomRepository.findById(roomId))
+                        when(roomRepository.findByIdWithPessimisticLock(roomId))
                                         .thenReturn(Optional.of(sampleRoom));
                         when(roomBookingDetailRepository.save(any(RoomBookingDetail.class)))
                                         .thenAnswer(invocation -> {
@@ -252,8 +252,7 @@ class CheckinServiceUC12Test {
                                         .thenAnswer(invocation -> invocation.getArgument(0));
 
                         // ACT
-                        RoomBookingDetail result = checkinService.checkIn(bookingDetailId, roomId,
-                                        java.math.BigDecimal.ZERO);
+                        RoomBookingDetail result = checkinService.checkIn(bookingDetailId, roomId);
 
                         // ASSERT
                         assertNotNull(result, "Kết quả check-in không được null");
@@ -266,8 +265,8 @@ class CheckinServiceUC12Test {
 
                         // Verify interactions
                         verify(roomBookingDetailRepository).findById(bookingDetailId);
-                        verify(roomRepository).findById(roomId);
-                        verify(roomBookingDetailRepository, times(2)).save(any(RoomBookingDetail.class));
+                        verify(roomRepository).findByIdWithPessimisticLock(roomId);
+                        verify(roomBookingDetailRepository, times(1)).save(any(RoomBookingDetail.class));
                         verify(roomRepository).save(any(Room.class));
                 }
         }
@@ -291,14 +290,13 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomRepository.findById(roomId))
+                        when(roomRepository.findByIdWithPessimisticLock(roomId))
                                         .thenReturn(Optional.of(dirtyRoom));
 
                         // ACT & ASSERT
                         IllegalStateException exception = assertThrows(
                                         IllegalStateException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, roomId),
                                         "Phòng DIRTY phải ném IllegalStateException (BR-FO-04, MOD2-002)");
                         assertTrue(exception.getMessage().toLowerCase().contains("dirty"),
                                         "Message lỗi phải chứa thông tin trạng thái DIRTY");
@@ -317,14 +315,13 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomRepository.findById(roomId))
+                        when(roomRepository.findByIdWithPessimisticLock(roomId))
                                         .thenReturn(Optional.of(maintenanceRoom));
 
                         // ACT & ASSERT
                         IllegalStateException exception = assertThrows(
                                         IllegalStateException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, roomId),
                                         "Phòng MAINTENANCE phải ném IllegalStateException (BR-HK-03, MOD2-002)");
                         assertTrue(exception.getMessage().toLowerCase().contains("maintenance"),
                                         "Message lỗi phải chứa thông tin trạng thái MAINTENANCE");
@@ -352,8 +349,6 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomBookingDetailRepository.findByRoomBookingId(sampleRoomBooking.getId()))
-                                        .thenReturn(java.util.Collections.singletonList(sampleBookingDetail));
                         when(roomBookingDetailRepository.save(any(RoomBookingDetail.class)))
                                         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -366,7 +361,6 @@ class CheckinServiceUC12Test {
 
                         // Verify interactions
                         verify(roomBookingDetailRepository).findById(bookingDetailId);
-                        verify(roomBookingDetailRepository).findByRoomBookingId(sampleRoomBooking.getId());
                         verify(roomBookingDetailRepository).save(any(RoomBookingDetail.class));
                 }
         }
@@ -399,8 +393,7 @@ class CheckinServiceUC12Test {
                         // khi bookingDetailId không tồn tại (EDS MOD2-003)
                         assertThrows(
                                         RuntimeException.class,
-                                        () -> checkinService.checkIn(nonExistentDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(nonExistentDetailId, roomId),
                                         "BookingDetail không tồn tại phải ném RuntimeException (MOD2-003)");
 
                         // Verify: KHÔNG gọi roomRepository vì đã fail sớm
@@ -427,14 +420,13 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomRepository.findById(nonExistentRoomId))
+                        when(roomRepository.findByIdWithPessimisticLock(nonExistentRoomId))
                                         .thenReturn(Optional.empty());
 
                         // ACT & ASSERT
                         assertThrows(
                                         RuntimeException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, nonExistentRoomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, nonExistentRoomId),
                                         "Room không tồn tại phải ném RuntimeException (MOD2-003)");
 
                         verify(roomBookingDetailRepository, never()).save(any());
@@ -467,8 +459,7 @@ class CheckinServiceUC12Test {
                         // ACT & ASSERT
                         IllegalStateException exception = assertThrows(
                                         IllegalStateException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, roomId),
                                         "Booking chưa CONFIRMED không được phép check-in");
                         assertTrue(
                                         exception.getMessage().toLowerCase().contains("confirmed")
@@ -503,8 +494,7 @@ class CheckinServiceUC12Test {
                         // ACT & ASSERT
                         IllegalStateException exception = assertThrows(
                                         IllegalStateException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, roomId),
                                         "BookingDetail đã CHECKED_IN không được check-in lại (idempotency guard)");
                         assertTrue(
                                         exception.getMessage().toLowerCase().contains("checked_in")
@@ -534,14 +524,13 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomRepository.findById(roomId))
+                        when(roomRepository.findByIdWithPessimisticLock(roomId))
                                         .thenReturn(Optional.of(occupiedRoom));
 
                         // ACT & ASSERT
                         IllegalStateException exception = assertThrows(
                                         IllegalStateException.class,
-                                        () -> checkinService.checkIn(bookingDetailId, roomId,
-                                                        java.math.BigDecimal.ZERO),
+                                        () -> checkinService.checkIn(bookingDetailId, roomId),
                                         "Phòng đang Occupied không được check-in (MOD2-002)");
                         assertTrue(
                                         exception.getMessage().toLowerCase().contains("occupied"),
@@ -592,8 +581,6 @@ class CheckinServiceUC12Test {
 
                         when(roomBookingDetailRepository.findById(bookingDetailId))
                                         .thenReturn(Optional.of(sampleBookingDetail));
-                        when(roomBookingDetailRepository.findByRoomBookingId(sampleRoomBooking.getId()))
-                                        .thenReturn(java.util.Collections.singletonList(sampleBookingDetail));
                         when(roomBookingDetailRepository.save(any(RoomBookingDetail.class)))
                                         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -634,40 +621,10 @@ class CheckinServiceUC12Test {
                 }
         }
 
-        // ================================================================
-        // TC-M2-026: updateCreditLimit — Tổng hạn mức phòng vượt master customer limit
-        // → [MOD2-UC14-016]
-        // Ref: TDD UC12 | Gap: Phân tiền cho phòng phải <= tổng hạn mức tổng
-        // ================================================================
-        @Nested
-        @DisplayName("TC-M2-026 [NEW]: updateCreditLimit — Tổng hạn mức phòng vượt master customer limit")
-        class TC_M2_026 {
 
-                @Test
-                @DisplayName("TC-M2-026: updateCreditLimit với giá trị làm tổng hạn mức phòng vượt tổng hạn mức tài khoản tổng -> exception")
-                void updateCreditLimit_ExceedsMasterLimit_ShouldThrowException() {
-                        // ARRANGE
-                        Long bookingDetailId = 5000L;
-                        BigDecimal newCreditLimit = new BigDecimal("6000000"); // Master limit is 5000000
-
-                        // Giả lập lấy ra detail
-                        when(roomBookingDetailRepository.findById(bookingDetailId))
-                                        .thenReturn(Optional.of(sampleBookingDetail));
-
-                        // Giả lập lấy danh sách các detail của booking này (chỉ có detail hiện tại)
-                        when(roomBookingDetailRepository
-                                        .findByRoomBookingId(sampleBookingDetail.getRoomBooking().getId()))
-                                        .thenReturn(java.util.Collections.singletonList(sampleBookingDetail));
-
-                        // ACT & ASSERT
-                        com.kawai.exceptions.BusinessException exception = assertThrows(
-                                        com.kawai.exceptions.BusinessException.class,
-                                        () -> checkinService.updateCreditLimit(bookingDetailId, newCreditLimit),
-                                        "Phân bổ vượt hạn mức tổng phải ném BusinessException (MOD2-UC14-016)");
-                        assertEquals("MOD2-UC14-016", exception.getErrorCode());
-
-                        verify(roomBookingDetailRepository, never()).save(any());
-                }
-        }
 
 }
+
+
+
+

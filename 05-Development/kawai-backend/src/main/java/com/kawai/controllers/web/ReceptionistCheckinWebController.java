@@ -22,7 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  */
 @Controller
 @RequestMapping("/receptionist/checkin")
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_CHECKIN')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_CHECKIN')")
 public class ReceptionistCheckinWebController {
 
     private static final Logger log = LoggerFactory.getLogger(ReceptionistCheckinWebController.class);

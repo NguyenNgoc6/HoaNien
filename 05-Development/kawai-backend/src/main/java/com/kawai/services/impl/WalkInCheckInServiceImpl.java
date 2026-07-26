@@ -82,6 +82,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
     private final com.kawai.services.interfaces.CheckinService checkinService;
     private final com.kawai.repositories.MaintenanceRequestRepository maintenanceRequestRepo;
     private final com.kawai.services.interfaces.EmailService emailService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     @Autowired
     private com.kawai.services.interfaces.PricingService pricingService;
@@ -101,7 +102,8 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             PasswordEncoder passwordEncoder,
             com.kawai.repositories.MaintenanceRequestRepository maintenanceRequestRepo,
             @Lazy com.kawai.services.interfaces.CheckinService checkinService,
-            com.kawai.services.interfaces.EmailService emailService) {
+            com.kawai.services.interfaces.EmailService emailService,
+            PaymentTransactionRepository paymentTransactionRepository) {
         this.roomRepository = roomRepository;
         this.roomBookingRepository = roomBookingRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
@@ -117,6 +119,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         this.maintenanceRequestRepo = maintenanceRequestRepo;
         this.checkinService = checkinService;
         this.emailService = emailService;
+        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -150,7 +153,6 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             // (TC-M2-030: phòng DIRTY/MAINTENANCE phải reject trước khi bất kỳ entity nào
             // được save)
             // (TC-M2-035: hard capacity violation phải reject trước khi Booking được save)
-            BigDecimal totalAllocatedCreditLimit = sumAllocatedCreditLimit(request);
             java.util.Map<Long, Room> validatedRooms = new java.util.LinkedHashMap<>();
             boolean isFirstPreCheck = true;
             for (WalkInRoomSelectionDTO preCheck : request.getRoomSelections()) {
@@ -176,10 +178,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                 newAccount = autoCreateAccount(customer, request.getEmail(), rawPassword);
             }
 
-            // Step 5: Validate tổng credit limit vs membership tier
-            validateCreditLimit(customer, totalAllocatedCreditLimit);
-
-            // Step 6: Tạo RoomBooking master
+            // Step 5: Tạo RoomBooking master
             RoomBooking booking = roomBookingRepository.save(buildRoomBooking(request, customer));
             BigDecimal totalDeposit = resolveDepositAmount(request);
             booking.setDepositAmount(totalDeposit);
@@ -211,9 +210,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
 
                 RoomBookingDetail detail = buildRoomBookingDetail(request, booking, room, room.getCategory(),
                         guestCount, extraSurcharge, avgRoomCharge);
-                detail.setSubCreditLimit(
-                        selection.getAllocatedCreditLimit() != null ? selection.getAllocatedCreditLimit()
-                                : BigDecimal.ZERO);
+                detail.setSubCreditLimit(resolveMembershipCreditLimit(customer));
                 roomBookingDetailRepository.save(detail);
 
                 bookingTotalPrice = bookingTotalPrice.add(calculateDetailCharge(booking, detail));
@@ -233,7 +230,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                 }
 
                 validatePrimaryContactCount(room, companions, isFirstRoom);
-                applyDepositToFolioIfNeeded(isFirstRoom, totalDeposit, request, detail);
+                applyDepositToFolioIfNeeded(isFirstRoom, totalDeposit, request, booking);
 
                 isFirstRoom = false;
             }
@@ -397,17 +394,6 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         }
     }
 
-    /**
-     * Validate tổng credit limit được phân bổ không vượt quá hạng mức membership.
-     */
-    private void validateCreditLimit(Customer customer, BigDecimal totalAllocated) {
-        BigDecimal masterLimit = resolveMembershipCreditLimit(customer);
-        if (totalAllocated.compareTo(masterLimit) > 0) {
-            throw new BusinessException("MOD2-UC14-016",
-                    "Tổng hạng mức của các phòng cộng lại (" + totalAllocated
-                            + ") vượt quá tổng hạng mức của tài khoản tổng (" + masterLimit + ").");
-        }
-    }
 
     /**
      * Validate số lượng primary contact của 1 phòng phải đúng bằng 1.
@@ -729,14 +715,22 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
      * Chuyển khoản.
      */
     private void applyDepositToFolioIfNeeded(boolean isFirstRoom, BigDecimal totalDeposit,
-            WalkInCheckInRequest request, RoomBookingDetail detail) {
+            WalkInCheckInRequest request, RoomBooking booking) {
         if (!isFirstRoom || totalDeposit.compareTo(BigDecimal.ZERO) <= 0)
             return;
 
         String paymentMethod = request.getPaymentMethod() != null ? request.getPaymentMethod() : DEFAULT_PAYMENT_METHOD;
         if (!"Chuyển khoản".equalsIgnoreCase(paymentMethod)) {
-            folioService.addFolioItem(detail.getId(), "FRONT_DESK", totalDeposit.negate(),
-                    "Tiền cọc Walk-in (" + paymentMethod + ")");
+            PaymentTransaction pt = new PaymentTransaction();
+            pt.setBooking(booking);
+            pt.setAmount(totalDeposit);
+            pt.setTransactionType("Deposit");
+            pt.setPaymentMethod(paymentMethod);
+            pt.setStatus(PaymentStatus.SUCCESS);
+            pt.setGatewayStatus("SUCCESS");
+            pt.setTransactionRef("WALKIN_DEP_" + booking.getId() + "_" + System.currentTimeMillis());
+            pt.setCreatedAt(java.time.LocalDateTime.now());
+            paymentTransactionRepository.save(pt);
         }
     }
 
@@ -778,20 +772,6 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
     // Private — Utility / Resolver Helpers
     // ══════════════════════════════════════════════════════════════════════════
 
-    /** Tổng allocatedCreditLimit từ tất cả roomSelections. */
-    private BigDecimal sumAllocatedCreditLimit(WalkInCheckInRequest request) {
-        BigDecimal total = BigDecimal.ZERO;
-        for (WalkInRoomSelectionDTO selection : request.getRoomSelections()) {
-            if (selection.getAllocatedCreditLimit() == null) {
-                throw new com.kawai.exceptions.BusinessException("WALKIN-009", "Vui lòng nhập hạn mức cho phòng nhé");
-            }
-            if (selection.getAllocatedCreditLimit().compareTo(BigDecimal.ZERO) < 0) {
-                throw new com.kawai.exceptions.BusinessException("WALKIN-010", "Hạn mức không được là số âm!");
-            }
-            total = total.add(selection.getAllocatedCreditLimit());
-        }
-        return total;
-    }
 
     /**
      * Resolve booking/detail status theo phương thức thanh toán.
