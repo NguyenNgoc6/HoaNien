@@ -31,7 +31,7 @@ import java.util.UUID;
 
 @Controller
 @RequestMapping("/housekeeping")
-@PreAuthorize("hasAnyAuthority('OP_HOUSEKEEPING','ROLE_ADMIN','ROLE_HOUSEKEEPING','ROLE_MANAGER','OP_RECEPTION_WALKIN','OP_RECEPTION_CHECKIN','OP_RECEPTION_CHECKOUT','OP_RECEPTION_INHOUSE')")
+@PreAuthorize("hasAnyAuthority('OP_HOUSEKEEPING','ROLE_ADMIN','ROLE_HOUSEKEEPING','OP_RECEPTION_WALKIN','OP_RECEPTION_CHECKIN','OP_RECEPTION_CHECKOUT','OP_RECEPTION_INHOUSE')")
 public class HousekeepingWebController {
     private final HousekeepingService housekeepingService;
     private final HousekeepingTaskRepository housekeepingTaskRepo;

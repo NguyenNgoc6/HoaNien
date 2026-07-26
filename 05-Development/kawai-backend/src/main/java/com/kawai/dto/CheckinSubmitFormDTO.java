@@ -18,7 +18,6 @@ public class CheckinSubmitFormDTO {
     private java.time.LocalDate dob;
     private String gender;
     private List<String> assignedRoomNumbers = new ArrayList<>();
-    private List<java.math.BigDecimal> allocatedCreditLimits = new ArrayList<>();
 
     // Danh sách người đi kèm, form frontend gửi lên dạng dependents[0].fullName,
     // dependents[1].fullName...
@@ -93,14 +92,6 @@ public class CheckinSubmitFormDTO {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    public List<java.math.BigDecimal> getAllocatedCreditLimits() {
-        return allocatedCreditLimits;
-    }
-
-    public void setAllocatedCreditLimits(List<java.math.BigDecimal> allocatedCreditLimits) {
-        this.allocatedCreditLimits = allocatedCreditLimits;
     }
 
     public List<String> getAssignedRoomNumbers() {
