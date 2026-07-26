@@ -414,8 +414,8 @@ function renderAssignedRooms() {
 }
 
 
-function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender) {
-    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender });
+function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender) {
+    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender });
 
     const modalEl = document.getElementById('checkinModal');
     if (!modalEl) {

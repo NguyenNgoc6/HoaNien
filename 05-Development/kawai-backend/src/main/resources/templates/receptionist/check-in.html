@@ -206,12 +206,11 @@
                                         th:data-phone="${arr.phone}" th:data-cccd="${arr.cccd}"
                                         th:data-dob="${arr.birthDate}" th:data-room="${arr.roomSummary}"
                                         th:data-deps="|deps-arr-${arr.id}|" th:data-tours="|tours-arr-${arr.id}|"
-                                        th:data-credit="${arr.creditLimit}"
                                         th:data-expected-guests="${arr.expectedGuests}"
                                         th:data-expected-adults="${arr.expectedAdults}"
                                         th:data-expected-children="${arr.expectedChildren}"
                                         th:data-max-adults="${arr.maxAdults}" th:data-max-children="${arr.maxChildren}"
-                                        onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'))"
+                                        onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'))"
                                         th:text="${arr.guestName}"></td>
                                     <td th:text="${arr.phone}"></td>
                                     <td th:text="${arr.checkInDate}"></td>
@@ -224,13 +223,13 @@
                                             th:data-name="${arr.guestName}" th:data-phone="${arr.phone}"
                                             th:data-cccd="${arr.cccd}" th:data-dob="${arr.birthDate}"
                                             th:data-room="${arr.roomSummary}" th:data-deps="|deps-arr-${arr.id}|"
-                                            th:data-tours="|tours-arr-${arr.id}|" th:data-credit="${arr.creditLimit}"
+                                            th:data-tours="|tours-arr-${arr.id}|"
                                             th:data-expected-guests="${arr.expectedGuests}"
                                             th:data-expected-adults="${arr.expectedAdults}"
                                             th:data-expected-children="${arr.expectedChildren}"
                                             th:data-max-adults="${arr.maxAdults}"
                                             th:data-max-children="${arr.maxChildren}" th:data-gender="${arr.gender}"
-                                            onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-credit'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'), this.getAttribute('data-gender'))">Assign
+                                            onclick="openCheckinModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-phone'), this.getAttribute('data-cccd'), this.getAttribute('data-dob'), this.getAttribute('data-room'), this.getAttribute('data-deps'), this.getAttribute('data-tours'), this.getAttribute('data-expected-guests'), this.getAttribute('data-expected-adults'), this.getAttribute('data-expected-children'), this.getAttribute('data-max-adults'), this.getAttribute('data-max-children'), this.getAttribute('data-gender'))">Assign
                                             & Check-in</button>
 
                                         <!-- Hidden data for dependents -->
