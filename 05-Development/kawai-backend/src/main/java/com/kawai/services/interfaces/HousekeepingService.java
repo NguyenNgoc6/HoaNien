@@ -58,7 +58,11 @@ public interface HousekeepingService {
      * @param notes   Mô tả sự cố
      * @return HotelOperation phiếu sửa chữa
      */
-    HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency);
+    HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency, String sourceTaskType);
+
+    default HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency) {
+        return createMaintenanceRequest(roomId, staffId, notes, isEmergency, null);
+    }
 
     /**
      * Maintenance hoàn thành → phòng chuyển AVAILABLE (UC13.5).

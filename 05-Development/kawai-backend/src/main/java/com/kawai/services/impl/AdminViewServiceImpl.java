@@ -304,7 +304,7 @@ public class AdminViewServiceImpl implements AdminViewService {
                                 "z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg"
                         );
                         if (img.endsWith(".html")) {
-                            img = "/AnhTour/DuAm.jpg";
+                            img = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011568/kawai_assets/AnhTour/DuAm.jpg";
                         }
                     }
                     r.add(r("id", "T-" + tour.getId(), "name",

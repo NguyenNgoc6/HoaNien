@@ -55,6 +55,64 @@ public class TourBookingApiController {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private DependentRepository dependentRepository;
+
+    @Autowired
+    private RoomGuestRepository roomGuestRepository;
+
+    @Autowired
+    private TourItineraryDetailRepository tourItineraryDetailRepository;
+
+    @GetMapping("/blocked-dependents")
+    public ResponseEntity<?> getBlockedDependents(
+            @RequestParam String departureDate,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.ok(Map.of("blockedIds", List.of()));
+        }
+        Optional<Customer> customerOpt = customerRepository.findByAccount_Username(principal.getName());
+        if (customerOpt.isEmpty()) {
+            return ResponseEntity.ok(Map.of("blockedIds", List.of()));
+        }
+
+        Customer customer = customerOpt.get();
+        LocalDate depDate = LocalDate.parse(departureDate, DateTimeFormatter.ISO_LOCAL_DATE);
+        List<String> blockedIds = new java.util.ArrayList<>();
+
+        if (tourAttendeeRepository.existsActiveAttendeeByCustomerAndDate(customer.getId(), depDate)) {
+            blockedIds.add("cust_" + customer.getId());
+        }
+
+        List<Dependent> dependents = dependentRepository.findByCustomer(customer);
+        for (Dependent dep : dependents) {
+            if (dep.getIsDeleted() == null || !dep.getIsDeleted()) {
+                if (tourAttendeeRepository.existsActiveAttendeeByDependentAndDate(dep.getId(), depDate)) {
+                    blockedIds.add(String.valueOf(dep.getId()));
+                }
+            }
+        }
+
+        if (customer.getAccount() != null) {
+            List<RoomBookingDetail> activeDetails = roomBookingDetailRepository.findActiveDetailsByUserId(customer.getAccount().getId());
+            for (RoomBookingDetail rbd : activeDetails) {
+                List<RoomGuest> roomGuests = roomGuestRepository.findByRoomBookingDetailId(rbd.getId());
+                for (RoomGuest rg : roomGuests) {
+                    if (rg.getCustomer() != null) {
+                        if (tourAttendeeRepository.existsActiveAttendeeByCustomerAndDate(rg.getCustomer().getId(), depDate)) {
+                            blockedIds.add("cust_" + rg.getCustomer().getId());
+                        }
+                    } else if (rg.getDependent() != null) {
+                        if (tourAttendeeRepository.existsActiveAttendeeByDependentAndDate(rg.getDependent().getId(), depDate)) {
+                            blockedIds.add(String.valueOf(rg.getDependent().getId()));
+                        }
+                    }
+                }
+            }
+        }
+        return ResponseEntity.ok(Map.of("blockedIds", blockedIds));
+    }
+
     @GetMapping("/check-registered")
     public ResponseEntity<?> checkRegistered(
             @RequestParam Long tourId,
@@ -172,7 +230,13 @@ public class TourBookingApiController {
                     .orElseThrow(() -> new IllegalArgumentException("Tour not found with ID: " + tourId));
 
             List<TourSchedule> schedules = tourScheduleRepository.findByTourIdAndDepartureDate(tourId, departureDate);
-            TourSchedule schedule = schedules.isEmpty() ? null : schedules.get(0);
+            TourSchedule schedule = null;
+            for (TourSchedule s : schedules) {
+                if ("Open".equalsIgnoreCase(s.getScheduleStatus()) || "Pending".equalsIgnoreCase(s.getScheduleStatus())) {
+                    schedule = s;
+                    break;
+                }
+            }
 
             // Determine guide for this booking
             String guideForNewTour = getGuideNameForTour(tour.getTourName());
@@ -474,9 +538,43 @@ public class TourBookingApiController {
         data.put("infantPrice", java.math.BigDecimal.ZERO);
         data.put("insurancePrice", tour != null && tour.getInsurancePrice() != null ? tour.getInsurancePrice()
                 : new java.math.BigDecimal("50000"));
+        data.put("scheduleId", schedule != null ? schedule.getId() : null);
         data.put("insuranceFee", insuranceFee);
         data.put("isInsuranceRequired", tour != null && Boolean.TRUE.equals(tour.getIsInsuranceRequired()));
         data.put("insurancePolicyNumber", insurancePolicyNumber);
+
+        // Fetch real itinerary details for customer timeline modal
+        if (tour != null) {
+            List<TourItineraryDetail> details = tourItineraryDetailRepository.findByItineraryTourId(tour.getId());
+            if (details != null && !details.isEmpty()) {
+                List<Boolean> guideCheckpoints = schedule != null ? com.kawai.controllers.web.TourGuideController.getScheduleCheckpointStates(schedule.getId()) : java.util.Collections.emptyList();
+                List<Map<String, Object>> itineraryList = new java.util.ArrayList<>();
+                boolean inProgressAssigned = false;
+                for (int idx = 0; idx < details.size(); idx++) {
+                    TourItineraryDetail d = details.get(idx);
+                    Map<String, Object> item = new java.util.HashMap<>();
+                    String startTimeStr = d.getStartTime() != null ? d.getStartTime().toString().substring(0, 5) : "";
+                    String endTimeStr = d.getEndTime() != null ? " - " + d.getEndTime().toString().substring(0, 5) : "";
+                    item.put("time", startTimeStr + endTimeStr);
+                    item.put("title", d.getActivityTitle());
+                    item.put("description", d.getActivityDescription());
+
+                    boolean isDone = idx < guideCheckpoints.size() && Boolean.TRUE.equals(guideCheckpoints.get(idx));
+                    String itemStatus;
+                    if (isDone) {
+                        itemStatus = "completed";
+                    } else if (!inProgressAssigned) {
+                        itemStatus = "in_progress";
+                        inProgressAssigned = true;
+                    } else {
+                        itemStatus = "pending";
+                    }
+                    item.put("status", itemStatus);
+                    itineraryList.add(item);
+                }
+                data.put("itineraries", itineraryList);
+            }
+        }
 
         return ResponseEntity.ok(data);
     }

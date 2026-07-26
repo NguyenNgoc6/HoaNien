@@ -254,5 +254,40 @@ public class ProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("guest/profile"));
     }
+
+    @Test
+    @WithMockUser(username = "hoangnam")
+    public void testGetProfileWithNullEdgeCaseTourAndFoodOrdersRendersSuccessfully() throws Exception {
+        Customer customer = new Customer();
+        customer.setId(506L);
+        customer.setFullName("Le Hoang Nam");
+        customer.setEmail("nam102@test.com");
+
+        // Tour booking with null bookingStatus, null schedule, null participantCount
+        com.kawai.models.TourBooking nullStatusTourBooking = new com.kawai.models.TourBooking();
+        nullStatusTourBooking.setId(999L);
+        nullStatusTourBooking.setCustomer(customer);
+        nullStatusTourBooking.setBookingStatus(null);
+        nullStatusTourBooking.setSchedule(null);
+        nullStatusTourBooking.setParticipantCount(null);
+
+        // Food order with null orderStatus
+        com.kawai.models.FoodOrder nullStatusFoodOrder = new com.kawai.models.FoodOrder();
+        nullStatusFoodOrder.setId(888L);
+        nullStatusFoodOrder.setOrderStatus(null);
+
+        when(customerRepository.findByAccount_Username("hoangnam")).thenReturn(Optional.of(customer));
+        when(roomBookingRepository.findByCustomerOrderByIdDesc(any())).thenReturn(java.util.Collections.emptyList());
+        when(roomBookingDetailRepository.findByCustomer(any())).thenReturn(java.util.Collections.emptyList());
+        when(bookingRepository.findByCustomerId(any())).thenReturn(java.util.List.of(nullStatusTourBooking));
+        when(tourBookingRepository.findTourBookingsByCustomerId(any())).thenReturn(java.util.List.of(nullStatusTourBooking));
+        when(foodOrderRepository.findByCustomer(any())).thenReturn(java.util.List.of(nullStatusFoodOrder));
+        when(dependentRepository.findByCustomer(any())).thenReturn(java.util.Collections.emptyList());
+        when(tableReservationRepository.findByCustomerOrderByIdDesc(any())).thenReturn(java.util.Collections.emptyList());
+
+        mockMvc.perform(get("/profile"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("guest/profile"));
+    }
 }
 

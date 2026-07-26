@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,6 +57,9 @@ public class FolioRestController {
     private final com.kawai.repositories.EmployeeRepository employeeRepository;
     private final com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
     private final RoomCategoryRepository roomCategoryRepository;
+    private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
+    @Autowired
+    private com.kawai.repositories.AuditLogRepository auditLogRepository;
 
     @Autowired
     public FolioRestController(NightAuditService nightAuditService,
@@ -75,7 +80,8 @@ public class FolioRestController {
             com.kawai.repositories.HousekeepingTaskRepository housekeepingTaskRepo,
             com.kawai.repositories.EmployeeRepository employeeRepository,
             com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository,
-            RoomCategoryRepository roomCategoryRepository) {
+            RoomCategoryRepository roomCategoryRepository,
+            com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository) {
         this.nightAuditService = nightAuditService;
         this.folioItemRepository = folioItemRepository;
         this.roomBookingDetailRepository = roomBookingDetailRepository;
@@ -95,6 +101,7 @@ public class FolioRestController {
         this.housekeepingTaskRepo = housekeepingTaskRepo;
         this.employeeRepository = employeeRepository;
         this.roomCategoryRepository = roomCategoryRepository;
+        this.roomSurchargeRepository = roomSurchargeRepository;
     }
 
     /**
@@ -116,11 +123,6 @@ public class FolioRestController {
                 // khi DB có row cũ vi phạm payer_customer_id NOT NULL
                 List<java.math.BigDecimal> amounts = folioItemRepository.findAmountsByDetailId(d.getId());
 
-                // Chi tiêu thực (FolioItem DƯƠNG)
-                java.math.BigDecimal charged = amounts.stream()
-                        .filter(a -> a != null && a.compareTo(java.math.BigDecimal.ZERO) > 0)
-                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-
                 // Tiền khách đã nạp trước (CHỈ đếm các khoản nạp hạn mức, bỏ tiền cọc Walk-in)
                 java.math.BigDecimal deposited = folioItemRepository.findCreditDepositAmountsByDetailId(d.getId())
                         .stream()
@@ -128,17 +130,26 @@ public class FolioRestController {
                         .map(java.math.BigDecimal::abs)
                         .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
+                // Chi tiêu ròng (Tổng dịch vụ - Hoàn tiền, loại bỏ các khoản nạp hạn mức)
+                java.math.BigDecimal netCharged = amounts.stream()
+                        .filter(a -> a != null)
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)
+                        .add(deposited); // vì deposited bị âm trong findAmountsByDetailId, cộng deposited là trừ ra tiền nạp hạn mức
+                if (netCharged.compareTo(java.math.BigDecimal.ZERO) < 0) {
+                    netCharged = java.math.BigDecimal.ZERO;
+                }
+
                 java.math.BigDecimal limit = (d.getSubCreditLimit() != null && d.getSubCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0)
                         ? d.getSubCreditLimit()
                         : new java.math.BigDecimal("5000000.00");
-                // Khả dụng = Hạn mức gốc + Đã nạp - Đang chi
-                java.math.BigDecimal available = limit.add(deposited).subtract(charged);
+                // Khả dụng = Hạn mức gốc + Đã nạp - Chi tiêu ròng
+                java.math.BigDecimal available = limit.add(deposited).subtract(netCharged);
 
                 Map<String, Object> roomMap = new java.util.HashMap<>();
                 roomMap.put("detailId", d.getId());
                 roomMap.put("roomNumber", d.getRoom() != null ? d.getRoom().getRoomNumber() : "N/A");
                 roomMap.put("creditLimit", limit);
-                roomMap.put("charged", charged);
+                roomMap.put("charged", netCharged);
                 roomMap.put("deposited", deposited);
                 roomMap.put("available", available);
                 rooms.add(roomMap);
@@ -272,12 +283,13 @@ public class FolioRestController {
      */
     @GetMapping("/room/{roomBookingDetailId}")
     public ResponseEntity<?> getFolioByRoom(@PathVariable Long roomBookingDetailId) {
-        Optional<RoomBookingDetail> optDetail = roomBookingDetailRepository.findById(roomBookingDetailId);
-        if (optDetail.isEmpty()) {
-            Map<String, String> err = new java.util.HashMap<>();
-            err.put("message", "RoomBookingDetail không tồn tại");
-            return ResponseEntity.badRequest().body(err);
-        }
+        try {
+            Optional<RoomBookingDetail> optDetail = roomBookingDetailRepository.findById(roomBookingDetailId);
+            if (optDetail.isEmpty()) {
+                Map<String, String> err = new java.util.HashMap<>();
+                err.put("message", "RoomBookingDetail không tồn tại");
+                return ResponseEntity.badRequest().body(err);
+            }
         RoomBookingDetail detail = optDetail.get();
 
         String guestName = "Unknown";
@@ -370,19 +382,113 @@ public class FolioRestController {
             }
         }
 
-        BigDecimal expectedCharge343 = getExpectedRoomCharge(detail);
-        if (!hasRoomCharge && expectedCharge343.compareTo(BigDecimal.ZERO) > 0) {
+        BigDecimal dailyRate = BigDecimal.ZERO;
+        long nights = 1;
+        if (detail.getRoomBooking() != null && detail.getRoomBooking().getCheckInDate() != null
+                && detail.getRoomBooking().getCheckOutDate() != null) {
+            nights = java.time.temporal.ChronoUnit.DAYS.between(detail.getRoomBooking().getCheckInDate(),
+                    detail.getRoomBooking().getCheckOutDate());
+            if (nights <= 0) nights = 1;
+        }
+
+        boolean isWalkIn = detail.getRoomBooking() != null && "WALK_IN".equalsIgnoreCase(detail.getRoomBooking().getBookingSource());
+        BigDecimal catBasePrice = (detail.getCategory() != null && detail.getCategory().getBasePrice() != null)
+                ? detail.getCategory().getBasePrice()
+                : ((detail.getRoomCharge() != null) ? (isWalkIn ? detail.getRoomCharge() : detail.getRoomCharge().divide(BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP)) : BigDecimal.ZERO);
+
+        BigDecimal originalPricePerNight = catBasePrice;
+        BigDecimal totalOriginalRoomCharge = catBasePrice.multiply(BigDecimal.valueOf(nights));
+        dailyRate = originalPricePerNight;
+
+        String currentCategoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "N/A";
+        String originalCategoryName = currentCategoryName;
+        BigDecimal originalExtraSurcharge = detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
+
+        if (auditLogRepository != null) {
+            try {
+                com.kawai.models.AuditLog categoryChangeLog = auditLogRepository.findAll().stream()
+                        .filter(log -> log != null && "ROOM_CATEGORY_CHANGED".equals(log.getAction()) && "Room_Booking_Details".equals(log.getTableName()) && detail.getId().equals(log.getRecordId()))
+                        .findFirst()
+                        .orElse(null);
+                if (categoryChangeLog != null && categoryChangeLog.getOldValue() != null) {
+                    String oldValue = categoryChangeLog.getOldValue();
+                    int catIndex = oldValue.indexOf("Category: ");
+                    if (catIndex != -1) {
+                        originalCategoryName = oldValue.substring(catIndex + "Category: ".length()).trim();
+                        final String targetOrigName = originalCategoryName;
+                        com.kawai.models.RoomCategory origCat = roomCategoryRepository.findAll().stream()
+                                .filter(cat -> cat != null && cat.getCategoryName() != null && cat.getCategoryName().equalsIgnoreCase(targetOrigName))
+                                .findFirst()
+                                .orElse(null);
+                        if (origCat != null) {
+                            originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+                            if (origCat.getBasePrice() != null) {
+                                originalPricePerNight = origCat.getBasePrice();
+                                totalOriginalRoomCharge = originalPricePerNight.multiply(BigDecimal.valueOf(nights));
+                                dailyRate = originalPricePerNight;
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Defensive fallback
+            }
+        } else if (detail.getCategory() != null) {
+            final BigDecimal searchPrice = originalPricePerNight;
+            com.kawai.models.RoomCategory origCat = roomCategoryRepository.findAll().stream()
+                    .filter(cat -> cat.getBasePrice() != null && cat.getBasePrice().compareTo(searchPrice) == 0)
+                    .findFirst()
+                    .orElse(null);
+            if (origCat != null) {
+                originalCategoryName = origCat.getCategoryName();
+                originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // PRIMARY BASELINE: Dùng room_charge (giá gốc lúc booking, không thay đổi khi nâng hạng)
+        // làm nguồn tính toán đáng tin nhất cho dailyRate và totalOriginalRoomCharge.
+        // catBasePrice chỉ dùng khi room_charge không có sẵn.
+        // ─────────────────────────────────────────────────────────────────
+        BigDecimal storedRoomCharge = detail.getRoomCharge();
+        if (!isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
+            // Non-Walk-In: room_charge = tổng giá x số đêm → chia để ra giá 1 đêm
+            BigDecimal derivedDailyRate = storedRoomCharge.divide(BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP);
+            originalPricePerNight = derivedDailyRate;
+            totalOriginalRoomCharge = storedRoomCharge;  // đúng chính xác, không cần nhân lại
+            dailyRate = derivedDailyRate;
+        } else if (isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
+            // Walk-In: room_charge = giá 1 đêm (không × số đêm)
+            originalPricePerNight = storedRoomCharge;
+            totalOriginalRoomCharge = storedRoomCharge.multiply(BigDecimal.valueOf(nights));
+            dailyRate = storedRoomCharge;
+        }
+        
+        BigDecimal expectedCharge343 = (totalOriginalRoomCharge != null && totalOriginalRoomCharge.compareTo(BigDecimal.ZERO) > 0)
+                ? totalOriginalRoomCharge
+                : getExpectedRoomCharge(detail);
+
+        BigDecimal postedRoomChargeTotal = BigDecimal.ZERO;
+        for (Map<String, Object> iMap : itemDTOs) {
+            if ("Room".equalsIgnoreCase((String) iMap.get("sourceDepartment"))) {
+                postedRoomChargeTotal = postedRoomChargeTotal.add(new BigDecimal(iMap.get("amount").toString()));
+            }
+        }
+
+        BigDecimal remainingExpectedCharge = expectedCharge343.subtract(postedRoomChargeTotal);
+
+        if (remainingExpectedCharge.compareTo(BigDecimal.ZERO) > 0) {
             Map<String, Object> roomMap = new java.util.HashMap<>();
             roomMap.put("id", -detail.getId());
             roomMap.put("sourceDepartment", "Room");
-            roomMap.put("amount", expectedCharge343);
-            String catName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "Room";
+            roomMap.put("amount", remainingExpectedCharge);
+            String catName = originalCategoryName != null ? originalCategoryName : currentCategoryName;
             roomMap.put("description", "Room Charge (Expected) - " + catName);
             roomMap.put("isSettledSeparately", false);
             roomMap.put("createdAt", java.time.LocalDateTime.now().toString());
             itemDTOs.add(0, roomMap); // Add to top
 
-            taxable = taxable.add(expectedCharge343);
+            taxable = taxable.add(remainingExpectedCharge);
         }
 
         BigDecimal currentBalance;
@@ -442,36 +548,6 @@ public class FolioRestController {
             }
         }
 
-        BigDecimal dailyRate = BigDecimal.ZERO;
-        long nights = 1;
-        if (detail.getRoomBooking() != null && detail.getRoomBooking().getCheckInDate() != null
-                && detail.getRoomBooking().getCheckOutDate() != null) {
-            nights = java.time.temporal.ChronoUnit.DAYS.between(detail.getRoomBooking().getCheckInDate(),
-                    detail.getRoomBooking().getCheckOutDate());
-            if (nights <= 0) nights = 1;
-        }
-
-        boolean hasChangedCategory = false;
-        if (items != null) {
-            hasChangedCategory = items.stream()
-                    .anyMatch(f -> f.getDescription() != null && f.getDescription().contains("hạng phòng"));
-        }
-
-        if (hasChangedCategory) {
-            dailyRate = detail.getCategory() != null && detail.getCategory().getBasePrice() != null 
-                    ? detail.getCategory().getBasePrice() 
-                    : BigDecimal.ZERO;
-        } else {
-            boolean isWalkIn = detail.getRoomBooking() != null && "WALK_IN".equalsIgnoreCase(detail.getRoomBooking().getBookingSource());
-            if (isWalkIn) {
-                dailyRate = detail.getRoomCharge() != null ? detail.getRoomCharge() : BigDecimal.ZERO;
-            } else {
-                dailyRate = detail.getRoomCharge() != null && nights > 0
-                        ? detail.getRoomCharge().divide(BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP) 
-                        : BigDecimal.ZERO;
-            }
-        }
-
         Map<String, Object> response = new java.util.HashMap<>();
         response.put("success", true);
         response.put("roomBookingDetailId", roomBookingDetailId);
@@ -486,29 +562,10 @@ public class FolioRestController {
         response.put("roomNumber", roomNumber);
         response.put("checkInDate", checkInDate);
         response.put("checkOutDate", checkOutDate);
-        String currentCategoryName = detail.getCategory() != null ? detail.getCategory().getCategoryName() : "N/A";
-        String originalCategoryName = currentCategoryName;
-        if (detail.getCategory() != null) {
-            if (detail.getRoomBooking() != null && detail.getRoomCharge() != null) {
-                long detailNights = java.time.temporal.ChronoUnit.DAYS.between(
-                        detail.getRoomBooking().getCheckInDate(),
-                        detail.getRoomBooking().getCheckOutDate()
-                );
-                if (detailNights <= 0) detailNights = 1;
-                BigDecimal pricePerNight = detail.getRoomCharge().divide(BigDecimal.valueOf(detailNights), 2, java.math.RoundingMode.HALF_UP);
-                
-                if (detail.getCategory().getBasePrice() != null && detail.getCategory().getBasePrice().compareTo(pricePerNight) != 0) {
-                    originalCategoryName = roomCategoryRepository.findAll().stream()
-                            .filter(cat -> cat.getBasePrice() != null && cat.getBasePrice().compareTo(pricePerNight) == 0)
-                            .map(RoomCategory::getCategoryName)
-                            .findFirst()
-                            .orElse(currentCategoryName);
-                }
-            }
-        }
         response.put("categoryName", currentCategoryName);
         response.put("originalCategoryName", originalCategoryName);
-        response.put("roomCharge", detail.getRoomCharge());
+        response.put("originalExtraSurcharge", originalExtraSurcharge);
+        response.put("roomCharge", totalOriginalRoomCharge);
         response.put("dailyRate", dailyRate);
         response.put("extraSurcharge", detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO);
         response.put("baseAdults", detail.getCategory() != null ? detail.getCategory().getBaseAdults() : 2);
@@ -570,6 +627,12 @@ public class FolioRestController {
         response.put("roomCheckStatus", roomCheckStatus);
 
         return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> err = new java.util.HashMap<>();
+            err.put("message", "Internal Server Error in getFolioByRoom: " + e.getMessage());
+            err.put("stacktrace", java.util.Arrays.toString(e.getStackTrace()));
+            return ResponseEntity.status(500).body(err);
+        }
     }
 
     /**
@@ -1699,9 +1762,6 @@ public class FolioRestController {
         if (d.getRoomCharge() != null && d.getRoomCharge().compareTo(BigDecimal.ZERO) > 0) {
             totalCharge = totalCharge.add(d.getRoomCharge());
         }
-        if (d.getExtraSurcharge() != null && d.getExtraSurcharge().compareTo(BigDecimal.ZERO) > 0) {
-            totalCharge = totalCharge.add(d.getExtraSurcharge());
-        }
         if (totalCharge.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
@@ -1720,5 +1780,51 @@ public class FolioRestController {
                 nights = 1;
         }
         return totalCharge.multiply(BigDecimal.valueOf(nights));
+    }
+
+    private BigDecimal calculateExtraSurchargeForCategory(RoomBookingDetail detail, com.kawai.models.RoomCategory category) {
+        List<com.kawai.models.RoomGuest> guests = roomGuestRepository.findByRoomBookingDetailId(detail.getId());
+        if (guests == null || guests.isEmpty() || category == null) {
+            return detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
+        }
+
+        int adults = 0;
+        List<Integer> childAges = new ArrayList<>();
+        for (com.kawai.models.RoomGuest rg : guests) {
+            java.time.LocalDate birthDate = null;
+            if (rg.getCustomer() != null) {
+                birthDate = rg.getCustomer().getBirthDate();
+            } else if (rg.getDependent() != null) {
+                birthDate = rg.getDependent().getBirthDate();
+            }
+            int age = birthDate != null ? java.time.Period.between(birthDate, java.time.LocalDate.now()).getYears() : 18;
+            if (age >= 18) {
+                adults++;
+            } else {
+                childAges.add(age);
+            }
+        }
+
+        int baseAdults = category.getBaseAdults() != null ? category.getBaseAdults() : (category.getCapacity() != null ? category.getCapacity() : 2);
+        int baseChildren = category.getBaseChildren() != null ? category.getBaseChildren() : 0;
+
+        BigDecimal surcharge = BigDecimal.ZERO;
+        int extraAdults = Math.max(0, adults - baseAdults);
+        if (extraAdults > 0 && category.getExtraAdultSurcharge() != null) {
+            surcharge = surcharge.add(category.getExtraAdultSurcharge().multiply(BigDecimal.valueOf(extraAdults)));
+        }
+
+        int chargeableChildren = Math.max(0, childAges.size() - baseChildren);
+        if (chargeableChildren > 0) {
+            Collections.sort(childAges);
+            int skipCount = childAges.size() - chargeableChildren;
+            for (int i = skipCount; i < childAges.size(); i++) {
+                surcharge = surcharge.add(
+                        roomSurchargeRepository.findSurchargeForAge(category, childAges.get(i))
+                                .map(com.kawai.models.RoomSurcharge::getPriceModifier)
+                                .orElse(BigDecimal.ZERO));
+            }
+        }
+        return surcharge;
     }
 }

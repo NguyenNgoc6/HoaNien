@@ -19,78 +19,78 @@ INSERT INTO Roles (role_id, role_name, permissions) VALUES (10, 'CUSTOMER NORMAL
 -- password hash for 'admin123': $2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q
 -- password hash for 'staff123': $2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES 
-(1, 'admin', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 1, CURRENT_TIMESTAMP),
-(2, 'tphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(3, 'nmquan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(1, 'nguyenquantri', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 1, CURRENT_TIMESTAMP),
+(2, 'tranphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(3, 'nguyenminhquan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
 (4, 'lelinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(5, 'hoangnam', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
-(6, 'vanan', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
-(7, 'phamtuan', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP),
-(8, 'thibich', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
-(9, 'ngocthi', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
-(10, 'mylinh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
-(11, 'hoanganh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP),
-(12, 'vuhung', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP),
-(13, 'Nguyễn Ngọc', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 8, CURRENT_TIMESTAMP),
-(14, 'guide2', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
-(15, 'guide3', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
-(16, 'housekeep1', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(17, 'housekeep2', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(5, 'nguyenxuanluu', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
+(6, 'ngocthi', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
+(7, 'phamtuan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(8, 'tranthibich', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
+(9, 'ngocthi2', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
+(10, 'domylinh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 9, CURRENT_TIMESTAMP),
+(11, 'hoanganh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(12, 'vuhung', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(13, 'nguyenngoc', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(14, 'ngoclan', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 7, CURRENT_TIMESTAMP),
+(15, 'hoangnam', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 7, CURRENT_TIMESTAMP),
+(16, 'levantam', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(17, 'nguyenthihoa', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
 (18, 'pos1', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(19, 'manager1', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 7, CURRENT_TIMESTAMP),
-(20, 'maintain1', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(21, 'receptionist1_21', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(22, 'receptionist2_22', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(23, 'receptionist3_23', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(24, 'receptionist4_24', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(25, 'receptionist5_25', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(26, 'fnb_kitchen1_26', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(27, 'fnb_kitchen2_27', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(28, 'fnb_kitchen3_28', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(29, 'fnb_kitchen4_29', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(30, 'fnb_pos1_30', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(31, 'fnb_pos2_31', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(32, 'fnb_pos3_32', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(33, 'fnb_pos4_33', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(34, 'fnb_pos5_34', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(35, 'fnb_pos6_35', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(36, 'housekeeping1_36', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(37, 'housekeeping2_37', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(38, 'housekeeping3_38', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(39, 'housekeeping4_39', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(40, 'housekeeping5_40', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(41, 'housekeeping6_41', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(42, 'housekeeping7_42', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(43, 'housekeeping8_43', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(44, 'housekeeping9_44', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(45, 'housekeeping10_45', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(46, 'maintainer1_46', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(47, 'maintainer2_47', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(48, 'manager1_48', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 7, CURRENT_TIMESTAMP),
-(49, 'tourguide1_49', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(50, 'tourguide2_50', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(51, 'maintainer3_51', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(52, 'maintainer4_52', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(53, 'maintainer5_53', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(54, 'maintainer6_54', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(55, 'tourguide3_55', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(56, 'tourguide4_56', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(57, 'tourguide5_57', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(58, 'tourguide6_58', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
-(59, 'fnb_kitchen5_59', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(60, 'fnb_kitchen6_60', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(61, 'fnb_kitchen7_61', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(62, 'fnb_kitchen8_62', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(63, 'fnb_pos7_63', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(64, 'fnb_pos8_64', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(65, 'fnb_pos9_65', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(66, 'fnb_pos10_66', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(67, 'receptionist6_67', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(68, 'receptionist7_68', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(69, 'receptionist8_69', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(70, 'housekeeping11_70', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(71, 'housekeeping12_71', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(72, 'housekeeping13_72', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP);
+(19, 'lequanly', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 7, CURRENT_TIMESTAMP),
+(20, 'hoangbaotri', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(21, 'hoangquangson', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(22, 'ngominhyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(23, 'dangvanvy', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(24, 'huynhhaivy', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(25, 'tranhoaihieu', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(26, 'ngominhtrang', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(27, 'tranthuyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(28, 'lengocphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(29, 'hoxuanhoa', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(30, 'phamhoaituan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(31, 'duongtuanphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(32, 'votuanphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(33, 'phamhoaituan2', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(34, 'vuthuphuong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(35, 'nguyenbaolan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(36, 'vuhoaichau', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(37, 'hoangbaouyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(38, 'vuvanbinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(39, 'ngohuuson', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(40, 'phamhuuyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(41, 'buivanlong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(42, 'dangxuanlong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(43, 'dobaoyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(44, 'leminhquan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(45, 'phanxuanviet', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(46, 'phanhoainga', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(47, 'hoanghuunga', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(48, 'phamngocviet', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 7, CURRENT_TIMESTAMP),
+(49, 'dothubinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(50, 'ngominhlan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(51, 'vutuankiet', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(52, 'dinhvanmanh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(53, 'trinhducthang', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(54, 'buiducanh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(55, 'phanthanhhai', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(56, 'nguyenquynhanh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(57, 'lehoanglong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(58, 'vuthutrang', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP),
+(59, 'daovannam', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(60, 'tranthimai', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(61, 'phamduchuy', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(62, 'nguyenhuonggiang', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(63, 'tranminhtriet', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(64, 'lehoangyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(65, 'nguyenvanan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(66, 'vuthilinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(67, 'phamnhatminh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(68, 'ngothaonguyen', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(69, 'trananhtuan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
+(70, 'buithiennhan', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(71, 'lekhanhlinh', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(72, 'danggiabao', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP);
 
 -- ── 3. Employees (10 rows) ───────────────────────────────────
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary) VALUES 
@@ -99,7 +99,7 @@ INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, 
 (2, 2, 'Trần Phương', 'Nữ', '001234567891', '0912000002', 'tphuong@hoanien.vn', 10000000),
 (3, 3, 'Nguyễn Minh Quân', 'Nam', '001234567892', '0912000003', 'nmquan@hoanien.vn', 10000000),
 (4, 4, 'Lê Linh', 'Nữ', '001234567893', '0912000004', 'liungu2005@gmail.com', 9000000),
-(5, 13, 'NguynNgoc', 'Nam', '001234567894', '0912000005', 'guide@hoanien.vn', 8000000),
+(5, 13, 'Nguyễn Ngọc', 'Nam', '001234567894', '0912000005', 'guide@hoanien.vn', 8000000),
 
 (6, 14, 'Ngọc Lan', 'Nữ', '001234567895', '0912000006', 'guide2@hoanien.vn', 8500000),
 (7, 15, 'Hoàng Nam', 'Nam', '001234567896', '0912000007', 'luu14102005@gmail.com', 8500000),
@@ -240,7 +240,7 @@ INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booki
 (2,  '102', 1, 'Vacant_Dirty', NULL),
 (3,  '103', 1, 'Maintenance',  NULL),
 (4,  '104', 1, 'Vacant_Dirty', NULL),
-(5,  '105', 1, 'Vacant_Clean', NULL),
+(5,  '105', 1, 'Occupied',     3),
 -- Category 4 - Garden View Suite (rooms 106-110): tất cả Vacant
 (6,  '106', 4, 'Vacant_Clean', NULL),
 (7,  '107', 4, 'Vacant_Clean', NULL),
@@ -277,7 +277,7 @@ INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booki
 (33, '403', 6, 'Vacant_Clean', NULL),
 (34, '404', 6, 'Vacant_Clean', NULL),
 (35, '405', 6, 'Vacant_Clean', NULL),
-(36, '406', 3, 'Occupied',     3),
+(36, '406', 3, 'Vacant_Clean', NULL),
 (37, '407', 3, 'Vacant_Clean', NULL),
 (38, '408', 3, 'Vacant_Clean', NULL),
 (39, '409', 3, 'Vacant_Clean', NULL),
@@ -348,7 +348,7 @@ INSERT INTO Promotions (promo_id, promo_code, discount_type, discount_value, val
 INSERT INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
 (1, 1, '2026-06-01', 5000000, 'Checked_Out', 'Direct_Web', 1, 1), -- Hoàng Nam đã trả phòng
 (2, 2, '2026-06-02', 7000000, 'Checked_Out', 'Direct_Web', NULL, 1),
-(3, 3, '2026-06-03', 16000000, 'Confirmed', 'OTA', NULL, 1),
+(3, 3, '2026-06-03', 7500000, 'Confirmed', 'OTA', NULL, 1),
 (4, 4, '2026-06-04', 5000000, 'Confirmed', 'OTA', 2, 1),
 (5, 5, '2026-06-05', 5000000, 'Confirmed', 'Direct_Web', NULL, 1),
 (6, 6, '2026-06-06', 7000000, 'Confirmed', 'OTA', NULL, 1),
@@ -377,7 +377,7 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 -- Room_Booking 1: ngày quá khứ (khách đã checkout, không dùng CURDATE)
 (1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 7 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 15 DAY), 5000000, 'hash'),
 (2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), DATE_SUB(CURDATE(), INTERVAL 2 DAY), 1000000, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 5000000, 'hash'),
-(3, '2026-06-09', '2026-06-12', 2000000, '2026-06-05', 10000000, 'hash'),
+(3, '2026-07-26', '2026-07-29', 2000000, '2026-07-24', 10000000, 'hash'),
 (4, '2026-06-09', '2026-06-11', 1000000, '2026-06-05', 5000000, 'hash'),
 (5, '2026-06-10', '2026-06-13', 1000000, '2026-06-06', 5000000, 'hash'),
 (6, '2026-06-10', '2026-06-14', 1500000, '2026-06-06', 5000000, 'hash'),
@@ -394,27 +394,28 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 --   detail_status='Pending'    → room_id = NULL (chưa được gán phòng vật lý)
 --   detail_status='Checked_Out'/ 'Cancelled' → room_id có thể NULL (đã giải phóng)
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy) VALUES
--- Booking 1 (Checked_Out): customer 1 - Hoàng Nam đã trả phòng 101
-(1,  1,  1, 1,    2500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
--- Booking 2 (Checked_Out): customer 2 đã trả phòng, phòng 201
-(2,  2,  2, 11,   3500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
-(3,  3,  3, 36, 8000000, 'Checked_In',     'KING_SIZE', NULL, TRUE,  2000000, 'BILL_TO_LEADER'),
--- Booking 4 (Confirmed, Pending): customer 4 đặt Nipa Pool Villa, chưa gán phòng
-(4,  4,  1, NULL, 2500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
--- Booking 5 (Confirmed, Pending): customer 5 đặt Nipa Pool Villa, chưa gán phòng
-(5,  5,  1, NULL, 2500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
--- Booking 6 (Confirmed, Pending): customer 6 đặt River Pool Villa, chưa gán phòng
-(6,  6,  2, NULL, 3500000, 'Pending',     'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
--- Booking 7 (Checked_In): customer 7 đang ở phòng 201 (cat 2 - River Pool Villa)
-(7,  7,  2, 11,   3500000, 'Checked_In',  'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
--- Booking 8 (Checked_Out): customer 8 đã trả phòng 205 (cat 3 - Wellness Retreats)
-(8,  8,  3, 15,   8000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  3000000, 'BILL_TO_LEADER'),
--- Booking 14 (Checked_Out): đã trả phòng 102
-(9,  14, 1, 2,    2500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
--- Booking 15 (Cancelled)
-(10, 15, 2, NULL, 3500000, 'Cancelled',   'TWIN_BED',  NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
--- Booking 995 (Confirmed, Pending): room_booking_id=995, cat 1, 3 đêm × 2,500,000 = 7,500,000
-(11, 995,  1, NULL, 7500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER');
+-- Booking 1 (Checked_Out): 3 đêm x 2,500,000 = 7,500,000
+(1,  1,  1, 1,    7500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 2 (Checked_Out): 3 đêm x 3,500,000 = 10,500,000
+(2,  2,  2, 11,   10500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 3 (Checked_In): 3 đêm x 2,500,000 = 7,500,000
+(3,  3,  1, 5,    7500000, 'Checked_In',  'KING_SIZE', NULL, TRUE,  2000000, 'BILL_TO_LEADER'),
+-- Booking 4 (Pending): 2 đêm x 2,500,000 = 5,000,000
+(4,  4,  1, NULL, 5000000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 5 (Pending): 3 đêm x 2,500,000 = 7,500,000
+(5,  5,  1, NULL, 7500000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 6 (Pending): 4 đêm x 3,500,000 = 14,000,000
+(6,  6,  2, NULL, 14000000, 'Pending',    'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 7 (Checked_In): 5 đêm x 3,500,000 = 17,500,000 (Trần Thị Mai)
+(7,  7,  2, 11,   17500000, 'Checked_In', 'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 8 (Checked_Out): 6 đêm x 8,000,000 = 48,000,000
+(8,  8,  3, 15,   48000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  3000000, 'BILL_TO_LEADER'),
+-- Booking 14 (Checked_Out): 4 đêm x 2,500,000 = 10,000,000 (Vũ Thị Thảo)
+(9,  14, 1, 2,    10000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
+-- Booking 15 (Cancelled): 5 đêm x 3,500,000 = 17,500,000
+(10, 15, 2, NULL, 17500000, 'Cancelled',  'TWIN_BED',  NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
+-- Booking 995 (Pending): 3 đêm x 2,500,000 = 7,500,000
+(11, 995, 1, NULL, 7500000, 'Pending',    'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER');
 
 -- ── 15. Room Guests (10 rows) ────────────────────────────────
 INSERT INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
@@ -645,24 +646,24 @@ INSERT INTO Menu_Item_Days (item_id, day_of_week) VALUES
 -- ── 19. Food Orders (19 rows) ────────────────────────────────
 INSERT INTO Food_Orders (order_id, booking_id, room_booking_detail_id, table_id, order_type, order_status, payment_type, is_paid_in_pos, created_by_staff_id, kitchen_processed_by_id) VALUES 
 (1, NULL, NULL, 1, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
-(2, NULL, NULL, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL),
+(2, 3, 3, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL),
 (3, NULL, NULL, 3, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
 (4, NULL, NULL, 2, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, NULL),
-(5, NULL, NULL, 4, 'Dine-In', 'Completed', 'Post to Room', TRUE, 2, 3),
+(5, 505, 5051, 4, 'Dine-In', 'Completed', 'Post to Room', TRUE, 2, 3),
 (6, NULL, NULL, 5, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 3, 2),
 (7, NULL, NULL, NULL, 'Takeaway', 'Completed', 'Pay at Counter', TRUE, 2, 3),
 (8, NULL, NULL, 7, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 3, 2),
-(9, NULL, NULL, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL),
+(9, 9999, 99991, NULL, 'Room Service', 'Preparing', 'Post to Room', FALSE, 2, 3),
 (10, NULL, NULL, 9, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 3, 2),
-(11, NULL, NULL, 11, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, NULL),
+(11, NULL, NULL, 11, 'Dine-In', 'Preparing', 'Pay at Counter', FALSE, 2, 3),
 (12, NULL, NULL, 12, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 3, 2),
-(13, NULL, NULL, NULL, 'Room Service', 'Ready', 'Post to Room', FALSE, 2, 3),
-(14, NULL, NULL, 14, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
+(13, 7, 7, NULL, 'Room Service', 'Ready', 'Post to Room', FALSE, 2, 3),
+(14, NULL, NULL, 14, 'Dine-In', 'Preparing', 'Pay at Counter', FALSE, 2, 3),
 (15, NULL, NULL, 15, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 3, 2),
-(16, NULL, NULL, 16, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, NULL),
+(16, NULL, NULL, 16, 'Dine-In', 'Preparing', 'Pay at Counter', FALSE, 2, 3),
 (17, NULL, NULL, NULL, 'Takeaway', 'Completed', 'Pay at Counter', TRUE, 3, 2),
 (18, NULL, NULL, 18, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
-(19, NULL, NULL, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL);
+(19, 505, 5052, NULL, 'Room Service', 'Preparing', 'Post to Room', FALSE, 2, 3);
 
 -- ── 20. Food Order Details (21 rows) ─────────────────────────
 INSERT INTO Food_Order_Details (detail_id, order_id, menu_item_id, quantity, price_at_order, kot_status) VALUES 
@@ -676,17 +677,17 @@ INSERT INTO Food_Order_Details (detail_id, order_id, menu_item_id, quantity, pri
 (8, 6, 16, 1, 350000, 'Ready'),
 (9, 7, 76, 2, 35000, 'Served'),
 (10, 8, 81, 1, 65000, 'Preparing'),
-(11, 9, 10, 1, 520000, 'Pending'),
+(11, 9, 10, 1, 520000, 'Preparing'),
 (12, 10, 12, 3, 85000, 'Served'),
-(13, 11, 22, 2, 65000, 'Pending'),
+(13, 11, 22, 2, 65000, 'Preparing'),
 (14, 12, 33, 5, 45000, 'Served'),
 (15, 13, 30, 1, 65000, 'Ready'),
 (16, 14, 80, 2, 55000, 'Preparing'),
 (17, 15, 34, 4, 40000, 'Served'),
-(18, 16, 5, 2, 130000, 'Pending'),
+(18, 16, 5, 2, 130000, 'Preparing'),
 (19, 17, 18, 1, 210000, 'Served'),
 (20, 18, 9, 2, 850000, 'Preparing'),
-(21, 19, 1, 2, 180000, 'Pending');
+(21, 19, 1, 2, 180000, 'Preparing');
 
 -- ── 21. Hotel Services (10 rows) ─────────────────────────────
 INSERT INTO Hotel_Services (service_id, service_name, base_price, source_department, is_available, description) VALUES 
@@ -721,6 +722,10 @@ INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operati
 (2, 4, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Pending', '2026-06-28 09:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
 (3, 3, 8, 4, 'GUEST_REQUEST', 'Normal', 'Completed', '2026-06-28 09:30:00', '2026-06-28 10:15:00', '2026-06-28 11:00:00', '[Khách Yêu Cầu Dọn Phòng] - Bổ sung khăn tắm và nước uống.\n[Ghi chú hoàn thành]: Đã thực hiện.'),
 (4, 13, 9, 4, 'URGENT_CLEAN', 'Lễ tân báo dọn khẩn', 'InProgress', '2026-06-28 10:00:00', '2026-06-28 10:20:00', NULL, '[Arrival] Dọn phòng khẩn để đón khách nhận phòng. \n[Khẩn cấp] Lễ tân hối thúc dọn ưu tiên để khách Check-in!'),
+(101, 1, 8, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 08:00:00', '2026-06-28 08:30:00', '2026-06-28 09:00:00', '[Check-out] Dọn phòng sau khi khách trả phòng.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
+(102, 11, 9, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 09:00:00', '2026-06-28 09:20:00', '2026-06-28 09:50:00', '[Check-out] Dọn phòng sau khi khách trả phòng.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
+(103, 15, 8, 4, 'CHECKOUT_CLEAN', 'Normal', 'Completed', '2026-06-28 10:00:00', '2026-06-28 10:30:00', '2026-06-28 11:00:00', '[Check-out] Dọn phòng sau khi khách trả phòng.\n[Ghi chú hoàn thành]: Phòng đã dọn sạch và sẵn sàng.'),
+(104, 2, 9, 4, 'CHECKOUT_CLEAN', 'High', 'Pending', '2026-06-28 11:00:00', NULL, NULL, '[Check-out] Dọn phòng sau khi khách trả phòng.'),
 
 -- MAINTENANCE (MAINTENANCE)
 (6, 17, 10, 4, 'MAINTENANCE', 'High', 'Pending', '2026-06-28 10:30:00', NULL, NULL, 'Housekeeping báo: Điều hòa chảy nước ướt cả sàn gỗ, phòng 207.'),
@@ -734,31 +739,31 @@ INSERT INTO Folio_Items (folio_item_id, booking_id, room_booking_detail_id, paye
 (3, 2, 2, 2, 'TRANSPORTATION', 800000, 'Xe đón tiễn Limousine sân bay', FALSE, 4, CURRENT_TIMESTAMP, NULL, 'OTH_MISC');
 
 -- ── 27. Tours (10 rows) ──────────────────────────────────────
-INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capacity, short_quote, description, handbook_spec, handbook_logistics, handbook_explanations, created_at, is_active, duration_hours, is_insurance_required, insurance_price) VALUES 
-(1, 'Hành Trình Đoàn Tụ – Cố Đô Huế', 'doantu', '10 Giờ', 7500000, 15, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Chuyến đi đưa bạn ngược dòng thời gian về với nét đẹp trầm mặc của cố đô, khơi mở những câu chuyện di sản và thưởng thức phong vị ẩm thực cung đình xưa.', '10 Giờ (08:00 - 18:00) | Sức chứa: 15 khách.', '["Trang phục: Nhắc khách mặc quần áo lịch sự, che vai và qua đầu gối khi tham quan Điện Thái Hòa, Thế Miếu (Đại Nội).","Sức khỏe: Chuẩn bị sẵn nhiều dù cao cấp và quạt tay vì thời tiết Huế mùa hè rất nắng gắt.","Dịch vụ ngầm: Gọi nhà thuyền kiểm tra dàn nhạc Nhã nhạc trước 1 tiếng, đảm bảo trà Cung Đình tại Duyệt Thị Đường được phục vụ đúng lúc khách vừa ngồi xuống"]', '[{"cat":"Lịch sử","content":"Triều Nguyễn (1802 - 1945) là triều đại phong kiến cuối cùng của Việt Nam với 13 vị vua. Đại Nội là nơi sống và làm việc của hoàng gia, được xây dựng theo thuyết phong thủy phương Đông: Tựa lưng vào núi Ngự Bình, lấy cồn Hến và cồn Dã Viên trên sông Hương làm tả thanh long, hữu bạch hổ."},{"cat":"Văn hóa cốt lõi","content":"Giải thích ý nghĩa châm ngôn \"Đoàn tụ/Biết ơn\": Thế Miếu là nơi thờ các vị vua triều Nguyễn, nhắc nhở thế hệ sau về cội nguồn. Nhã nhạc cung đình Huế là Di sản văn hóa phi vật thể đầu tiên của Việt Nam được UNESCO công nhận."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(2, 'Tinh Túy Đồng Nội – Quảng Nam', 'dongnoi', '10 Giờ', 5800000, 12, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Hành trình chạm vào những điều bình dị mà sâu lắng của đất Quảng: từ những con phố rêu phong ở Hội An, hương đất nung bên dòng sông Thu Bồn đến vị mặn mòi của một làng rau lâu đời.', '10 Giờ (08:30 - 18:30) | Sức chứa: 12 khách.', '["Trang phục: Khách sẽ tham gia xới đất tại Trà Quế và xoay gốm tại Thanh Hà, nhắc khách mặc đồ thoải mái, dễ giặt, mang dép hoặc giày dễ tháo rời.","Hậu cần: Chuẩn bị sẵn khăn ướt, tạp dề cao cấp cho khách khi làm gốm và nón lá che nắng tại vườn rau"]', '[{"cat":"Địa lý & Lịch sử","content":"Làng gốm Thanh Hà (thế kỷ 16) và Phố cổ Hội An từng là thương cảng quốc tế sầm uất bậc nhất Đông Nam Á, nơi giao thương của các thương thuyền Nhật Bản, Trung Hoa và phương Tây. Dòng sông Thu Bồn là mạch máu bồi đắp phù sa cho các làng nghề này."},{"cat":"Văn hóa","content":"Kỹ thuật nung gốm Thanh Hà hoàn toàn bằng củi và không tráng men, sản phẩm có màu đỏ hồng đặc trưng của đất sét lòng sông. Rau Trà Quế ngon nhờ người dân dùng một loại rong đặc biệt dưới lòng sông Cổ Cò để bón, tạo nên vị thơm cay thanh nhẹ tự nhiên."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(3, 'Di Sản Thủ Công – Ninh Bình', 'disan', '10 Giờ', 6500000, 12, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Hành trình tìm về vẻ đẹp sơn thủy hữu tình của vùng đất cố đô cổ kính, nơi bạn được trò chuyện và cùng các nghệ nhân lưu giữ những làng nghề truyền thống trăm năm.', '10 Giờ (09:00 - 19:00) | Sức chứa: 12 khách.', '["An toàn đường thủy: Chặng đi thuyền nan tại đầm Vân Long bắt buộc khách phải mặc áo phao. Nhắc khách giữ thăng bằng khi lên xuống thuyền.","Bảo mật trải nghiệm: Nhắc khách không nói lớn tiếng tại Vân Long để tránh làm chim muông và thú quý giật mình bay mất"]', '[{"cat":"Địa lý","content":"Đầm Vân Long là khu bảo tồn thiên nhiên ngập nước lớn nhất vùng đồng bằng Bắc Bộ, sở hữu bức tranh địa chất \"vịnh không sóng\" vì mặt nước phẳng lặng như một tấm gương khổng lồ soi bóng núi đá vôi Karst ngàn năm."},{"cat":"Văn hóa & Nghệ thuật","content":"Làng thêu Văn Lâm có tuổi đời hơn 700 năm (từ thời nhà Trần). Điểm đắt giá của thêu Văn Lâm là kỹ thuật \"thêu trắng\" (những đường thêu uyển chuyển trên nền vải trắng bằng chỉ trắng) đòi hỏi đôi tay cực kỳ tài hoa của nghệ nhân. Chiếu Kim Sơn nổi tiếng nhờ sợi cói dai mịn, dệt đều tay, đượm hương nắng trời Bắc Bộ."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(4, 'Tĩnh Lặng Liên Hoa – Tháp Mười', 'tinhlang', '10 Giờ', 8200000, 8, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Một ngày trốn khỏi phố thị để về với đại đầm sen, mượn hương hoa và sóng nước miền Tây làm dịu lại tâm hồn, tìm lại sự bình an sâu lắng bên trong bạn.', '10 Giờ (08:00 - 18:00) | Sức chứa: 8 khách.', '["Không gian tĩnh lặng: Đây là tour chữa lành (Wellness/Zen), yêu cầu khách chuyển điện thoại sang chế độ rung, không bật loa ngoài.","Trang phục: Khách đi bộ thiền hành trên cầu gỗ, nhắc khách mang giày bệt hoặc đi chân trần theo hướng dẫn. Chuẩn bị sẵn kem chống muỗi/côn trùng vùng sông nước"]', '[{"cat":"Địa lý & Thiên nhiên","content":"Đồng Tháp Mười là vùng đất ngập nước đặc trưng của miền Tây Nam Bộ. Hoa sen ở đây nở quanh năm nhưng rực rỡ nhất vào mùa nước nổi. Đất phèn đặc trưng của vùng đồng bằng sông Cửu Long lại là dưỡng chất hoàn hảo giúp hoa sen Tháp Mười có hương thơm đậm và giữ được độ tươi rất lâu."},{"cat":"Văn hóa & Triết lý","content":"Sen là biểu tượng cho sự thuần khiết trong văn hóa Việt Nam (\"Gần bùn mà chẳng hôi tanh mùi bùn\"). Giới thiệu về nghệ thuật ủ trà sen: Người ta đón sương đêm, cho trà vào trong búp sen từ chiều hôm trước để trà hấp thụ trọn vẹn tinh túy và hương thơm của hoa lúc nửa đêm."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(5, 'Tiếng Vọng Sóng Xanh – Hạ Long', 'halong', '10 Giờ', 7500000, 15, 'Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.', 'Chuyến hải trình thong dong đưa bạn lướt qua những đảo đá nhấp nhô của vịnh Bắc Bộ, khám phá thế giới thạch nhũ kỳ vĩ được tạo hóa giấu kín ngàn năm và đón hoàng hôn buông trên mặt biển.', '10 Giờ (08:00 - 18:00) | Sức chứa: 15 khách.', '["Chuẩn bị: Nhắc khách mang theo đồ bơi, quần áo dự phòng để thay sau khi chèo Kayak hoặc tắm biển.","An toàn: Kiểm tra túi chống nước cho điện thoại của khách. Chuẩn bị sẵn thuốc say sóng phòng trường hợp khách nhạy cảm với sóng biển"]', '[{"cat":"Địa lý (Kiến tạo Karst)","content":"Vịnh Hạ Long là Di sản Thiên nhiên Thế giới được UNESCO công nhận, sở hữu giá trị địa chất độc độc đáo trải qua hơn 500 triệu năm kiến tạo để tạo nên ngàn đảo đá vôi trùng điệp."},{"cat":"Lịch sử & Huyền thoại","content":"Hạ Long nghĩa là rồng đáp xuống. Truyền thuyết kể rằng Ngọc Hoàng đã sai Rồng Mẹ mang theo một đàn Rồng Con xuống hạ giới giúp người Việt đánh giặc ngoại xâm. Đàn rồng phun ra muôn ngàn châu ngọc, hóa thành các đảo đá dựng thành lũy vững chắc ngăn chặn thuyền giặc. Động Thiên Cung chính là cung điện lộng lẫy nơi diễn ra đám cưới của Vua Rồng xưa kia."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(6, 'Nẻo Đường Sương Phủ – Sapa', 'sapa', '11 Giờ', 8200000, 10, 'Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.', 'Hành trình dạo bước qua những nấc thang ruộng bậc thang xanh mướt tại bản Cát Cát, tìm hiểu cuộc sống mộc mạc của đồng bào người H''Mông và lắng lại tâm hồn giữa núi rừng Tây Bắc.', '11 Giờ (08:00 - 19:00) | Sức chứa: 10 khách.', '["Thể lực: Tour này tản bộ nhiều dốc (bản Cát Cát), nhắc khách mang giày trekking hoặc giày thể thao có độ bám tốt.","Thời tiết: Thời tiết Sapa thay đổi liên tục, luôn nhắc khách mang theo một chiếc áo khoác nhẹ (phòng lạnh về chiều) và ô/áo mưa bỏ túi"]', '[{"cat":"Địa lý","content":"Sapa nằm ở độ cao trung bình 1,500m - 1,800m so với mực nước biển, thuộc dãy Hoàng Liên Sơn hùng vĩ. Thác Tiên Sa là nguồn nước mát lạnh đổ trực tiếp từ trên núi cao xuống, quanh năm tung bọt trắng xóa."},{"cat":"Văn hóa","content":"Bản Cát Cát là nơi sinh sống lâu đời của người H''Mông đen. Hãy thuyết minh về chiếc cối xay nước tận dụng sức nước của dòng suối để giã gạo, và nghệ thuật vẽ hoa văn bằng sáp ong bướm trên vải trước khi mang đi nhuộm chàm – một nét văn hóa độc đáo giúp trang phục của họ có màu xanh đen đặc trưng bền bỉ với thời gian."}]', CURRENT_TIMESTAMP, TRUE, 11.0, TRUE, 50000),
-(7, 'Nhịp Đập Rừng Già – Cát Tiên', 'cattien', '14 Giờ', 9500000, 8, 'Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.', 'Chuyến băng rừng rậm Nam Cát Tiên đầy cảm xúc, đưa bạn ghé thăm đầm lầy bảo tồn tự nhiên, thưởng thức bữa tối bên rừng và trải nghiệm ngắm thú đêm hoang dã.', '14 Giờ (08:00 - 22:00) | Sức chứa: 8 khách.', '["An toàn tuyệt đối: Bắt buộc khách mặc quần áo dài, mang tất cao cổ. Bạn phải chuẩn bị sẵn thuốc chống vắt và xịt côn trùng cao cấp cho cả đoàn trước khi vào rừng.","Quy định rừng: Khi đi xe mui trần xem thú đêm, tuyệt đối nhắc khách giữ im lặng, không dùng đèn pin cá nhân chiếu vào mắt thú, không bật flash chụp ảnh"]', '[{"cat":"Địa lý & Sinh thái","content":"Vườn quốc gia Cát Tiên là Khu dự trữ sinh quyển thế giới. Bàu Sấu là vùng đất ngập nước Ramsar tầm cỡ quốc tế, nơi bảo tồn loài Cá Sấu Xiêm thuần chủng của Việt Nam."},{"cat":"Hành vi động vật (Thú đêm)","content":"Giải thích cho khách biết lý do xem thú đêm: Ban ngày rừng rậm rất nóng, các loài thú móng guốc như nai, móp, mển thường ẩn nấp. Khi đêm xuống, nhiệt độ hạ, chúng mới ra các trảng cỏ trống để tìm thức ăn và muối khoáng."}]', CURRENT_TIMESTAMP, TRUE, 14.0, TRUE, 50000),
-(8, 'Bình Minh Cồn Cát – Mũi Né', 'muine', '11 Giờ', 6500000, 10, 'Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.', 'Trải nghiệm cảm giác phẩn khích vượt đồi cát bằng xe ATV đón bình minh, khám phá dòng suối Tiên huyền thoại và thưởng thức mỹ vị biển khơi.', '11 Giờ (04:30 - 15:30) | Sức chứa: 10 khách.', '["Giờ giấc: Khởi hành rất sớm (04:30), nhắc khách ngủ sớm từ tối hôm trước.","Trang phục: Mang theo kính râm, kem chống nắng đầy đủ vì đồi cát bắt nắng rất mạnh. Khi lội Suối Tiên phải đi chân trần, nhắc khách mang dép dễ tháo rời"]', '[{"cat":"Địa lý & Địa chất","content":"Bàu Trắng (Đồi Cát Trắng) là một sa mạc thu nhỏ được bao quanh bởi hồ nước ngọt tự nhiên khổng lồ. Điểm kỳ thú ở đây là gió thổi liên tục làm thay đổi hình dáng của các đụn cát theo từng giờ (\"đồi cát di động\")."},{"cat":"Suối Tiên","content":"Bản chất không phải là một dòng suối thông thường, mà là một khe nước nhỏ chảy khuất sau những đồi cát, trải qua năm tháng bào mòn các vách đất sét, tạo nên những tháp cát màu đỏ cam rực rỡ như những lâu đài thạch nhũ lộ thiên."}]', CURRENT_TIMESTAMP, TRUE, 11.0, TRUE, 50000),
-(9, 'Khúc Ca San Hô – Phú Quốc', 'phuquoc', '10 Giờ', 8500000, 12, 'Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.', 'Đồng hành cùng cano cao cấp lướt qua những hòn đảo hoang sơ, lặn ngắm rạn san hô đa sắc màu và tận hưởng bữa chiều ngắm hoàng hôn lãng mạn trên biển.', '10 Giờ (08:30 - 18:30) | Sức chứa: 12 khách.', '["Hậu cần biển: Kiểm tra kỹ áo phao, kính lặn ống thở xem có vừa vặn với kích thước của từng khách hay không.","Bảo vệ môi trường: Nhắc nhở khách tuyệt đối không dẫm đạp lên san hô, không nhặt san hô sống hoặc sao biển mang về đất liền"]', '[{"cat":"Địa lý biển","content":"Vùng biển phía Nam Phú Quốc (quần đảo An Thới) nằm trong vịnh Thái Lan, khu vực biển ấm, ít sóng lớn, tạo điều kiện hoàn hảo cho các rạn san hô phiến và san hô gạc nai phát triển mạnh mẽ."},{"cat":"Văn hóa bản địa","content":"Phú Quốc còn gọi là Đảo Ngọc vì vùng biển này có độ mặn và nhiệt độ lý tưởng cho nghề nuôi cấy ngọc trai cao cấp."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000),
-(10, 'Hương Sắc Miệt Vườn – Cần Thơ', 'cantho', '10 Giờ', 6800000, 12, 'Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.', 'Đón bình minh trên chiếc ghe máy mộc mạc phục vụ riêng, hòa mình vào chợ nổi Cái Răng sầm uất, khám phá miệt vườn trĩu quả và học làm bánh dân gian Nam Bộ.', '10 Giờ (05:30 - 15:30) | Sức chứa: 12 khách.', '["An toàn bến bãi: Lúc bước từ bờ xuống ghe máy tại bến tàu sương sớm rất dễ trơn trượt, Guide luôn phải đứng ở mạn thuyền để đỡ tay cho khách.","Vệ sinh an toàn thực phẩm: Khi khách ăn hủ tiếu trên sông, đảm bảo đũa muỗng sạch sẽ, chuẩn bị sẵn khăn giấy cao cấp"]', '[{"cat":"Văn hóa sông nước","content":"Chợ nổi Cái Răng hình thành từ thời chưa có đường bộ, người dân lấy sông ngòi làm đường đi, ghe xuồng làm nhà. Điểm nhấn là \"Cây bẹo\" (gồm một cây sào tre cắm trước mũi ghe, treo sản vật gì lên đó là thông báo cho người mua biết ghe mình bán món đó - \"treo gì bán nấy\")."},{"cat":"Ẩm thực & Con người","content":"Giới thiệu phong vị hào sảng, hiếu khách của người miền Tây qua cách họ làm bánh dân gian hay chế biến món cá lóc nướng trui (cá bắt dưới sông lên, xiên bằng thanh tre, phủ rơm đốt rụi rồi cạo lớp vảy đen ra thịt trắng thơm phức)."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000);
+INSERT INTO Tours (tour_id, tour_name, tour_type, duration, base_price, max_capacity, short_quote, description, handbook_spec, handbook_logistics, handbook_explanations, created_at, is_active, duration_hours, is_insurance_required, insurance_price, image_url) VALUES 
+(1, 'Hành Trình Đoàn Tụ – Cố Đô Huế', 'doantu', '10 Giờ', 7500000, 15, 'Tìm về hơi ấm vẹn nguyên của lòng biết ơn và sự gắn kết.', 'Chuyến đi đưa bạn ngược dòng thời gian về với nét đẹp trầm mặc của cố đô, khơi mở những câu chuyện di sản và thưởng thức phong vị ẩm thực cung đình xưa.', '10 Giờ (08:00 - 18:00) | Sức chứa: 15 khách.', '["Trang phục: Nhắc khách mặc quần áo lịch sự, che vai và qua đầu gối khi tham quan Điện Thái Hòa, Thế Miếu (Đại Nội).","Sức khỏe: Chuẩn bị sẵn nhiều dù cao cấp và quạt tay vì thời tiết Huế mùa hè rất nắng gắt.","Dịch vụ ngầm: Gọi nhà thuyền kiểm tra dàn nhạc Nhã nhạc trước 1 tiếng, đảm bảo trà Cung Đình tại Duyệt Thị Đường được phục vụ đúng lúc khách vừa ngồi xuống"]', '[{"cat":"Lịch sử","content":"Triều Nguyễn (1802 - 1945) là triều đại phong kiến cuối cùng của Việt Nam với 13 vị vua. Đại Nội là nơi sống và làm việc của hoàng gia, được xây dựng theo thuyết phong thủy phương Đông: Tựa lưng vào núi Ngự Bình, lấy cồn Hến và cồn Dã Viên trên sông Hương làm tả thanh long, hữu bạch hổ."},{"cat":"Văn hóa cốt lõi","content":"Giải thích ý nghĩa châm ngôn \"Đoàn tụ/Biết ơn\": Thế Miếu là nơi thờ các vị vua triều Nguyễn, nhắc nhở thế hệ sau về cội nguồn. Nhã nhạc cung đình Huế là Di sản văn hóa phi vật thể đầu tiên của Việt Nam được UNESCO công nhận."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg'),
+(2, 'Tinh Túy Đồng Nội – Quảng Nam', 'dongnoi', '10 Giờ', 5800000, 12, 'Lắng nghe nhịp điệu mộc mạc của đất mẹ và hồn quê xứ Quảng.', 'Hành trình chạm vào những điều bình dị mà sâu lắng của đất Quảng: từ những con phố rêu phong ở Hội An, hương đất nung bên dòng sông Thu Bồn đến vị mặn mòi của một làng rau lâu đời.', '10 Giờ (08:30 - 18:30) | Sức chứa: 12 khách.', '["Trang phục: Khách sẽ tham gia xới đất tại Trà Quế và xoay gốm tại Thanh Hà, nhắc khách mặc đồ thoải mái, dễ giặt, mang dép hoặc giày dễ tháo rời.","Hậu cần: Chuẩn bị sẵn khăn ướt, tạp dề cao cấp cho khách khi làm gốm và nón lá che nắng tại vườn rau"]', '[{"cat":"Địa lý & Lịch sử","content":"Làng gốm Thanh Hà (thế kỷ 16) và Phố cổ Hội An từng là thương cảng quốc tế sầm uất bậc nhất Đông Nam Á, nơi giao thương của các thương thuyền Nhật Bản, Trung Hoa và phương Tây. Dòng sông Thu Bồn là mạch máu bồi đắp phù sa cho các làng nghề này."},{"cat":"Văn hóa","content":"Kỹ thuật nung gốm Thanh Hà hoàn toàn bằng củi và không tráng men, sản phẩm có màu đỏ hồng đặc trưng của đất sét lòng sông. Rau Trà Quế ngon nhờ người dân dùng một loại rong đặc biệt dưới lòng sông Cổ Cò để bón, tạo nên vị thơm cay thanh nhẹ tự nhiên."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011567/kawai_assets/AnhTour/Com.jpg'),
+(3, 'Di Sản Thủ Công – Ninh Bình', 'disan', '10 Giờ', 6500000, 12, 'Chạm vào hồn cốt của thời gian qua những tạo tác từ đôi bàn tay nghệ nhân.', 'Hành trình tìm về vẻ đẹp sơn thủy hữu tình của vùng đất cố đô cổ kính, nơi bạn được trò chuyện và cùng các nghệ nhân lưu giữ những làng nghề truyền thống trăm năm.', '10 Giờ (09:00 - 19:00) | Sức chứa: 12 khách.', '["An toàn đường thủy: Chặng đi thuyền nan tại đầm Vân Long bắt buộc khách phải mặc áo phao. Nhắc khách giữ thăng bằng khi lên xuống thuyền.","Bảo mật trải nghiệm: Nhắc khách không nói lớn tiếng tại Vân Long để tránh làm chim muông và thú quý giật mình bay mất"]', '[{"cat":"Địa lý","content":"Đầm Vân Long là khu bảo tồn thiên nhiên ngập nước lớn nhất vùng đồng bằng Bắc Bộ, sở hữu bức tranh địa chất \"vịnh không sóng\" vì mặt nước phẳng lặng như một tấm gương khổng lồ soi bóng núi đá vôi Karst ngàn năm."},{"cat":"Văn hóa & Nghệ thuật","content":"Làng thêu Văn Lâm có tuổi đời hơn 700 năm (từ thời nhà Trần). Điểm đắt giá của thêu Văn Lâm là kỹ thuật \"thêu trắng\" (những đường thêu uyển chuyển trên nền vải trắng bằng chỉ trắng) đòi hỏi đôi tay cực kỳ tài hoa của nghệ nhân. Chiếu Kim Sơn nổi tiếng nhờ sợi cói dai mịn, dệt đều tay, đượm hương nắng trời Bắc Bộ."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg'),
+(4, 'Tĩnh Lặng Liên Hoa – Tháp Mười', 'tinhlang', '10 Giờ', 8200000, 8, 'Sự thanh lọc thuần khiết cho thân - tâm - trí giữa vùng sông nước mờ sương.', 'Một ngày trốn khỏi phố thị để về với đại đầm sen, mượn hương hoa và sóng nước miền Tây làm dịu lại tâm hồn, tìm lại sự bình an sâu lắng bên trong bạn.', '10 Giờ (08:00 - 18:00) | Sức chứa: 8 khách.', '["Không gian tĩnh lặng: Đây là tour chữa lành (Wellness/Zen), yêu cầu khách chuyển điện thoại sang chế độ rung, không bật loa ngoài.","Trang phục: Khách đi bộ thiền hành trên cầu gỗ, nhắc khách mang giày bệt hoặc đi chân trần theo hướng dẫn. Chuẩn bị sẵn kem chống muỗi/côn trùng vùng sông nước"]', '[{"cat":"Địa lý & Thiên nhiên","content":"Đồng Tháp Mười là vùng đất ngập nước đặc trưng của miền Tây Nam Bộ. Hoa sen ở đây nở quanh năm nhưng rực rỡ nhất vào mùa nước nổi. Đất phèn đặc trưng của vùng đồng bằng sông Cửu Long lại là dưỡng chất hoàn hảo giúp hoa sen Tháp Mười có hương thơm đậm và giữ được độ tươi rất lâu."},{"cat":"Văn hóa & Triết lý","content":"Sen là biểu tượng cho sự thuần khiết trong văn hóa Việt Nam (\"Gần bùn mà chẳng hôi tanh mùi bùn\"). Giới thiệu về nghệ thuật ủ trà sen: Người ta đón sương đêm, cho trà vào trong búp sen từ chiều hôm trước để trà hấp thụ trọn vẹn tinh túy và hương thơm của hoa lúc nửa đêm."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg'),
+(5, 'Tiếng Vọng Sóng Xanh – Hạ Long', 'halong', '10 Giờ', 7500000, 15, 'Du thuyền lướt nhẹ giữa ngàn khơi, thưởng ngoạn kỳ quan thiên nhiên rực rỡ.', 'Chuyến hải trình thong dong đưa bạn lướt qua những đảo đá nhấp nhô của vịnh Bắc Bộ, khám phá thế giới thạch nhũ kỳ vĩ được tạo hóa giấu kín ngàn năm và đón hoàng hôn buông trên mặt biển.', '10 Giờ (08:00 - 18:00) | Sức chứa: 15 khách.', '["Chuẩn bị: Nhắc khách mang theo đồ bơi, quần áo dự phòng để thay sau khi chèo Kayak hoặc tắm biển.","An toàn: Kiểm tra túi chống nước cho điện thoại của khách. Chuẩn bị sẵn thuốc say sóng phòng trường hợp khách nhạy cảm với sóng biển"]', '[{"cat":"Địa lý (Kiến tạo Karst)","content":"Vịnh Hạ Long là Di sản Thiên nhiên Thế giới được UNESCO công nhận, sở hữu giá trị địa chất độc độc đáo trải qua hơn 500 triệu năm kiến tạo để tạo nên ngàn đảo đá vôi trùng điệp."},{"cat":"Lịch sử & Huyền thoại","content":"Hạ Long nghĩa là rồng đáp xuống. Truyền thuyết kể rằng Ngọc Hoàng đã sai Rồng Mẹ mang theo một đàn Rồng Con xuống hạ giới giúp người Việt đánh giặc ngoại xâm. Đàn rồng phun ra muôn ngàn châu ngọc, hóa thành các đảo đá dựng thành lũy vững chắc ngăn chặn thuyền giặc. Động Thiên Cung chính là cung điện lộng lẫy nơi diễn ra đám cưới của Vua Rồng xưa kia."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011580/kawai_assets/AnhTour/1.SongXanh-HaLong-HoangHon.png'),
+(6, 'Nẻo Đường Sương Phủ – Sapa', 'sapa', '11 Giờ', 8200000, 10, 'Gặp gỡ những nụ cười hồn hậu giữa vùng mây trời sương phủ.', 'Hành trình dạo bước qua những nấc thang ruộng bậc thang xanh mướt tại bản Cát Cát, tìm hiểu cuộc sống mộc mạc của đồng bào người H''Mông và lắng lại tâm hồn giữa núi rừng Tây Bắc.', '11 Giờ (08:00 - 19:00) | Sức chứa: 10 khách.', '["Thể lực: Tour này tản bộ nhiều dốc (bản Cát Cát), nhắc khách mang giày trekking hoặc giày thể thao có độ bám tốt.","Thời tiết: Thời tiết Sapa thay đổi liên tục, luôn nhắc khách mang theo một chiếc áo khoác nhẹ (phòng lạnh về chiều) và ô/áo mưa bỏ túi"]', '[{"cat":"Địa lý","content":"Sapa nằm ở độ cao trung bình 1,500m - 1,800m so với mực nước biển, thuộc dãy Hoàng Liên Sơn hùng vĩ. Thác Tiên Sa là nguồn nước mát lạnh đổ trực tiếp từ trên núi cao xuống, quanh năm tung bọt trắng xóa."},{"cat":"Văn hóa","content":"Bản Cát Cát là nơi sinh sống lâu đời của người H''Mông đen. Hãy thuyết minh về chiếc cối xay nước tận dụng sức nước của dòng suối để giã gạo, và nghệ thuật vẽ hoa văn bằng sáp ong bướm trên vải trước khi mang đi nhuộm chàm – một nét văn hóa độc đáo giúp trang phục của họ có màu xanh đen đặc trưng bền bỉ với thời gian."}]', CURRENT_TIMESTAMP, TRUE, 11.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011581/kawai_assets/AnhTour/2.SuongPhu-SaPa-RuongBacThang.png'),
+(7, 'Nhịp Đập Rừng Già – Cát Tiên', 'cattien', '14 Giờ', 9500000, 8, 'Lắng nghe tiếng gọi thì thầm từ đại ngàn xanh thẳm.', 'Chuyến băng rừng rậm Nam Cát Tiên đầy cảm xúc, đưa bạn ghé thăm đầm lầy bảo tồn tự nhiên, thưởng thức bữa tối bên rừng và trải nghiệm ngắm thú đêm hoang dã.', '14 Giờ (08:00 - 22:00) | Sức chứa: 8 khách.', '["An toàn tuyệt đối: Bắt buộc khách mặc quần áo dài, mang tất cao cổ. Bạn phải chuẩn bị sẵn thuốc chống vắt và xịt côn trùng cao cấp cho cả đoàn trước khi vào rừng.","Quy định rừng: Khi đi xe mui trần xem thú đêm, tuyệt đối nhắc khách giữ im lặng, không dùng đèn pin cá nhân chiếu vào mắt thú, không bật flash chụp ảnh"]', '[{"cat":"Địa lý & Sinh thái","content":"Vườn quốc gia Cát Tiên là Khu dự trữ sinh quyển thế giới. Bàu Sấu là vùng đất ngập nước Ramsar tầm cỡ quốc tế, nơi bảo tồn loài Cá Sấu Xiêm thuần chủng của Việt Nam."},{"cat":"Hành vi động vật (Thú đêm)","content":"Giải thích cho khách biết lý do xem thú đêm: Ban ngày rừng rậm rất nóng, các loài thú móng guốc như nai, móp, mển thường ẩn nấp. Khi đêm xuống, nhiệt độ hạ, chúng mới ra các trảng cỏ trống để tìm thức ăn và muối khoáng."}]', CURRENT_TIMESTAMP, TRUE, 14.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011582/kawai_assets/AnhTour/3.NhipDap-CatTien-Rung.png'),
+(8, 'Bình Minh Cồn Cát – Mũi Né', 'muine', '11 Giờ', 6500000, 10, 'Đón những vệt nắng đầu ngày rực rỡ trên sa mạc cát mênh mông.', 'Trải nghiệm cảm giác phẩn khích vượt đồi cát bằng xe ATV đón bình minh, khám phá dòng suối Tiên huyền thoại và thưởng thức mỹ vị biển khơi.', '11 Giờ (04:30 - 15:30) | Sức chứa: 10 khách.', '["Giờ giấc: Khởi hành rất sớm (04:30), nhắc khách ngủ sớm từ tối hôm trước.","Trang phục: Mang theo kính râm, kem chống nắng đầy đủ vì đồi cát bắt nắng rất mạnh. Khi lội Suối Tiên phải đi chân trần, nhắc khách mang dép dễ tháo rời"]', '[{"cat":"Địa lý & Địa chất","content":"Bàu Trắng (Đồi Cát Trắng) là một sa mạc thu nhỏ được bao quanh bởi hồ nước ngọt tự nhiên khổng lồ. Điểm kỳ thú ở đây là gió thổi liên tục làm thay đổi hình dáng của các đụn cát theo từng giờ (\"đồi cát di động\")."},{"cat":"Suối Tiên","content":"Bản chất không phải là một dòng suối thông thường, mà là một khe nước nhỏ chảy khuất sau những đồi cát, trải qua năm tháng bào mòn các vách đất sét, tạo nên những tháp cát màu đỏ cam rực rỡ như những lâu đài thạch nhũ lộ thiên."}]', CURRENT_TIMESTAMP, TRUE, 11.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011585/kawai_assets/AnhTour/4.ConCat-MuiNe-DoiCat.png'),
+(9, 'Khúc Ca San Hô – Phú Quốc', 'phuquoc', '10 Giờ', 8500000, 12, 'Hòa mình vào làn nước xanh lục bảo và vũ điệu rực rỡ dưới lòng đại dương.', 'Đồng hành cùng cano cao cấp lướt qua những hòn đảo hoang sơ, lặn ngắm rạn san hô đa sắc màu và tận hưởng bữa chiều ngắm hoàng hôn lãng mạn trên biển.', '10 Giờ (08:30 - 18:30) | Sức chứa: 12 khách.', '["Hậu cần biển: Kiểm tra kỹ áo phao, kính lặn ống thở xem có vừa vặn với kích thước của từng khách hay không.","Bảo vệ môi trường: Nhắc nhở khách tuyệt đối không dẫm đạp lên san hô, không nhặt san hô sống hoặc sao biển mang về đất liền"]', '[{"cat":"Địa lý biển","content":"Vùng biển phía Nam Phú Quốc (quần đảo An Thới) nằm trong vịnh Thái Lan, khu vực biển ấm, ít sóng lớn, tạo điều kiện hoàn hảo cho các rạn san hô phiến và san hô gạc nai phát triển mạnh mẽ."},{"cat":"Văn hóa bản địa","content":"Phú Quốc còn gọi là Đảo Ngọc vì vùng biển này có độ mặn và nhiệt độ lý tưởng cho nghề nuôi cấy ngọc trai cao cấp."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011586/kawai_assets/AnhTour/5.LucBao-PhuQuoc-GiangLuoi.png'),
+(10, 'Hương Sắc Miệt Vườn – Cần Thơ', 'cantho', '10 Giờ', 6800000, 12, 'Tròn vị ngọt ngào của trái chín trĩu cành miền sông nước.', 'Đón bình minh trên chiếc ghe máy mộc mạc phục vụ riêng, hòa mình vào chợ nổi Cái Răng sầm uất, khám phá miệt vườn trĩu quả và học làm bánh dân gian Nam Bộ.', '10 Giờ (05:30 - 15:30) | Sức chứa: 12 khách.', '["An toàn bến bãi: Lúc bước từ bờ xuống ghe máy tại bến tàu sương sớm rất dễ trơn trượt, Guide luôn phải đứng ở mạn thuyền để đỡ tay cho khách.","Vệ sinh an toàn thực phẩm: Khi khách ăn hủ tiếu trên sông, đảm bảo đũa muỗng sạch sẽ, chuẩn bị sẵn khăn giấy cao cấp"]', '[{"cat":"Văn hóa sông nước","content":"Chợ nổi Cái Răng hình thành từ thời chưa có đường bộ, người dân lấy sông ngòi làm đường đi, ghe xuồng làm nhà. Điểm nhấn là \"Cây bẹo\" (gồm một cây sào tre cắm trước mũi ghe, treo sản vật gì lên đó là thông báo cho người mua biết ghe mình bán món đó - \"treo gì bán nấy\")."},{"cat":"Ẩm thực & Con người","content":"Giới thiệu phong vị hào sảng, hiếu khách của người miền Tây qua cách họ làm bánh dân gian hay chế biến món cá lóc nướng trui (cá bắt dưới sông lên, xiên bằng thanh tre, phủ rơm đốt rụi rồi cạo lớp vảy đen ra thịt trắng thơm phức)."}]', CURRENT_TIMESTAMP, TRUE, 10.0, TRUE, 50000, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011587/kawai_assets/AnhTour/6.HuongSac-CanTho-LamThuyen.png');
 
 
 -- ── 28. Tour Images (10 rows) ────────────────────────────────
 INSERT INTO Tour_Images (image_id, tour_id, image_url, is_primary) VALUES 
-(1, 1, 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9', TRUE),
-(2, 2, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1', TRUE),
-(3, 3, 'https://images.unsplash.com/photo-1528127269322-539801943592', TRUE),
-(4, 4, 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4', TRUE),
-(5, 5, 'https://images.unsplash.com/photo-1528127269322-539801943592', TRUE),
-(6, 6, 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4', TRUE),
-(7, 7, 'https://images.unsplash.com/photo-1540541338287-41700207dee6', TRUE),
-(8, 8, 'https://images.unsplash.com/photo-1566073771259-6a8506099945', TRUE),
-(909, 909, 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4', TRUE),
-(10, 10, 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461', TRUE);
+(1, 1, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565882675_f94fe322fc3a06efe82eccf1e76b09e1.jpg', TRUE),
+(2, 2, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011567/kawai_assets/AnhTour/Com.jpg', TRUE),
+(3, 3, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg', TRUE),
+(4, 4, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg', TRUE),
+(5, 5, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011580/kawai_assets/AnhTour/1.SongXanh-HaLong-HoangHon.png', TRUE),
+(6, 6, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011581/kawai_assets/AnhTour/2.SuongPhu-SaPa-RuongBacThang.png', TRUE),
+(7, 7, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011582/kawai_assets/AnhTour/3.NhipDap-CatTien-Rung.png', TRUE),
+(8, 8, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011585/kawai_assets/AnhTour/4.ConCat-MuiNe-DoiCat.png', TRUE),
+(9, 9, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011586/kawai_assets/AnhTour/5.LucBao-PhuQuoc-GiangLuoi.png', TRUE),
+(10, 10, 'https://res.cloudinary.com/r2g91yqt/image/upload/v1785011587/kawai_assets/AnhTour/6.HuongSac-CanTho-LamThuyen.png', TRUE);
 
 -- ── 29. Tour Locations (10 rows) ─────────────────────────────
 INSERT INTO Tour_Locations (location_id, location_name, latitude, longitude, description, is_active) VALUES 
@@ -861,44 +866,32 @@ INSERT INTO Tour_Prices (tour_price_id, tour_id, age_from, age_to, ticket_price,
 
 -- ── 33. Tour Schedules (10 rows) ─────────────────────────────
 INSERT INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
-(1, 1, DATE_ADD(CURDATE(), INTERVAL 2 DAY), '08:00:00.000000', 0, 'Open', FALSE),
-(2, 2, '2026-06-15', '14:00:00.000000', 0, 'Open', FALSE),
-(3, 3, '2026-06-15', '17:00:00.000000', 0, 'Open', FALSE),
-(4, 4, '2026-06-16', '09:00:00.000000', 0, 'Open', FALSE),
-(5, 2, '2026-06-13', '08:00:00.000000', 5, 'Open', FALSE),
-(6, 5, '2026-06-17', '08:00:00.000000', 0, 'Open', FALSE),
-(7, 6, '2026-06-18', '09:00:00.000000', 0, 'Open', FALSE),
-(8, 7, '2026-06-19', '07:30:00.000000', 0, 'Open', FALSE),
-(909, 8, '2026-06-20', '05:00:00.000000', 0, 'Open', FALSE),
-(10, 9, '2026-06-21', '09:00:00.000000', 0, 'Open', FALSE),
-(11, 2, '2026-07-10', '08:00:00.000000', 0, 'Open', FALSE),
-(12, 4, '2026-07-08', '07:30:00.000000', 0, 'Open', FALSE),
-(13, 1, '2026-07-11', '07:30:00.000000', 0, 'Open', FALSE),
-(14, 7, '2026-07-06', '19:00:00.000000', 0, 'Completed', FALSE),
-(15, 8, '2026-07-13', '04:00:00.000000', 0, 'Cancelled', FALSE);
+(1, 1, CURDATE(), '08:00:00.000000', 0, 'Open', FALSE),
+(2, 2, CURDATE(), '13:30:00.000000', 0, 'Open', FALSE),
+(3, 3, CURDATE(), '08:00:00.000000', 0, 'Open', FALSE),
+(4, 4, CURDATE(), '13:30:00.000000', 0, 'Open', FALSE),
+(5, 5, CURDATE(), '08:00:00.000000', 0, 'Open', FALSE),
+(6, 6, CURDATE(), '13:30:00.000000', 0, 'Open', FALSE),
+(7, 7, CURDATE(), '08:00:00.000000', 0, 'Open', FALSE),
+(8, 8, CURDATE(), '13:30:00.000000', 0, 'Open', FALSE),
+(10, 9, CURDATE(), '08:00:00.000000', 0, 'Open', FALSE),
+(11, 10, CURDATE(), '13:30:00.000000', 0, 'Open', FALSE);
 
 -- ── 34. Tour Staff Assignments (10 rows) ─────────────────────
 INSERT INTO Tour_Staff_Assignments (assignment_id, schedule_id, employee_id, staff_role) VALUES 
-(1, 5, 5, 'GUIDE'),
-(2, 5, 6, 'DRIVER'),
-(3, 1, 7, 'GUIDE'),
-(4, 1, 8, 'DRIVER'),
-(5, 2, 5, 'GUIDE'),
-(6, 3, 6, 'GUIDE'),
-(7, 4, 7, 'GUIDE'),
-(8, 6, 5, 'GUIDE'),
-(9, 7, 6, 'GUIDE'),
-(10, 8, 7, 'GUIDE'),
-(11, 11, 6, 'GUIDE'),
-(12, 12, 6, 'GUIDE'),
-(13, 13, 7, 'GUIDE'),
-(14, 14, 7, 'GUIDE'),
-(15, 15, 6, 'GUIDE');
+(1, 1, 5, 'GUIDE'),
+(2, 2, 41, 'GUIDE'),
+(3, 3, 42, 'GUIDE'),
+(4, 4, 47, 'GUIDE'),
+(5, 5, 48, 'GUIDE'),
+(6, 6, 49, 'GUIDE'),
+(7, 7, 50, 'GUIDE'),
+(8, 8, 5, 'DRIVER'),
+(9, 10, 41, 'DRIVER');
 
 -- ── 35. Run Itinerary Status (10 rows) ───────────────────────
 INSERT INTO Run_Itinerary_Status (run_status_id, schedule_id, detail_id, actual_start_time, actual_end_time, current_stage_status, guide_notes) VALUES 
 (1, 5, 2, '2026-06-13 09:05:00', '2026-06-13 12:10:00', 'COMPLETED', 'Lượng xe cộ Hội An đông, đoàn di chuyển chậm 5 phút.'),
-
 (2, 1, 1, NULL, NULL, 'NOT_STARTED', NULL),
 (3, 2, 2, NULL, NULL, 'NOT_STARTED', NULL),
 (4, 3, 3, NULL, NULL, 'NOT_STARTED', NULL),
@@ -909,42 +902,9 @@ INSERT INTO Run_Itinerary_Status (run_status_id, schedule_id, detail_id, actual_
 (9, 8, 7, NULL, NULL, 'NOT_STARTED', NULL),
 (10, 10, 10, NULL, NULL, 'NOT_STARTED', NULL);
 
--- ── 36. Tour Bookings (10 rows) ──────────────────────────────
-INSERT INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, is_walk_in_tour) VALUES 
-(9, 5, 1, 1200000, FALSE),
-(10, 5, 1, 1200000, FALSE),
-(11, 5, 1, 1200000, FALSE),
-(12, 5, 1, 1200000, FALSE),
-(13, 5, 1, 1200000, FALSE),
-(25, 2, 1, 1200000, FALSE),
-(26, 3, 3, 5400000, FALSE),
-(27, 4, 1, 2500000, FALSE),
-(28, 5, 2, 2400000, FALSE);
-
--- ── 37. Tour Attendees (10 rows) ─────────────────────────────
-INSERT INTO Tour_Attendees (attendee_id, tour_booking_id, customer_id, dependent_id, attendance_status, face_matched_at, face_vector_data) VALUES 
-(1, 9, 1, NULL, 'Not_Show', NULL, NULL),
-(2, 10, 2, NULL, 'Not_Show', NULL, NULL),
-(3, 11, 9, NULL, 'Not_Show', NULL, NULL),
-(4, 12, 10, NULL, 'Not_Show', NULL, NULL),
-(5, 13, 11, NULL, 'Not_Show', NULL, NULL),
-(7, 25, 2, NULL, 'Not_Show', NULL, NULL),
-(8, 26, 3, NULL, 'Not_Show', NULL, NULL),
-(9, 27, 4, NULL, 'Not_Show', NULL, NULL),
-(10, 28, 5, NULL, 'Not_Show', NULL, NULL);
-
--- ── 38. Checkpoint Attendance (10 rows) ──────────────────────
-INSERT INTO Checkpoint_Attendance (checkpoint_id, schedule_id, attendee_id, detail_id, scan_status, scanned_by_staff_id) VALUES 
-(1, 5, 1, 2, 'SUCCESS', 5),
-(2, 5, 2, 2, 'SUCCESS', 5),
-(3, 5, 3, 2, 'SUCCESS', 5),
-(4, 5, 4, 2, 'SUCCESS', 5),
-(5, 5, 5, 2, 'SUCCESS', 5),
-(6, 1, 6, 1, 'PENDING', 7),
-(7, 2, 7, 2, 'PENDING', 5),
-(8, 3, 8, 3, 'PENDING', 6),
-(9, 4, 9, 4, 'PENDING', 7),
-(10, 6, 10, 5, 'PENDING', 5);
+-- ── 36. Tour Bookings (Cleaned - 0 rows) ─────────────────────
+-- ── 37. Tour Attendees (Cleaned - 0 rows) ────────────────────
+-- ── 38. Checkpoint Attendance (Cleaned - 0 rows) ─────────────
 
 -- ── 39. Reviews (10 rows) ────────────────────────────────────
 
@@ -1084,17 +1044,8 @@ ALTER TABLE Tour_Attendees AUTO_INCREMENT = 100;
 -- → lễ tân sẽ thấy và phân bổ tour vào phòng cụ thể khi check-in
 
 
--- Booking gốc cho TourBooking (kiểu cha Bookings)
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(200, 12, CURDATE(), 1200000, 'Confirmed', 'Direct_Web', NULL, 1),
-(201, 12, CURDATE(), 3000000, 'Confirmed', 'Direct_Web', NULL, 1),
-(202, 18, CURDATE(), 1200000, 'Confirmed', 'Direct_Web', NULL, 1);
-
--- Tour bookings 200,201: đổi từ room_booking_id=14 (Checked_Out) sang 23 (Confirmed — hợp lý cho phân bổ khi check-in)
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, room_booking_detail_id, is_walk_in_tour) VALUES
-(200, 1, 2, 1200000, 23, NULL, FALSE),
-(201, 2, 5, 3000000, 23, NULL, FALSE),
-(202, 3, 2, 1200000, 23, NULL, FALSE);
+-- Booking gốc cho TourBooking (kiểu cha Bookings) (Removed)
+-- Tour bookings 200,201 (Removed)
 
 ALTER TABLE Tour_Bookings AUTO_INCREMENT = 300;
 
@@ -1120,8 +1071,7 @@ INSERT INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, depos
 INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id) VALUES
 (991, 991, 1, 1, 65000000, 'Checked_Out', 'KING_SIZE', NULL, TRUE, 500000, 'BILL_TO_LEADER', 1);
 
-INSERT INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, is_walk_in_tour) VALUES 
-(992, 1, 4, 45000000, FALSE);
+-- Tour bookings 992 (Removed)
 
 
 -- Self-healing database name update for customer Ngọc Thị (formerly Lê Quang)
@@ -1291,15 +1241,25 @@ INSERT IGNORE INTO Dependents (dependent_id, customer_id, dependent_name, birth_
 (505, 505, 'Nguyễn Văn Bạn', '1996-03-10', 'Nam', NULL),
 (506, 505, 'Trần Thị Bạn', '1998-11-25', 'Nữ', NULL);
 
+-- =========================================================
+-- SCENARIO BOOKING 505: Ngọc Lan
+-- Gốc: Nipa Pool Villa (cat 1 - 2.5M/đêm) x 3 đêm = 7.5M
+-- Ngày 1: Nâng hạng lên Wellness Retreats (cat 3 - 8M/đêm)
+-- Night Audit đêm 1 đã post:
+--   - Room 2.5M (tiền phòng gốc đêm 1)
+--   - FRONT_DESK 5.5M (chênh lệch nâng hạng đêm 1)
+-- Expected hiển thị: Tiền phòng = 7.5M | FRONT_DESK = 5.5M
+-- =========================================================
 INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source, applied_promotion_id, version) VALUES
-(505, 505, '2026-07-01', 14000000, 'Checked_In', 'Direct_Web', NULL, 1);
+(505, 505, '2026-07-01', 20500000, 'Checked_In', 'Direct_Web', NULL, 1);
 
 INSERT IGNORE INTO Room_Bookings (room_booking_id, check_in_date, check_out_date, deposit_amount, cancellation_deadline, credit_limit, personal_pin_hash) VALUES
-(505, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 1000000.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 5000000.00, 'hash505');
+(505, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 3 DAY), 2000000.00, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 10000000.00, 'hash505');
 
+-- category_id=3 (Wellness Retreats - đã nâng hạng), room_charge=7500000 (giá gốc Nipa Pool Villa x 3 đêm)
 INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_id, room_charge, detail_status, bed_preference, special_requests, is_charge_to_room_allowed, sub_credit_limit, billing_routing_strategy, customer_id, number_of_adults, number_of_children) VALUES
-(5051, 505, 2, 11, 7000000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0),
-(5052, 505, 2, 12, 7000000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 2500000, 'BILL_TO_LEADER', 505, 2, 0);
+(5051, 505, 3, 11, 7500000, 'Checked_In', 'KING_SIZE', 'Ngọc Lan phòng 1', TRUE, 5000000, 'BILL_TO_LEADER', 505, 2, 0),
+(5052, 505, 3, 12, 7500000, 'Checked_In', 'TWIN_BED', 'Ngọc Lan phòng 2', TRUE, 5000000, 'BILL_TO_LEADER', 505, 2, 0);
 
 INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, guest_type, is_primary_contact) VALUES
 (50511, 5051, 505, NULL, 'ADULT', TRUE),
@@ -1308,9 +1268,10 @@ INSERT IGNORE INTO Room_Guests (guest_id, detail_id, customer_id, dependent_id, 
 (50522, 5052, NULL, 506, 'ADULT', FALSE);
 
 INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transaction_type, payment_method, gateway_status, transaction_ref, created_at, paid_at) VALUES
-(5051, 505, 1000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP505_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5051, 505, 2000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP505_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (9999, 9999, 2000000.00, 'SUCCESS', 'Deposit', 'VNPAY', 'SUCCESS', 'DEP9999_1783478433300', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
+-- Booking 505 initial status updated for clean check-in baseline
 UPDATE Rooms SET current_booking_detail_id = 5051, room_status = 'Occupied' WHERE room_id = 11;
 UPDATE Rooms SET current_booking_detail_id = 5052, room_status = 'Occupied' WHERE room_id = 12;
 
@@ -1919,18 +1880,18 @@ INSERT INTO Staff_Schedules (schedule_id, employee_id, shift_id, work_date, stat
 
 -- MORE EMPLOYEES ADDED 
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES
-(55, 'receptionist10_55', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(56, 'receptionist11_56', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 2, CURRENT_TIMESTAMP),
-(57, 'fnb_kitchen10_57', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(58, 'fnb_kitchen11_58', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
-(59, 'fnb_pos10_59', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(60, 'fnb_pos11_60', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
-(61, 'housekeeping10_61', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(62, 'housekeeping11_62', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(63, 'housekeeping12_63', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(64, 'housekeeping13_64', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
-(65, 'maintainer10_65', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
-(66, 'tourguide10_66', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP);
+(55, 'vuthuhieu', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 2, CURRENT_TIMESTAMP),
+(56, 'vuhoaihieu', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 2, CURRENT_TIMESTAMP),
+(57, 'tranvanduong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(58, 'huynhhaichau', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 3, CURRENT_TIMESTAMP),
+(59, 'phamxuannam', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(60, 'vohaitrang', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 4, CURRENT_TIMESTAMP),
+(61, 'duongxuanduong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(62, 'lexuanhoa', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(63, 'hoangxuanlong', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(64, 'vuhaihieu', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 5, CURRENT_TIMESTAMP),
+(65, 'phanngochoa', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 6, CURRENT_TIMESTAMP),
+(66, 'vohuuviet', '$2a$10$ikP3XeXnMx/oLodhs4wqBO61AhyuE4dWtSJDJcOH7D2ii5Vrgq0bG', TRUE, 8, CURRENT_TIMESTAMP);
 
 INSERT INTO Employees (employee_id, account_id, full_name, gender, cccd, phone, email, salary) VALUES
 (45, 55, 'Vu Thu Hieu', 'Nam', '001290986315', '0912819524', 'receptionist10_55@hoanien.vn', 8500000),
@@ -1986,22 +1947,27 @@ INSERT IGNORE INTO Room_Booking_Details (detail_id, room_booking_id, room_id, ro
 -- PATCH REVIEW DATA FOR TESTING
 -- =======================================================
 
--- Update 10 Tours to Completed for existing bookings
-UPDATE Bookings SET booking_status = 'Completed' WHERE booking_id IN (1, 2, 3, 4, 6, 7, 8, 11, 12, 13);
+-- Update Room Bookings status
 UPDATE Bookings SET booking_status = 'Checked_Out' WHERE booking_id IN (8, 909, 9201, 11, 12, 13, 14, 15);
 UPDATE Room_Booking_Details SET detail_status = 'Checked_Out' WHERE room_booking_id IN (8, 909, 9201, 11, 12, 13, 14, 15);
 
 INSERT IGNORE INTO Reviews (customer_id, tour_booking_id, room_booking_detail_id, rating_service, rating_tour, rating_room_dining, review_text, created_at, moderation_status, is_reported) VALUES
-(2, 9, NULL, 5, 5, NULL, 'Tour trải nghiệm rất tuyệt vời.', NOW(), 'Approved', false),
-(3, 10, NULL, 5, 5, NULL, 'Thiền hành giúp tôi cân bằng cuộc sống.', NOW(), 'Approved', false),
-(4, 11, NULL, 4, 5, NULL, 'Cảnh quan sông Hậu cực kỳ nên thơ.', NOW(), 'Approved', false),
-(5, 12, NULL, 5, 4, NULL, 'HDV vô cùng chu đáo.', NOW(), 'Approved', false),
-(6, 13, NULL, 5, 5, NULL, 'Gia đình tôi đã có kỷ niệm rất đáng nhớ.', NOW(), 'Approved', false),
-(7, 24, NULL, 5, 5, NULL, 'Chắc chắn sẽ giới thiệu cho bạn bè.', NOW(), 'Approved', false),
-(8, 25, NULL, 5, 5, NULL, 'Một chuyến đi chữa lành thực sự.', NOW(), 'Approved', false),
-(9, 26, NULL, 4, 4, NULL, 'Rất đáng tiền, món ăn cũng ngon.', NOW(), 'Approved', false),
-(10, 27, NULL, 5, 5, NULL, 'Con người ở đây vô cùng hiếu khách.', NOW(), 'Approved', false),
-(11, 28, NULL, 5, 5, NULL, 'Mọi thứ vượt quá mong đợi.', NOW(), 'Approved', false),
+(2, NULL, 8, 5, NULL, 5, 'Phòng sạch sẽ, view đẹp, ăn sáng ngon.', NOW(), 'Approved', false),
+(3, NULL, 11, 5, NULL, 4, 'Đồ ăn phục vụ rất nhanh.', NOW(), 'Approved', false),
+(4, NULL, 12, 5, NULL, 5, 'Dịch vụ phòng tuyệt hảo.', NOW(), 'Approved', false),
+(5, NULL, 13, 4, NULL, 4, 'Hơi xa trung tâm nhưng rất yên tĩnh.', NOW(), 'Approved', false),
+(6, NULL, 14, 5, NULL, 5, 'Hồ bơi đẹp tuyệt.', NOW(), 'Approved', false),
+(7, NULL, 15, 5, NULL, 5, 'Các món đặc sản miền Tây rất lạ miệng.', NOW(), 'Approved', false),
+(8, NULL, 9002, 5, NULL, 5, 'Nhân viên lễ tân rất tận tâm.', NOW(), 'Approved', false),
+
+(6, NULL, NULL, 5, NULL, NULL, 'Dịch vụ toàn diện.', NOW(), 'Approved', false),
+(7, NULL, NULL, 4, NULL, NULL, 'Không gian thiền rất sâu lắng.', NOW(), 'Approved', false),
+(8, NULL, NULL, 5, NULL, NULL, 'Chuyến đi ý nghĩa.', NOW(), 'Approved', false),
+(9, NULL, NULL, 5, NULL, NULL, 'Tuyệt vời.', NOW(), 'Approved', false),
+(10, NULL, NULL, 5, NULL, NULL, 'Rất hài lòng.', NOW(), 'Approved', false),
+(11, NULL, NULL, 4, NULL, NULL, 'Resort yên bình, không khí trong lành.', NOW(), 'Approved', false),
+(12, NULL, NULL, 5, NULL, NULL, 'Xứng đáng với giá tiền.', NOW(), 'Approved', false),
+(13, NULL, NULL, 5, NULL, NULL, 'Nhất định sẽ quay lại.', NOW(), 'Approved', false);
 
 (2, NULL, 8, 5, NULL, 5, 'Phòng sạch sẽ, view đẹp, ăn sáng ngon.', NOW(), 'Approved', false),
 (3, NULL, 11, 5, NULL, 4, 'Đồ ăn phục vụ rất nhanh.', NOW(), 'Approved', false),
@@ -2035,7 +2001,7 @@ UPDATE Bookings SET booking_status = 'Checked_Out' WHERE booking_id = 10;
 
 -- Seed data cho khách hàng Lê Văn Định (tài khoản khach_hang_910) chưa có đơn trước đó, yêu cầu Late Checkout
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES 
-(910, 'khach_hang_910', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
+(910, 'levandinh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
 
 INSERT INTO Customers (customer_id, account_id, full_name, email, phone, gender, cccd_passport_encrypted, loyalty_points, membership_tier_id) VALUES 
 (910, 910, 'Lê Văn Định', 'vandinh910@example.com', '0999888910', 'Nam', '001099000910', 100, 1);
@@ -2091,11 +2057,8 @@ INSERT IGNORE INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, 
 INSERT IGNORE INTO Tour_Schedules (schedule_id, tour_id, departure_date, departure_time, booked_seats, schedule_status, is_insurance_processed) VALUES 
 (8001, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '08:00:00', 2, 'Completed', TRUE);
 
-INSERT IGNORE INTO Bookings (booking_id, customer_id, booking_date, total_price, booking_status, booking_source) VALUES
-(8002, 10, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 2500000, 'Completed', 'Direct_Web');
-
-INSERT IGNORE INTO Tour_Bookings (booking_id, schedule_id, participant_count, tour_charge, room_booking_id, is_walk_in_tour) VALUES
-(8002, 8001, 2, 2500000, 8001, FALSE);
+-- Bookings 8002 (Removed)
+-- Tour_Bookings 8002 (Removed)
 
 -- F&B Order (Past)
 INSERT IGNORE INTO Food_Orders (order_id, booking_id, guest_id, staff_id, order_type, table_number, total_amount, order_status, payment_status, notes) VALUES
@@ -2189,7 +2152,7 @@ INSERT IGNORE INTO Payment_Transactions (id, booking_id, amount, status, transac
 
 -- Seed data cho khách hàng Lê Văn Định (tài khoản khach_hang_910) chưa có đơn trước đó, yêu cầu Late Checkout
 INSERT INTO Accounts (account_id, username, password_hash, is_active, role_id, created_at) VALUES 
-(910, 'khach_hang_910', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
+(910, 'levandinh', '$2a$10$4bnThA4xQVw1rF2POQv78uAQll2KsUsgF32JaYiVG5d2d3Fhgk83q', TRUE, 10, CURRENT_TIMESTAMP);
 
 INSERT INTO Customers (customer_id, account_id, full_name, email, phone, gender, cccd_passport_encrypted, loyalty_points, membership_tier_id) VALUES 
 (910, 910, 'Lê Văn Định', 'vandinh910@example.com', '0999888910', 'Nam', '001099000910', 100, 1);

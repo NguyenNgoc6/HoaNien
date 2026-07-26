@@ -29,7 +29,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (email != null) {
             // Gọi sang service tách riêng để đảm bảo @Transactional hoạt động đúng
-            oAuthAccountService.findOrCreateOAuthAccount(email, fullName);
+            com.kawai.models.Account account = oAuthAccountService.findOrCreateOAuthAccount(email, fullName);
+
+            java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"));
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_GUEST"));
+
+            if (account != null && account.getRole() != null && account.getRole().getRoleName() != null) {
+                String roleName = account.getRole().getRoleName().toUpperCase().replace(" ", "_");
+                if (!roleName.startsWith("ROLE_")) {
+                    roleName = "ROLE_" + roleName;
+                }
+                authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(roleName));
+            }
 
             // Tạo attributes map mới với "email" làm key chính
             java.util.Map<String, Object> attrs = new java.util.HashMap<>(oAuth2User.getAttributes());
@@ -38,7 +50,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // Trả về DefaultOAuth2User với authorities mới và nameAttributeKey = "email"
             // để principal.getName() trả về email thay vì Google ID
             return new org.springframework.security.oauth2.core.user.DefaultOAuth2User(
-                    org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_GUEST"),
+                    authorities,
                     attrs,
                     "email");
         } else {

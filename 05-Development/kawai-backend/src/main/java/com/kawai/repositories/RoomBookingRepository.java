@@ -37,8 +37,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.room.roomNumber = :roomNumber " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%'")
        long countOverlappingBookings(@Param("roomNumber") String roomNumber,
                      @Param("checkIn") LocalDate checkIn,
                      @Param("checkOut") LocalDate checkOut);
@@ -69,8 +68,7 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "WHERE rbd.category.categoryName = :categoryName " +
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
-                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND rbd.roomBooking.bookingStatus != 'Pending'")
+                     "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%'")
        long countOverlappingBookingsByCategoryWithoutExclude(
                      @Param("categoryName") String categoryName,
                      @Param("checkIn") LocalDate checkIn,
@@ -81,7 +79,6 @@ public interface RoomBookingRepository extends JpaRepository<RoomBooking, Long> 
                      "AND rbd.roomBooking.checkInDate < :checkOut " +
                      "AND rbd.roomBooking.checkOutDate > :checkIn " +
                      "AND LOWER(rbd.roomBooking.bookingStatus) NOT LIKE '%cancel%' " +
-                     "AND rbd.roomBooking.bookingStatus != 'Pending' " +
                      "AND rbd.roomBooking.bookingStatus != 'Checked_In'")
        long countOverlappingNotCheckedIn(
                      @Param("categoryName") String categoryName,

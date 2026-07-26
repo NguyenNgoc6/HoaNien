@@ -243,7 +243,8 @@
                             class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200 uppercase tracking-[0.2em] bg-transparent border-none p-0 cursor-pointer">Logout</button>
                     </form>
 
-                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${isLoggedIn}" class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
+                    <a href="#" onclick="openLoginModal(); return false;" th:unless="${isLoggedIn}"
+                        class="nav-text-dim hover:opacity-100 active:scale-95 transition-all duration-200">Log In</a>
                     <a href="/booking"
                         class="nav-btn-book hover:opacity-100 active:scale-95 transition-all duration-200 inline-block text-[13px]">
                         Book Now
@@ -427,28 +428,34 @@
                                             class="text-white focus:ring-0 bg-transparent" onchange="renderCart()">
                                         <div>
                                             <span class="block font-semibold">Ký bill về phòng (Charge to Room)</span>
-                                            <span class="block text-[10px] opacity-50"
-                                                id="currentCreditLimitDisplay"
+                                            <span class="block text-[10px] opacity-50" id="currentCreditLimitDisplay"
                                                 th:if="${currentCreditLimit != null}"
                                                 th:data-limit="${currentCreditLimit}"
                                                 th:text="'Hạn mức tín dụng: ₫' + ${#numbers.formatDecimal(currentCreditLimit, 0, 'COMMA', 0, 'POINT')}">Hạn
                                                 mức: 0đ</span>
                                         </div>
                                     </label>
-                                    <label class="flex items-center gap-2 p-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
-                                        <input type="radio" name="paymentType" value="ONLINE" th:checked="${currentRoom == null}"
+                                    <label
+                                        class="flex items-center gap-2 p-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="paymentType" value="ONLINE"
+                                            th:checked="${currentRoom == null}"
                                             class="text-white focus:ring-0 bg-transparent" onchange="renderCart()">
                                         <div>
-                                            <span class="block font-semibold text-white/90">Thanh toán trực tuyến trước qua Ví/Thẻ</span>
-                                            <span class="block text-[10px] text-emerald-400">Giảm ngay 2% phí dịch vụ ẩm thực</span>
+                                            <span class="block font-semibold text-white/90">Thanh toán trực tuyến trước
+                                                qua Ví/Thẻ</span>
+                                            <span class="block text-[10px] text-emerald-400">Giảm ngay 2% phí dịch vụ ẩm
+                                                thực</span>
                                         </div>
                                     </label>
-                                    <label class="flex items-center gap-2 p-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                                    <label
+                                        class="flex items-center gap-2 p-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
                                         <input type="radio" name="paymentType" value="PAY_AT_RESTAURANT"
                                             class="text-white focus:ring-0 bg-transparent" onchange="renderCart()">
                                         <div>
-                                            <span class="block font-semibold text-white/90">Thanh toán trực tiếp khi nhận hàng</span>
-                                            <span class="block text-[10px] opacity-50">Tiền mặt, thẻ ngân hàng hoặc chuyển khoản tại chỗ</span>
+                                            <span class="block font-semibold text-white/90">Thanh toán trực tiếp khi
+                                                nhận hàng</span>
+                                            <span class="block text-[10px] opacity-50">Tiền mặt, thẻ ngân hàng hoặc
+                                                chuyển khoản tại chỗ</span>
                                         </div>
                                     </label>
                                 </div>
@@ -582,45 +589,53 @@
         style="display: none;">
         <div
             class="bg-[#1e1a19] border border-white/10 w-full max-w-lg p-6 md:p-8 rounded-2xl relative shadow-2xl text-left font-sans flex flex-col max-h-[90vh] overflow-y-auto">
-            
+
             <button onclick="closeOnlinePaymentModal()" class="absolute top-4 right-4 text-white/50 hover:text-white">
                 <span class="material-symbols-outlined">close</span>
             </button>
-            
+
             <div class="mb-4">
-                <span class="text-[10px] uppercase tracking-[0.2em] text-emerald-400 block mb-1">Cổng thanh toán an toàn</span>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-emerald-400 block mb-1">Cổng thanh toán an
+                    toàn</span>
                 <h3 class="font-serif text-2xl text-white">Thực hiện thanh toán</h3>
             </div>
 
             <!-- Transaction Info -->
             <div class="bg-white/5 p-4 rounded-xl border border-white/5 mb-5 flex justify-between items-center text-xs">
                 <div>
-                    <span class="block text-white/40 text-[10px] uppercase font-bold tracking-wider">Số tiền cần thanh toán</span>
+                    <span class="block text-white/40 text-[10px] uppercase font-bold tracking-wider">Số tiền cần thanh
+                        toán</span>
                     <span id="payModalTotal" class="text-xl font-serif text-white font-semibold">0 đ</span>
                 </div>
                 <div class="text-right">
-                    <span class="block text-white/40 text-[10px] uppercase font-bold tracking-wider">Hạn thanh toán</span>
+                    <span class="block text-white/40 text-[10px] uppercase font-bold tracking-wider">Hạn thanh
+                        toán</span>
                     <span id="paymentTimer" class="text-sm font-mono text-amber-400 font-bold">05:00</span>
                 </div>
             </div>
 
             <!-- Payment Methods Tabs -->
             <div class="flex border-b border-white/10 mb-4 text-xs font-semibold select-none">
-                <button id="payTab-qr" onclick="switchPayTab('qr')" class="flex-1 py-2 text-center border-b-2 border-white text-white">
+                <button id="payTab-qr" onclick="switchPayTab('qr')"
+                    class="flex-1 py-2 text-center border-b-2 border-white text-white">
                     VietQR Chuyển Khoản
                 </button>
-                <button id="payTab-card" onclick="switchPayTab('card')" class="flex-1 py-2 text-center border-b-2 border-transparent text-white/40 hover:text-white">
+                <button id="payTab-card" onclick="switchPayTab('card')"
+                    class="flex-1 py-2 text-center border-b-2 border-transparent text-white/40 hover:text-white">
                     Thẻ Quốc Tế
                 </button>
-                <button id="payTab-wallet" onclick="switchPayTab('wallet')" class="flex-1 py-2 text-center border-b-2 border-transparent text-white/40 hover:text-white">
+                <button id="payTab-wallet" onclick="switchPayTab('wallet')"
+                    class="flex-1 py-2 text-center border-b-2 border-transparent text-white/40 hover:text-white">
                     Ví MoMo/ZaloPay
                 </button>
             </div>
 
             <!-- Tab Content: VietQR -->
             <div id="payContent-qr" class="space-y-4">
-                <div class="flex flex-col md:flex-row items-center gap-6 bg-white/5 p-4 rounded-xl border border-white/5">
-                    <div class="w-40 h-40 bg-white p-2 rounded-lg flex items-center justify-center shadow-lg relative group">
+                <div
+                    class="flex flex-col md:flex-row items-center gap-6 bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div
+                        class="w-40 h-40 bg-white p-2 rounded-lg flex items-center justify-center shadow-lg relative group">
                         <img id="vietqrImage" src="" alt="VietQR Code" class="w-full h-full object-contain">
                     </div>
                     <div class="flex-1 text-xs space-y-2 text-white/80">
@@ -632,7 +647,8 @@
                             <span class="opacity-50">Số tài khoản:</span>
                             <span class="font-mono font-semibold text-white flex items-center gap-1">
                                 101872893892
-                                <button onclick="copyToClipboard('101872893892')" class="text-emerald-400 hover:underline text-[10px]">Copy</button>
+                                <button onclick="copyToClipboard('101872893892')"
+                                    class="text-emerald-400 hover:underline text-[10px]">Copy</button>
                             </span>
                         </div>
                         <div class="flex justify-between border-b border-white/5 pb-1">
@@ -643,7 +659,8 @@
                             <span class="opacity-50">Nội dung chuyển khoản:</span>
                             <span class="font-mono font-semibold text-amber-400 flex items-center gap-1">
                                 <span id="vietqrMsg">HNFOOD ORD</span>
-                                <button onclick="copyToClipboard(document.getElementById('vietqrMsg').innerText)" class="text-emerald-400 hover:underline text-[10px]">Copy</button>
+                                <button onclick="copyToClipboard(document.getElementById('vietqrMsg').innerText)"
+                                    class="text-emerald-400 hover:underline text-[10px]">Copy</button>
                             </span>
                         </div>
                     </div>
@@ -651,7 +668,8 @@
                 <div class="text-[10px] text-white/40 text-center italic">
                     * Mở ứng dụng ngân hàng quét mã VietQR để thanh toán tự động điền số tiền và nội dung.
                 </div>
-                <button onclick="verifyVietQRPayment()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <button onclick="verifyVietQRPayment()"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">verified</span>
                     Xác nhận đã chuyển khoản
                 </button>
@@ -661,29 +679,38 @@
             <div id="payContent-card" class="space-y-4" style="display: none;">
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Số thẻ ngân hàng</label>
-                        <input type="text" id="cardNo" placeholder="4111 2222 3333 4444" 
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Số
+                            thẻ ngân hàng</label>
+                        <input type="text" id="cardNo" placeholder="4111 2222 3333 4444"
                             class="w-full bg-white/5 border border-white/10 p-2.5 rounded-lg text-xs text-white focus:ring-1 focus:ring-white placeholder:text-white/20">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Ngày hết hạn (MM/YY)</label>
-                            <input type="text" id="cardExpiry" placeholder="12/28" 
+                            <label
+                                class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Ngày
+                                hết hạn (MM/YY)</label>
+                            <input type="text" id="cardExpiry" placeholder="12/28"
                                 class="w-full bg-white/5 border border-white/10 p-2.5 rounded-lg text-xs text-white focus:ring-1 focus:ring-white placeholder:text-white/20">
                         </div>
                         <div>
-                            <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Mã bảo mật CVV</label>
+                            <label
+                                class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Mã
+                                bảo mật CVV</label>
                             <input type="password" id="cardCvv" placeholder="***" maxlength="3"
                                 class="w-full bg-white/5 border border-white/10 p-2.5 rounded-lg text-xs text-white focus:ring-1 focus:ring-white placeholder:text-white/20">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Tên chủ thẻ (Không dấu)</label>
-                        <input type="text" id="cardHolder" placeholder="NGUYEN VAN A" 
+                        <label
+                            class="block text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-1 text-white">Tên
+                            chủ thẻ (Không dấu)</label>
+                        <input type="text" id="cardHolder" placeholder="NGUYEN VAN A"
                             class="w-full bg-white/5 border border-white/10 p-2.5 rounded-lg text-xs text-white focus:ring-1 focus:ring-white placeholder:text-white/20">
                     </div>
                 </div>
-                <button onclick="processCardPayment()" class="w-full bg-white hover:bg-white/95 text-black py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <button onclick="processCardPayment()"
+                    class="w-full bg-white hover:bg-white/95 text-black py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">credit_card</span>
                     Thanh toán bằng thẻ
                 </button>
@@ -692,41 +719,54 @@
             <!-- Tab Content: E-Wallet -->
             <div id="payContent-wallet" class="space-y-4" style="display: none;">
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="selectWallet('momo')" class="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group">
+                    <button onclick="selectWallet('momo')"
+                        class="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group">
                         <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">💗</span>
                         <span class="text-xs font-bold text-white">Ví MoMo</span>
                         <span class="text-[9px] opacity-40">Giao dịch tức thời</span>
                     </button>
-                    <button onclick="selectWallet('zalopay')" class="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group">
+                    <button onclick="selectWallet('zalopay')"
+                        class="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group">
                         <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">💚</span>
                         <span class="text-xs font-bold text-white">ZaloPay</span>
                         <span class="text-[9px] opacity-40">Miễn phí thanh toán</span>
                     </button>
                 </div>
-                <div id="walletDetailArea" class="bg-white/5 p-4 rounded-xl border border-white/5 text-center text-xs space-y-3" style="display: none;">
-                    <p class="text-white/80">Bạn đã chọn thanh toán qua <span id="selectedWalletName" class="font-bold text-emerald-400">Ví MoMo</span></p>
+                <div id="walletDetailArea"
+                    class="bg-white/5 p-4 rounded-xl border border-white/5 text-center text-xs space-y-3"
+                    style="display: none;">
+                    <p class="text-white/80">Bạn đã chọn thanh toán qua <span id="selectedWalletName"
+                            class="font-bold text-emerald-400">Ví MoMo</span></p>
                     <div class="mx-auto w-36 h-36 bg-white p-2 rounded-lg flex items-center justify-center">
-                        <img id="walletQrImage" src="https://images.unsplash.com/photo-1571867424488-4565932edb41?w=300&q=80" alt="Wallet QR" class="w-full h-full object-cover animate-pulse">
+                        <img id="walletQrImage"
+                            src="https://images.unsplash.com/photo-1571867424488-4565932edb41?w=300&q=80"
+                            alt="Wallet QR" class="w-full h-full object-cover animate-pulse">
                     </div>
-                    <button onclick="verifyWalletPayment()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg shadow transition-all">
+                    <button onclick="verifyWalletPayment()"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg shadow transition-all">
                         Xác nhận đã quét ví
                     </button>
                 </div>
             </div>
 
             <!-- Processing / Overlay Simulation Screen inside Modal -->
-            <div id="paySimulationOverlay" class="absolute inset-0 bg-[#1e1a19]/95 flex flex-col items-center justify-center p-6 text-center z-50 rounded-2xl" style="display: none;">
+            <div id="paySimulationOverlay"
+                class="absolute inset-0 bg-[#1e1a19]/95 flex flex-col items-center justify-center p-6 text-center z-50 rounded-2xl"
+                style="display: none;">
                 <div class="relative w-16 h-16 mb-4">
                     <!-- Circular Spinner -->
                     <div class="absolute inset-0 border-4 border-white/10 rounded-full"></div>
                     <div class="absolute inset-0 border-4 border-t-emerald-500 rounded-full animate-spin"></div>
                 </div>
                 <h4 id="simStatusText" class="font-serif text-lg text-white mb-2">Đang kết nối cổng thanh toán...</h4>
-                <p id="simSubText" class="text-xs text-white/50 max-w-xs leading-relaxed">Vui lòng không tắt hoặc tải lại trang web.</p>
+                <p id="simSubText" class="text-xs text-white/50 max-w-xs leading-relaxed">Vui lòng không tắt hoặc tải
+                    lại trang web.</p>
             </div>
 
             <!-- Simulated OTP Section (For Card) inside Modal -->
-            <div id="otpVerificationSection" class="absolute inset-0 bg-[#1e1a19]/98 flex flex-col items-center justify-center p-6 text-center z-50 rounded-2xl" style="display: none;">
+            <div id="otpVerificationSection"
+                class="absolute inset-0 bg-[#1e1a19]/98 flex flex-col items-center justify-center p-6 text-center z-50 rounded-2xl"
+                style="display: none;">
                 <span class="material-symbols-outlined text-4xl text-amber-400 mb-2">sms</span>
                 <h4 class="font-serif text-lg text-white mb-1">Xác thực giao dịch OTP</h4>
                 <p class="text-xs text-white/60 mb-4 max-w-xs leading-relaxed">
@@ -737,8 +777,12 @@
                         class="bg-white/5 border border-white/10 p-3 rounded-lg text-center tracking-[0.5em] text-lg font-mono text-white focus:ring-1 focus:ring-emerald-500 outline-none w-44">
                 </div>
                 <div class="flex gap-3 justify-center w-full max-w-xs">
-                    <button onclick="cancelOtp()" class="flex-1 border border-white/10 hover:bg-white/5 text-white py-2 rounded-lg text-xs">Hủy bỏ</button>
-                    <button onclick="submitOtp()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">Xác thực</button>
+                    <button onclick="cancelOtp()"
+                        class="flex-1 border border-white/10 hover:bg-white/5 text-white py-2 rounded-lg text-xs">Hủy
+                        bỏ</button>
+                    <button onclick="submitOtp()"
+                        class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">Xác
+                        thực</button>
                 </div>
                 <div class="text-[10px] text-white/40 mt-3">
                     Mã thử nghiệm mặc định: <span class="font-bold font-mono text-emerald-400">123456</span>
@@ -919,14 +963,14 @@
             });
 
             container.innerHTML = html || '<p class="text-xs opacity-40 italic text-center mt-4 text-white" id="emptyCartMsg">Chưa có món ăn nào được chọn.</p>';
-            
+
             // Check selected payment type for discount
             const selectedPayment = document.querySelector('input[name="paymentType"]:checked');
             let feePercent = 0.05;
             if (selectedPayment && selectedPayment.value === 'ONLINE') {
                 feePercent = 0.03; // 2% discount on service fee
             }
-            
+
             const fee = subtotal * feePercent;
             const total = subtotal + fee;
 
@@ -1025,7 +1069,7 @@
                         document.getElementById('posKitchenNote').innerText = pendingOrderPayload.note || 'KHÔNG CÓ GHI CHÚ DỊ ỨNG';
                         document.getElementById('posItemsList').innerHTML = cart.map(function (i) { return '<div>• ' + i.name + ' (x' + i.qty + ')</div>'; }).join('');
                         document.getElementById('posTimelineModal').style.display = 'flex';
-                        
+
                         if (pendingOrderPayload.paymentType === 'CHARGE_TO_ROOM') {
                             const limitDisplay = document.getElementById('currentCreditLimitDisplay');
                             if (limitDisplay) {
@@ -1058,7 +1102,7 @@
 
         function openOnlinePaymentModal(totalAmount) {
             document.getElementById('payModalTotal').innerText = totalAmount.toLocaleString('vi-VN') + ' đ';
-            
+
             // Generate VietQR
             const description = encodeURIComponent(`HNFOOD ORD ${Math.floor(Date.now() / 1000)}`);
             document.getElementById('vietqrMsg').innerText = `HNFOOD ORD ${Math.floor(Date.now() / 1000)}`;
@@ -1074,7 +1118,7 @@
             document.getElementById('walletDetailArea').style.display = 'none';
             document.getElementById('paySimulationOverlay').style.display = 'none';
             document.getElementById('otpVerificationSection').style.display = 'none';
-            
+
             // Switch to QR tab by default
             switchPayTab('qr');
 
@@ -1085,7 +1129,7 @@
             let duration = 300;
             const timerEl = document.getElementById('paymentTimer');
             timerEl.innerText = "05:00";
-            
+
             if (paymentTimerInterval) clearInterval(paymentTimerInterval);
             paymentTimerInterval = setInterval(() => {
                 duration--;
@@ -1146,9 +1190,9 @@
 
         function verifyVietQRPayment() {
             showSimulationOverlay(
-                "Đang kiểm tra giao dịch...", 
-                "Hệ thống đang truy vấn biến động số dư VietinBank...", 
-                2000, 
+                "Đang kiểm tra giao dịch...",
+                "Hệ thống đang truy vấn biến động số dư VietinBank...",
+                2000,
                 () => {
                     alert("Thanh toán thành công qua VietQR!");
                     submitOrderPayloadAfterPayment();
@@ -1168,9 +1212,9 @@
             }
 
             showSimulationOverlay(
-                "Đang kết nối tổ chức thẻ...", 
-                "Đang xác thực thông tin thẻ quốc tế...", 
-                1500, 
+                "Đang kết nối tổ chức thẻ...",
+                "Đang xác thực thông tin thẻ quốc tế...",
+                1500,
                 () => {
                     // Show OTP section
                     document.getElementById('otpVerificationSection').style.display = 'flex';
@@ -1191,9 +1235,9 @@
 
             document.getElementById('otpVerificationSection').style.display = 'none';
             showSimulationOverlay(
-                "Đang hoàn tất thanh toán...", 
-                "Giao dịch đã được duyệt. Đang tạo đơn hàng...", 
-                1500, 
+                "Đang hoàn tất thanh toán...",
+                "Giao dịch đã được duyệt. Đang tạo đơn hàng...",
+                1500,
                 () => {
                     alert("Thanh toán thẻ thành công!");
                     submitOrderPayloadAfterPayment();
@@ -1209,9 +1253,9 @@
 
         function verifyWalletPayment() {
             showSimulationOverlay(
-                "Đang xác nhận thanh toán...", 
-                "Chờ xác thực phản hồi từ ứng dụng ví...", 
-                1800, 
+                "Đang xác nhận thanh toán...",
+                "Chờ xác thực phản hồi từ ứng dụng ví...",
+                1800,
                 () => {
                     alert("Thanh toán qua ví điện tử thành công!");
                     submitOrderPayloadAfterPayment();

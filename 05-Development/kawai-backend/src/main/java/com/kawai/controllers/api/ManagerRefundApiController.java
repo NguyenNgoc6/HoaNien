@@ -37,10 +37,11 @@ public class ManagerRefundApiController {
             if (optReq.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Không tìm thấy yêu cầu hoàn tiền"));
             }
-            
+
             RefundRequest req = optReq.get();
             if ("COMPLETED".equalsIgnoreCase(req.getStatus())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Yêu cầu này đã được xử lý hoàn tiền trước đó."));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Yêu cầu này đã được xử lý hoàn tiền trước đó."));
             }
 
             // Upload lên Cloudinary
@@ -55,13 +56,13 @@ public class ManagerRefundApiController {
             // Gửi email cho khách (nếu có thông tin)
             String customerEmail = null;
             com.kawai.models.Customer customer = null;
-            
+
             if (req.getOrder() != null) {
                 FoodOrder order = req.getOrder();
                 if (order.getBooking() != null && order.getBooking().getCustomer() != null) {
                     customer = order.getBooking().getCustomer();
-                } else if (order.getRoomBookingDetail() != null 
-                        && order.getRoomBookingDetail().getRoomBooking() != null 
+                } else if (order.getRoomBookingDetail() != null
+                        && order.getRoomBookingDetail().getRoomBooking() != null
                         && order.getRoomBookingDetail().getRoomBooking().getCustomer() != null) {
                     customer = order.getRoomBookingDetail().getRoomBooking().getCustomer();
                 }
@@ -70,7 +71,7 @@ public class ManagerRefundApiController {
             } else if (req.getTourBooking() != null && req.getTourBooking().getCustomer() != null) {
                 customer = req.getTourBooking().getCustomer();
             }
-            
+
             if (customer != null) {
                 customerEmail = customer.getEmail();
             }

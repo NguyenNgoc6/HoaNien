@@ -4,6 +4,7 @@ import com.kawai.models.Employee;
 import com.kawai.models.HotelOperation;
 import com.kawai.repositories.EmployeeRepository;
 import com.kawai.repositories.HotelOperationRepository;
+import com.kawai.services.interfaces.SystemNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -74,6 +75,9 @@ public class TourIncidentApiController {
         }
     }
 
+    @Autowired
+    private SystemNotificationService systemNotificationService;
+
     @PutMapping("/{id}/resolve")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     public ResponseEntity<?> resolveIncident(@PathVariable Long id) {
@@ -91,6 +95,22 @@ public class TourIncidentApiController {
             incident.setSupervisor(manager);
 
             hotelOperationRepository.save(incident);
+
+            // Tạo thông báo cho Tour Guide
+            if (incident.getStaff() != null && incident.getStaff().getAccount() != null) {
+                String tourGuideUsername = incident.getStaff().getAccount().getUsername();
+                String managerName = manager != null ? manager.getFullName() : "Quản lý";
+                String title = "Sự cố đã được tiếp nhận và xử lý";
+                String message = managerName + " đã tiếp nhận xử lý sự cố của bạn.";
+                
+                systemNotificationService.createNotification(
+                        tourGuideUsername,
+                        title,
+                        message,
+                        "INCIDENT_RESOLVED",
+                        "/tourguide"
+                );
+            }
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Đã xử lý sự cố."));
         } catch (Exception e) {

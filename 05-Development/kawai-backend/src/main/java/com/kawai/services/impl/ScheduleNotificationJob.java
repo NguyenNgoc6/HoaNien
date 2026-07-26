@@ -27,11 +27,6 @@ public class ScheduleNotificationJob {
     @Autowired
     private EmailService emailService;
 
-    // Lắng nghe sự kiện chạy ứng dụng lần đầu để demo/test
-    @EventListener(ApplicationReadyEvent.class)
-    @org.springframework.core.annotation.Order(2)
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-
     // Chạy vào 8h sáng Chủ Nhật hàng tuần
     @Scheduled(cron = "0 0 8 * * SUN")
     public void sendWeeklySchedules() {
@@ -50,8 +45,15 @@ public class ScheduleNotificationJob {
         }
 
         // Gửi email cho từng người, bất kể họ có lịch hay không
+        // Thêm delay 200ms giữa các email để tránh bị Gmail SMTP throttle khi gửi nhiều email liên tiếp
+        int emailCount = 0;
         for (Employee emp : allEmployees) {
             if (emp.getEmail() == null || emp.getEmail().isEmpty()) {
+                continue;
+            }
+
+            // [MÔ PHỎNG] Chỉ gửi cho account lelinh, các tài khoản khác bỏ qua
+            if (emp.getAccount() == null || !"lelinh".equals(emp.getAccount().getUsername())) {
                 continue;
             }
 
@@ -76,11 +78,22 @@ public class ScheduleNotificationJob {
             try {
                 emailService.sendWeeklyScheduleEmail(emp.getEmail(), emp.getFullName(), employeeSchedules);
                 System.out.println("Đã gửi email thông báo lịch làm việc cho: " + emp.getEmail());
+                emailCount++;
+                // Rate limit: delay 200ms mỗi email để tránh Gmail throttle
+                if (emailCount % 5 == 0) {
+                    Thread.sleep(1000); // Nghỉ 1 giây sau mỗi 5 email
+                } else {
+                    Thread.sleep(200);
+                }
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                System.err.println("Schedule notification bị gián đoạn!");
+                break;
             } catch (Exception e) {
                 System.err.println("Lỗi gửi email cho " + emp.getEmail() + ": " + e.getMessage());
             }
         }
-        System.out.println("--- Hoàn tất gửi email Lịch làm việc ---");
+        System.out.println("--- Hoàn tất gửi email Lịch làm việc (" + emailCount + " emails sent) ---");
     }
 
     // Lắng nghe sự kiện chạy ứng dụng lần đầu để demo/test
