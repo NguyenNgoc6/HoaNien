@@ -75,6 +75,9 @@ public class VnPayServiceImpl implements VnPayService {
     @Autowired(required = false)
     private EmailService emailService;
 
+    @Autowired
+    private com.kawai.repositories.PromotionRepository promotionRepository;
+
     @Override
     @Transactional
     public String createPaymentUrl(Long bookingId, String ipAddress) {
@@ -550,9 +553,11 @@ public class VnPayServiceImpl implements VnPayService {
                     System.err.println("[VNPay IPN] Loi xu ly TOUR_BOOKING: " + e.getMessage());
                 }
             } else if ("ROOM_BOOKING".equals(txn.getTransactionType()) && booking != null) {
+                boolean isStatusChanged = false;
                 if ("WALK_IN".equals(booking.getBookingSource())
                         && "Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Checked_In");
+                    isStatusChanged = true;
                     // Update detail status as well
                     if (booking instanceof com.kawai.models.RoomBooking) {
                         java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository
@@ -566,6 +571,7 @@ public class VnPayServiceImpl implements VnPayService {
                     }
                 } else if ("Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Confirmed");
+                    isStatusChanged = true;
                     if (emailService != null && booking instanceof com.kawai.models.RoomBooking
                             && booking.getCustomer() != null) {
                         try {
@@ -574,6 +580,15 @@ public class VnPayServiceImpl implements VnPayService {
                         } catch (Exception ex) {
                             System.err.println("[VNPay IPN] Loi gui email RoomBooking: " + ex.getMessage());
                         }
+                    }
+                }
+
+                if (isStatusChanged && booking.getAppliedPromotion() != null) {
+                    com.kawai.models.Promotion promo = booking.getAppliedPromotion();
+                    if (promo.getCurrentUses() != null && promo.getMaxUses() != null
+                            && promo.getCurrentUses() < promo.getMaxUses()) {
+                        promo.setCurrentUses(promo.getCurrentUses() + 1);
+                        promotionRepository.save(promo);
                     }
                 }
             } else if ("CREDIT_LIMIT_DEPOSIT".equals(txn.getTransactionType())) {

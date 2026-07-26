@@ -518,6 +518,12 @@ public class BookingServiceImpl implements BookingService {
                     "[ERR_PROMO_EXPIRED] Promotion code '" + promoCode + "' has expired ");
         }
 
+        if (promo.getMaxUses() != null && promo.getCurrentUses() != null
+                && promo.getCurrentUses() >= promo.getMaxUses()) {
+            throw new IllegalArgumentException(
+                    "Mã giảm giá \"" + promoCode.trim().toUpperCase() + "\" đã hết lượt sử dụng.");
+        }
+
         BigDecimal discountValue = promo.getDiscountValue();
         BigDecimal discountAmount;
 
