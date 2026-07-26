@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/receptionist/walkin")
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_RECEPTION_WALKIN', 'OP_RECEPTION_CHECKIN', 'ROLE_ADMIN')")
 public class WalkInCheckInApiController {
 
     public static final String PAYMENT_METHOD_VNPAY = "Chuyển khoản";
@@ -53,24 +53,30 @@ public class WalkInCheckInApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * API 3: Tìm kiếm khách hàng theo SĐT hoặc CCCD
-     */
     @GetMapping("/search-customer")
-    public ResponseEntity<?> searchCustomer(@RequestParam(required = false) String keyword) {
-        if (keyword == null || keyword.isBlank()) {
+    public ResponseEntity<?> searchCustomer(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String cccd) {
+        String searchPhone = (phone != null && !phone.isBlank()) ? phone : keyword;
+        String searchCccd = (cccd != null && !cccd.isBlank()) ? cccd : null;
+
+        if ((searchPhone == null || searchPhone.isBlank()) && (searchCccd == null || searchCccd.isBlank())) {
             return ResponseEntity.badRequest()
-                    .body(java.util.Map.of("message", "Vui lòng nhập từ khóa tìm kiếm (SĐT hoặc CCCD)"));
+                    .body(java.util.Map.of("message", "Vui lòng nhập SĐT hoặc CCCD để tìm kiếm"));
         }
-        java.util.Optional<com.kawai.models.Customer> customerOpt = walkInCheckInService.searchCustomer(keyword);
+
+        java.util.Optional<com.kawai.models.Customer> customerOpt = walkInCheckInService
+                .searchCustomerByPhoneOrCccd(searchPhone, searchCccd);
+
         if (customerOpt.isPresent()) {
             com.kawai.models.Customer c = customerOpt.get();
-            String cccd = "";
+            String decryptedCccd = "";
             if (c.getCccdPassportEncrypted() != null) {
                 try {
-                    cccd = com.kawai.utils.EncryptionUtils.decrypt(c.getCccdPassportEncrypted());
+                    decryptedCccd = com.kawai.utils.EncryptionUtils.decrypt(c.getCccdPassportEncrypted());
                 } catch (Exception e) {
-                    cccd = c.getCccdPassportEncrypted();
+                    decryptedCccd = c.getCccdPassportEncrypted();
                 }
             }
             return ResponseEntity.ok(java.util.Map.of(
@@ -78,7 +84,7 @@ public class WalkInCheckInApiController {
                     "fullName", c.getFullName() != null ? c.getFullName() : "",
                     "phone", c.getPhone() != null ? c.getPhone() : "",
                     "email", c.getEmail() != null ? c.getEmail() : "",
-                    "cccd", cccd,
+                    "cccd", decryptedCccd,
                     "dateOfBirth", c.getBirthDate() != null ? c.getBirthDate().toString() : "",
                     "gender", c.getGender() != null ? c.getGender() : ""));
         }

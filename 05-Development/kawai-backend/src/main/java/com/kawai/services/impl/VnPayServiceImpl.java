@@ -75,6 +75,9 @@ public class VnPayServiceImpl implements VnPayService {
     @Autowired(required = false)
     private EmailService emailService;
 
+    @Autowired
+    private com.kawai.repositories.PromotionRepository promotionRepository;
+
     @Override
     @Transactional
     public String createPaymentUrl(Long bookingId, String ipAddress) {
@@ -111,7 +114,13 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_BankCode", "NCB");
 
-        vnp_Params.put("vnp_ReturnUrl", getDynamicReturnUrl());
+        String returnUrl = getDynamicReturnUrl();
+        if (returnUrl.contains("?")) {
+            returnUrl += "&bId=" + bookingId;
+        } else {
+            returnUrl += "?bId=" + bookingId;
+        }
+        vnp_Params.put("vnp_ReturnUrl", returnUrl);
 
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
@@ -442,16 +451,6 @@ public class VnPayServiceImpl implements VnPayService {
         return vnPayConfig.getPayUrl() + "?" + queryUrl;
     }
 
-    private String getDynamicReturnUrl() {
-        try {
-            return org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/api/v1/payments/vnpay-return").build().toUriString();
-        } catch (Exception e) {
-            // Fallback in case it's not called within a web request context
-            return vnPayConfig.getReturnUrl();
-        }
-    }
-
     @Override
     @Transactional
     public Map<String, String> verifyIpn(Map<String, String> params) {
@@ -554,9 +553,11 @@ public class VnPayServiceImpl implements VnPayService {
                     System.err.println("[VNPay IPN] Loi xu ly TOUR_BOOKING: " + e.getMessage());
                 }
             } else if ("ROOM_BOOKING".equals(txn.getTransactionType()) && booking != null) {
+                boolean isStatusChanged = false;
                 if ("WALK_IN".equals(booking.getBookingSource())
                         && "Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Checked_In");
+                    isStatusChanged = true;
                     // Update detail status as well
                     if (booking instanceof com.kawai.models.RoomBooking) {
                         java.util.List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository
@@ -564,16 +565,13 @@ public class VnPayServiceImpl implements VnPayService {
                         for (com.kawai.models.RoomBookingDetail detail : details) {
                             if ("Pending_Payment".equals(detail.getDetailStatus())) {
                                 detail.setDetailStatus("Checked_In");
-                                // Thêm FolioItem cọc VNPay
-                                folioService.addFolioItem(detail.getId(), "FRONT_DESK", txn.getAmount().negate(),
-                                        "Tiền cọc Walk-in (Chuyển khoản VNPay)");
                             }
                         }
                         roomBookingDetailRepository.saveAll(details);
                     }
-                } else if ("Pending".equals(booking.getBookingStatus())
-                        || "Pending_Payment".equals(booking.getBookingStatus())) {
+                } else if ("Pending_Payment".equals(booking.getBookingStatus())) {
                     booking.setBookingStatus("Confirmed");
+                    isStatusChanged = true;
                     if (emailService != null && booking instanceof com.kawai.models.RoomBooking
                             && booking.getCustomer() != null) {
                         try {
@@ -584,13 +582,20 @@ public class VnPayServiceImpl implements VnPayService {
                         }
                     }
                 }
+
+                if (isStatusChanged && booking.getAppliedPromotion() != null) {
+                    com.kawai.models.Promotion promo = booking.getAppliedPromotion();
+                    if (promo.getCurrentUses() != null && promo.getMaxUses() != null
+                            && promo.getCurrentUses() < promo.getMaxUses()) {
+                        promo.setCurrentUses(promo.getCurrentUses() + 1);
+                        promotionRepository.save(promo);
+                    }
+                }
             } else if ("CREDIT_LIMIT_DEPOSIT".equals(txn.getTransactionType())) {
                 try {
                     String[] parts = txnRef.split("_");
                     if (parts.length >= 2) {
                         Long detailId = Long.parseLong(parts[1]);
-                        // Ghi nhận như FolioItem âm (đồng nhất với luồng CASH)
-                        // → Checkout sẽ tự động cấn trừ: chi tiêu(+) + đã nạp(-) = số thực nợ
                         folioService.addFolioItem(detailId, "FRONT_DESK", txn.getAmount().negate(),
                                 "Nạp tiền nâng hạn mức (Chuyển khoản VNPay)");
                     }
@@ -644,5 +649,15 @@ public class VnPayServiceImpl implements VnPayService {
         response.put("RspCode", "00");
         response.put("Message", "Confirm Success");
         return response;
+    }
+
+    private String getDynamicReturnUrl() {
+        try {
+            return org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/api/v1/payments/vnpay-return").build().toUriString();
+        } catch (Exception e) {
+            // Fallback in case it's not called within a web request context
+            return vnPayConfig.getReturnUrl();
+        }
     }
 }

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/receptionist/in-house")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyAuthority('OP_BOOKING', 'ROLE_ADMIN', 'ROLE_MANAGER', 'OP_RECEPTION_INHOUSE')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'OP_RECEPTION_INHOUSE')")
 public class ChangeRoomController {
 
     private final ChangeRoomCategoryService changeRoomCategoryService;

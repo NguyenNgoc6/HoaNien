@@ -2,7 +2,6 @@
 // SECTION 1: GLOBAL STATE & CONSTANTS
 // ==============================================
 
-let checkinMasterCreditLimit = 5000000;
 let expectedTotalGuests = 0;
 let expectedTotalAdults = 0;
 let expectedTotalChildren = 0;
@@ -347,8 +346,6 @@ function renderAssignedRooms() {
     container.innerHTML = '';
 
     document.querySelectorAll('input[name="assignedRoomNumbers"]').forEach(el => el.remove());
-    document.querySelectorAll('input[name="allocatedCreditLimits"]').forEach(el => el.remove());
-
     const masterLabel = document.getElementById('masterCustomerRoomLabel');
     if (masterLabel) {
         if (assignedRooms.length > 0) {
@@ -371,21 +368,11 @@ function renderAssignedRooms() {
         const rightDiv = document.createElement('div');
         rightDiv.style.cssText = 'display: flex; align-items: center; gap: 10px;';
 
-        const limitInput = document.createElement('input');
-        limitInput.type = 'number';
-        limitInput.className = 'form-control';
-        limitInput.style.cssText = 'width: 120px; padding: 4px 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px;';
-        limitInput.placeholder = 'Credit Limit';
-        limitInput.value = (a.allocatedCreditLimit && a.allocatedCreditLimit > 0) ? a.allocatedCreditLimit : '';
-        limitInput.min = "0";
-        limitInput.oninput = function () { handleCheckinCreditInput(this, index); };
-
         const delBtn = document.createElement('i');
         delBtn.className = 'fa-solid fa-xmark';
         delBtn.style.cssText = 'cursor:pointer; color: #ef4444; font-size: 16px;';
         delBtn.onclick = function () { removeAssignedRoom(a.room); };
 
-        rightDiv.appendChild(limitInput);
         rightDiv.appendChild(delBtn);
         row.appendChild(infoSpan);
         row.appendChild(rightDiv);
@@ -396,12 +383,6 @@ function renderAssignedRooms() {
         hiddenInput.name = 'assignedRoomNumbers';
         hiddenInput.value = a.room;
         document.getElementById('checkinFormWrapper').appendChild(hiddenInput);
-
-        const hiddenLimitInput = document.createElement('input');
-        hiddenLimitInput.type = 'hidden';
-        hiddenLimitInput.name = 'allocatedCreditLimits';
-        hiddenLimitInput.value = a.allocatedCreditLimit || 0;
-        document.getElementById('checkinFormWrapper').appendChild(hiddenLimitInput);
     });
 
     const depRoomSelect = document.getElementById('depRoom');
@@ -430,41 +411,11 @@ function renderAssignedRooms() {
     });
 
     updateTourPhysicalRooms();
-    updateCheckinCreditLimitDisplay();
 }
 
 
-// ==============================================
-// SECTION 4: CHECKIN MODAL & CREDIT LIMIT
-// ==============================================
-
-function handleCheckinCreditInput(input, index) {
-    let val = parseFloat(input.value);
-    if (isNaN(val) || val < 0) {
-        val = 0;
-        if (input.value !== '') input.value = '';
-    }
-    assignedRooms[index].allocatedCreditLimit = val;
-    let hiddens = document.querySelectorAll('input[name="allocatedCreditLimits"]');
-    if (hiddens && hiddens[index]) hiddens[index].value = val;
-    updateCheckinCreditLimitDisplay();
-    const totalAllocated = assignedRooms.reduce((s, r) => s + (r.allocatedCreditLimit || 0), 0);
-    input.style.borderColor = totalAllocated > checkinMasterCreditLimit ? '#ef4444' : '#cbd5e1';
-}
-
-function updateCheckinCreditLimitDisplay() {
-    let totalAllocated = 0;
-    assignedRooms.forEach(r => totalAllocated += (r.allocatedCreditLimit || 0));
-    let remaining = checkinMasterCreditLimit - totalAllocated;
-    let displayEl = document.getElementById('checkinRemainingCreditDisplay');
-    if (displayEl) {
-        displayEl.innerText = remaining.toLocaleString() + ' VND';
-        displayEl.style.color = remaining < 0 ? 'red' : '#16a34a';
-    }
-}
-
-function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender) {
-    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, creditLimit, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender });
+function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender) {
+    console.log('[openCheckinModal] called:', { bookingId, guestName, phone, cccd, dob, roomSummary, depsDivId, toursDivId, expectedGuests, expectedAdults, expectedChildren, maxAdults, maxChildren, gender });
 
     const modalEl = document.getElementById('checkinModal');
     if (!modalEl) {
@@ -478,7 +429,6 @@ function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, d
         return;
     }
 
-    checkinMasterCreditLimit = creditLimit ? parseFloat(creditLimit) : 5000000;
     expectedTotalGuests = expectedGuests ? parseInt(expectedGuests) : 1;
     expectedTotalAdults = expectedAdults ? parseInt(expectedAdults) : 1;
     expectedTotalChildren = expectedChildren ? parseInt(expectedChildren) : 0;
@@ -491,7 +441,6 @@ function openCheckinModal(bookingId, guestName, phone, cccd, dob, roomSummary, d
         capacitySpan.style.display = 'inline-block';
     }
 
-    updateCheckinCreditLimitDisplay();
     document.getElementById('submitBookingId').value = bookingId;
 
     const dependentsListContainer = document.getElementById('dependentsList');

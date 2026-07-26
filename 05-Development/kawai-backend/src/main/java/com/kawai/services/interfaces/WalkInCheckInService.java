@@ -27,9 +27,12 @@ public interface WalkInCheckInService {
      *                                                transaction rollback
      */
     WalkInCheckInResponse createWalkInBookingAndCheckIn(WalkInCheckInRequest request);
+
     void cancelPendingWalkIn(Long bookingId);
 
     java.util.Optional<com.kawai.models.Customer> searchCustomer(String keyword);
+
+    java.util.Optional<com.kawai.models.Customer> searchCustomerByPhoneOrCccd(String phone, String cccd);
 
     /**
      * Tính trước phụ thu (Surcharge) dựa trên độ tuổi khách để hiển thị cho Lễ tân.
