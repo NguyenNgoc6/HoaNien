@@ -306,10 +306,10 @@ if (rmStart && rmEnd) {
     onChange: function(selectedDates, dateStr, instance) {
       if (!dateStr) return;
       const startMins = timeToMinutes(dateStr);
-      const endMins   = startMins + 120;
+      const endMins   = startMins + 60;
       const endStr = minutesToHHMM(endMins);
       fpEnd.setDate(endStr);
-      if (rmEndHint) rmEndHint.textContent = `Mặc định 2 tiếng: đến ${endStr}`;
+      if (rmEndHint) rmEndHint.textContent = `Mặc định 1 tiếng: đến ${endStr}`;
     }
   });
 }
@@ -536,17 +536,34 @@ function buildRows(tables) {
     });
 
     // Reservation blocks
-    (table.reservations || []).forEach(res => {
+    let blocks = (table.reservations || []).map(res => {
       const startMins = timeToMinutes(res.reserveTime) - TL_OFFSET_MINS;
       const endMins   = timeToMinutes(res.endTime)     - TL_OFFSET_MINS;
       const durationMins = Math.max(endMins - startMins, 10);
+      return { res, startMins, endMins: startMins + durationMins, durationMins };
+    }).filter(b => b.startMins <= TL_TOTAL_MINS && b.endMins >= 0);
 
-      if (startMins > TL_TOTAL_MINS || endMins < 0) return; // out of view
+    blocks.sort((a, b) => a.startMins - b.startMins);
 
+    let maxLevel = blocks.length > 0 ? blocks.length - 1 : 0;
+    blocks.forEach((b, index) => {
+      b.level = index;
+    });
+
+    if (maxLevel > 0) {
+      row.style.minHeight = (maxLevel + 1) * 50 + 6 + 'px';
+    }
+
+    blocks.forEach(b => {
+      const res = b.res;
       const block = document.createElement('div');
       block.className = `tl-block ${getBlockClass(res.status)}`;
-      block.style.left  = tlMinsToPx(Math.max(startMins, 0)) + 'px';
-      block.style.width = tlMinsToPx(Math.min(durationMins, TL_TOTAL_MINS - Math.max(startMins, 0))) + 'px';
+      block.style.left  = tlMinsToPx(Math.max(b.startMins, 0)) + 'px';
+      block.style.width = tlMinsToPx(Math.min(b.durationMins, TL_TOTAL_MINS - Math.max(b.startMins, 0))) + 'px';
+      
+      block.style.top = (6 + (b.level || 0) * 50) + 'px';
+      block.style.height = '44px';
+
       block.innerHTML = `
         <div class="tl-block-name">${res.customerName}</div>
         <div class="tl-block-meta">${formatTime(res.reserveTime)}–${formatTime(res.endTime)} · ${res.partySize || '?'}👤</div>`;
@@ -739,7 +756,7 @@ async function handleCheckIn(reservationId, tableId) {
       }
     } else {
       const err = await res.json();
-      tmShowToast('error', 'Lỗi', err.message || 'Check-in thất bại');
+      tmShowToast('error', 'Lỗi', err.message || err.error || 'Check-in thất bại');
     }
   } catch (e) {
     tmShowToast('error', 'Lỗi', 'Không thể kết nối máy chủ');

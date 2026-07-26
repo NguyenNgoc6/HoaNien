@@ -60,7 +60,7 @@ public class TableReservationServiceImpl implements TableReservationService {
             List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), date);
             boolean isAvailable = true;
             for (TableReservation res : reservations) {
-                if ("Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus()) || "Completed".equalsIgnoreCase(res.getStatus())) {
+                if ("Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus())) {
                     java.time.LocalDateTime rStartDT = java.time.LocalDateTime.of(date, res.getReserveTime());
                     java.time.LocalDateTime rEndDT;
                     if (res.getEndTime() != null) {
@@ -149,7 +149,7 @@ public class TableReservationServiceImpl implements TableReservationService {
         List<TableReservation> existingReservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), request.getReserveDate());
 
         for (TableReservation res : existingReservations) {
-            if ("Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus()) || "Completed".equalsIgnoreCase(res.getStatus())) {
+            if ("Pending".equalsIgnoreCase(res.getStatus()) || "Seated".equalsIgnoreCase(res.getStatus())) {
                 java.time.LocalDateTime existingStartDT = java.time.LocalDateTime.of(request.getReserveDate(), res.getReserveTime());
                 java.time.LocalDateTime existingEndDT;
                 if (res.getEndTime() != null) {
