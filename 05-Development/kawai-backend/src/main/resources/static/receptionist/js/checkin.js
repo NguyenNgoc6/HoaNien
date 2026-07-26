@@ -1293,6 +1293,7 @@ function closeRemoteScanModal() {
 const _checkinForm = document.getElementById('checkinFormWrapper');
 if (_checkinForm) {
     _checkinForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
 
         let actualAdultCount = 1;
         let actualChildCount = 0;
@@ -1369,18 +1370,18 @@ if (_checkinForm) {
         for (const row of dependentRows) {
             if (!row.querySelector('input')) continue;
 
-            const nameInput    = row.querySelector('input[name$=".fullName"]');
-            const cccdInput    = row.querySelector('input[name$=".cccd"]');
-            const dobInput     = row.querySelector('input[name$=".dateOfBirth"]');
+            const nameInput = row.querySelector('input[name$=".fullName"]');
+            const cccdInput = row.querySelector('input[name$=".cccd"]');
+            const dobInput = row.querySelector('input[name$=".dateOfBirth"]');
             const mappingInput = row.querySelector('.faceid-mapping-id');
 
-            const name     = (nameInput?.value  || '').trim() || 'Khách đi kèm';
-            const cccd     = (cccdInput?.value   || '').trim();
-            const dob      = (dobInput?.value    || '').trim();
-            const age      = calcAge(dob);
-            const isAdult  = (age !== null) && (age >= 14);
+            const name = (nameInput?.value || '').trim() || 'Khách đi kèm';
+            const cccd = (cccdInput?.value || '').trim();
+            const dob = (dobInput?.value || '').trim();
+            const age = calcAge(dob);
+            const isAdult = (age !== null) && (age >= 14);
             const targetId = mappingInput?.getAttribute('data-target-id') || '';
-            const idx      = mappingInput?.getAttribute('data-index');
+            const idx = mappingInput?.getAttribute('data-index');
 
             // Bỏ qua placeholder
             if (name === 'Khách đi kèm' && !cccd && !dob) continue;
@@ -1412,8 +1413,8 @@ if (_checkinForm) {
 
             // FaceID bắt buộc nếu từ 14 tuổi — cả khách mới lẫn có sẵn trong hệ thống
             if (isAdult) {
-                const hasPendingFace  = pendingFaceEnrollments[targetId] != null;
-                const existingFaceEl  = idx ? _checkinForm.querySelector(`input[name="dependents[${idx}].faceVectorData"]`) : null;
+                const hasPendingFace = pendingFaceEnrollments[targetId] != null;
+                const existingFaceEl = idx ? _checkinForm.querySelector(`input[name="dependents[${idx}].faceVectorData"]`) : null;
                 const hasExistingFace = existingFaceEl && existingFaceEl.value;
                 if (!hasPendingFace && !hasExistingFace) {
                     e.preventDefault();
@@ -1474,27 +1475,27 @@ if (_checkinForm) {
         }
 
         fetch('/receptionist/checkin/complete-ajax', { method: 'POST', body: new FormData(_checkinForm) })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message || 'Check-in thành công!', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                showToast(data.message || 'Lỗi khi Check-in. Vui lòng kiểm tra lại!', 'error');
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || 'Check-in thành công!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(data.message || 'Lỗi khi Check-in. Vui lòng kiểm tra lại!', 'error');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Complete Check-in';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("AJAX Check-in error:", err);
+                showToast('Lỗi kết nối tới server!', 'error');
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Complete Check-in';
                 }
-            }
-        })
-        .catch(err => {
-            console.error("AJAX Check-in error:", err);
-            showToast('Lỗi kết nối tới server!', 'error');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Complete Check-in';
-            }
-        });
+            });
     });
 } else {
     console.error('[checkin.js] CRITICAL: #checkinFormWrapper khong tim thay trong DOM!');
