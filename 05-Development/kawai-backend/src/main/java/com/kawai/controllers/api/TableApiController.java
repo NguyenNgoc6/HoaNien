@@ -67,7 +67,7 @@ public class TableApiController {
     }
 
     @PostMapping("/reservations/{id}/check-in")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_FB_STAFF')")
     public ResponseEntity<?> checkInReservation(@PathVariable("id") Long reservationId) {
         try {
             tableReservationService.checkInReservation(reservationId);
@@ -78,7 +78,7 @@ public class TableApiController {
     }
 
     @PutMapping("/reservations/{id}/hold")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_FB_STAFF')")
     public ResponseEntity<?> holdReservation(@PathVariable("id") Long reservationId, @RequestBody Map<String, Integer> payload) {
         try {
             Integer holdMinutes = payload.getOrDefault("holdMinutes", 0);
@@ -90,7 +90,7 @@ public class TableApiController {
     }
 
     @PutMapping("/{id}/status")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('OP_FNB_TABLE', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_FB_STAFF')")
     public ResponseEntity<?> updateTableStatus(@PathVariable("id") Long tableId, @RequestParam("status") String status) {
         try {
             tableService.toggleStatus(tableId, status);
