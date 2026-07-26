@@ -1048,7 +1048,14 @@
                             </svg> Báo sự cố
                         </button>
                         <button type="button" class="btn btn-minibar"
+                            th:if="${t.operationalType == 'ROOM_CHECK'}"
                             th:attr="onclick=|openMinibarModal('${t.room.id}', '${t.room.roomNumber}')|">
+                            <i class="fa-solid fa-martini-glass"></i> Minibar
+                        </button>
+                        <button type="button" class="btn btn-minibar"
+                            th:if="${t.operationalType != 'ROOM_CHECK'}"
+                            disabled title="Nút Minibar chỉ dành cho đơn kiểm tra phòng"
+                            style="opacity: 0.45; cursor: not-allowed; filter: grayscale(50%);">
                             <i class="fa-solid fa-martini-glass"></i> Minibar
                         </button>
                         <button class="btn btn-success"
@@ -1101,8 +1108,7 @@
                         </div>
                     </div>
                     <div class="room-card-footer">
-                        <button class="btn btn-report"
-                            th:attr="onclick=|openReportModal('${t.room.id}', '${t.room.roomNumber}', '${t.operationalType}')|">
+                        <button class="btn btn-report" disabled title="Vui lòng bấm Bắt đầu để sử dụng" style="opacity: 0.45; cursor: not-allowed; filter: grayscale(50%);">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" style="display: block; flex-shrink: 0; margin-right: 4px;">
@@ -1113,8 +1119,7 @@
                                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
                             </svg> Báo sự cố
                         </button>
-                        <button type="button" class="btn btn-minibar"
-                            th:attr="onclick=|openMinibarModal('${t.room.id}', '${t.room.roomNumber}')|">
+                        <button type="button" class="btn btn-minibar" disabled title="Vui lòng bấm Bắt đầu để sử dụng" style="opacity: 0.45; cursor: not-allowed; filter: grayscale(50%);">
                             <i class="fa-solid fa-martini-glass"></i> Minibar
                         </button>
                         <form method="post" th:action="@{/housekeeping/tasks/{id}/start(id=${t.id})}"

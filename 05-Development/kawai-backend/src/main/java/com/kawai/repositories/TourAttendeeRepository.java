@@ -22,4 +22,13 @@ public interface TourAttendeeRepository extends JpaRepository<TourAttendee, Long
 
     @Query("SELECT ta FROM TourAttendee ta WHERE ta.tourBooking.roomBookingDetail.id = :detailId AND LOWER(ta.tourBooking.bookingStatus) NOT LIKE '%cancel%'")
     java.util.List<TourAttendee> findActiveAttendeesByRoomBookingDetailId(@Param("detailId") Long detailId);
+
+    @Query("SELECT ta FROM TourAttendee ta WHERE ta.tourBooking.roomBookingDetail.id = :detailId AND ta.tourBooking.schedule.departureDate = :date AND LOWER(ta.tourBooking.bookingStatus) NOT LIKE '%cancel%'")
+    java.util.List<TourAttendee> findActiveAttendeesByRoomBookingDetailIdAndDate(@Param("detailId") Long detailId, @Param("date") java.time.LocalDate date);
+
+    @Query("SELECT CASE WHEN COUNT(ta) > 0 THEN true ELSE false END FROM TourAttendee ta WHERE ta.customer.id = :customerId AND ta.tourBooking.schedule.departureDate = :date AND LOWER(ta.tourBooking.bookingStatus) NOT LIKE '%cancel%'")
+    boolean existsActiveAttendeeByCustomerAndDate(@Param("customerId") Long customerId, @Param("date") java.time.LocalDate date);
+
+    @Query("SELECT CASE WHEN COUNT(ta) > 0 THEN true ELSE false END FROM TourAttendee ta WHERE ta.dependent.id = :dependentId AND ta.tourBooking.schedule.departureDate = :date AND LOWER(ta.tourBooking.bookingStatus) NOT LIKE '%cancel%'")
+    boolean existsActiveAttendeeByDependentAndDate(@Param("dependentId") Long dependentId, @Param("date") java.time.LocalDate date);
 }

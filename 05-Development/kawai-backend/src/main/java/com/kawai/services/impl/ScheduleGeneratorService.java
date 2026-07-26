@@ -67,8 +67,8 @@ public class ScheduleGeneratorService {
         }
 
         Map<String, List<Employee>> staffByRole = allEmployees.stream()
-                .filter(e -> e.getAccount() != null && e.getAccount().getRole() != null)
-                .collect(Collectors.groupingBy(e -> e.getAccount().getRole().getRoleName()));
+                .filter(e -> e != null && e.getAccount() != null && e.getAccount().getRole() != null && e.getAccount().getRole().getRoleName() != null)
+                .collect(Collectors.groupingBy(e -> e.getAccount().getRole().getRoleName().trim().toUpperCase()));
 
         List<StaffSchedule> newSchedules = new ArrayList<>();
 
@@ -94,6 +94,8 @@ public class ScheduleGeneratorService {
         quotas.put("MANAGER", Map.of(morningShift, 1, afternoonShift, 1, nightShift, 1));
         quotas.put("ADMIN", Map.of(morningShift, 1, afternoonShift, 1, nightShift, 1));
 
+        Map<Shift, Integer> defaultQuota = Map.of(morningShift, 2, afternoonShift, 2, nightShift, 1);
+
         // State maps for CSP constraints
         Map<Employee, Integer> weeklyShiftCount = new HashMap<>(); // Track max 6 shifts/week
         Map<Employee, Integer> nightShiftCount = new HashMap<>(); // Track night shifts for fairness
@@ -115,9 +117,12 @@ public class ScheduleGeneratorService {
 
             for (Map.Entry<String, List<Employee>> entry : staffByRole.entrySet()) {
                 String roleName = entry.getKey();
+                if ("TOURGUIDE".equalsIgnoreCase(roleName) || "TOUR_GUIDE".equalsIgnoreCase(roleName)) {
+                    continue; // TourGuide has its own tour schedule board
+                }
                 List<Employee> allRoleStaff = new ArrayList<>(entry.getValue());
 
-                Map<Shift, Integer> roleQuota = quotas.getOrDefault(roleName, new HashMap<>());
+                Map<Shift, Integer> roleQuota = quotas.getOrDefault(roleName, defaultQuota);
 
                 // Sort shifts: Night first to allocate them fairly, then Morning, then
                 // Afternoon

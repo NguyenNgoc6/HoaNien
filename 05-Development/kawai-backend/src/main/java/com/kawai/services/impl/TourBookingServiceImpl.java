@@ -189,6 +189,58 @@ public class TourBookingServiceImpl implements TourBookingService {
                         }
                 }
 
+                // Pre-validate Post to Room Credit Limit before creating TourBooking entity
+                RoomBookingDetail postRoomDetail = null;
+                if (request.isPostToRoom()) {
+                        if (request.getRoomBookingDetailId() == null) {
+                                LOG.warn("TOUR-004: Booking yêu cầu Post to Room nhưng không cung cấp roomBookingDetailId");
+                                throw new IllegalStateException(
+                                                "TOUR-004: Vui lòng chọn phòng để ghi nợ. Phòng phải đã được check-in.");
+                        }
+
+                        postRoomDetail = roomBookingDetailRepository
+                                        .findById(request.getRoomBookingDetailId())
+                                        .orElseThrow(() -> {
+                                                LOG.warn("TOUR-005: RoomBookingDetail {} không tồn tại trong hệ thống",
+                                                                request.getRoomBookingDetailId());
+                                                return new IllegalStateException(
+                                                                "TOUR-005: Chi tiết đặt phòng không tồn tại hoặc đã bị xóa. ID: "
+                                                                                + request.getRoomBookingDetailId());
+                                        });
+
+                        // Check Folio Credit Limit
+                        BigDecimal subLimit = postRoomDetail.getSubCreditLimit();
+                        BigDecimal limit = subLimit != null ? subLimit : BigDecimal.ZERO;
+                        java.util.List<FolioItem> folioItems = folioItemRepository
+                                        .findByRoomBookingDetailId(postRoomDetail.getId());
+                        // Đã nạp thêm hạn mức (không tính tiền cọc walk-in)
+                        BigDecimal creditTopUp = folioItems.stream()
+                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
+                                        .filter(fi -> fi.getDescription() != null && fi.getDescription().startsWith("Nạp tiền nâng hạn mức"))
+                                        .map(FolioItem::getAmount)
+                                        .filter(a -> a != null && a.compareTo(BigDecimal.ZERO) < 0)
+                                        .map(BigDecimal::abs)
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        // Tổng chi tiêu thực tế (Dương = Phí dịch vụ, Âm = Hoàn tiền/Giảm trừ, LOẠI BỎ các khoản nạp hạn mức)
+                        BigDecimal netCharged = folioItems.stream()
+                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
+                                        .filter(fi -> fi.getDescription() == null || !fi.getDescription().startsWith("Nạp tiền nâng hạn mức"))
+                                        .map(FolioItem::getAmount)
+                                        .filter(a -> a != null)
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        if (netCharged.compareTo(BigDecimal.ZERO) < 0) {
+                                netCharged = BigDecimal.ZERO;
+                        }
+                        BigDecimal available = limit.add(creditTopUp).subtract(netCharged);
+
+                        if (available.compareTo(totalPrice) < 0) {
+                                LOG.warn("TOUR-LIMIT BLOCKED: Hạn mức chi tiêu của phòng {} không đủ để thanh toán tour (Available: {}, Price: {})",
+                                                postRoomDetail.getId(), available, totalPrice);
+                                throw new IllegalStateException(
+                                                "Hạn mức ghi nợ của phòng bị quá hạn, vui lòng tới quầy lễ tân để làm thủ tục nâng lên hạn mức hoặc thanh toán chuyển khoản trực tiếp cho đơn này.");
+                        }
+                }
+
                 // 5. Tạo TourBooking
                 TourBooking booking = new TourBooking();
                 booking.setSchedule(schedule);
@@ -389,68 +441,24 @@ public class TourBookingServiceImpl implements TourBookingService {
 
                 // 6. Post to Room: ghi nợ vào Folio phòng
                 if (request.isPostToRoom()) {
-                        // BR-TR-08: Khi chọn Post to Room, bắt buộc phải cung cấp
-                        // roomBookingDetailId
-                        // hợp lệ (phòng đã check-in). Nếu không -> TOUR-004.
-                        if (request.getRoomBookingDetailId() == null) {
-                                LOG.warn("TOUR-004: Booking {} yêu cầu Post to Room nhưng không cung cấp roomBookingDetailId",
-                                                savedBooking.getId());
-                                throw new IllegalStateException(
-                                                "TOUR-004: Vui lòng chọn phòng để ghi nợ. Phòng phải đã được check-in.");
+                        RoomBookingDetail detail = postRoomDetail != null ? postRoomDetail
+                                        : roomBookingDetailRepository.findById(request.getRoomBookingDetailId()).orElse(null);
+
+                        if (detail != null) {
+                                FolioItem folioItem = new FolioItem();
+                                folioItem.setBooking(savedBooking);
+                                folioItem.setRoomBookingDetail(detail);
+                                folioItem.setPayerCustomer(customer);
+                                folioItem.setSourceDepartment("Tour");
+                                folioItem.setAmount(totalPrice);
+                                folioItem.setDescription("Tour: " + schedule.getTour().getTourName()
+                                                + " (" + request.getParticipantCount() + " pax)");
+                                folioItem.setIsSettledSeparately(false);
+                                folioItem.setRevenueCode("OTH_TOUR");
+                                folioItemRepository.save(folioItem);
+                                LOG.info("Post to Room: FolioItem tạo thành công cho tour booking {} — {} VND, RoomBookingDetail {}",
+                                                savedBooking.getId(), totalPrice, detail.getId());
                         }
-
-                        // BR-TR-09: roomBookingDetailId phai ton tai trong he thong -> TOUR-005
-                        RoomBookingDetail detail = roomBookingDetailRepository
-                                        .findById(request.getRoomBookingDetailId())
-                                        .orElseThrow(() -> {
-                                                LOG.warn("TOUR-005: RoomBookingDetail {} không tồn tại trong hệ thống",
-                                                                request.getRoomBookingDetailId());
-                                                return new IllegalStateException(
-                                                                "TOUR-005: Chi tiết đặt phòng không tồn tại hoặc đã bị xóa. ID: "
-                                                                                + request.getRoomBookingDetailId());
-                                        });
-
-                        // Check Folio Credit Limit (No fallback)
-                        BigDecimal subLimit = detail.getSubCreditLimit();
-                        BigDecimal limit = subLimit != null ? subLimit : BigDecimal.ZERO;
-                        java.util.List<FolioItem> folioItems = folioItemRepository
-                                        .findByRoomBookingDetailId(detail.getId());
-                        // Chi tiêu thực (FolioItem DƯƠNG)
-                        BigDecimal charged = folioItems.stream()
-                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
-                                        .map(FolioItem::getAmount)
-                                        .filter(a -> a != null && a.compareTo(BigDecimal.ZERO) > 0)
-                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        // Đã nạp thêm hạn mức (không tính tiền cọc walk-in)
-                        BigDecimal creditTopUp = folioItems.stream()
-                                        .filter(fi -> !Boolean.TRUE.equals(fi.getIsSettledSeparately()))
-                                        .filter(fi -> fi.getDescription() != null && fi.getDescription().startsWith("Nạp tiền nâng hạn mức"))
-                                        .map(FolioItem::getAmount)
-                                        .filter(a -> a != null && a.compareTo(BigDecimal.ZERO) < 0)
-                                        .map(BigDecimal::abs)
-                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        BigDecimal available = limit.add(creditTopUp).subtract(charged);
-
-                        if (available.compareTo(totalPrice) < 0) {
-                                LOG.warn("TOUR-LIMIT BLOCKED: Hạn mức chi tiêu của phòng {} không đủ để thanh toán tour (Available: {}, Price: {})",
-                                                detail.getId(), available, totalPrice);
-                                throw new IllegalStateException(
-                                                "Hạn mức ghi nợ của phòng bị quá hạn, vui lòng tới quầy lễ tân để làm thủ tục nâng lên hạn mức hoặc thanh toán chuyển khoản trực tiếp cho đơn này.");
-                        }
-
-                        FolioItem folioItem = new FolioItem();
-                        folioItem.setBooking(savedBooking);
-                        folioItem.setRoomBookingDetail(detail);
-                        folioItem.setPayerCustomer(customer);
-                        folioItem.setSourceDepartment("Tour");
-                        folioItem.setAmount(totalPrice);
-                        folioItem.setDescription("Tour: " + schedule.getTour().getTourName()
-                                        + " (" + request.getParticipantCount() + " pax)");
-                        folioItem.setIsSettledSeparately(false);
-                        folioItem.setRevenueCode("OTH_TOUR");
-                        folioItemRepository.save(folioItem);
-                        LOG.info("Post to Room: FolioItem tạo thành công cho tour booking {} — {} VND, RoomBookingDetail {}",
-                                        savedBooking.getId(), totalPrice, detail.getId());
                 } else {
                         // KhÃ´ng Post to Room â€” bá» qua bÆ°á»›c ghi Folio hoÃ n toÃ n
                         LOG.debug("Booking {}: postToRoom=false, bỏ qua ghi Folio", savedBooking.getId());

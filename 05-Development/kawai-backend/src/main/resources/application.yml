@@ -23,6 +23,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
@@ -48,8 +49,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:hoanien.00@gmail.com}
-    password: ${MAIL_PASSWORD:xiaq hstwvqnnzmjv}
+    username: ${MAIL_USERNAME:hoanien.000@gmail.com}
+    password: ${MAIL_PASSWORD:vtda ugvb bqex dmra}
     properties:
       mail:
         smtp:
@@ -57,6 +58,9 @@ spring:
           starttls:
             enable: true
             required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
         debug: false
     default-encoding: UTF-8
 
@@ -85,10 +89,12 @@ vnpay:
   api-version: 2.1.0
 
 sendgrid:
-  api-key: ${SENDGRID_API_KEY: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}
-  from-email: hoanien.00@gmail.com
+  api-key: ${SENDGRID_API_KEY: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}
+  from-email: hoanien.000@gmail.com
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:r2g91yqt}
   api-key: ${CLOUDINARY_API_KEY:533237334291996}
   api-secret: ${CLOUDINARY_API_SECRET:RqeD4nAa8GAHp-TzReWXe2fNEPI}
+
+

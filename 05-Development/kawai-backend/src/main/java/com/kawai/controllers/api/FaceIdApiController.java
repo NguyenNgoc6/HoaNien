@@ -319,6 +319,35 @@ public class FaceIdApiController {
                 } else if (attendee.getDependent() != null) {
                     name = attendee.getDependent().getDependentName();
                 }
+
+                // Tự động tạo thông báo gửi tới Manager khi báo vắng mặt
+                try {
+                    String username = SecurityContextHolder.getContext().getAuthentication() != null
+                            ? SecurityContextHolder.getContext().getAuthentication().getName()
+                            : null;
+                    com.kawai.models.Employee staff = null;
+                    if (username != null && !username.equals("anonymousUser")) {
+                        staff = employeeRepository.findByAccountUsername(username).orElse(null);
+                    }
+
+                    String tourInfo = "";
+                    if (attendee.getTourBooking() != null && attendee.getTourBooking().getSchedule() != null
+                            && attendee.getTourBooking().getSchedule().getTour() != null) {
+                        tourInfo = " (Tour: " + attendee.getTourBooking().getSchedule().getTour().getTourName() + ")";
+                    }
+
+                    com.kawai.models.HotelOperation incident = new com.kawai.models.HotelOperation();
+                    incident.setOperationalType("TOUR_INCIDENT");
+                    incident.setPriority("Normal");
+                    incident.setStatus("Pending");
+                    incident.setNotes("[BÁO VẮNG MẶT] Khách hàng: " + name + tourInfo + " - Lý do: " + reason);
+                    incident.setStaff(staff);
+                    incident.setCreatedAt(LocalDateTime.now());
+                    hotelOperationRepository.save(incident);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
                 return ResponseEntity.ok(Map.of(
                         "success", true,
                         "name", name,

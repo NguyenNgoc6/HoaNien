@@ -28,23 +28,36 @@ public class ManagerScheduleApiController {
     private final TourScheduleRepository tourScheduleRepository;
     private final TourRepository tourRepository;
     private final com.kawai.repositories.TourBookingRepository tourBookingRepository;
+    private final com.kawai.repositories.TourStaffAssignmentRepository tourStaffAssignmentRepository;
     private final com.kawai.services.impl.ScheduleGeneratorService scheduleGeneratorService;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getSchedulesByDate(
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        
-        if (date == null) {
-            date = LocalDate.now();
-        }
+
+        final LocalDate targetDate = (date != null) ? date : LocalDate.now();
 
         // 1. Matrix staff schedules
-        List<StaffSchedule> schedules = staffScheduleRepository != null ? staffScheduleRepository.findByWorkDate(date) : new ArrayList<>();
-        if (schedules == null) schedules = new ArrayList<>();
-        
+        List<StaffSchedule> schedules = staffScheduleRepository != null ? staffScheduleRepository.findByWorkDate(targetDate)
+                : new ArrayList<>();
+        if (schedules == null || schedules.isEmpty()) {
+            if (scheduleGeneratorService != null && targetDate != null) {
+                try {
+                    scheduleGeneratorService.generateWeeklySchedule(targetDate, targetDate.plusDays(14));
+                    schedules = staffScheduleRepository != null ? staffScheduleRepository.findByWorkDate(targetDate) : new ArrayList<>();
+                } catch (Exception e) {
+                    System.err.println("[ManagerScheduleApiController] Auto-generate schedule error: " + e.getMessage());
+                }
+            }
+            if (schedules == null) {
+                schedules = new ArrayList<>();
+            }
+        }
+
         List<StaffScheduleDTO> dtoList = schedules.stream().map(s -> {
             StaffScheduleDTO dto = new StaffScheduleDTO();
-            if (s == null) return dto;
+            if (s == null)
+                return dto;
             dto.setId(s.getId());
             dto.setWorkDate(s.getWorkDate() != null ? s.getWorkDate().toString() : "");
             dto.setStatus(s.getStatus());
@@ -72,16 +85,22 @@ public class ManagerScheduleApiController {
 
         // 2. Fetch REAL TourGuide employees and REAL Tours directly from DB
         List<Employee> allEmployees = employeeRepository != null ? employeeRepository.findAll() : new ArrayList<>();
-        if (allEmployees == null) allEmployees = new ArrayList<>();
+        if (allEmployees == null)
+            allEmployees = new ArrayList<>();
         List<Employee> tourGuides = allEmployees.stream()
-                .filter(e -> e != null && e.getAccount() != null && e.getAccount().getRole() != null && "TOURGUIDE".equalsIgnoreCase(e.getAccount().getRole().getRoleName()))
+                .filter(e -> e != null && e.getAccount() != null && e.getAccount().getRole() != null
+                        && "TOURGUIDE".equalsIgnoreCase(e.getAccount().getRole().getRoleName()))
                 .collect(Collectors.toList());
 
         List<Tour> realToursInDb = tourRepository != null ? tourRepository.findAll() : new ArrayList<>();
-        if (realToursInDb == null) realToursInDb = new ArrayList<>();
+        if (realToursInDb == null)
+            realToursInDb = new ArrayList<>();
 
-        List<TourSchedule> tourSchedulesOnDate = (tourScheduleRepository != null && date != null) ? tourScheduleRepository.findByDepartureDate(date) : new ArrayList<>();
-        if (tourSchedulesOnDate == null) tourSchedulesOnDate = new ArrayList<>();
+        List<TourSchedule> tourSchedulesOnDate = (tourScheduleRepository != null && targetDate != null)
+                ? tourScheduleRepository.findByDepartureDate(targetDate)
+                : new ArrayList<>();
+        if (tourSchedulesOnDate == null)
+            tourSchedulesOnDate = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
         java.time.LocalTime now = java.time.LocalTime.now();
@@ -89,44 +108,85 @@ public class ManagerScheduleApiController {
         List<TourGuideScheduleDTO> tourGuideDTOs = new ArrayList<>();
         int guideIdx = 0;
         for (Employee guide : tourGuides) {
-            if (guide == null) continue;
+            if (guide == null)
+                continue;
             TourGuideScheduleDTO dto = new TourGuideScheduleDTO();
             dto.setEmployeeId(guide.getId());
             dto.setName(guide.getFullName());
             dto.setEmail(guide.getEmail());
             dto.setPhone(guide.getPhone() != null && !guide.getPhone().isEmpty() ? guide.getPhone() : "Chưa cập nhật");
-            dto.setLevel(guide.getAccount() != null && guide.getAccount().getRole() != null ? guide.getAccount().getRole().getRoleName() : "TOURGUIDE");
+            dto.setLevel(guide.getAccount() != null && guide.getAccount().getRole() != null
+                    ? guide.getAccount().getRole().getRoleName()
+                    : "TOURGUIDE");
 
-            // TRUY VẤN TOUR THẬT TỪ BẢNG TOURS TRONG DATABASE
+            // 1. Kiểm tra TourStaffAssignment thực tế của TourGuide này
             Tour assignedTour = null;
-            if (!realToursInDb.isEmpty()) {
+            TourSchedule targetSchedule = null;
+
+            if (tourStaffAssignmentRepository != null) {
+                List<com.kawai.models.TourStaffAssignment> assignments = tourStaffAssignmentRepository.findByEmployeeId(guide.getId());
+                if (assignments != null && !assignments.isEmpty()) {
+                    com.kawai.models.TourStaffAssignment matchedAssign = assignments.stream()
+                            .filter(a -> a.getSchedule() != null && targetDate != null && targetDate.equals(a.getSchedule().getDepartureDate()))
+                            .findFirst()
+                            .orElse(assignments.get(0));
+                    if (matchedAssign != null && matchedAssign.getSchedule() != null) {
+                        targetSchedule = matchedAssign.getSchedule();
+                        assignedTour = targetSchedule.getTour();
+                    }
+                }
+            }
+
+            // Fallback nếu chưa có assignment trong DB
+            if (assignedTour == null && !realToursInDb.isEmpty()) {
                 assignedTour = realToursInDb.get(guideIdx % realToursInDb.size());
             }
 
-            String tourName = assignedTour != null && assignedTour.getTourName() != null ? assignedTour.getTourName() : "Tour Trải Nghiệm Khám Phá";
+            String tourName = assignedTour != null && assignedTour.getTourName() != null ? assignedTour.getTourName()
+                    : "Tour Trải Nghiệm Khám Phá";
             Long tourId = assignedTour != null ? assignedTour.getId() : null;
 
-            // Khung giờ khởi hành theo ca thực tế
-            java.time.LocalTime startTime = (guideIdx % 2 == 0) ? java.time.LocalTime.of(8, 0) : java.time.LocalTime.of(13, 30);
+            // Khung giờ khởi hành theo Schedule hoặc ca mặc định
+            java.time.LocalTime startTime = (targetSchedule != null && targetSchedule.getDepartureTime() != null)
+                    ? targetSchedule.getDepartureTime()
+                    : ((guideIdx % 2 == 0) ? java.time.LocalTime.of(8, 0) : java.time.LocalTime.of(13, 30));
             java.time.LocalTime endTime = startTime.plusHours(4);
 
-            // ĐẾM SỐ KHÁCH THỰC TẾ TỪ DATABASE DỰA TRÊN TOUR ID HOẶC TOUR SCHEDULE
+            // ĐẾM SỐ KHÁCH THỰC TẾ TỪ DATABASE
             int realBookedGuests = 0;
-            for (TourSchedule ts : tourSchedulesOnDate) {
-                if (ts != null && ts.getTour() != null) {
-                    if ((tourId != null && tourId.equals(ts.getTour().getId())) || 
-                        (ts.getTour().getTourName() != null && ts.getTour().getTourName().equalsIgnoreCase(tourName))) {
-                        int booked = ts.getBookedSeats() != null ? ts.getBookedSeats() : 0;
-                        List<com.kawai.models.TourBooking> bookingsForSched = (tourBookingRepository != null && ts.getId() != null) 
-                                ? tourBookingRepository.findByScheduleId(ts.getId()) : null;
-                        int bookingPaxSum = 0;
-                        if (bookingsForSched != null) {
-                            bookingPaxSum = bookingsForSched.stream()
-                                    .filter(b -> b != null && !"Cancelled".equalsIgnoreCase(b.getBookingStatus()))
-                                    .mapToInt(b -> b.getParticipantCount() != null ? b.getParticipantCount() : 1)
-                                    .sum();
+            if (targetSchedule != null) {
+                int booked = targetSchedule.getBookedSeats() != null ? targetSchedule.getBookedSeats() : 0;
+                List<com.kawai.models.TourBooking> bookingsForSched = (tourBookingRepository != null && targetSchedule.getId() != null)
+                        ? tourBookingRepository.findByScheduleId(targetSchedule.getId())
+                        : null;
+                int bookingPaxSum = 0;
+                if (bookingsForSched != null) {
+                    bookingPaxSum = bookingsForSched.stream()
+                            .filter(b -> b != null && !"Cancelled".equalsIgnoreCase(b.getBookingStatus()))
+                            .mapToInt(b -> b.getParticipantCount() != null ? b.getParticipantCount() : 1)
+                            .sum();
+                }
+                realBookedGuests = Math.max(booked, bookingPaxSum);
+            } else {
+                for (TourSchedule ts : tourSchedulesOnDate) {
+                    if (ts != null && ts.getTour() != null) {
+                        if ((tourId != null && tourId.equals(ts.getTour().getId())) ||
+                                (ts.getTour().getTourName() != null
+                                        && ts.getTour().getTourName().equalsIgnoreCase(tourName))) {
+                            int booked = ts.getBookedSeats() != null ? ts.getBookedSeats() : 0;
+                            List<com.kawai.models.TourBooking> bookingsForSched = (tourBookingRepository != null
+                                    && ts.getId() != null)
+                                            ? tourBookingRepository.findByScheduleId(ts.getId())
+                                            : null;
+                            int bookingPaxSum = 0;
+                            if (bookingsForSched != null) {
+                                bookingPaxSum = bookingsForSched.stream()
+                                        .filter(b -> b != null && !"Cancelled".equalsIgnoreCase(b.getBookingStatus()))
+                                        .mapToInt(b -> b.getParticipantCount() != null ? b.getParticipantCount() : 1)
+                                        .sum();
+                            }
+                            realBookedGuests += Math.max(booked, bookingPaxSum);
                         }
-                        realBookedGuests += Math.max(booked, bookingPaxSum);
                     }
                 }
             }
@@ -140,11 +200,11 @@ public class ManagerScheduleApiController {
                 dto.setStatus("Chưa có khách đặt");
                 dto.setBadgeBg("#F3F4F6");
                 dto.setBadgeColor("#6B7280");
-            } else if (date != null && date.isBefore(today)) {
+            } else if (targetDate != null && targetDate.isBefore(today)) {
                 dto.setStatus("Hoàn thành trong ngày");
                 dto.setBadgeBg("#D1FAE5");
                 dto.setBadgeColor("#059669");
-            } else if (date != null && date.isAfter(today)) {
+            } else if (targetDate != null && targetDate.isAfter(today)) {
                 dto.setStatus("Chuẩn bị Đón Đoàn");
                 dto.setBadgeBg("#DBEAFE");
                 dto.setBadgeColor("#2563EB");
@@ -185,7 +245,8 @@ public class ManagerScheduleApiController {
     public ResponseEntity<Map<String, Object>> submitMockPreference(@RequestBody Map<String, Object> payload) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Long employeeId = payload.get("employeeId") != null ? Long.valueOf(payload.get("employeeId").toString()) : null;
+            Long employeeId = payload.get("employeeId") != null ? Long.valueOf(payload.get("employeeId").toString())
+                    : null;
             String dateStr = (String) payload.get("date");
             LocalDate date = dateStr != null && !dateStr.isEmpty() ? LocalDate.parse(dateStr) : LocalDate.now();
 
@@ -207,7 +268,7 @@ public class ManagerScheduleApiController {
         private Long id;
         private String workDate;
         private String status;
-        
+
         private Long shiftId;
         private String shiftName;
         private String startTime;

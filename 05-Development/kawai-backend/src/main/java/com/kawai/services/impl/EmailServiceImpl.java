@@ -46,8 +46,11 @@ public class EmailServiceImpl implements EmailService {
     @Value("${sendgrid.api-key:}")
     private String sendGridApiKey;
 
-    @Value("${sendgrid.from-email:hoanien.00@gmail.com}")
+    @Value("${sendgrid.from-email:hoanien.000@gmail.com}")
     private String fromEmail;
+
+    @Value("${spring.mail.username:hoanien.000@gmail.com}")
+    private String smtpUsername;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -900,6 +903,9 @@ public class EmailServiceImpl implements EmailService {
 
     public void sendEmail(String toEmail, String subject, String htmlContent) {
         boolean sentViaSmtp = false;
+        // Gmail SMTP: From PHẢI trùng với authenticated username, dùng smtpUsername để tránh lỗi 'sender mismatch'
+        String finalFrom = (smtpUsername != null && !smtpUsername.isBlank()) ? smtpUsername : fromEmail;
+        logger.debug("[SMTP] Chuẩn bị gửi email from={}, to={}, subject={}", finalFrom, toEmail, subject);
 
         if (mailSender != null) {
             try {
@@ -909,18 +915,18 @@ public class EmailServiceImpl implements EmailService {
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
-
-                String finalFrom = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "hoanien.00@gmail.com";
                 helper.setFrom(finalFrom, "HOANIEN Resort");
 
                 mailSender.send(mimeMessage);
-                logger.info("[SMTP] Email sent successfully to {}", toEmail);
+                logger.info("[SMTP] Email sent successfully from={} to={}", finalFrom, toEmail);
                 sentViaSmtp = true;
                 return; // Gửi SMTP thành công thì thoát luôn
             } catch (Exception e) {
-                logger.error("[SMTP] Lỗi gửi email tới {}: {}", toEmail, e.getMessage());
+                logger.error("[SMTP] Lỗi gửi email từ {} tới {}: {} - {}", finalFrom, toEmail, e.getClass().getSimpleName(), e.getMessage());
                 logger.info("[SMTP] Sẽ thử chuyển sang dùng SendGrid fallback...");
             }
+        } else {
+            logger.warn("[SMTP] JavaMailSender chưa được cấu hình hoặc không khởi tạo được!");
         }
 
         if (sendGridApiKey == null || sendGridApiKey.isBlank()) {
@@ -953,6 +959,8 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendCustomWorkflowEmail(String customFromEmail, String toEmail, String subject, String htmlContent) {
         boolean sentViaSmtp = false;
+        // Gmail SMTP: From PHẢI là smtpUsername (authenticated account). customFromEmail chỉ dùng cho SendGrid.
+        String finalSmtpFrom = (smtpUsername != null && !smtpUsername.isBlank()) ? smtpUsername : fromEmail;
         String finalFrom = (customFromEmail != null && !customFromEmail.trim().isEmpty()) ? customFromEmail : fromEmail;
 
         if (mailSender != null) {
@@ -963,16 +971,18 @@ public class EmailServiceImpl implements EmailService {
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
-
-                helper.setFrom(finalFrom, "HOANIEN Workflow Engine");
+                // Dùng smtpUsername làm From để tránh 'sender mismatch' với Gmail SMTP
+                helper.setFrom(finalSmtpFrom, "HOANIEN Workflow Engine");
 
                 mailSender.send(mimeMessage);
-                logger.info("[SMTP] Custom Workflow Email sent successfully from {} to {}", finalFrom, toEmail);
+                logger.info("[SMTP] Custom Workflow Email sent successfully from {} to {}", finalSmtpFrom, toEmail);
                 sentViaSmtp = true;
                 return;
             } catch (Exception e) {
-                logger.error("[SMTP] Lỗi gửi Custom Workflow email tới {}: {}", toEmail, e.getMessage());
+                logger.error("[SMTP] Lỗi gửi Custom Workflow email tới {}: {} - {}", toEmail, e.getClass().getSimpleName(), e.getMessage());
             }
+        } else {
+            logger.warn("[SMTP] JavaMailSender chưa được cấu hình - Custom Workflow Email sẽ dùng SendGrid");
         }
 
         if (sendGridApiKey == null || sendGridApiKey.isBlank()) {
@@ -1188,8 +1198,9 @@ public class EmailServiceImpl implements EmailService {
                     helper.setTo(customer.getEmail());
                     helper.setSubject(subject);
                     helper.setText(html, true);
-                    String finalFrom = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "hoanien.00@gmail.com";
-                    helper.setFrom(finalFrom, "HOANIEN Resort");
+                    // Gmail SMTP: From PHẢI trùng smtpUsername
+                    String smtpFrom = (smtpUsername != null && !smtpUsername.isBlank()) ? smtpUsername : fromEmail;
+                    helper.setFrom(smtpFrom, "HOANIEN Resort");
 
                     if (absoluteAttachmentPath != null && !absoluteAttachmentPath.isBlank()) {
                         java.io.File file = new java.io.File(absoluteAttachmentPath);
@@ -1202,7 +1213,7 @@ public class EmailServiceImpl implements EmailService {
                     logger.info("[SMTP] Sent refund email successfully to {}", customer.getEmail());
                     sentViaSmtp = true;
                 } catch (Exception e) {
-                    logger.error("[SMTP] Lỗi gửi email hoàn tiền tới {}: {}", customer.getEmail(), e.getMessage());
+                    logger.error("[SMTP] Lỗi gửi refund email tới {}: {} - {}", customer.getEmail(), e.getClass().getSimpleName(), e.getMessage());
                     logger.info("[SMTP] Sẽ thử chuyển sang dùng SendGrid fallback...");
                 }
             }
@@ -1423,13 +1434,18 @@ public class EmailServiceImpl implements EmailService {
                 continue;
             }
 
-            String g;
-            if (!taken.contains("NguynNgoc")) {
+            String g = null;
+            java.util.List<String> allGuides = java.util.Arrays.asList(
+                    "NguynNgoc", "Đỗ Thu Bình", "Ngô Minh Lan", "Phan Thanh Hải", 
+                    "Nguyễn Quỳnh Anh", "Lê Hoàng Long", "Vũ Thu Trang");
+            for (String guide : allGuides) {
+                if (!taken.contains(guide)) {
+                    g = guide;
+                    break;
+                }
+            }
+            if (g == null) {
                 g = "NguynNgoc";
-            } else if (!taken.contains("Ngọc Lan")) {
-                g = "Ngọc Lan";
-            } else {
-                g = "Hoàng Nam";
             }
             taken.add(g);
 
@@ -1443,13 +1459,26 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
-        if (sched == null)
-            return "Ngọc Lan";
-        if (sched.getId() != null && sched.getId() < 100L) {
-            if (sched.getId() % 2 == 0) {
-                return "Ngọc Lan";
-            } else {
-                return "Hoàng Nam";
+        if (sched == null) return "NguynNgoc";
+        if (sched.getId() != null && sched.getId() == 5L) {
+            return "NguynNgoc";
+        }
+        if (sched.getTour() != null) {
+            String tn = sched.getTour().getTourName().toLowerCase();
+            if (tn.contains("đoàn tụ") || tn.contains("doantu")) {
+                return "NguynNgoc";
+            } else if (tn.contains("đồng nội") || tn.contains("dongnoi")) {
+                return "Đỗ Thu Bình";
+            } else if (tn.contains("di sản") || tn.contains("thủ công") || tn.contains("disan")) {
+                return "Ngô Minh Lan";
+            } else if (tn.contains("liên hoa") || tn.contains("tháp mười") || tn.contains("tinhlang")) {
+                return "Phan Thanh Hải";
+            } else if (tn.contains("sóng xanh") || tn.contains("hạ long") || tn.contains("halong")) {
+                return "Nguyễn Quỳnh Anh";
+            } else if (tn.contains("sương phủ") || tn.contains("sapa") || tn.contains("suongphu")) {
+                return "Lê Hoàng Long";
+            } else if (tn.contains("nhịp đập") || tn.contains("cát tiên") || tn.contains("cattien") || tn.contains("nhipdap")) {
+                return "Vũ Thu Trang";
             }
         }
         return "NguynNgoc";

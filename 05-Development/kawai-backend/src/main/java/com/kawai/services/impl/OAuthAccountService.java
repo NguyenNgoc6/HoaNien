@@ -32,6 +32,9 @@ public class OAuthAccountService {
     @Autowired
     private com.kawai.repositories.MembershipTierRepository membershipTierRepository;
 
+    @Autowired
+    private com.kawai.repositories.EmployeeRepository employeeRepository;
+
     // Không inject PasswordEncoder để tránh circular dependency
 
     /**
@@ -47,26 +50,44 @@ public class OAuthAccountService {
             return null;
         }
 
-        // Ưu tiên tìm Customer theo email vì email trong Customer là duy nhất.
-        // Nếu user đã đăng ký tay (username khác email) rồi login bằng Google,
-        // việc này sẽ trả về đúng tài khoản đó thay vì cố tạo mới và gây lỗi 500.
+        // 1. Tìm Customer đã tồn tại theo email
         Customer existingCustomer = customerRepository.findByEmail(email).orElse(null);
-        if (existingCustomer != null) {
-            log.info("OAuth login: tìm thấy Customer đã tồn tại theo email={}, trả về Account tương ứng", email);
+        if (existingCustomer != null && existingCustomer.getAccount() != null) {
+            log.info("OAuth login: tìm thấy Customer đã tồn tại theo email={}, gắn kết Account tương ứng (ID={})", email, existingCustomer.getAccount().getId());
             return existingCustomer.getAccount();
         }
 
-        // Fallback: Tìm Account theo username
+        // 2. Tìm Employee đã tồn tại theo email
+        com.kawai.models.Employee existingEmployee = employeeRepository.findByEmail(email).orElse(null);
+        if (existingEmployee != null && existingEmployee.getAccount() != null) {
+            log.info("OAuth login: tìm thấy Employee đã tồn tại theo email={}, gắn kết Account tương ứng (ID={})", email, existingEmployee.getAccount().getId());
+            return existingEmployee.getAccount();
+        }
+
+        // 3. Fallback: Tìm Account theo username
         Account existing = accountRepository.findByUsername(email).orElse(null);
         if (existing != null) {
-            log.info("OAuth login: tìm thấy account đã tồn tại cho email={}", email);
+            log.info("OAuth login: tìm thấy Account theo username={}, trả về Account ID={}", email, existing.getId());
+            // Nếu Account tồn tại nhưng chưa có Customer record liên kết, tự tạo Customer bổ sung
+            if (customerRepository.findByAccount_Username(email).isEmpty() && employeeRepository.findByAccountUsername(email).isEmpty()) {
+                Customer newCust = new Customer();
+                newCust.setAccount(existing);
+                newCust.setFullName(fullName != null && !fullName.isBlank() ? fullName : "Khách hàng Google");
+                newCust.setEmail(email);
+                newCust.setGender("Other");
+                newCust.setPhone("");
+                newCust.setMembershipTier(membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
+                customerRepository.save(newCust);
+                log.info("Bổ sung Customer record mới liên kết với Account ID={}", existing.getId());
+            }
             return existing;
         }
 
-        log.info("OAuth login: tạo account mới cho email={}", email);
+        log.info("OAuth login: Không tìm thấy tài khoản cũ. Tiến hành tạo Account + Customer mới cho email={}", email);
 
         // Lấy role CUSTOMER NORMAL (role_id = 9 trong data.sql)
         Role customerRole = roleRepository.findByRoleName("CUSTOMER NORMAL")
+                .or(() -> roleRepository.findByRoleName("CUSTOMER"))
                 .orElseGet(() -> {
                     log.warn("Role 'CUSTOMER NORMAL' không tồn tại, đang tạo role mới...");
                     Role newRole = new Role();
@@ -83,17 +104,17 @@ public class OAuthAccountService {
         account = accountRepository.save(account);
         log.info("Đã tạo Account mới: id={}, username={}", account.getId(), account.getUsername());
 
-        // Tạo Customer liên kết
+        // Tạo Customer liên kết đầy đủ thông tin sẵn có từ Google
         Customer customer = new Customer();
         customer.setAccount(account);
-        customer.setFullName(fullName != null ? fullName : "Khách hàng Google");
+        customer.setFullName(fullName != null && !fullName.isBlank() ? fullName : "Khách hàng Google");
         customer.setEmail(email);
         customer.setGender("Other");
         customer.setPhone("");
         customer.setCccdPassportEncrypted(null);
         customer.setMembershipTier(membershipTierRepository.findByTierNameIgnoreCase("Regular").orElse(null));
         customerRepository.save(customer);
-        log.info("Đã tạo Customer mới: id={}, email={}", customer.getId(), email);
+        log.info("Đã tạo Customer mới: id={}, email={}, fullName={}", customer.getId(), email, customer.getFullName());
 
         return account;
     }

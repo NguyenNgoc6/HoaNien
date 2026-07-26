@@ -165,7 +165,7 @@ public class HousekeepingWebController {
                 emergency = isEmergency;
             }
 
-            HotelOperation task = housekeepingService.createMaintenanceRequest(roomId, sid, notes, emergency);
+            HotelOperation task = housekeepingService.createMaintenanceRequest(roomId, sid, notes, emergency, taskType);
             
             java.util.List<String> uploadedUrls = new java.util.ArrayList<>();
             if (images != null && images.length > 0) {

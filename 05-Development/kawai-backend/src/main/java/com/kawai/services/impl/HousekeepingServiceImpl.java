@@ -198,6 +198,12 @@ public class HousekeepingServiceImpl implements HousekeepingService {
     @Override
     @Transactional
     public HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency) {
+        return createMaintenanceRequest(roomId, staffId, notes, isEmergency, null);
+    }
+
+    @Override
+    @Transactional
+    public HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency, String sourceTaskType) {
         Room room = findRoomById(roomId);
         Employee staff = findEmployeeById(staffId);
         String priority = isEmergency ? "Urgent" : "Normal";
@@ -222,22 +228,24 @@ public class HousekeepingServiceImpl implements HousekeepingService {
             try {
                 workflowEngineService.triggerEvent("ROOM_REPORT_DAMAGE", java.util.Map.of(
                         "room_id", roomId,
-                        "staff_id", staffId,
+                        "staff_id", staffId != null ? staffId : 0L,
                         "notes", notes != null ? notes : "",
-                        "is_emergency", isEmergency));
+                        "is_emergency", isEmergency,
+                        "source_task_type", sourceTaskType != null ? sourceTaskType : ""));
             } catch (Exception e) {
                 log.error("Failed executing workflow engine trigger for ROOM_REPORT_DAMAGE", e);
             }
 
             // Return the created task
             return maintenanceRequestRepo.findAll().stream()
-                    .filter(t -> t.getRoom().getId().equals(roomId) && ("Maintenance".equals(t.getOperationalType())
+                    .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(roomId) && ("Maintenance".equals(t.getOperationalType())
                             || "MAINTENANCE".equals(t.getOperationalType())
                             || "DAMAGE_CHECK".equals(t.getOperationalType())))
                     .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
                     .findFirst()
                     .orElseGet(() -> {
-                        String type = (isEmergency || room.getCurrentBookingDetailId() == null) ? OPERATION_MAINTENANCE
+                        boolean isRoomCheck = "ROOM_CHECK".equalsIgnoreCase(sourceTaskType);
+                        String type = (!isRoomCheck || isEmergency || room.getCurrentBookingDetailId() == null) ? OPERATION_MAINTENANCE
                                 : "DAMAGE_CHECK";
                         HotelOperation task = buildHotelOperation(room, staff, type, priority, notes);
                         return maintenanceRequestRepo.save(task);
@@ -245,14 +253,14 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         }
 
         String type;
-        if (isEmergency || room.getCurrentBookingDetailId() == null) {
-            // Cập nhật trạng thái phòng → Maintenance
+        boolean isRoomCheck = "ROOM_CHECK".equalsIgnoreCase(sourceTaskType);
+        if (!isRoomCheck || isEmergency || room.getCurrentBookingDetailId() == null) {
+            // Đơn dọn phòng (hoặc khẩn cấp) -> Chỉ tạo phiếu sửa chữa (Maintenance) và cập nhật trạng thái phòng
             room.setRoomStatus(STATUS_MAINTENANCE);
             roomRepo.save(room);
             type = OPERATION_MAINTENANCE;
         } else {
-            // Khách chưa checkout và không khẩn cấp -> Tạo phiếu DAMAGE_CHECK và giữ nguyên
-            // trạng thái phòng (không đổi sang Maintenance)
+            // Đơn ROOM_CHECK (kiểm tra phòng checkout) -> Tạo phiếu DAMAGE_CHECK (phiếu định giá)
             type = "DAMAGE_CHECK";
         }
 

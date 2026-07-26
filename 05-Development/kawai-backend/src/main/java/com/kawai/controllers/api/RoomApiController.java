@@ -157,7 +157,8 @@ public class RoomApiController {
     }
 
     @GetMapping("/my-active")
-    public ResponseEntity<?> getMyActiveRooms(java.security.Principal principal) {
+    public ResponseEntity<?> getMyActiveRooms(java.security.Principal principal, 
+            @org.springframework.web.bind.annotation.RequestParam(value = "date", required = false) String dateStr) {
         if (principal == null) {
             return ResponseEntity.status(401).body(java.util.Map.of("message", "Vui lòng đăng nhập"));
         }
@@ -237,7 +238,14 @@ public class RoomApiController {
             int usedAdults = 0;
             int usedChildren = 0;
             try {
-                List<com.kawai.models.TourAttendee> activeTourAttendees = tourAttendeeRepository.findActiveAttendeesByRoomBookingDetailId(rbd.getId());
+                List<com.kawai.models.TourAttendee> activeTourAttendees;
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    java.time.LocalDate targetDate = java.time.LocalDate.parse(dateStr);
+                    activeTourAttendees = tourAttendeeRepository.findActiveAttendeesByRoomBookingDetailIdAndDate(rbd.getId(), targetDate);
+                } else {
+                    activeTourAttendees = tourAttendeeRepository.findActiveAttendeesByRoomBookingDetailId(rbd.getId());
+                }
+                
                 for (com.kawai.models.TourAttendee ta : activeTourAttendees) {
                     if (ta.getCustomer() != null) {
                         usedAdults++;

@@ -35,7 +35,7 @@
         /* Background giống hệt ops-login (ảnh BrAdmin.jpg + lớp phủ mờ tối) */
         body { 
             font-family: 'Montserrat', sans-serif; 
-            background: linear-gradient(rgba(18, 16, 15, 0.65), rgba(18, 16, 15, 0.65)), url('/guest/BrAdmin.jpg') no-repeat center center fixed; 
+            background: linear-gradient(rgba(18, 16, 15, 0.65), rgba(18, 16, 15, 0.65)), url('https://res.cloudinary.com/r2g91yqt/image/upload/v1785011575/kawai_assets/guest/BrAdmin.jpg') no-repeat center center fixed; 
             background-size: cover;
             color: #e5dfd8; 
             min-height: 100vh;
@@ -304,7 +304,11 @@
 
             <!-- ── Dịch Vụ Tour Panel ── -->
             <div id="panel-tour" class="tab-panel">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div th:if="${tourReviews == null or tourReviews.empty}" class="text-center py-12 px-4 rounded-xl bg-white/5 border border-white/10 my-4">
+                    <span class="material-symbols-outlined text-4xl text-gray-500 mb-2">rate_review</span>
+                    <p class="text-sm text-gray-400">Chưa có đánh giá nào cho Dịch vụ Tour.</p>
+                </div>
+                <div th:unless="${tourReviews == null or tourReviews.empty}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${tourReviews}">
                         <div class="flex items-center justify-between mb-3">
@@ -361,7 +365,11 @@
 
             <!-- ── Dịch Vụ Phòng Panel ── -->
             <div id="panel-room" class="tab-panel hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div th:if="${roomReviews == null or roomReviews.empty}" class="text-center py-12 px-4 rounded-xl bg-white/5 border border-white/10 my-4">
+                    <span class="material-symbols-outlined text-4xl text-gray-500 mb-2">hotel</span>
+                    <p class="text-sm text-gray-400">Chưa có đánh giá nào cho Dịch vụ Phòng.</p>
+                </div>
+                <div th:unless="${roomReviews == null or roomReviews.empty}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${roomReviews}">
                         <div class="flex items-center justify-between mb-3">
@@ -415,7 +423,11 @@
 
             <!-- ── Dịch Vụ Khác Panel ── -->
             <div id="panel-other" class="tab-panel hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div th:if="${generalReviews == null or generalReviews.empty}" class="text-center py-12 px-4 rounded-xl bg-white/5 border border-white/10 my-4">
+                    <span class="material-symbols-outlined text-4xl text-gray-500 mb-2">spa</span>
+                    <p class="text-sm text-gray-400">Chưa có đánh giá nào cho Dịch vụ Khác.</p>
+                </div>
+                <div th:unless="${generalReviews == null or generalReviews.empty}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <!-- Dynamic reviews -->
                     <div class="review-card" th:each="r : ${generalReviews}">
                         <div class="flex items-center justify-between mb-3">

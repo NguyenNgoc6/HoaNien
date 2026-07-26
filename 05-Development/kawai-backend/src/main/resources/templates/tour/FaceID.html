@@ -706,17 +706,20 @@
                         <div class="space-y-2">
                             <label class="font-label-md text-on-surface-variant/70">Mô tả sự cố</label>
                             <textarea id="incident-description"
-                                class="w-full bg-surface-container/30 border-none rounded-lg p-4 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none min-h-[120px]"
+                                th:disabled="${scheduleStatus == 'completed' or scheduleStatus == 'Cancelled'}"
+                                class="w-full bg-surface-container/30 border-none rounded-lg p-4 font-body-md text-on-surface placeholder-on-surface-variant/40 focus:ring-2 focus:ring-primary/20 transition-all outline-none min-h-[120px] disabled:opacity-50 disabled:cursor-not-allowed"
                                 placeholder="Nhập chi tiết sự cố tại đây..."></textarea>
                         </div>
                         <div class="flex justify-end gap-4 flex-wrap">
                             <button onclick="submitIncidentReport(false)"
-                                class="px-6 py-3 rounded-full bg-[#1b1c1a]/5 text-on-surface hover:bg-[#1b1c1a]/10 font-label-md text-label-md transition-all font-semibold"
+                                th:disabled="${scheduleStatus == 'completed' or scheduleStatus == 'Cancelled'}"
+                                class="px-6 py-3 rounded-full bg-[#1b1c1a]/5 text-on-surface hover:bg-[#1b1c1a]/10 font-label-md text-label-md transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                                 id="btn-only-report">
                                 Chỉ gửi báo cáo
                             </button>
                             <button th:if="${scheduleStatus != 'Cancelled'}" onclick="submitIncidentReport(true)"
-                                class="px-6 py-3 rounded-full bg-red-600 text-white font-label-md text-label-md shadow-lg shadow-red-600/20 hover:scale-[1.02] hover:bg-red-700 transition-all font-semibold"
+                                th:disabled="${scheduleStatus == 'completed'}"
+                                class="px-6 py-3 rounded-full bg-red-600 text-white font-label-md text-label-md shadow-lg shadow-red-600/20 hover:scale-[1.02] hover:bg-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                                 id="btn-report-cancel">
                                 Gửi báo cáo & Hủy Tour
                             </button>
@@ -724,7 +727,8 @@
                     </div>
                 </div>
                 <!-- Right Column: FaceID Attendance -->
-                <div th:if="${scheduleStatus != 'Cancelled'}" class="col-span-12 lg:col-span-4 space-y-8"
+                <div class="col-span-12 lg:col-span-4 space-y-8"
+                    th:classappend="${(scheduleStatus == 'completed' or scheduleStatus == 'Cancelled') ? 'opacity-60 pointer-events-none select-none' : ''}"
                     id="faceid-section">
                     <!-- Scanner Interface -->
                     <div class="glass-panel p-6 rounded-lg space-y-6">
@@ -1391,6 +1395,7 @@
                 } catch (e) {
                     console.warn(e);
                 }
+                sessionStorage.setItem('keep_cam_on', 'true');
                 setTimeout(() => { window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : ''); }, 2000);
             } else {
                 faceFrame.className = 'face-frame failed';
@@ -1453,6 +1458,7 @@
                 });
                 const data = await resp.json();
                 if (data.success) {
+                    sessionStorage.setItem('keep_cam_on', 'true');
                     showToast(data.name + ' đã được điểm danh thành công!', 'success');
                     window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : '');
                 }
@@ -1532,6 +1538,7 @@
                 });
                 const data = await resp.json();
                 if (data.success) {
+                    sessionStorage.setItem('keep_cam_on', 'true');
                     showToast('Đã ghi nhận vắng mặt khách hàng: ' + data.name, 'success');
                     closeAbsentModal();
                     window.location.href = '/tourguide/dashboard?scanned=true' + (activeScheduleId ? '&scheduleId=' + activeScheduleId : '');
@@ -1789,6 +1796,20 @@
                 // Clean url parameters
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, cleanUrl);
+            }
+
+            // Continuous Camera Session: Auto-resume camera if previous check-in left camera session active and attendance is not 100% done
+            if (sessionStorage.getItem('keep_cam_on') === 'true') {
+                const total = (typeof totalAttendeesDb !== 'undefined' && totalAttendeesDb !== null) ? totalAttendeesDb : 0;
+                const doneCount = ((typeof checkedInCountDb !== 'undefined' ? checkedInCountDb : 0) + (typeof absentCountDb !== 'undefined' ? absentCountDb : 0));
+                if (total > 0 && doneCount >= total) {
+                    sessionStorage.removeItem('keep_cam_on');
+                    showToast('Đã hoàn thành điểm danh cho toàn bộ đoàn khách! Camera đã tự động tắt.', 'info');
+                } else {
+                    setTimeout(() => {
+                        startCamera();
+                    }, 500);
+                }
             }
         });
 
@@ -2167,6 +2188,7 @@
     const checkedInCountDb = /*[[${checkedInCount}]]*/ 0;
     const absentCountDb = /*[[${absentCount}]]*/ 0;
     const totalAttendeesDb = /*[[${totalAttendees}]]*/ 0;
+    const departureDateDb = /*[[${departureDate}]]*/ null;
     /*]]>*/
 
     const TOUR_ITINERARIES = {
@@ -2452,8 +2474,16 @@
             .replace(/\s+/g, ' ').trim();
     }
 
+    function getResolvedScheduleId(key) {
+        if (typeof activeScheduleId !== 'undefined' && activeScheduleId) return activeScheduleId;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSchedId = urlParams.get('scheduleId');
+        if (urlSchedId) return urlSchedId;
+        return key;
+    }
+
     function getCheckpointStorageKey(key) {
-        const schedId = (typeof activeScheduleId !== 'undefined' && activeScheduleId) ? activeScheduleId : key;
+        const schedId = getResolvedScheduleId(key);
         return 'tour_checkpoints_' + schedId;
     }
 
@@ -2475,6 +2505,21 @@
     function saveCheckpointStates(key, states) {
         try {
             localStorage.setItem(getCheckpointStorageKey(key), JSON.stringify(states));
+            const schedId = getResolvedScheduleId(key);
+            if (schedId) {
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || document.querySelector('input[name="_csrf"]')?.value;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfToken) headers[csrfHeader] = csrfToken;
+                
+                fetch('/tourguide/checkpoints/update', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ scheduleId: schedId, states: states })
+                }).then(res => {
+                    if (!res.ok) console.error("Error posting checkpoint payload to server, status:", res.status);
+                }).catch(err => console.error("Error posting checkpoint payload to server:", err));
+            }
         } catch (e) {
             console.error("Error saving checkpoints:", e);
         }
@@ -2510,10 +2555,10 @@
         if (norm.includes('tinh lang')) return 'tinhlang';
         if (norm.includes('ha long') || norm.includes('song xanh')) return 'halong';
         if (norm.includes('sapa') || norm.includes('suong phu')) return 'sapa';
-        if (norm.includes('cat tien') || norm.includes('rung gia')) return 'cattien';
+        if (norm.includes('cat tien') || norm.includes('nhip dap') || norm.includes('rung gia')) return 'cattien';
         if (norm.includes('mui ne') || norm.includes('con cat')) return 'muine';
-        if (norm.includes('phu quoc') || norm.includes('san ho')) return 'phuquoc';
-        if (norm.includes('can tho') || norm.includes('miet vuon')) return 'cantho';
+        if (norm.includes('phu quoc') || norm.includes('luc bao') || norm.includes('san ho')) return 'phuquoc';
+        if (norm.includes('can tho') || norm.includes('huong sac') || norm.includes('miet vuon')) return 'cantho';
         return (typeof tourTypeDb !== 'undefined' && tourTypeDb) ? tourTypeDb : 'doantu';
     }
 
@@ -2594,10 +2639,10 @@
         else if (norm.includes('tinh lang')) key = 'tinhlang';
         else if (norm.includes('ha long') || norm.includes('song xanh')) key = 'halong';
         else if (norm.includes('sapa') || norm.includes('suong phu')) key = 'sapa';
-        else if (norm.includes('cat tien') || norm.includes('rung gia')) key = 'cattien';
+        else if (norm.includes('cat tien') || norm.includes('nhip dap') || norm.includes('rung gia')) key = 'cattien';
         else if (norm.includes('mui ne') || norm.includes('con cat')) key = 'muine';
-        else if (norm.includes('phu quoc') || norm.includes('san ho')) key = 'phuquoc';
-        else if (norm.includes('can tho') || norm.includes('miet vuon')) key = 'cantho';
+        else if (norm.includes('phu quoc') || norm.includes('luc bao') || norm.includes('san ho')) key = 'phuquoc';
+        else if (norm.includes('can tho') || norm.includes('huong sac') || norm.includes('miet vuon')) key = 'cantho';
 
         if (!key || !TOUR_HANDBOOKS[key]) return;
 
@@ -2682,6 +2727,21 @@
 
     function checkTourSafety(event) {
         if (event) event.preventDefault();
+
+        if (departureDateDb) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tourDate = new Date(departureDateDb);
+            tourDate.setHours(0, 0, 0, 0);
+
+            if (tourDate > today) {
+                const isConfirmed = confirm("CẢNH BÁO: Lịch trình tour này khởi hành vào ngày tương lai (" + departureDateDb + ").\n\nTrong thực tế, bạn chỉ được phép bắt đầu tour vào đúng ngày khởi hành. Bạn có chắc chắn muốn BỎ QUA cảnh báo để Bắt Đầu (dành cho mục đích Demo)?");
+                if (!isConfirmed) return;
+            } else if (tourDate < today) {
+                const isConfirmed = confirm("CẢNH BÁO: Lịch trình tour này khởi hành vào ngày trong quá khứ (" + departureDateDb + ").\n\nBạn có chắc chắn muốn BỎ QUA cảnh báo để Bắt Đầu (dành cho mục đích Demo)?");
+                if (!isConfirmed) return;
+            }
+        }
 
         // Kiểm tra xem số lượng hành khách đã xử lý (điểm danh hoặc báo vắng mặt) có đủ hay chưa
         if (totalAttendeesDb === 0 || (checkedInCountDb + absentCountDb) < totalAttendeesDb) {
@@ -2804,6 +2864,17 @@
 
     function confirmAndStartTour() {
         closeSafetyModal();
+        try {
+            const key = getActiveTourKey();
+            const data = (key && TOUR_ITINERARIES[key]) ? TOUR_ITINERARIES[key] : null;
+            const totalCount = data && data.activities ? data.activities.length : 0;
+            if (key && totalCount > 0) {
+                const emptyStates = new Array(totalCount).fill(false);
+                saveCheckpointStates(key, emptyStates);
+            }
+        } catch (e) {
+            console.error("Error resetting checkpoints on start tour:", e);
+        }
         setTimeout(() => {
             document.getElementById('startTourForm').submit();
         }, 250);

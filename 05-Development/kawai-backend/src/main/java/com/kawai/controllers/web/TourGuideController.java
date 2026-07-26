@@ -477,18 +477,10 @@ public class TourGuideController {
                 return id2.compareTo(id1);
             });
 
-            // Lọc danh sách schedule:
-            // - Chỉ giữ lại tối đa 3 tour cố định (ID < 100) của các hướng dẫn viên khác để demo.
-            // - Giữ lại tất cả các tour mới (ID >= 100).
+            // Lọc danh sách schedule: Chỉ giữ lại các chuyến đi thực sự có khách (bookedSeats > 0)
             java.util.List<com.kawai.models.TourSchedule> filteredSchedules = new java.util.ArrayList<>();
-            int demoCount = 0;
             for (com.kawai.models.TourSchedule s : dbSchedules) {
-                if (s.getId() != null && s.getId() < 100L) {
-                    if (demoCount < 3) {
-                        filteredSchedules.add(s);
-                        demoCount++;
-                    }
-                } else {
+                if (s.getBookedSeats() != null && s.getBookedSeats() > 0) {
                     filteredSchedules.add(s);
                 }
             }
@@ -533,15 +525,25 @@ public class TourGuideController {
             map.put("status", mappedStatus);
             map.put("date", sched.getDepartureDate() != null ? sched.getDepartureDate().toString() : "2026-06-27");
             
-            String image = "/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg";
+            String image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011573/kawai_assets/AnhTour/z7930565879475_de7864577660b0726376ea947dbe94de.jpg"; // Default for Đoàn Tụ
             if (sched.getTour() != null) {
-                String name = sched.getTour().getTourName();
-                if (name.contains("Tinh Túy Đồng Nội") || name.contains("Tinh túy đồng nội")) {
-                    image = "/AnhTour/com.jfif";
-                } else if (name.contains("Tĩnh Lặng Liên Hoa") || name.contains("Tĩnh lặng liên hoa")) {
-                    image = "/AnhTour/ThapMuoi.jpg";
-                } else if (name.contains("Di sản")) {
-                    image = "/AnhTour/ThuCong.jpg";
+                if (sched.getTour().getImageUrl() != null && !sched.getTour().getImageUrl().isBlank()) {
+                    image = sched.getTour().getImageUrl();
+                } else {
+                    String name = sched.getTour().getTourName().toLowerCase();
+                    if (name.contains("đồng nội") || name.contains("dongnoi")) {
+                        image = "/AnhTour/com.jfif";
+                    } else if (name.contains("liên hoa") || name.contains("tháp mười") || name.contains("tinhlang")) {
+                        image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011571/kawai_assets/AnhTour/ThapMuoi.jpg";
+                    } else if (name.contains("di sản") || name.contains("thủ công") || name.contains("disan")) {
+                        image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011572/kawai_assets/AnhTour/ThuCong.jpg";
+                    } else if (name.contains("sóng xanh") || name.contains("hạ long") || name.contains("halong")) {
+                        image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011580/kawai_assets/AnhTour/1.SongXanh-HaLong-HoangHon.png";
+                    } else if (name.contains("sương phủ") || name.contains("sapa") || name.contains("suongphu")) {
+                        image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011581/kawai_assets/AnhTour/2.SuongPhu-SaPa-RuongBacThang.png";
+                    } else if (name.contains("nhịp đập") || name.contains("cát tiên") || name.contains("cattien") || name.contains("nhipdap")) {
+                        image = "https://res.cloudinary.com/r2g91yqt/image/upload/v1785011582/kawai_assets/AnhTour/3.NhipDap-CatTien-Rung.png";
+                    }
                 }
             }
             map.put("image", image);
@@ -625,12 +627,7 @@ public class TourGuideController {
             }
         }
 
-        if (dynamicNotes.isEmpty()) {
-            java.util.Map<String, Object> fallbackNote = new java.util.HashMap<>();
-            fallbackNote.put("content", "Hôm nay không có ghi chú đặc biệt nào từ các đoàn khách.");
-            fallbackNote.put("icon", "info");
-            dynamicNotes.add(fallbackNote);
-        }
+        // fallbackNote removed to avoid rendering empty note card
 
         model.addAttribute("dynamicNotifications", dynamicNotifications);
         model.addAttribute("dynamicNotes", dynamicNotes);
@@ -927,7 +924,9 @@ public class TourGuideController {
         });
         
         java.util.Set<String> takenGuides = new java.util.HashSet<>();
-        java.util.List<String> allGuides = java.util.Arrays.asList("Nguyễn Ngọc", "Ngọc Lan", "Hoàng Nam");
+        java.util.List<String> allGuides = java.util.Arrays.asList(
+                "NguynNgoc", "Đỗ Thu Bình", "Ngô Minh Lan", "Phan Thanh Hải", 
+                "Nguyễn Quỳnh Anh", "Lê Hoàng Long", "Vũ Thu Trang");
         
         String assignedGuide = null;
         
@@ -961,24 +960,32 @@ public class TourGuideController {
     }
 
     private String getPreferredGuide(com.kawai.models.TourSchedule sched) {
-        if (sched == null) return "Nguyễn Ngọc";
+        if (sched == null) return "NguynNgoc";
         if (scheduleHasSpecialCustomer(sched)) {
-            return "Nguyễn Ngọc";
+            return "NguynNgoc";
         }
         if (sched.getId() != null && sched.getId() == 5L) {
-            return "Nguyễn Ngọc";
+            return "NguynNgoc";
         }
         if (sched.getTour() != null) {
-            String tn = sched.getTour().getTourName();
-            if (tn.contains("Tinh Túy Đồng Nội") || tn.contains("Tinh túy đồng nội") || tn.contains("đồng nội") || tn.contains("dongnoi")) {
-                return "Nguyễn Ngọc";
-            } else if (tn.contains("Tĩnh Lặng Liên Hoa") || tn.contains("Tĩnh lặng liên hoa") || tn.contains("tinhlang")) {
-                return "Hoàng Nam";
-            } else if (tn.contains("Di sản") || tn.contains("di sản") || tn.contains("disan")) {
-                return "Ngọc Lan";
+            String tn = sched.getTour().getTourName().toLowerCase();
+            if (tn.contains("đoàn tụ") || tn.contains("doantu")) {
+                return "NguynNgoc";
+            } else if (tn.contains("đồng nội") || tn.contains("dongnoi")) {
+                return "Đỗ Thu Bình";
+            } else if (tn.contains("di sản") || tn.contains("thủ công") || tn.contains("disan")) {
+                return "Ngô Minh Lan";
+            } else if (tn.contains("liên hoa") || tn.contains("tháp mười") || tn.contains("tinhlang")) {
+                return "Phan Thanh Hải";
+            } else if (tn.contains("sóng xanh") || tn.contains("hạ long") || tn.contains("halong")) {
+                return "Nguyễn Quỳnh Anh";
+            } else if (tn.contains("sương phủ") || tn.contains("sapa") || tn.contains("suongphu")) {
+                return "Lê Hoàng Long";
+            } else if (tn.contains("nhịp đập") || tn.contains("cát tiên") || tn.contains("cattien") || tn.contains("nhipdap")) {
+                return "Vũ Thu Trang";
             }
         }
-        return "Nguyễn Ngọc";
+        return "NguynNgoc";
     }
 
     private boolean scheduleHasSpecialCustomer(com.kawai.models.TourSchedule sched) {
@@ -1200,5 +1207,35 @@ public class TourGuideController {
             e.printStackTrace();
         }
         return dynamicNotifications;
+    }
+
+    // Static memory store for TourGuide checkpoint states (scheduleId -> List<Boolean>)
+    private static final java.util.Map<Long, java.util.List<Boolean>> CHECKPOINT_STATES_STORE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static java.util.List<Boolean> getScheduleCheckpointStates(Long scheduleId) {
+        if (scheduleId == null) return java.util.Collections.emptyList();
+        return CHECKPOINT_STATES_STORE.getOrDefault(scheduleId, java.util.Collections.emptyList());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/checkpoints/update")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<?> updateCheckpointStates(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Object> payload) {
+        try {
+            if (payload == null || !payload.containsKey("scheduleId") || !payload.containsKey("states")) {
+                return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid payload"));
+            }
+            Long scheduleId = Long.parseLong(payload.get("scheduleId").toString());
+            java.util.List<?> rawList = (java.util.List<?>) payload.get("states");
+            java.util.List<Boolean> states = new java.util.ArrayList<>();
+            for (Object obj : rawList) {
+                states.add(Boolean.TRUE.equals(obj) || "true".equalsIgnoreCase(String.valueOf(obj)));
+            }
+            CHECKPOINT_STATES_STORE.put(scheduleId, states);
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("success", true, "scheduleId", scheduleId, "states", states));
+        } catch (Exception e) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            e.printStackTrace(); // Log error to console for debugging
+            return org.springframework.http.ResponseEntity.internalServerError().body(java.util.Map.of("message", msg));
+        }
     }
 }
