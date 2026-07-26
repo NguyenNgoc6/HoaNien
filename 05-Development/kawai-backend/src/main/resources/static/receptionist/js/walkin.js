@@ -129,9 +129,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const depDobInput = document.getElementById('depDob');
     if (guestDobInput) guestDobInput.max = todayStrGlobal;
     if (depDobInput) depDobInput.max = todayStrGlobal;
+
+    const resetGuestState = () => {
+        isGuestVerified = false;
+        const statusEl = document.getElementById('guestStatusMsg');
+        if (statusEl) statusEl.style.display = 'none';
+        const continueBtn = document.getElementById('continueToPaymentBtn');
+        if (continueBtn) {
+            continueBtn.style.opacity = '0.5';
+            continueBtn.style.pointerEvents = 'none';
+        }
+    };
+    const guestPhoneInput = document.getElementById('guestPhone');
+    const guestIdInput = document.getElementById('guestId');
+    if (guestPhoneInput) guestPhoneInput.addEventListener('input', resetGuestState);
+    if (guestIdInput) guestIdInput.addEventListener('input', resetGuestState);
 });
 
-// --- Khởi tạo sự kiện thay đổi dropdown chọn phòng vật lý ---
 document.addEventListener('DOMContentLoaded', () => {
     const roomSelect = document.getElementById('walkInPhysicalRoomSelect');
     if (!roomSelect) return;
@@ -488,54 +502,47 @@ function unlockFinalButton(customerId) {
     }
 }
 
+/**
+ * Helper: Điền thông tin khách vào form Step 2 từ object data trả về bởi API search.
+ * Dùng chung cho cả searchCustomer() và validateNewCustomer().
+ */
+function fillGuestForm(data) {
+    document.getElementById('guestName').value = data.fullName || '';
+    document.getElementById('guestId').value = data.cccd || '';
+    document.getElementById('guestEmail').value = data.email || '';
+    if (data.dateOfBirth) document.getElementById('guestDob').value = data.dateOfBirth;
+    masterCreditLimit = (data.creditLimit != null) ? data.creditLimit : 5000000;
+}
+
 function searchCustomer() {
     const phone = document.getElementById('guestPhone').value;
     const cccd = document.getElementById('guestId').value;
-    const keyword = phone || cccd;
 
-    if (!keyword) {
+    if (!phone && !cccd) {
         alert('Vui lòng nhập Số điện thoại hoặc CCCD/Passport để tìm kiếm.');
         return;
     }
 
-    fetch('/api/receptionist/walkin/search-customer?keyword=' + encodeURIComponent(keyword))
+    const url = '/api/receptionist/walkin/search-customer'
+        + '?phone=' + encodeURIComponent(phone)
+        + '&cccd=' + encodeURIComponent(cccd);
+
+    fetch(url)
         .then(response => {
             if (response.ok) return response.json();
             if (response.status === 404) throw new Error('Không tìm thấy khách hàng với SĐT hoặc CCCD vừa nhập.');
             throw new Error('Lỗi hệ thống khi tìm kiếm khách hàng.');
         })
         .then(data => {
-            // Điền thông tin khách vào form
-            document.getElementById('guestName').value = data.fullName || '';
-            document.getElementById('guestId').value = data.cccd || '';
-            document.getElementById('guestEmail').value = data.email || '';
-
-            masterCreditLimit = (data.creditLimit !== undefined && data.creditLimit !== null)
-                ? data.creditLimit
-                : 5000000;
-
+            fillGuestForm(data);
             isGuestVerified = true;
             renderRoomCart();
-
-            if (data.dateOfBirth) {
-                document.getElementById('guestDob').value = data.dateOfBirth;
-            }
-
             unlockFinalButton('CUST-' + data.id);
 
             const statusEl = document.getElementById('guestStatusMsg');
             statusEl.innerHTML = `<i class="fa-solid fa-check-circle"></i> Đã tìm thấy khách hàng cũ (ID: <span id="mockCustomerId">${data.id}</span>)`;
             statusEl.style.color = '#16a34a';
             statusEl.style.background = '#dcfce7';
-
-            // Chặn không cho ấn Create Account nữa
-            const createBtn = document.getElementById('btnCreateNewCustomer');
-            if (createBtn) {
-                createBtn.disabled = true;
-                createBtn.style.opacity = '0.5';
-                createBtn.style.cursor = 'not-allowed';
-                createBtn.title = "Tài khoản đã tồn tại, không thể tạo mới";
-            }
         })
         .catch(error => {
             alert(error.message);
@@ -603,23 +610,67 @@ function validateGuestInfo() {
 }
 
 /**
- * Xác nhận khách vãng lai mới (chưa có trong hệ thống).
- * Gán hạn mức mặc định 5 triệu và mở khóa bước tiếp theo.
+ * Xác nhận khách vãng lai mới.
+ * - Gọi API search để kiểm tra CCCD/SĐT trước khi tạo.
+ * - Tìm thấy → alert thông báo và dừng lại (không tự động link, không disable button).
+ * - Không tìm thấy → confirm là khách mới và mở khóa.
  */
 function validateNewCustomer() {
     if (!validateGuestInfo()) return;
 
-    masterCreditLimit = 5000000; // Giữ lại cho tương thích nhưng không dùng để display
-    isGuestVerified = true;
-    renderRoomCart();
+    const cccd = document.getElementById('guestId').value;
+    const phone = document.getElementById('guestPhone').value;
+    const keyword = cccd || phone;
 
-    unlockFinalButton('NEW-GUEST');
+    const createBtn = document.getElementById('btnCreateNewCustomer');
+    const originalBtnHtml = createBtn ? createBtn.innerHTML : '';
+    if (createBtn) {
+        createBtn.disabled = true;
+        createBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kiểm tra...';
+    }
 
-    const statusEl = document.getElementById('guestStatusMsg');
-    statusEl.innerHTML = `<i class="fa-solid fa-info-circle"></i> Sẵn sàng Check-in (Tài khoản sẽ được tạo tự động)`;
-    statusEl.style.display = 'inline-block';
-    statusEl.style.color = '#0284c7';
-    statusEl.style.background = '#e0f2fe';
+    const searchUrl = '/api/receptionist/walkin/search-customer'
+        + '?phone=' + encodeURIComponent(phone)
+        + '&cccd=' + encodeURIComponent(cccd);
+
+    fetch(searchUrl)
+        .then(res => {
+            if (res.ok) return res.json().then(data => ({ found: true, data }));
+            if (res.status === 404) return { found: false };
+            throw new Error('Lỗi kiểm tra hệ thống.');
+        })
+        .then(result => {
+            // Luôn restore lại button về trạng thái bình thường
+            if (createBtn) {
+                createBtn.disabled = false;
+                createBtn.innerHTML = originalBtnHtml;
+            }
+
+            if (result.found) {
+                // Đã có tài khoản: chỉ thông báo và dừng lại
+                showToast('CCCD/SĐT này đã có tài khoản trong hệ thống!', 'warning');
+                alert('CCCD/SĐT này đã có tài khoản trong hệ thống!');
+            } else {
+                // Khách thực sự mới — mở khóa bước tiếp
+                masterCreditLimit = 5000000;
+                isGuestVerified = true;
+                renderRoomCart();
+                unlockFinalButton('NEW-GUEST');
+
+                const statusEl = document.getElementById('guestStatusMsg');
+                statusEl.innerHTML = `<i class="fa-solid fa-info-circle"></i> Sẵn sàng Check-in (Tài khoản sẽ được tạo tự động)`;
+                statusEl.style.display = 'inline-block';
+                statusEl.style.color = '#0284c7';
+                statusEl.style.background = '#e0f2fe';
+            }
+        })
+        .catch(err => {
+            if (createBtn) {
+                createBtn.disabled = false;
+                createBtn.innerHTML = originalBtnHtml;
+            }
+            alert('Lỗi khi kiểm tra tài khoản: ' + err.message);
+        });
 }
 
 
@@ -846,10 +897,21 @@ function submitCheckIn() {
             const isNewCustomer = data.newCustomer === true || data.isNewCustomer === true;
             if (isNewCustomer && data.newAccountUsername) {
                 msg.innerHTML = 'Hệ thống đã <b>tự động tạo hồ sơ</b> khách hàng mới và làm thủ tục nhận phòng thành công.';
+                if (data.newAccountPassword && accInfo) {
+                    accInfo.innerHTML = `<div><strong style="color: #e11d48;">Chú ý (Gửi mail có thể bị trễ):</strong> Hãy báo cho khách hàng tài khoản đăng nhập sau:</div>
+                                         <div style="margin-top: 5px; color: #1e293b;">Tài khoản: <b>${data.newAccountUsername}</b></div>
+                                         <div style="color: #1e293b;">Mật khẩu: <b style="color: #0284c7; letter-spacing: 1px;">${data.newAccountPassword}</b></div>`;
+                    accInfo.style.display = 'block';
+                    accInfo.style.backgroundColor = '#fff1f2';
+                    accInfo.style.padding = '12px';
+                    accInfo.style.borderRadius = '6px';
+                    accInfo.style.border = '1px solid #fecdd3';
+                    accInfo.style.marginTop = '15px';
+                }
             } else {
                 msg.innerText = 'Đã làm thủ tục nhận phòng hoàn tất cho khách lưu trú này.';
+                if (accInfo) accInfo.style.display = 'none';
             }
-            if (accInfo) accInfo.style.display = 'none';
 
             if (data.paymentUrl) {
                 // Thanh toán qua VNPay: nút chuyển hướng + nút hủy check-in

@@ -254,7 +254,8 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                 }
             }
 
-            return buildWalkInResponse(booking, firstRoomNumber, request, customer, customerResult.isNew, newAccount);
+            return buildWalkInResponse(booking, firstRoomNumber, request, customer, customerResult.isNew, newAccount,
+                    rawPassword);
 
         } catch (BusinessException ex) {
             throw ex; // Re-throw đã có errorCode — không bọc thêm
@@ -291,11 +292,26 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         }
         roomBookingDetailRepository.saveAll(details);
         roomBookingRepository.save(booking);
-    }
+        if (booking.getCustomer() != null) {
+            com.kawai.models.Customer customer = booking.getCustomer();
+            boolean hasOtherValidBookings = roomBookingRepository.findByCustomerOrderByIdDesc(customer)
+                    .stream()
+                    .anyMatch(b -> !b.getId().equals(bookingId)
+                            && !BOOKING_STATUS_CANCELLED.equals(b.getBookingStatus()));
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // calculateSurchargePreview()
-    // ══════════════════════════════════════════════════════════════════════════
+            if (!hasOtherValidBookings) {
+                log.info("[cancelPendingWalkIn] Xóa Customer mồ côi id={} (không còn booking hợp lệ)",
+                        customer.getId());
+                com.kawai.models.Account account = customer.getAccount();
+                customer.setAccount(null);
+                customerRepository.save(customer);
+                if (account != null) {
+                    accountRepository.delete(account);
+                }
+                customerRepository.delete(customer);
+            }
+        }
+    }
 
     /**
      * Tính toán số khách (dựa trên tuổi) và số tiền phụ thu dự kiến.
@@ -375,6 +391,27 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         }
     }
 
+    @Override
+    public java.util.Optional<Customer> searchCustomerByPhoneOrCccd(String phone, String cccd) {
+        if (cccd != null && !cccd.isBlank()) {
+            try {
+                java.util.Optional<Customer> byCccd = customerRepository
+                        .findFirstByCccdPassportEncrypted(EncryptionUtils.encrypt(cccd));
+                if (byCccd.isPresent())
+                    return byCccd;
+            } catch (Throwable ignored) {
+            }
+        }
+        // Fallback: tìm theo SĐT
+        if (phone != null && !phone.isBlank()) {
+            java.util.Optional<Customer> byPhone = customerRepository.findFirstByPhone(phone);
+            if (byPhone.isPresent())
+                return byPhone;
+        }
+
+        return java.util.Optional.empty();
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // Private — Validation Helpers
     // ══════════════════════════════════════════════════════════════════════════
@@ -393,7 +430,6 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                     "Invalid identification document: CCCD must be 12 digits");
         }
     }
-
 
     /**
      * Validate số lượng primary contact của 1 phòng phải đúng bằng 1.
@@ -525,21 +561,8 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         return surcharge;
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // Private — Customer & Account Helpers
-    // ══════════════════════════════════════════════════════════════════════════
-
-    /**
-     * Find-or-Create Customer. Trả về {@link CustomerLookupResult} để tránh
-     * array trick {@code boolean[]} trong lambda closure.
-     */
     private CustomerLookupResult findOrCreateCustomerWithFlag(WalkInCheckInRequest req) {
-        if (req.getCccd() == null || req.getCccd().isBlank()) {
-            return new CustomerLookupResult(createNewCustomer(req, null), true);
-        }
-
-        String encryptedCccd = EncryptionUtils.encrypt(req.getCccd());
-        return customerRepository.findFirstByCccdPassportEncrypted(encryptedCccd)
+        return searchCustomerByPhoneOrCccd(req.getPhone(), req.getCccd())
                 .map(existing -> {
                     boolean updated = false;
                     if (req.getDateOfBirth() != null && !req.getDateOfBirth().equals(existing.getBirthDate())) {
@@ -566,7 +589,13 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                     }
                     return new CustomerLookupResult(existing, false);
                 })
-                .orElseGet(() -> new CustomerLookupResult(createNewCustomer(req, encryptedCccd), true));
+                .orElseGet(() -> {
+                    String encryptedCccd = null;
+                    if (req.getCccd() != null && !req.getCccd().isBlank()) {
+                        encryptedCccd = EncryptionUtils.encrypt(req.getCccd());
+                    }
+                    return new CustomerLookupResult(createNewCustomer(req, encryptedCccd), true);
+                });
     }
 
     /**
@@ -748,7 +777,8 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
 
     /** Build WalkInCheckInResponse từ kết quả xử lý. */
     private WalkInCheckInResponse buildWalkInResponse(RoomBooking booking, String firstRoomNumber,
-            WalkInCheckInRequest request, Customer customer, boolean isNewCustomer, Account newAccount) {
+            WalkInCheckInRequest request, Customer customer, boolean isNewCustomer, Account newAccount,
+            String rawPassword) {
         WalkInCheckInResponse response = new WalkInCheckInResponse();
         response.setBookingId(booking.getId());
 
@@ -763,15 +793,16 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
                 request.getRoomSelections().stream()
                         .mapToInt(s -> s.getAccompaniedGuests() != null ? s.getAccompaniedGuests().size() : 0)
                         .sum());
-        if (newAccount != null)
+        if (newAccount != null) {
             response.setNewAccountUsername(newAccount.getUsername());
+            response.setNewAccountPassword(rawPassword);
+        }
         return response;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // Private — Utility / Resolver Helpers
     // ══════════════════════════════════════════════════════════════════════════
-
 
     /**
      * Resolve booking/detail status theo phương thức thanh toán.
