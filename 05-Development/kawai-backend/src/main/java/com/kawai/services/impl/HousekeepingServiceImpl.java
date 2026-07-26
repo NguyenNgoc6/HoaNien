@@ -119,7 +119,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
             room.setRoomStatus(STATUS_VACANT_CLEAN);
         }
         task.setStatus(STATUS_COMPLETED);
-        task.setCompletedAt(LocalDateTime.now());
+        task.setCompletedAt(LocalDateTime.now().withNano(0));
         if (notes != null && !notes.isEmpty()) {
             String existingNotes = task.getNotes() != null ? task.getNotes() + "\n" : "";
             task.setNotes(existingNotes + "[Ghi chú hoàn thành]: " + notes);
@@ -201,15 +201,23 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         return createMaintenanceRequest(roomId, staffId, notes, isEmergency, null);
     }
 
+    /** Null-safe employee lookup: nếu staffId == null thì lấy nhân viên đầu tiên trong hệ thống */
+    private Employee resolveEmployee(Long staffId) {
+        if (staffId != null) {
+            return employeeRepo.findById(staffId).orElse(null);
+        }
+        return employeeRepo.findAll().stream().findFirst().orElse(null);
+    }
+
     @Override
     @Transactional
     public HotelOperation createMaintenanceRequest(Long roomId, Long staffId, String notes, boolean isEmergency, String sourceTaskType) {
         Room room = findRoomById(roomId);
-        Employee staff = findEmployeeById(staffId);
+        Employee staff = resolveEmployee(staffId);
         String priority = isEmergency ? "Urgent" : "Normal";
 
         // Deduplication Guard: Check if a pending task for the same room was created in the last 10 seconds
-        java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().minusSeconds(10);
+        java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().withNano(0).minusSeconds(10);
         java.util.Optional<HotelOperation> recentTask = maintenanceRequestRepo.findAll().stream()
                 .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(roomId)
                         && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
@@ -285,27 +293,44 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         HotelOperation task = findMaintenanceTaskById(taskId);
         Room room = task.getRoom();
 
-        // Phòng sau bảo trì → Trả về Occupied nếu đang có khách ở, ngược lại kiểm tra
-        // xem có task dọn dẹp nào chưa hoàn thành
+        // Phòng sau bảo trì → Trả về Occupied nếu đang có khách ở, ngược lại về Vacant_Dirty
+        // để đội HK dọn lại trước khi đón khách.
         if (room.getCurrentBookingDetailId() != null) {
             room.setRoomStatus("Occupied");
         } else {
-            boolean hasActiveCleaningTask = housekeepingTaskRepo.findAll().stream()
-                    .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
-                            && ("CHECKOUT_CLEAN".equals(t.getOperationalType())
-                                    || "URGENT_CLEAN".equals(t.getOperationalType()))
-                            && !"Completed".equalsIgnoreCase(t.getStatus()));
-            if (hasActiveCleaningTask) {
-                room.setRoomStatus(STATUS_VACANT_DIRTY);
-            } else {
-                room.setRoomStatus(STATUS_VACANT_CLEAN);
-            }
+            room.setRoomStatus(STATUS_VACANT_DIRTY);
         }
         task.setStatus(STATUS_COMPLETED);
-        task.setCompletedAt(LocalDateTime.now());
+        task.setCompletedAt(LocalDateTime.now().withNano(0));
 
         roomRepo.save(room);
         maintenanceRequestRepo.save(task);
+
+        // ── Tự động sinh phiếu dọn phòng sau khi hoàn thành bảo trì ──
+        boolean hasActiveCleanTask = housekeepingTaskRepo.findAll().stream()
+                .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(room.getId())
+                        && ("CHECKOUT_CLEAN".equals(t.getOperationalType())
+                                || "URGENT_CLEAN".equals(t.getOperationalType()))
+                        && !"Completed".equalsIgnoreCase(t.getStatus()));
+        if (!hasActiveCleanTask) {
+            // Ưu tiên dùng lại nhân viên của phiếu bảo trì; nếu không có thì lấy nhân viên đầu tiên trong hệ thống
+            Employee hkStaff = task.getStaff();
+            if (hkStaff == null) {
+                hkStaff = employeeRepo.findAll().stream().findFirst().orElse(null);
+            }
+            if (hkStaff != null) {
+                HotelOperation cleanTask = buildHotelOperation(
+                        room, hkStaff, OPERATION_CLEAN, PRIORITY_HIGH,
+                        "[Sau bảo trì] Phòng " + room.getRoomNumber() + " vừa hoàn thành sửa chữa, cần dọn dẹp trước khi đón khách.");
+                housekeepingTaskRepo.save(cleanTask);
+                log.info("Auto-created CHECKOUT_CLEAN task for room {} after maintenance completion (taskId={})",
+                        room.getRoomNumber(), taskId);
+            } else {
+                log.warn("Cannot auto-create housekeeping task: no employee found for room {}", room.getRoomNumber());
+            }
+        } else {
+            log.info("Skipped auto-create housekeeping task for room {} — active clean task already exists", room.getRoomNumber());
+        }
 
         try {
             String msg = "Phòng " + room.getRoomNumber() + " đã hoàn thành bảo trì và sẵn sàng sử dụng!";
@@ -330,7 +355,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
         task.setOperationalType(type);
         task.setPriority(priority);
         task.setStatus(STATUS_PENDING);
-        task.setCreatedAt(LocalDateTime.now());
+        task.setCreatedAt(LocalDateTime.now().withNano(0));
         task.setNotes(notes);
         return task;
     }
@@ -369,7 +394,7 @@ public class HousekeepingServiceImpl implements HousekeepingService {
                         + dc.getDamagePrice() + " VNĐ");
                 repairTask.setImageUrl(dc.getImageUrl());
                 repairTask.setDamagePrice(dc.getDamagePrice());
-                repairTask.setCreatedAt(java.time.LocalDateTime.now());
+                repairTask.setCreatedAt(java.time.LocalDateTime.now().withNano(0));
                 maintenanceRequestRepo.save(repairTask);
             }
         }

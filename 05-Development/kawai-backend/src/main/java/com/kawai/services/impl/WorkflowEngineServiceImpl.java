@@ -169,15 +169,21 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
                         } 
                         else if ("CREATE_OPERATION_TASK".equals(type)) {
                             Long rIdCheck = safeLong(payload.get("room_id"));
+                            String taskTypeForDedup = (String) action.get("value");
                             if (rIdCheck != null) {
-                                java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().minusSeconds(10);
+                                java.time.LocalDateTime recentCutoff = java.time.LocalDateTime.now().withNano(0).minusSeconds(30);
                                 boolean existsRecent = hotelOperationRepository.findAll().stream()
                                         .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(rIdCheck)
-                                                && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
+                                                && (
+                                                    "DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType())
+                                                    || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType())
+                                                    || "CHECKOUT_CLEAN".equalsIgnoreCase(t.getOperationalType())
+                                                    || (taskTypeForDedup != null && taskTypeForDedup.equalsIgnoreCase(t.getOperationalType()))
+                                                )
                                                 && !"Completed".equalsIgnoreCase(t.getStatus())
                                                 && t.getCreatedAt() != null && t.getCreatedAt().isAfter(recentCutoff));
                                 if (existsRecent) {
-                                    System.out.println("WorkflowEngine: Skipped duplicate task creation for room ID " + rIdCheck);
+                                    System.out.println("WorkflowEngine: Skipped duplicate task creation for room ID " + rIdCheck + " (type: " + taskTypeForDedup + ")");
                                     return;
                                 }
                             }
@@ -236,7 +242,7 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
                     operation.setOperationalType(taskType);
                     operation.setPriority(priority);
                     operation.setStatus("Pending");
-                    operation.setCreatedAt(LocalDateTime.now());
+                    operation.setCreatedAt(LocalDateTime.now().withNano(0));
                     operation.setNotes(notes);
                     hotelOperationRepository.save(operation);
                     System.out.println("Dynamic Action: Created Task " + taskType + " with priority " + priority + " | staffId=" + (staff != null ? staff.getId() : "[QUEUE]"));
@@ -333,7 +339,7 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
                     approvalTask.setOperationalType("Manager_Approval");
                     approvalTask.setPriority("High");
                     approvalTask.setStatus("Pending");
-                    approvalTask.setCreatedAt(LocalDateTime.now());
+                    approvalTask.setCreatedAt(LocalDateTime.now().withNano(0));
                     
                     Employee manager = employeeRepository.findAll().stream()
                             .filter(emp -> emp.getAccount() != null && emp.getAccount().getRole() != null &&
@@ -403,7 +409,7 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
             }
 
             List<HotelOperation> pendingOperations = hotelOperationRepository.findByStatus("Pending");
-            LocalDateTime limitTime = LocalDateTime.now().minusMinutes(maxPendingMinutes);
+            LocalDateTime limitTime = LocalDateTime.now().withNano(0).minusMinutes(maxPendingMinutes);
 
             for (HotelOperation op : pendingOperations) {
                 if (op.getIsEscalated() != null && op.getIsEscalated()) {

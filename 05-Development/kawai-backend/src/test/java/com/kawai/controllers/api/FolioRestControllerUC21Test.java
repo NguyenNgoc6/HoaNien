@@ -67,6 +67,10 @@ public class FolioRestControllerUC21Test {
     private com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
     @Mock
     private HousekeepingService housekeepingService;
+    @Mock
+    private AuditLogRepository auditLogRepository;
+    @Mock
+    private RoomCategoryRepository roomCategoryRepository;
 
     @InjectMocks
     private FolioRestController folioRestController;
@@ -151,6 +155,7 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
 
         Room mockRoom = new Room();
         mockRoom.setRoomNumber("101");
@@ -164,11 +169,10 @@ public class FolioRestControllerUC21Test {
 
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
         FolioItem item = new FolioItem();
+        item.setSourceDepartment("Room");
         item.setAmount(new BigDecimal("1000000"));
         when(nightAuditService.getFolioItems(detailId)).thenReturn(List.of(item));
         when(invoicePdfService.generateInvoicePdf(any())).thenReturn("path/to/invoice.pdf");
-
-
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("paymentAmount", 1100000);
@@ -201,12 +205,14 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
         RoomBooking mockBooking = new RoomBooking();
         mockBooking.setId(1L);
         mockDetail.setRoomBooking(mockBooking);
 
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
         FolioItem item = new FolioItem();
+        item.setSourceDepartment("Room");
         item.setAmount(new BigDecimal("1000000"));
         when(nightAuditService.getFolioItems(detailId)).thenReturn(List.of(item));
 
@@ -237,6 +243,7 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
         mockDetail.setRoomCharge(new BigDecimal("1000000"));
 
         RoomBooking mockBooking = new RoomBooking();
@@ -255,6 +262,7 @@ public class FolioRestControllerUC21Test {
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
         when(roomBookingDetailRepository.findByRoomBookingId(mockBooking.getId())).thenReturn(List.of(mockDetail));
         FolioItem item = new FolioItem();
+        item.setSourceDepartment("Room");
         item.setAmount(new BigDecimal("1000000"));
         when(nightAuditService.getFolioItems(detailId)).thenReturn(List.of(item));
 
@@ -287,6 +295,7 @@ public class FolioRestControllerUC21Test {
         Long detailId = 1L;
         RoomBookingDetail mockDetail = new RoomBookingDetail();
         mockDetail.setId(detailId);
+        mockDetail.setDetailStatus("Checked_In");
         mockDetail.setRoomCharge(new BigDecimal("1000000"));
 
         RoomBooking mockBooking = new RoomBooking();
@@ -305,8 +314,8 @@ public class FolioRestControllerUC21Test {
         when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
         when(roomBookingDetailRepository.findByRoomBookingId(mockBooking.getId())).thenReturn(List.of(mockDetail));
         FolioItem mockItem = new FolioItem();
+        mockItem.setSourceDepartment("Room");
         mockItem.setAmount(new BigDecimal("1000000"));
-        mockItem.setSourceDepartment("F&B");
         when(nightAuditService.getFolioItems(detailId)).thenReturn(List.of(mockItem));
 
         // Deposit txn
@@ -331,5 +340,52 @@ public class FolioRestControllerUC21Test {
                 eq("CASH"), eq(PaymentStatus.SUCCESS), anyString());
         // Verify deposit amount on booking is subtracted to 0
         assertEquals(new BigDecimal("0"), mockBooking.getDepositAmount());
+    }
+
+    @Test
+    @DisplayName("Verify upgraded room preserves original room charge of 8.000.000 VNĐ")
+    void testUpgradedRoomPreservesOriginalRoomCharge() {
+        Long detailId = 100L;
+        RoomBooking mockBooking = new RoomBooking();
+        mockBooking.setId(10L);
+        mockBooking.setCheckInDate(java.time.LocalDate.of(2026, 7, 26));
+        mockBooking.setCheckOutDate(java.time.LocalDate.of(2026, 7, 27));
+
+        RoomCategory origCat = new RoomCategory();
+        origCat.setCategoryName("Wellness Retreats");
+        origCat.setBasePrice(new BigDecimal("8000000"));
+
+        RoomCategory upgradedCat = new RoomCategory();
+        upgradedCat.setCategoryName("Presidential Suite");
+        upgradedCat.setBasePrice(new BigDecimal("23000000"));
+
+        RoomBookingDetail mockDetail = new RoomBookingDetail();
+        mockDetail.setId(detailId);
+        mockDetail.setRoomBooking(mockBooking);
+        mockDetail.setCategory(upgradedCat);
+        mockDetail.setRoomCharge(new BigDecimal("23000000"));
+
+        Room mockRoom = new Room();
+        mockRoom.setRoomNumber("501");
+        mockDetail.setRoom(mockRoom);
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction("ROOM_CATEGORY_CHANGED");
+        auditLog.setTableName("Room_Booking_Details");
+        auditLog.setRecordId(detailId);
+        auditLog.setOldValue("Room: 501, Category: Wellness Retreats");
+
+        when(roomBookingDetailRepository.findById(detailId)).thenReturn(Optional.of(mockDetail));
+        when(auditLogRepository.findAll()).thenReturn(List.of(auditLog));
+        when(roomCategoryRepository.findAll()).thenReturn(List.of(origCat, upgradedCat));
+
+        ResponseEntity<?> response = folioRestController.getFolioByRoom(detailId);
+
+        assertTrue(response.getStatusCode().is2xxSuccessful());
+        Map<?, ?> body = (Map<?, ?>) response.getBody();
+        assertNotNull(body);
+        assertEquals("Wellness Retreats", body.get("originalCategoryName"));
+        assertEquals(new BigDecimal("8000000"), body.get("roomCharge"));
+        assertEquals(new BigDecimal("8000000"), body.get("dailyRate"));
     }
 }

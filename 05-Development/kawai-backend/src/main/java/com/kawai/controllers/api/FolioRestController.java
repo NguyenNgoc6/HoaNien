@@ -6,6 +6,7 @@ import com.kawai.repositories.FolioItemRepository;
 import com.kawai.repositories.RoomBookingDetailRepository;
 import com.kawai.services.interfaces.NightAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +61,8 @@ public class FolioRestController {
     private final com.kawai.repositories.RoomSurchargeRepository roomSurchargeRepository;
     @Autowired
     private com.kawai.repositories.AuditLogRepository auditLogRepository;
+    @Autowired
+    private com.kawai.services.interfaces.UserService userService;
 
     @Autowired
     public FolioRestController(NightAuditService nightAuditService,
@@ -290,7 +293,7 @@ public class FolioRestController {
                 err.put("message", "RoomBookingDetail không tồn tại");
                 return ResponseEntity.badRequest().body(err);
             }
-        RoomBookingDetail detail = optDetail.get();
+            RoomBookingDetail detail = optDetail.get();
 
         String guestName = "Unknown";
         String bookerName = "Unknown";
@@ -404,28 +407,36 @@ public class FolioRestController {
         String originalCategoryName = currentCategoryName;
         BigDecimal originalExtraSurcharge = detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
 
+        boolean hasCategoryChangeLog = false;
         if (auditLogRepository != null) {
             try {
-                com.kawai.models.AuditLog categoryChangeLog = auditLogRepository.findAll().stream()
+                List<com.kawai.models.AuditLog> logs = auditLogRepository.findAll();
+                com.kawai.models.AuditLog categoryChangeLog = (logs != null) ? logs.stream()
                         .filter(log -> log != null && "ROOM_CATEGORY_CHANGED".equals(log.getAction()) && "Room_Booking_Details".equals(log.getTableName()) && detail.getId().equals(log.getRecordId()))
                         .findFirst()
-                        .orElse(null);
+                        .orElse(null) : null;
                 if (categoryChangeLog != null && categoryChangeLog.getOldValue() != null) {
                     String oldValue = categoryChangeLog.getOldValue();
                     int catIndex = oldValue.indexOf("Category: ");
                     if (catIndex != -1) {
                         originalCategoryName = oldValue.substring(catIndex + "Category: ".length()).trim();
                         final String targetOrigName = originalCategoryName;
-                        com.kawai.models.RoomCategory origCat = roomCategoryRepository.findAll().stream()
+                        List<com.kawai.models.RoomCategory> cats = (roomCategoryRepository != null) ? roomCategoryRepository.findAll() : null;
+                        com.kawai.models.RoomCategory origCat = (cats != null) ? cats.stream()
                                 .filter(cat -> cat != null && cat.getCategoryName() != null && cat.getCategoryName().equalsIgnoreCase(targetOrigName))
                                 .findFirst()
-                                .orElse(null);
+                                .orElse(null) : null;
                         if (origCat != null) {
-                            originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+                            try {
+                                originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+                            } catch (Exception e) {
+                                originalExtraSurcharge = BigDecimal.ZERO;
+                            }
                             if (origCat.getBasePrice() != null) {
                                 originalPricePerNight = origCat.getBasePrice();
                                 totalOriginalRoomCharge = originalPricePerNight.multiply(BigDecimal.valueOf(nights));
                                 dailyRate = originalPricePerNight;
+                                hasCategoryChangeLog = true;
                             }
                         }
                     }
@@ -433,35 +444,36 @@ public class FolioRestController {
             } catch (Exception e) {
                 // Defensive fallback
             }
-        } else if (detail.getCategory() != null) {
+        }
+        if (!hasCategoryChangeLog && detail.getCategory() != null) {
             final BigDecimal searchPrice = originalPricePerNight;
-            com.kawai.models.RoomCategory origCat = roomCategoryRepository.findAll().stream()
-                    .filter(cat -> cat.getBasePrice() != null && cat.getBasePrice().compareTo(searchPrice) == 0)
+            List<com.kawai.models.RoomCategory> cats = (roomCategoryRepository != null) ? roomCategoryRepository.findAll() : null;
+            com.kawai.models.RoomCategory origCat = (cats != null) ? cats.stream()
+                    .filter(cat -> cat != null && cat.getBasePrice() != null && cat.getBasePrice().compareTo(searchPrice) == 0)
                     .findFirst()
-                    .orElse(null);
+                    .orElse(null) : null;
             if (origCat != null) {
                 originalCategoryName = origCat.getCategoryName();
-                originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+                try {
+                    originalExtraSurcharge = calculateExtraSurchargeForCategory(detail, origCat);
+                } catch (Exception e) {
+                    originalExtraSurcharge = BigDecimal.ZERO;
+                }
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // PRIMARY BASELINE: Dùng room_charge (giá gốc lúc booking, không thay đổi khi nâng hạng)
-        // làm nguồn tính toán đáng tin nhất cho dailyRate và totalOriginalRoomCharge.
-        // catBasePrice chỉ dùng khi room_charge không có sẵn.
-        // ─────────────────────────────────────────────────────────────────
-        BigDecimal storedRoomCharge = detail.getRoomCharge();
-        if (!isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
-            // Non-Walk-In: room_charge = tổng giá x số đêm → chia để ra giá 1 đêm
-            BigDecimal derivedDailyRate = storedRoomCharge.divide(BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP);
-            originalPricePerNight = derivedDailyRate;
-            totalOriginalRoomCharge = storedRoomCharge;  // đúng chính xác, không cần nhân lại
-            dailyRate = derivedDailyRate;
-        } else if (isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
-            // Walk-In: room_charge = giá 1 đêm (không × số đêm)
-            originalPricePerNight = storedRoomCharge;
-            totalOriginalRoomCharge = storedRoomCharge.multiply(BigDecimal.valueOf(nights));
-            dailyRate = storedRoomCharge;
+        if (!hasCategoryChangeLog) {
+            BigDecimal storedRoomCharge = detail.getRoomCharge();
+            if (!isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal derivedDailyRate = storedRoomCharge.divide(BigDecimal.valueOf(nights), 2, java.math.RoundingMode.HALF_UP);
+                originalPricePerNight = derivedDailyRate;
+                totalOriginalRoomCharge = storedRoomCharge;
+                dailyRate = derivedDailyRate;
+            } else if (isWalkIn && storedRoomCharge != null && storedRoomCharge.compareTo(BigDecimal.ZERO) > 0) {
+                originalPricePerNight = storedRoomCharge;
+                totalOriginalRoomCharge = storedRoomCharge.multiply(BigDecimal.valueOf(nights));
+                dailyRate = storedRoomCharge;
+            }
         }
         
         BigDecimal expectedCharge343 = (totalOriginalRoomCharge != null && totalOriginalRoomCharge.compareTo(BigDecimal.ZERO) > 0)
@@ -574,16 +586,17 @@ public class FolioRestController {
         response.put("subCreditLimit", detail.getSubCreditLimit());
         boolean hasPendingMaintenance = false;
         String pendingMaintenanceMsg = null;
-        if (detail.getRoom() != null) {
+        if (detail.getRoom() != null && housekeepingTaskRepo != null) {
             Long roomId = detail.getRoom().getId();
-            List<HotelOperation> pendingOps = housekeepingTaskRepo.findAll().stream()
-                    .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(roomId)
+            List<HotelOperation> allTasks = housekeepingTaskRepo.findAll();
+            List<HotelOperation> pendingOps = (allTasks != null) ? allTasks.stream()
+                    .filter(t -> t != null && t.getRoom() != null && t.getRoom().getId().equals(roomId)
                             && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
                             && t.getDamagePrice() == null
                             && !"Priced".equalsIgnoreCase(t.getStatus())
                             && !"Completed".equalsIgnoreCase(t.getStatus())
                             && !"ConvertedToRepair".equalsIgnoreCase(t.getStatus()))
-                    .collect(java.util.stream.Collectors.toList());
+                    .collect(java.util.stream.Collectors.toList()) : java.util.Collections.emptyList();
             if (!pendingOps.isEmpty()) {
                 hasPendingMaintenance = true;
                 HotelOperation op = pendingOps.get(0);
@@ -624,9 +637,9 @@ public class FolioRestController {
                 }
             }
         }
-        response.put("roomCheckStatus", roomCheckStatus);
+            response.put("roomCheckStatus", roomCheckStatus);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> err = new java.util.HashMap<>();
             err.put("message", "Internal Server Error in getFolioByRoom: " + e.getMessage());
@@ -1017,10 +1030,11 @@ public class FolioRestController {
                 }
             }
 
-            if (detail.getRoom() != null) {
+            if (detail.getRoom() != null && housekeepingTaskRepo != null) {
                 Long rId = detail.getRoom().getId();
-                boolean hasPendingMaint = housekeepingTaskRepo.findAll().stream()
-                        .anyMatch(t -> t.getRoom() != null && t.getRoom().getId().equals(rId)
+                List<HotelOperation> allTasks = housekeepingTaskRepo.findAll();
+                boolean hasPendingMaint = (allTasks != null) && allTasks.stream()
+                        .anyMatch(t -> t != null && t.getRoom() != null && t.getRoom().getId().equals(rId)
                                 && ("DAMAGE_CHECK".equalsIgnoreCase(t.getOperationalType()) || "MAINTENANCE".equalsIgnoreCase(t.getOperationalType()))
                                 && t.getDamagePrice() == null
                                 && !"Priced".equalsIgnoreCase(t.getStatus())
@@ -1582,6 +1596,30 @@ public class FolioRestController {
                         .allMatch(d -> "Checked_Out".equalsIgnoreCase(d.getDetailStatus()));
                 map.put("status", isAllCheckedOut ? "Checked_Out" : "Checked_In");
 
+                boolean isAllRoomsInspected = !details.isEmpty();
+                for (RoomBookingDetail detail : details) {
+                    if (detail.getRoom() == null) {
+                        isAllRoomsInspected = false;
+                        break;
+                    }
+                    java.util.List<com.kawai.models.HotelOperation> tasks = housekeepingTaskRepo.findAll().stream()
+                            .filter(t -> t.getRoom() != null && t.getRoom().getId().equals(detail.getRoom().getId())
+                                    && "ROOM_CHECK".equals(t.getOperationalType()))
+                            .collect(java.util.stream.Collectors.toList());
+                    if (tasks.isEmpty()) {
+                        isAllRoomsInspected = false;
+                        break;
+                    }
+                    com.kawai.models.HotelOperation latestTask = tasks.stream()
+                            .max(java.util.Comparator.comparing(com.kawai.models.HotelOperation::getCreatedAt))
+                            .orElse(null);
+                    if (latestTask == null || !"Completed".equals(latestTask.getStatus())) {
+                        isAllRoomsInspected = false;
+                        break;
+                    }
+                }
+                map.put("allRoomsInspected", isAllRoomsInspected);
+
                 if (!details.isEmpty()) {
                     map.put("roomBookingDetailId", details.get(0).getId());
                 }
@@ -1686,7 +1724,9 @@ public class FolioRestController {
         boolean isMaintenance = "Maintenance".equalsIgnoreCase(dept);
         boolean isHousekeepingDamage = "Housekeeping".equalsIgnoreCase(dept) && desc != null
                 && desc.toLowerCase().contains("đền bù hỏng hóc");
-        return isMaintenance || isHousekeepingDamage
+        boolean isTour = "Tour".equalsIgnoreCase(dept) || "OTH_TOUR".equalsIgnoreCase(item.getRevenueCode())
+                || (desc != null && desc.toLowerCase().startsWith("tour:"));
+        return isMaintenance || isHousekeepingDamage || isTour
                 || (desc != null && desc.toLowerCase().contains("đền bù hỏng hóc"));
     }
 
@@ -1766,6 +1806,38 @@ public class FolioRestController {
     }
 
     private BigDecimal getExpectedRoomCharge(RoomBookingDetail d) {
+        if (d == null) return BigDecimal.ZERO;
+        if (auditLogRepository != null) {
+            try {
+                List<com.kawai.models.AuditLog> logs = auditLogRepository.findAll();
+                com.kawai.models.AuditLog categoryChangeLog = (logs != null) ? logs.stream()
+                        .filter(log -> log != null && "ROOM_CATEGORY_CHANGED".equals(log.getAction()) && "Room_Booking_Details".equals(log.getTableName()) && d.getId().equals(log.getRecordId()))
+                        .findFirst()
+                        .orElse(null) : null;
+                if (categoryChangeLog != null && categoryChangeLog.getOldValue() != null) {
+                    String oldValue = categoryChangeLog.getOldValue();
+                    int catIndex = oldValue.indexOf("Category: ");
+                    if (catIndex != -1) {
+                        String origCatName = oldValue.substring(catIndex + "Category: ".length()).trim();
+                        List<com.kawai.models.RoomCategory> cats = (roomCategoryRepository != null) ? roomCategoryRepository.findAll() : null;
+                        com.kawai.models.RoomCategory origCat = (cats != null) ? cats.stream()
+                                .filter(cat -> cat != null && cat.getCategoryName() != null && cat.getCategoryName().equalsIgnoreCase(origCatName))
+                                .findFirst()
+                                .orElse(null) : null;
+                        if (origCat != null && origCat.getBasePrice() != null) {
+                            long nights = 1;
+                            if (d.getRoomBooking() != null && d.getRoomBooking().getCheckInDate() != null && d.getRoomBooking().getCheckOutDate() != null) {
+                                nights = java.time.temporal.ChronoUnit.DAYS.between(d.getRoomBooking().getCheckInDate(), d.getRoomBooking().getCheckOutDate());
+                                if (nights <= 0) nights = 1;
+                            }
+                            return origCat.getBasePrice().multiply(BigDecimal.valueOf(nights));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Fallthrough to default logic
+            }
+        }
         BigDecimal totalCharge = BigDecimal.ZERO;
         if (d.getRoomCharge() != null && d.getRoomCharge().compareTo(BigDecimal.ZERO) > 0) {
             totalCharge = totalCharge.add(d.getRoomCharge());
@@ -1791,8 +1863,16 @@ public class FolioRestController {
     }
 
     private BigDecimal calculateExtraSurchargeForCategory(RoomBookingDetail detail, com.kawai.models.RoomCategory category) {
-        List<com.kawai.models.RoomGuest> guests = roomGuestRepository.findByRoomBookingDetailId(detail.getId());
-        if (guests == null || guests.isEmpty() || category == null) {
+        if (detail == null || category == null) {
+            return BigDecimal.ZERO;
+        }
+        List<com.kawai.models.RoomGuest> guests = null;
+        if (roomGuestRepository != null) {
+            try {
+                guests = roomGuestRepository.findByRoomBookingDetailId(detail.getId());
+            } catch (Exception e) {}
+        }
+        if (guests == null || guests.isEmpty()) {
             return detail.getExtraSurcharge() != null ? detail.getExtraSurcharge() : BigDecimal.ZERO;
         }
 
@@ -1834,5 +1914,18 @@ public class FolioRestController {
             }
         }
         return surcharge;
+    }
+
+    @PostMapping("/customers/{id}/anonymize")
+    public ResponseEntity<?> anonymizeCustomer(@PathVariable Long id) {
+        try {
+            userService.anonymizeCustomer(id);
+            return ResponseEntity.ok(Map.of("message", "Dữ liệu khách hàng đã được ẩn danh thành công. Lịch sử hóa đơn vẫn được lưu trữ."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Internal server error"));
+        }
     }
 }

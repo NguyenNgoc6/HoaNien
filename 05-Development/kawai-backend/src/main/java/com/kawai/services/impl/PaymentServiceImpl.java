@@ -48,7 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
         tx.setStatus(status); // Ghi vào trường Enum chuẩn xác
         tx.setGatewayStatus(status.name()); // Backup vào String để tương thích code cũ (nếu có)
         tx.setTransactionRef(ref);
-        tx.setCreatedAt(LocalDateTime.now());
+        tx.setCreatedAt(LocalDateTime.now().withNano(0));
 
         return paymentTransactionRepository.save(tx);
     }

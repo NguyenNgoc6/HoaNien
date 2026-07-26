@@ -24,7 +24,7 @@ public class Account {
     @org.hibernate.envers.Audited(targetAuditMode = org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED)
     private Role role;
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now().withNano(0);
 
     @Column(name = "failed_login_attempts")
     private Integer failedLoginAttempts = 0;

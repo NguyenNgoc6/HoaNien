@@ -1150,7 +1150,7 @@ public class EmailServiceImpl implements EmailService {
             java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             ctx.setVariable("customerName", customer.getFullName());
             ctx.setVariable("orderId", order.getId());
-            ctx.setVariable("cancelTime", java.time.LocalDateTime.now().format(fmt));
+            ctx.setVariable("cancelTime", java.time.LocalDateTime.now().withNano(0).format(fmt));
             ctx.setVariable("orderTime", order.getOrderTime() != null ? order.getOrderTime().format(fmt) : "");
             ctx.setVariable("totalAmount", order.getTotalAmount());
             ctx.setVariable("cancelledBy", cancelledBy != null && !cancelledBy.isBlank() ? cancelledBy : "Khách hàng");

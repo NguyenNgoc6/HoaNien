@@ -36,7 +36,7 @@ public class HotelOperation {
     private String status = "Pending";
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now().withNano(0);
 
     @Column(name = "started_at")
     private LocalDateTime startedAt;

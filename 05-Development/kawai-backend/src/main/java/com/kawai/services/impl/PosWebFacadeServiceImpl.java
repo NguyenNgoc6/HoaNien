@@ -74,7 +74,7 @@ public class PosWebFacadeServiceImpl implements PosWebFacadeService {
 
         Map<Long, String> tableAvailabilityText = new HashMap<>();
         LocalDate today = LocalDate.now();
-        java.time.LocalDateTime currentDT = java.time.LocalDateTime.now();
+        java.time.LocalDateTime currentDT = java.time.LocalDateTime.now().withNano(0);
 
         for (RestaurantTable table : otherTables) {
             List<TableReservation> reservations = tableReservationRepository.findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);

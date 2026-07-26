@@ -694,8 +694,8 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         booking.setCheckOutDate(req.getCheckOutDate() != null ? req.getCheckOutDate() : LocalDate.now().plusDays(1));
         booking.setTotalPrice(BigDecimal.ZERO);
         booking.setDepositAmount(BigDecimal.ZERO);
-        booking.setCancellationDeadline(java.time.LocalDateTime.now().plusDays(2));
-        booking.setHoldExpiresAt(java.time.LocalDateTime.now().plusMinutes(2));
+        booking.setCancellationDeadline(java.time.LocalDateTime.now().withNano(0).plusDays(2));
+        booking.setHoldExpiresAt(java.time.LocalDateTime.now().withNano(0).plusMinutes(2));
         booking.setCreditLimit(resolveMembershipCreditLimit(customer));
         booking.setPersonalPinHash(UUID.randomUUID().toString().substring(0, 8));
         return booking;
@@ -782,7 +782,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
             pt.setStatus(PaymentStatus.SUCCESS);
             pt.setGatewayStatus("SUCCESS");
             pt.setTransactionRef("WALKIN_DEP_" + booking.getId() + "_" + System.currentTimeMillis());
-            pt.setCreatedAt(java.time.LocalDateTime.now());
+            pt.setCreatedAt(java.time.LocalDateTime.now().withNano(0));
             paymentTransactionRepository.save(pt);
         }
     }

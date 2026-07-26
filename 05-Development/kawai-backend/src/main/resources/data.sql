@@ -240,7 +240,7 @@ INSERT INTO Rooms (room_id, room_number, category_id, room_status, current_booki
 (2,  '102', 1, 'Vacant_Dirty', NULL),
 (3,  '103', 1, 'Maintenance',  NULL),
 (4,  '104', 1, 'Vacant_Dirty', NULL),
-(5,  '105', 1, 'Occupied',     3),
+(5,  '105', 1, 'Vacant_Clean', NULL),
 -- Category 4 - Garden View Suite (rooms 106-110): tất cả Vacant
 (6,  '106', 4, 'Vacant_Clean', NULL),
 (7,  '107', 4, 'Vacant_Clean', NULL),
@@ -399,7 +399,7 @@ INSERT INTO Room_Booking_Details (detail_id, room_booking_id, category_id, room_
 -- Booking 2 (Checked_Out): 3 đêm x 3,500,000 = 10,500,000
 (2,  2,  2, 11,   10500000, 'Checked_Out', 'KING_SIZE', NULL, TRUE,  1500000, 'BILL_TO_LEADER'),
 -- Booking 3 (Checked_In): 3 đêm x 2,500,000 = 7,500,000
-(3,  3,  1, 5,    7500000, 'Checked_In',  'KING_SIZE', NULL, TRUE,  2000000, 'BILL_TO_LEADER'),
+(3,  3,  1, NULL, 7500000, 'Pending',     'KING_SIZE', NULL, TRUE,  2000000, 'BILL_TO_LEADER'),
 -- Booking 4 (Pending): 2 đêm x 2,500,000 = 5,000,000
 (4,  4,  1, NULL, 5000000, 'Pending',     'KING_SIZE', NULL, TRUE,  500000,  'BILL_TO_LEADER'),
 -- Booking 5 (Pending): 3 đêm x 2,500,000 = 7,500,000
@@ -646,7 +646,7 @@ INSERT INTO Menu_Item_Days (item_id, day_of_week) VALUES
 -- ── 19. Food Orders (19 rows) ────────────────────────────────
 INSERT INTO Food_Orders (order_id, booking_id, room_booking_detail_id, table_id, order_type, order_status, payment_type, is_paid_in_pos, created_by_staff_id, kitchen_processed_by_id) VALUES 
 (1, NULL, NULL, 1, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
-(2, 3, 3, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL),
+(2, 3, NULL, NULL, 'Room Service', 'Pending', 'Post to Room', FALSE, 2, NULL),
 (3, NULL, NULL, 3, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, 3),
 (4, NULL, NULL, 2, 'Dine-In', 'Completed', 'Pay at Counter', TRUE, 2, NULL),
 (5, 505, 5051, 4, 'Dine-In', 'Completed', 'Post to Room', TRUE, 2, 3),
@@ -730,7 +730,7 @@ INSERT INTO Hotel_Operations (task_id, room_id, staff_id, supervisor_id, operati
 -- MAINTENANCE (MAINTENANCE)
 (6, 17, 10, 4, 'MAINTENANCE', 'High', 'Pending', '2026-06-28 10:30:00', NULL, NULL, 'Housekeeping báo: Điều hòa chảy nước ướt cả sàn gỗ, phòng 207.'),
 (7, 3, 10, 4, 'MAINTENANCE', 'Normal', 'Pending', '2026-06-28 12:00:00', NULL, NULL, 'Khách phàn nàn: Vòi hoa sen bị nghẹt, nước chảy rất yếu.'),
-(8, 5, 10, 4, 'MAINTENANCE', 'Normal', 'InProgress', '2026-06-28 13:00:00', '2026-06-28 13:15:00', NULL, 'Kiểm tra hệ thống đèn ban công, 1 bóng bị cháy.'),
+(8, 17, 10, 4, 'MAINTENANCE', 'Normal', 'InProgress', '2026-06-28 13:00:00', '2026-06-28 13:15:00', NULL, 'Kiểm tra hệ thống đèn ban công, 1 bóng bị cháy.'),
 (909, 10, 10, 4, 'MAINTENANCE', 'High', 'Paused', '2026-06-28 09:00:00', '2026-06-28 09:10:00', NULL, 'Sửa két sắt không mở được. \n[Tạm dừng]: Chờ mua pin mới loại 9V để thay mảng mạch.'),
 (10, 16, 10, 4, 'MAINTENANCE', 'Low', 'Completed', '2026-06-28 08:00:00', '2026-06-28 08:05:00', '2026-06-28 08:20:00', 'Thay pin tay nắm cửa phòng 309. \n[Đã sửa]: Đã thay 4 cục pin AA Panasonic.');
 

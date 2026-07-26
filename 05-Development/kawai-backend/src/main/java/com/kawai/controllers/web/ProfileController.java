@@ -79,6 +79,9 @@ public class ProfileController {
     private com.kawai.services.interfaces.EmailService emailService;
 
     @Autowired
+    private com.kawai.services.interfaces.HousekeepingService housekeepingService;
+
+    @Autowired
     private com.kawai.repositories.PaymentTransactionRepository paymentTransactionRepository;
 
     @Autowired
@@ -611,14 +614,19 @@ public class ProfileController {
         }
         com.kawai.models.Room room = roomRepo.findById(roomId).orElse(null);
         if (room != null) {
-            com.kawai.models.HotelOperation task = new com.kawai.models.HotelOperation();
-            task.setRoom(room);
-            task.setStatus("Pending");
-            task.setNotes("[Khách yêu cầu qua App] " + notes);
-            task.setPriority("Urgent");
-            task.setOperationalType(type);
-            housekeepingTaskRepo.save(task);
-            ra.addFlashAttribute("successMessage", "Đã gửi yêu cầu thành công, nhân viên sẽ đến hỗ trợ bạn ngay.");
+            if ("MAINTENANCE".equalsIgnoreCase(type) || "GUEST_REQUEST".equalsIgnoreCase(type)) {
+                housekeepingService.createMaintenanceRequest(roomId, null, "[Khách yêu cầu Sửa khẩn cấp qua App] " + notes, true);
+                ra.addFlashAttribute("successMessage", "Đã gửi phiếu sửa chữa khẩn cấp thành công, bộ phận Bảo trì đã nhận được thông tin và sẽ đến hỗ trợ bạn ngay.");
+            } else {
+                com.kawai.models.HotelOperation task = new com.kawai.models.HotelOperation();
+                task.setRoom(room);
+                task.setStatus("Pending");
+                task.setNotes("[Khách yêu cầu qua App] " + notes);
+                task.setPriority("Urgent");
+                task.setOperationalType(type);
+                housekeepingTaskRepo.save(task);
+                ra.addFlashAttribute("successMessage", "Đã gửi yêu cầu Dọn khẩn cấp thành công, nhân viên sẽ đến hỗ trợ bạn ngay.");
+            }
         } else {
             ra.addFlashAttribute("errorMessage", "Phòng không tồn tại.");
         }

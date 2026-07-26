@@ -435,7 +435,7 @@
                     <td style="padding: 24px 24px 24px 16px !important; white-space: nowrap;">
                         <div style="display: flex; gap: 8px; align-items: center; white-space: nowrap;">
                             <a href="/receptionist/folio/detail?id=${folio.roomBookingDetailId}" class="btn-folio-detail">XEM CHI TIẾT</a>
-                            ${folio.status.toLowerCase() !== 'checked_out' ? `
+                            ${folio.status.toLowerCase() !== 'checked_out' && !folio.allRoomsInspected ? `
                                 <button onclick="requestGroupCheck(${folio.bookingId})" class="btn-request-check">
                                     KIỂM TRA PHÒNG
                                 </button>

@@ -30,7 +30,7 @@ public class MarketingServiceImpl implements MarketingService {
         promo.setDiscountType("COMBO_PACKAGE");
         promo.setDiscountValue(new BigDecimal("0"));
         promo.setMaxUses(100);
-        promo.setValidFrom(LocalDateTime.now());
+        promo.setValidFrom(LocalDateTime.now().withNano(0));
         promo.setValidTo(LocalDate.now().plusMonths(1));
         
         try {

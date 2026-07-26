@@ -29,8 +29,8 @@ public class AuditCleanupTask {
     // Scheduled dynamically in DynamicJobConfig
     @Transactional
     public void cleanupOldAuditLogs() {
-        this.lastRun = LocalDateTime.now();
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(90);
+        this.lastRun = LocalDateTime.now().withNano(0);
+        LocalDateTime cutoffDate = LocalDateTime.now().withNano(0).minusDays(90);
         log.info("Bắt đầu dọn dẹp các bản ghi AuditLog cũ hơn: {}", cutoffDate);
         
         try {

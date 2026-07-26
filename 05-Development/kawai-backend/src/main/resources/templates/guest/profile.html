@@ -790,7 +790,7 @@
                                                         </button>
                                                         <button type="button" th:data-room-id="${detail.room?.id}"
                                                             th:data-room-number="${detail.room?.roomNumber}"
-                                                            onclick="openEmergencyModal('GUEST_REQUEST', this.getAttribute('data-room-id'), this.getAttribute('data-room-number'))"
+                                                            onclick="openEmergencyModal('MAINTENANCE', this.getAttribute('data-room-id'), this.getAttribute('data-room-number'))"
                                                             class="px-2 py-1 bg-red-100 text-red-700 rounded text-[10px] uppercase font-bold flex items-center gap-1 hover:bg-red-200 transition">
                                                             <span
                                                                 class="material-symbols-outlined text-[14px]">build</span>
@@ -1040,10 +1040,16 @@
                                                 <span class="font-medium opacity-60"
                                                     th:unless="${tb.schedule != null}">--:--</span>
                                             </div>
-                                            <div class="flex items-center gap-2 col-span-2 pt-1 border-t border-hoanien-text/5">
+                                            <div class="flex items-center gap-2">
                                                 <span class="material-symbols-outlined text-emerald-700 text-base">group</span>
                                                 <span class="font-medium"
                                                     th:text="${(tb.participantCount != null ? tb.participantCount : 1) + ' khách tham gia'}">0 khách</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-emerald-700 text-base">payments</span>
+                                                <span class="font-medium text-[11px]"
+                                                    th:with="pm=${tb.notes != null and #strings.contains(tb.notes, 'paymentMethod=') ? #strings.substringAfter(tb.notes, 'paymentMethod=').split(';')[0] : ''}"
+                                                    th:text="${pm == 'post-room' or (pm == '' and tb.roomBookingDetail != null) ? 'Ghi nợ phòng' : (pm == 'vnpay' ? 'VNPay QR' : 'Tại quầy')}">Thanh toán</span>
                                             </div>
                                         </div>
 
@@ -1069,8 +1075,8 @@
                                         <div class="pt-2 border-t border-hoanien-text/10 flex gap-2">
                                             <button th:if="${(#strings.toUpperCase(tb.bookingStatus ?: '')) == 'PENDING' or (#strings.toUpperCase(tb.bookingStatus ?: '')) == 'CONFIRMED'}"
                                                 type="button"
-                                                th:with="isRefundable=${tb.schedule != null and tb.schedule.departureDate != null and T(java.time.temporal.ChronoUnit).HOURS.between(T(java.time.LocalDateTime).now(), tb.schedule.departureDate.atTime(tb.schedule.departureTime != null ? tb.schedule.departureTime : T(java.time.LocalTime).of(7,0))) > 24}"
-                                                th:onclick="'confirmCancelTour(' + ${tb.id} + ', ' + ${isRefundable} + ', ' + ${tb.tourCharge != null ? tb.tourCharge : 0} + ')'"
+                                                th:with="isRefundable=${tb.schedule != null and tb.schedule.departureDate != null and T(java.time.temporal.ChronoUnit).HOURS.between(T(java.time.LocalDateTime).now(), tb.schedule.departureDate.atTime(tb.schedule.departureTime != null ? tb.schedule.departureTime : T(java.time.LocalTime).of(7,0))) > 24}, isPostToRoom=${tb.notes != null and #strings.contains(tb.notes, 'paymentMethod=post-room')}"
+                                                th:onclick="'confirmCancelTour(' + ${tb.id} + ', ' + ${isRefundable} + ', ' + ${tb.tourCharge != null ? tb.tourCharge : 0} + ', ' + ${isPostToRoom} + ')'"
                                                 class="flex-1 flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm border border-red-200 hover:border-red-500"
                                                 title="Hủy đơn">
                                                 <span class="material-symbols-outlined text-[14px]">cancel</span>
@@ -2350,10 +2356,62 @@
                 });
         }
 
-        function confirmCancelTour(bookingId, isRefundable, totalPrice) {
+        function confirmCancelTour(bookingId, isRefundable, totalPrice, isPostToRoom) {
             const refundAmount50 = Math.round((totalPrice || 0) * 0.5);
             const fmt = new Intl.NumberFormat('vi-VN').format(refundAmount50);
-            if (isRefundable) {
+            const fmtTotal = new Intl.NumberFormat('vi-VN').format(totalPrice || 0);
+
+            if (isPostToRoom) {
+                // Hủy Tour Gán Phòng -> Xóa nợ Folio, trả 100% hạn mức chi tiêu phòng
+                Swal.fire({
+                    title: 'Hủy tour gán phòng?',
+                    html: `<p style="color:#555;font-size:0.95rem;">Do quý khách thanh toán bằng cách gán nợ vào phòng, khi hủy tour, khoản nợ <strong style="color:#27ae60;font-size:1.1rem;">${fmtTotal} ₫</strong> sẽ được xóa hoàn toàn khỏi Folio phòng và <strong style="color:#27ae60;">khôi phục 100% hạn mức chi tiêu</strong> phòng của quý khách.</p>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#A67C00',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Đồng ý hủy tour',
+                    cancelButtonText: 'Không, giữ lại'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Đang xử lý...',
+                            text: 'Vui lòng chờ trong giây lát',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+
+                        fetch('/profile/tours/cancel/' + bookingId, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(err => { throw new Error(err.message || 'Hủy thất bại'); });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công',
+                                    text: 'Đã hủy tour gán phòng thành công! Khoản nợ tour đã được xóa khỏi Folio phòng và khôi phục hạn mức chi tiêu.',
+                                    confirmButtonColor: '#A67C00'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire('Lỗi', error.message || 'Đã xảy ra lỗi khi hủy tour.', 'error').then(() => {
+                                    if (error.message && error.message.includes('Cancelled')) {
+                                        window.location.reload();
+                                    }
+                                });
+                            });
+                    }
+                });
+            } else if (isRefundable) {
                 // Hủy có hoàn tiền 50% → hỏi trước, rồi mở modal nhập ngân hàng
                 Swal.fire({
                     title: 'Hủy đặt tour?',

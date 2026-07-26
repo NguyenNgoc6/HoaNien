@@ -372,7 +372,7 @@ public class TourGuideController {
                         if (parsedBookingNotes.isEmpty()) {
                             parsedBookingNotes = cleanNote;
                         } else if (!parsedBookingNotes.contains(cleanNote)) {
-                            parsedBookingNotes += " | " + cleanNote;
+                            parsedBookingNotes += "\n• " + cleanNote;
                         }
                     }
                 }
@@ -477,10 +477,12 @@ public class TourGuideController {
                 return id2.compareTo(id1);
             });
 
-            // Lọc danh sách schedule: Chỉ giữ lại các chuyến đi thực sự có khách (bookedSeats > 0)
+            // Lọc danh sách schedule: Giữ các chuyến đi có khách HOẶC có đơn đặt/hủy tour
             java.util.List<com.kawai.models.TourSchedule> filteredSchedules = new java.util.ArrayList<>();
             for (com.kawai.models.TourSchedule s : dbSchedules) {
-                if (s.getBookedSeats() != null && s.getBookedSeats() > 0) {
+                java.util.List<com.kawai.models.TourBooking> bList = tourBookingRepository.findByScheduleId(s.getId());
+                boolean hasBookings = bList != null && !bList.isEmpty();
+                if ((s.getBookedSeats() != null && s.getBookedSeats() > 0) || hasBookings) {
                     filteredSchedules.add(s);
                 }
             }
@@ -504,15 +506,19 @@ public class TourGuideController {
             map.put("guide", getGuideForSchedule(sched));
             
             String dbStatus = sched.getScheduleStatus();
+            java.util.List<com.kawai.models.TourBooking> schedBookings = tourBookingRepository.findByScheduleId(sched.getId());
+            boolean isAllCancelled = schedBookings != null && !schedBookings.isEmpty() && schedBookings.stream()
+                    .allMatch(b -> b.getBookingStatus() != null && b.getBookingStatus().toLowerCase().contains("cancel"));
+
             String mappedStatus;
             java.time.LocalDate today2 = java.time.LocalDate.now();
             java.time.LocalDate depDate2 = sched.getDepartureDate();
 
-            if (dbStatus != null && ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus)
+            if ("cancelled".equalsIgnoreCase(dbStatus) || isAllCancelled) {
+                mappedStatus = "cancelled";
+            } else if (dbStatus != null && ("completed".equalsIgnoreCase(dbStatus) || "finish".equalsIgnoreCase(dbStatus)
                     || "done".equalsIgnoreCase(dbStatus))) {
                 mappedStatus = "completed";
-            } else if (dbStatus != null && "cancelled".equalsIgnoreCase(dbStatus)) {
-                mappedStatus = "cancelled";
             } else if (dbStatus != null && "ongoing".equalsIgnoreCase(dbStatus)) {
                 mappedStatus = "ongoing";
             } else {

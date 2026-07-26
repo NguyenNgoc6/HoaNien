@@ -31,7 +31,7 @@ public class SystemNotification {
     private Boolean isRead = false;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now().withNano(0);
 
     public SystemNotification() {
     }
@@ -43,7 +43,7 @@ public class SystemNotification {
         this.type = type;
         this.targetUrl = targetUrl;
         this.isRead = false;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now().withNano(0);
     }
 
     public Long getId() {

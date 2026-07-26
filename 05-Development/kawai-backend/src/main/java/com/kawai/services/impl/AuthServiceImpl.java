@@ -176,7 +176,7 @@ public class AuthServiceImpl implements AuthService {
             // fallback
         }
 
-        if (account.getLockoutTime() != null && account.getLockoutTime().isAfter(LocalDateTime.now())) {
+        if (account.getLockoutTime() != null && account.getLockoutTime().isAfter(LocalDateTime.now().withNano(0))) {
             throw new IllegalStateException("AUTH-005: Tài khoản bị khóa do nhập sai quá " + maxAttempts + " lần");
         }
 
@@ -191,7 +191,7 @@ public class AuthServiceImpl implements AuthService {
             attempts++;
             account.setFailedLoginAttempts(attempts);
             if (attempts >= maxAttempts) {
-                account.setLockoutTime(LocalDateTime.now().plusMinutes(lockMinutes));
+                account.setLockoutTime(LocalDateTime.now().withNano(0).plusMinutes(lockMinutes));
                 account.setIsActive(false);
             }
             accountRepository.save(account);
@@ -209,7 +209,7 @@ public class AuthServiceImpl implements AuthService {
 
         String otp = String.format("%06d", 100000 + random.nextInt(900000));
         account.setTwoFactorCode(otp);
-        account.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(3));
+        account.setTwoFactorExpiry(LocalDateTime.now().withNano(0).plusMinutes(3));
         accountRepository.save(account);
 
         writeAuditLog(account, "GENERATE_OTP", "Accounts", account.getId(), null, "OTP generated: " + otp);
@@ -245,7 +245,7 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
 
-        if (account.getTwoFactorExpiry().isBefore(LocalDateTime.now())) {
+        if (account.getTwoFactorExpiry().isBefore(LocalDateTime.now().withNano(0))) {
             throw new IllegalStateException("AUTH-003: OTP hết hạn");
         }
 
@@ -289,7 +289,7 @@ public class AuthServiceImpl implements AuthService {
 
         String token = java.util.UUID.randomUUID().toString();
         account.setResetPasswordToken(token);
-        account.setResetPasswordExpiry(LocalDateTime.now().plusMinutes(10));
+        account.setResetPasswordExpiry(LocalDateTime.now().withNano(0).plusMinutes(10));
         accountRepository.save(account);
 
         writeAuditLog(account, "RESET_PASSWORD_REQUEST", "Accounts", account.getId(), null, "Reset Token: " + token);
@@ -321,7 +321,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Token reset hết hạn hoặc không hợp lệ"));
 
         if (account.getResetPasswordExpiry() == null
-                || account.getResetPasswordExpiry().isBefore(LocalDateTime.now())) {
+                || account.getResetPasswordExpiry().isBefore(LocalDateTime.now().withNano(0))) {
             throw new IllegalStateException("Token reset hết hạn hoặc không hợp lệ");
         }
 
@@ -358,7 +358,7 @@ public class AuthServiceImpl implements AuthService {
         log.setOldValue(oldValue);
         log.setNewValue(newValue);
         log.setIpAddress("127.0.0.1");
-        log.setTimestamp(LocalDateTime.now());
+        log.setTimestamp(LocalDateTime.now().withNano(0));
         auditLogRepository.save(log);
     }
 }

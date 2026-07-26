@@ -277,6 +277,10 @@ public class DependentServiceImpl implements DependentService {
                 ? createNewDependent(booking)
                 : loadExistingDependent(dto.getDependentId());
 
+        if (dependent.getCustomer() == null && booking != null && booking.getCustomer() != null) {
+            dependent.setCustomer(booking.getCustomer());
+        }
+
         populateDependentFields(dependent, dto, cccdEncrypted);
         return dependentRepository.save(dependent);
     }

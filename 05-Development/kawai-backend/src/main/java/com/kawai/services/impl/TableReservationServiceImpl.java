@@ -91,7 +91,7 @@ public class TableReservationServiceImpl implements TableReservationService {
             if (isAvailable && date.equals(LocalDate.now())) {
                 if ("Occupied".equalsIgnoreCase(table.getTableStatus()) || "Cleaning".equalsIgnoreCase(table.getTableStatus())) {
                     LocalDateTime startDateTime = LocalDateTime.of(date, start);
-                    if (startDateTime.isBefore(LocalDateTime.now().plusHours(2))) {
+                    if (startDateTime.isBefore(LocalDateTime.now().withNano(0).plusHours(2))) {
                         isAvailable = false;
                     }
                 }
@@ -140,7 +140,7 @@ public class TableReservationServiceImpl implements TableReservationService {
         if (request.getReserveDate().equals(LocalDate.now())) {
             if ("Occupied".equalsIgnoreCase(table.getTableStatus()) || "Cleaning".equalsIgnoreCase(table.getTableStatus())) {
                 java.time.LocalDateTime startDateTime = java.time.LocalDateTime.of(request.getReserveDate(), request.getStartTime());
-                if (startDateTime.isBefore(java.time.LocalDateTime.now().plusHours(2))) {
+                if (startDateTime.isBefore(java.time.LocalDateTime.now().withNano(0).plusHours(2))) {
                     throw new BusinessException("TABLE-007", "Bàn hiện đang " + ("Cleaning".equalsIgnoreCase(table.getTableStatus()) ? "dọn dẹp" : "có khách") + ". Không thể đặt trước cho khoảng thời gian trong vòng 2 giờ tới.");
                 }
             }

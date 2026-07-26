@@ -185,7 +185,7 @@ public class BookingServiceImpl implements BookingService {
         holdBooking.setTotalPrice(BigDecimal.ZERO);
         // Tạo thẳng Pending_Payment — giữ chỗ phòng ngay khi bấm Thanh toán
         holdBooking.setBookingStatus("Pending_Payment");
-        holdBooking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
+        holdBooking.setHoldExpiresAt(LocalDateTime.now().withNano(0).plusMinutes(2));
         holdBooking.setBookingSource("Direct_Web");
         holdBooking.setCheckInDate(checkIn);
         holdBooking.setCheckOutDate(checkOut);
@@ -311,7 +311,7 @@ public class BookingServiceImpl implements BookingService {
         savedHold.setTotalPrice(discountedPrice.setScale(0, RoundingMode.HALF_UP));
         savedHold.setDepositAmount(depositVal);
         savedHold.setBookingStatus("Pending_Payment");
-        savedHold.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
+        savedHold.setHoldExpiresAt(LocalDateTime.now().withNano(0).plusMinutes(2));
         RoomBooking savedBooking = roomBookingRepository.save(savedHold);
 
         // Cập nhật thông tin khách hàng nếu chưa có trong profile (chỉ ghi khi trống)
@@ -469,7 +469,7 @@ public class BookingServiceImpl implements BookingService {
      */
     @Transactional
     public void cleanupStaleHolds() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().withNano(0);
         List<RoomBooking> staleHolds = roomBookingRepository
                 .findByBookingStatusInAndHoldExpiresAtBefore(java.util.List.of("Pending_Payment"), now);
         if (!staleHolds.isEmpty()) {
@@ -669,7 +669,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // Đã đóng cọc -> Cần check deadline hoàn tiền sử dụng cancellationDeadline
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now().withNano(0);
         boolean isEligibleForRefund = booking.getCancellationDeadline() != null
                 && !now.isAfter(booking.getCancellationDeadline());
 
@@ -743,7 +743,7 @@ public class BookingServiceImpl implements BookingService {
                     java.time.LocalDateTime depTime = tb.getSchedule().getDepartureDate().atTime(
                             tb.getSchedule().getDepartureTime() != null ? tb.getSchedule().getDepartureTime()
                                     : java.time.LocalTime.of(7, 0));
-                    if (java.time.temporal.ChronoUnit.HOURS.between(java.time.LocalDateTime.now(), depTime) > 24) {
+                    if (java.time.temporal.ChronoUnit.HOURS.between(java.time.LocalDateTime.now().withNano(0), depTime) > 24) {
                         isTourRefundable = true;
                     }
                 }
@@ -831,7 +831,7 @@ public class BookingServiceImpl implements BookingService {
         long remainingSeconds = 0L;
         // SoftLock countdown: tính số giây còn lại khi đơn đang chờ thanh toán VNPay
         if ("Pending_Payment".equals(booking.getBookingStatus()) && booking.getHoldExpiresAt() != null) {
-            remainingSeconds = java.time.temporal.ChronoUnit.SECONDS.between(LocalDateTime.now(),
+            remainingSeconds = java.time.temporal.ChronoUnit.SECONDS.between(LocalDateTime.now().withNano(0),
                     booking.getHoldExpiresAt());
             if (remainingSeconds < 0)
                 remainingSeconds = 0L;
@@ -932,7 +932,7 @@ public class BookingServiceImpl implements BookingService {
             // Set status based on payment method
             if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
                 booking.setBookingStatus("Pending_Payment");
-                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
+                booking.setHoldExpiresAt(LocalDateTime.now().withNano(0).plusMinutes(2));
                 log.info(" Pending→Pending_Payment: bookingId={}, holdExpiresAt={}",
                         bookingId, booking.getHoldExpiresAt());
             } else {
@@ -944,7 +944,7 @@ public class BookingServiceImpl implements BookingService {
         } else if ("Pending_Payment".equalsIgnoreCase(booking.getBookingStatus())) {
             // User thử lại VNPay (ví dụ back lại trang payment) → refresh timer
             if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
-                booking.setHoldExpiresAt(LocalDateTime.now().plusMinutes(2));
+                booking.setHoldExpiresAt(LocalDateTime.now().withNano(0).plusMinutes(2));
                 log.info(" Pending_Payment refreshed: bookingId={}, holdExpiresAt={}",
                         bookingId, booking.getHoldExpiresAt());
             } else {

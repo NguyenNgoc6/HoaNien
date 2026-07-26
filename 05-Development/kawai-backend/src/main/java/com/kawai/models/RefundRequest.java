@@ -53,7 +53,7 @@ public class RefundRequest {
     private String evidenceImageUrl;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now().withNano(0);
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

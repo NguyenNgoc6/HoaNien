@@ -68,6 +68,7 @@ public class SecurityConfig {
                         // org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
                         // "hasIpAddress('192.168.1.0/24')"))
 
+                        .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/", "/booking", "/auth/register", "/auth/login", "/auth/check-session",
                                 "/auth/google-login", "/auth/forgot-password", "/auth/reset-password", "/auth/manual-logout",
                                 "/api/v1/auth/**",
@@ -88,6 +89,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/menu-items/**", "/api/rooms/**", "/api/v1/tables/**")
                         .permitAll()
 
+                        .requestMatchers("/admin/api/v1/customers/*/anonymize").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "OP_RECEPTION_CHECKOUT")
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "OP_MASTER_DATA", "OP_AUDIT_LOG", "OP_WORKFLOW")
                         .requestMatchers("/manager/**").hasAnyAuthority("ROLE_MANAGER", "ROLE_ADMIN")
                         // Receptionist root & dashboard

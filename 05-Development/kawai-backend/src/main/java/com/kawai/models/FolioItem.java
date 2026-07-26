@@ -17,7 +17,7 @@ public class FolioItem {
     @Column(nullable=false) private String description;
     @Column(name="is_settled_separately", nullable=false) private Boolean isSettledSeparately = false;
     @ManyToOne @JoinColumn(name="created_by_staff_id") private Employee createdByStaff;
-    @Column(name="created_at", nullable=false) private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name="created_at", nullable=false) private LocalDateTime createdAt = LocalDateTime.now().withNano(0);
     @Column(name="signature_img_url", length=500) private String signatureImgUrl;
     @Column(name="revenue_code") private String revenueCode;
 }

@@ -156,7 +156,7 @@ public class PosServiceImpl implements PosService {
                     java.time.LocalDate today = java.time.LocalDate.now();
                     java.time.LocalTime now = java.time.LocalTime.now();
 
-                    java.time.LocalDateTime currentDT = java.time.LocalDateTime.now();
+                    java.time.LocalDateTime currentDT = java.time.LocalDateTime.now().withNano(0);
 
                     List<TableReservation> reservations = tableReservationRepository
                             .findByTable_IdAndReserveDateOrderByReserveTimeAsc(table.getId(), today);
@@ -464,7 +464,7 @@ public class PosServiceImpl implements PosService {
 
             // Tự động chuyển bàn sang Cleaning
             table.setTableStatus("Cleaning");
-            table.setCleaningStartTime(java.time.LocalDateTime.now());
+            table.setCleaningStartTime(java.time.LocalDateTime.now().withNano(0));
             restaurantTableRepository.save(table);
         }
 

@@ -90,7 +90,7 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setAmount(booking.getDepositAmount());
         txn.setStatus(PaymentStatus.INIT);
         txn.setTransactionType("ROOM_BOOKING");
-        txn.setCreatedAt(LocalDateTime.now());
+        txn.setCreatedAt(LocalDateTime.now().withNano(0));
 
         // 2. Sinh transactionRef mới
         String transactionRef = bookingId + "_" + System.currentTimeMillis();
@@ -100,7 +100,7 @@ public class VnPayServiceImpl implements VnPayService {
         // 3. Build params VNPay
         long amountVal = booking.getDepositAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP)
                 .longValue();
-        String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String createDate = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getApiVersion());
@@ -125,7 +125,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
-        String expireDate = LocalDateTime.now().plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String expireDate = LocalDateTime.now().withNano(0).plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
         // 4. Lọc null/empty, sắp xếp và build hashData & query
@@ -176,7 +176,7 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setAmount(booking.getDepositAmount());
         txn.setStatus(PaymentStatus.INIT);
         txn.setTransactionType("ROOM_BOOKING");
-        txn.setCreatedAt(LocalDateTime.now());
+        txn.setCreatedAt(LocalDateTime.now().withNano(0));
 
         // 2. Sinh transactionRef mới với tiền tố WALKIN_
         String transactionRef = "WALKIN_" + bookingId + "_" + System.currentTimeMillis();
@@ -186,7 +186,7 @@ public class VnPayServiceImpl implements VnPayService {
         // 3. Build params VNPay
         long amountVal = booking.getDepositAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP)
                 .longValue();
-        String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String createDate = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getApiVersion());
@@ -203,7 +203,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
-        String expireDate = LocalDateTime.now().plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String expireDate = LocalDateTime.now().withNano(0).plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
         // Build query string
@@ -250,7 +250,7 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setStatus(PaymentStatus.INIT);
         txn.setTransactionType("FOOD_ORDER");
         txn.setPaymentMethod("VNPAY");
-        txn.setCreatedAt(LocalDateTime.now());
+        txn.setCreatedAt(LocalDateTime.now().withNano(0));
 
         // 2. Sinh transactionRef mới
         String transactionRef = "FOOD_" + orderId + "_" + System.currentTimeMillis();
@@ -263,7 +263,7 @@ public class VnPayServiceImpl implements VnPayService {
         // 3. Build params VNPay
         long amountVal = foodOrder.getTotalAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP)
                 .longValue();
-        String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String createDate = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getApiVersion());
@@ -280,7 +280,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
-        String expireDate = LocalDateTime.now().plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String expireDate = LocalDateTime.now().withNano(0).plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
         // 4. Lọc null/empty, sắp xếp và build hashData & query
@@ -330,7 +330,7 @@ public class VnPayServiceImpl implements VnPayService {
         txn.setStatus(PaymentStatus.INIT);
         txn.setTransactionType("TOUR_BOOKING");
         txn.setPaymentMethod("VNPAY");
-        txn.setCreatedAt(LocalDateTime.now());
+        txn.setCreatedAt(LocalDateTime.now().withNano(0));
 
         // 2. Sinh transactionRef
         String transactionRef = "TOUR_" + tourBookingId + "_" + paymentType.toUpperCase() + "_"
@@ -340,7 +340,7 @@ public class VnPayServiceImpl implements VnPayService {
 
         // 3. Build params VNPay
         long amountVal = amount.multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
-        String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String createDate = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String orderInfo = "Thanh toan tour " + tourBookingId
                 + ("deposit".equalsIgnoreCase(paymentType) ? " dat coc" : " toan bo");
 
@@ -359,7 +359,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
-        String expireDate = LocalDateTime.now().plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String expireDate = LocalDateTime.now().withNano(0).plusMinutes(15).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
         // 4. Build hash & query using exact same loop logic as room booking URL builder
@@ -398,7 +398,7 @@ public class VnPayServiceImpl implements VnPayService {
     @Transactional
     public String createPaymentUrlFromTransaction(PaymentTransaction txn, String ipAddress) {
         long amountVal = txn.getAmount().multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).longValue();
-        String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String createDate = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getApiVersion());
@@ -415,7 +415,7 @@ public class VnPayServiceImpl implements VnPayService {
         vnp_Params.put("vnp_IpAddr", ipAddress);
         vnp_Params.put("vnp_CreateDate", createDate);
 
-        String expireDate = LocalDateTime.now().plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String expireDate = LocalDateTime.now().withNano(0).plusMinutes(2).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         vnp_Params.put("vnp_ExpireDate", expireDate);
 
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
@@ -501,7 +501,7 @@ public class VnPayServiceImpl implements VnPayService {
         // 12. Thành công
         if ("00".equals(rspCode)) {
             txn.setStatus(PaymentStatus.SUCCESS);
-            txn.setPaidAt(LocalDateTime.now());
+            txn.setPaidAt(LocalDateTime.now().withNano(0));
 
             if ("FOOD_ORDER".equals(txn.getTransactionType())) {
                 FoodOrder foodOrder = txn.getFoodOrder();

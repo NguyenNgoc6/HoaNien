@@ -2048,11 +2048,11 @@
                                               Đang chờ bảo trì định giá
                                           </button>
                                       </div>
-                                      ` : (data.detailStatus !== 'Checked_Out' ? `
-                                      <button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                      ` : (data.detailStatus !== 'Checked_Out' ? 
+                                          (results.length > 1 ? `<button onclick="openPaymentModalForRoom('${roomId}', ${roomTotalWithVat})" class="btn" style="padding: 8px 16px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; background: #272320; color: white; border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                                           Thanh toán Phòng ${data.roomNumber || 'N/A'}
-                                      </button>
-                                      ` : `
+                                      </button>` : ``)
+                                      : `
                                       <span style="color: #27ae60; font-weight: 600; font-family: 'Inter', sans-serif; font-size: 13px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Đã thanh toán</span>
                                       `)}
                                   </div>
@@ -2620,7 +2620,8 @@
             const roomInfo = roomSummaryMap[roomId];
             if (!roomInfo) return;
 
-            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount;
+            // Trừ deposit đã nộp riêng cho phòng này (nạp tiền nâng hạn mức)
+            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount - (roomInfo.roomDeposited || 0);
             if (roomOutstanding < 0) roomOutstanding = 0;
 
             document.getElementById('roomBillOutstandingAmount').innerText = formatCurrency(roomOutstanding);
@@ -3566,10 +3567,16 @@
                 btnGDPR.disabled = true;
                 btnGDPR.innerText = 'Đang xử lý...';
                 
-                const res = await fetch(`/admin/api/v1/customers/${custId}/anonymize`, {
+                let res = await fetch(`/api/folios/customers/${custId}/anonymize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+                if (!res.ok && res.status === 404) {
+                    res = await fetch(`/admin/api/v1/customers/${custId}/anonymize`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
                 
                 if (res.ok) {
                     alert('Dữ liệu khách hàng đã được xóa (ẩn danh) thành công.');

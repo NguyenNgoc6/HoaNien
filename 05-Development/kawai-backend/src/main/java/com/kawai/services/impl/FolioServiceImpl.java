@@ -59,7 +59,7 @@ public class FolioServiceImpl implements FolioService {
         item.setSourceDepartment(department);
         item.setAmount(amount);
         item.setDescription(description);
-        item.setCreatedAt(LocalDateTime.now());
+        item.setCreatedAt(LocalDateTime.now().withNano(0));
         folioItemRepository.save(item);
     }
 
@@ -107,7 +107,7 @@ public class FolioServiceImpl implements FolioService {
             item.setSourceDepartment("Rooms");
             item.setAmount(detail.getRoomCharge());
             item.setDescription("Tiền phòng đêm " + businessDate);
-            item.setCreatedAt(LocalDateTime.now());
+            item.setCreatedAt(LocalDateTime.now().withNano(0));
             long roomCount = roomBookingDetailRepository.findByRoomBookingId(detail.getRoomBooking().getId()).size();
             item.setRevenueCode(roomCount > 1 ? "ROOM_GROUP" : "ROOM_TRANSIENT");
             folioItemRepository.save(item);
@@ -121,7 +121,7 @@ public class FolioServiceImpl implements FolioService {
         log.setOldValue(businessDate.toString());
         log.setNewValue(businessDate.plusDays(1).toString());
         log.setIpAddress("127.0.0.1");
-        log.setTimestamp(LocalDateTime.now());
+        log.setTimestamp(LocalDateTime.now().withNano(0));
         if (staffAccount != null) {
             log.setAccount(staffAccount);
         }
@@ -184,7 +184,7 @@ public class FolioServiceImpl implements FolioService {
         invoice.setVatAmount(vat);
         invoice.setTotalAmount(totalCharges);
         invoice.setInvoiceStatus("Paid");
-        invoice.setIssuedAt(LocalDateTime.now());
+        invoice.setIssuedAt(LocalDateTime.now().withNano(0));
         consolidatedInvoiceRepository.save(invoice);
 
         // 4. Send HTML E-Invoice via EmailService
@@ -204,7 +204,7 @@ public class FolioServiceImpl implements FolioService {
         log.setOldValue("CHECKED_IN");
         log.setNewValue("CHECKED_OUT");
         log.setIpAddress("127.0.0.1");
-        log.setTimestamp(LocalDateTime.now());
+        log.setTimestamp(LocalDateTime.now().withNano(0));
         auditLogRepository.save(log);
     }
 }

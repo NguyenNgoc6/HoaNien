@@ -29,24 +29,6 @@
                 }
             }
         }
-        function updateAdultSelectOptions() {
-            const selects = document.querySelectorAll('.adult-companion-select');
-            const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
-
-            selects.forEach(select => {
-                const options = select.querySelectorAll('option');
-                options.forEach(opt => {
-                    if (opt.value === '') return;
-                    if (selectedValues.includes(opt.value) && opt.value !== select.value) {
-                        opt.style.display = 'none';
-                        opt.disabled = true;
-                    } else {
-                        opt.style.display = '';
-                        opt.disabled = false;
-                    }
-                });
-            });
-        }
     </script>
     <!-- Google Fonts for Serif Typography -->
     <link
@@ -962,7 +944,8 @@
                         <div class="mt-4 border border-blue-100 bg-blue-50/60 rounded-sm overflow-hidden">
                             <!-- VNPay logo header -->
                             <div class="flex items-center gap-3 px-5 py-3 bg-white border-b border-blue-100">
-                                <img alt="VNPay" class="h-7 object-contain" src="https://vnpay.vn/assets/images/logo-vnpay.svg"
+                                <img alt="VNPay" class="h-7 object-contain"
+                                    src="https://vnpay.vn/assets/images/logo-vnpay.svg"
                                     onerror="this.onerror=null; this.src='https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR.png';">
                                 <div>
                                     <p class="text-[10px] font-bold uppercase tracking-widest text-brand-dark">Cổng
@@ -1253,24 +1236,6 @@
         const dbTourActivities = dbTourActivitiesRaw ? JSON.parse(dbTourActivitiesRaw) : null;
         const rawDependentsJson = /*[[${userDependentsJson}]]*/ '[]';
         /*]]>*/
-        function updateAdultSelectOptions() {
-            const selects = document.querySelectorAll('.adult-companion-select');
-            const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
-
-            selects.forEach(select => {
-                const options = select.querySelectorAll('option');
-                options.forEach(opt => {
-                    if (opt.value === '') return;
-                    if (selectedValues.includes(opt.value) && opt.value !== select.value) {
-                        opt.style.display = 'none';
-                        opt.disabled = true;
-                    } else {
-                        opt.style.display = '';
-                        opt.disabled = false;
-                    }
-                });
-            });
-        }
     </script>
 
     <script data-purpose="ui-interactions">
@@ -4043,7 +4008,7 @@
 
         function checkDuplicateTourRegistration() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('booked')) return; // Ngăn cảnh báo khi vừa đặt xong
+            const isJustBooked = urlParams.has('booked'); // Cờ vừa đặt tour xong
 
             const tourInfo = tourData[currentTour];
             const dateInput = document.getElementById('departureDate');
@@ -4063,7 +4028,7 @@
                     isCustomerAlreadyRegisteredInTour = data.registered;
                     console.log("isCustomerAlreadyRegisteredInTour updated:", isCustomerAlreadyRegisteredInTour);
 
-                    if (isCustomerAlreadyRegisteredInTour) {
+                    if (isCustomerAlreadyRegisteredInTour && !isJustBooked) {
                         showWarningAlertPopup(
                             lang === 'vi' ? 'Thông báo đặt trùng' : 'Duplicate Booking Notice',
                             lang === 'vi' ? 'Bạn đã đăng ký tour này trước đó. Bạn đang đặt hộ cho người khác?' : 'You have already booked this tour. Are you booking on behalf of others?'
@@ -4143,27 +4108,36 @@
         function updateAdultSelectOptions() {
             const selects = document.querySelectorAll('.adult-companion-select');
             const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== '');
+            const chkPayer = document.getElementById('isPayerParticipating');
+            const isPayerParticipating = chkPayer ? chkPayer.checked : true;
 
             selects.forEach(select => {
                 const options = select.querySelectorAll('option');
                 options.forEach(opt => {
                     if (opt.value === '') return;
-                    
-                    const depIdx = parseInt(opt.value);
+
+                    const depIdx = parseInt(opt.value, 10);
                     let isBlocked = false;
                     if (!isNaN(depIdx) && userDependentsList[depIdx]) {
-                        const depIdStr = String(userDependentsList[depIdx].id);
-                        if (blockedDependentIds.includes(depIdStr)) {
-                            isBlocked = true;
+                        const depObj = userDependentsList[depIdx];
+                        const depIdStr = String(depObj.id);
+
+                        if (typeof blockedDependentIds !== 'undefined' && Array.isArray(blockedDependentIds)) {
+                            if (blockedDependentIds.includes(depIdStr)) {
+                                isBlocked = true;
+                            }
                         }
+
                     }
 
                     if (isBlocked || (selectedValues.includes(opt.value) && opt.value !== select.value)) {
                         opt.style.display = 'none';
                         opt.disabled = true;
+                        opt.hidden = true;
                     } else {
                         opt.style.display = '';
                         opt.disabled = false;
+                        opt.hidden = false;
                     }
                 });
             });
@@ -4177,12 +4151,22 @@
                 const options = select.querySelectorAll('option');
                 options.forEach(opt => {
                     if (opt.value === '') return;
-                    
-                    const depIdx = parseInt(opt.value);
+
+                    const depIdx = parseInt(opt.value, 10);
                     let isBlocked = false;
                     if (!isNaN(depIdx) && userDependentsList[depIdx]) {
-                        const depIdStr = String(userDependentsList[depIdx].id);
-                        if (blockedDependentIds.includes(depIdStr)) {
+                        const depObj = userDependentsList[depIdx];
+                        const depIdStr = String(depObj.id);
+
+                        // 1. Trẻ em đã có tour vào ngày khởi hành này
+                        if (typeof blockedDependentIds !== 'undefined' && Array.isArray(blockedDependentIds)) {
+                            if (blockedDependentIds.includes(depIdStr)) {
+                                isBlocked = true;
+                            }
+                        }
+
+                        // 2. Ẩn Người đặt phòng
+                        if (depObj.relationship === 'Người đặt phòng') {
                             isBlocked = true;
                         }
                     }
@@ -4190,9 +4174,11 @@
                     if (isBlocked || (selectedValues.includes(opt.value) && opt.value !== select.value)) {
                         opt.style.display = 'none';
                         opt.disabled = true;
+                        opt.hidden = true;
                     } else {
                         opt.style.display = '';
                         opt.disabled = false;
+                        opt.hidden = false;
                     }
                 });
             });

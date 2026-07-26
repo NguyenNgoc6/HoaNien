@@ -481,64 +481,82 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         roomNumber);
                 }
 
-                // Tự động gán Tour Guide cho schedule của booking này theo luật
+                // Tự động gán Tour Guide cho schedule của booking này theo đúng phân công tour / lịch làm việc
                 try {
                         java.time.LocalDate depDate = schedule.getDepartureDate();
                         java.time.LocalTime depTime = schedule.getDepartureTime();
 
-                        // ID của các Tour Guides: 5 = NguynNgoc, 6 = Ngọc Lan, 7 = Hoàng Nam
-                        Long selectedGuideId = 5L; // Ưu tiên NguynNgoc
+                        // ID các Tour Guides phụ trách theo tour:
+                        // 5L = Nguyễn Ngọc (Huế - Đoàn tụ)
+                        // 41L = Đỗ Thu Bình (Quảng Nam - Đồng nội)
+                        // 42L = Ngô Minh Lan (Ninh Bình - Di sản thủ công)
+                        // 47L = Phan Thanh Hải (Tháp Mười - Liên hoa)
+                        // 48L = Nguyễn Quỳnh Anh (Hạ Long - Sóng xanh)
+                        // 49L = Lê Hoàng Long (Sapa - Sương phủ)
+                        // 50L = Vũ Thu Trang (Cát Tiên - Nhịp đập)
+                        Long preferredGuideId = 5L;
+                        if (schedule.getTour() != null) {
+                                String tn = schedule.getTour().getTourName() != null ? schedule.getTour().getTourName().toLowerCase() : "";
+                                Long tId = schedule.getTour().getId();
+                                if ((tId != null && tId == 1L) || tn.contains("đoàn tụ") || tn.contains("doantu")) {
+                                        preferredGuideId = 5L;
+                                } else if ((tId != null && tId == 2L) || tn.contains("đồng nội") || tn.contains("dongnoi")) {
+                                        preferredGuideId = 41L;
+                                } else if ((tId != null && tId == 3L) || tn.contains("di sản") || tn.contains("thủ công") || tn.contains("disan")) {
+                                        preferredGuideId = 42L;
+                                } else if ((tId != null && tId == 4L) || tn.contains("liên hoa") || tn.contains("tháp mười") || tn.contains("tinhlang")) {
+                                        preferredGuideId = 47L;
+                                } else if ((tId != null && tId == 5L) || tn.contains("sóng xanh") || tn.contains("hạ long") || tn.contains("halong")) {
+                                        preferredGuideId = 48L;
+                                } else if ((tId != null && tId == 6L) || tn.contains("sương phủ") || tn.contains("sapa") || tn.contains("suongphu")) {
+                                        preferredGuideId = 49L;
+                                } else if ((tId != null && tId == 7L) || tn.contains("nhịp đập") || tn.contains("cát tiên") || tn.contains("cattien") || tn.contains("nhipdap")) {
+                                        preferredGuideId = 50L;
+                                }
+                        }
+
+                        Long selectedGuideId = preferredGuideId;
 
                         if (depDate != null && depTime != null) {
-                                // 1. Kiá»ƒm tra xem NguynNgoc (5L) cÃ³ bá»‹ trÃ¹ng lá»‹ch vÃ o ngÃ y & giá»
-                                // này không
-                                boolean ngocConflict = false;
-                                List<TourStaffAssignment> ngocAssigns = tourStaffAssignmentRepository
-                                                .findByEmployeeId(5L);
-                                if (ngocAssigns != null) {
-                                        for (TourStaffAssignment a : ngocAssigns) {
+                                boolean prefConflict = false;
+                                List<TourStaffAssignment> prefAssigns = tourStaffAssignmentRepository
+                                                .findByEmployeeId(preferredGuideId);
+                                if (prefAssigns != null) {
+                                        for (TourStaffAssignment a : prefAssigns) {
                                                 if (a.getSchedule() != null
                                                                 && !a.getSchedule().getId().equals(schedule.getId())) {
                                                         if (depDate.equals(a.getSchedule().getDepartureDate()) &&
-                                                                        depTime.equals(a.getSchedule()
-                                                                                        .getDepartureTime())
-                                                                        &&
+                                                                        depTime.equals(a.getSchedule().getDepartureTime()) &&
                                                                         "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
-                                                                ngocConflict = true;
+                                                                prefConflict = true;
                                                                 break;
                                                         }
                                                 }
                                         }
                                 }
 
-                                if (ngocConflict) {
-                                        // 2. Náº¿u NguynNgoc bá»‹ trÃ¹ng, kiá»ƒm tra xem Ngá»c Lan (6L) cÃ³ bá»‹
-                                        // trùng không
-                                        boolean lanConflict = false;
-                                        List<TourStaffAssignment> lanAssigns = tourStaffAssignmentRepository
-                                                        .findByEmployeeId(6L);
-                                        if (lanAssigns != null) {
-                                                for (TourStaffAssignment a : lanAssigns) {
-                                                        if (a.getSchedule() != null && !a.getSchedule().getId()
-                                                                        .equals(schedule.getId())) {
-                                                                if (depDate.equals(a.getSchedule().getDepartureDate())
-                                                                                &&
-                                                                                depTime.equals(a.getSchedule()
-                                                                                                .getDepartureTime())
-                                                                                &&
-                                                                                "GUIDE".equalsIgnoreCase(
-                                                                                                a.getStaffRole())) {
-                                                                        lanConflict = true;
-                                                                        break;
+                                if (prefConflict) {
+                                        Long[] candidateGuideIds = new Long[]{5L, 41L, 42L, 47L, 48L, 49L, 50L};
+                                        for (Long candId : candidateGuideIds) {
+                                                if (candId.equals(preferredGuideId)) continue;
+                                                boolean candConflict = false;
+                                                List<TourStaffAssignment> candAssigns = tourStaffAssignmentRepository.findByEmployeeId(candId);
+                                                if (candAssigns != null) {
+                                                        for (TourStaffAssignment a : candAssigns) {
+                                                                if (a.getSchedule() != null && !a.getSchedule().getId().equals(schedule.getId())) {
+                                                                        if (depDate.equals(a.getSchedule().getDepartureDate()) &&
+                                                                            depTime.equals(a.getSchedule().getDepartureTime()) &&
+                                                                            "GUIDE".equalsIgnoreCase(a.getStaffRole())) {
+                                                                                candConflict = true;
+                                                                                break;
+                                                                        }
                                                                 }
                                                         }
                                                 }
-                                        }
-
-                                        if (!lanConflict) {
-                                                selectedGuideId = 6L; // Gán cho Ngọc Lan
-                                        } else {
-                                                selectedGuideId = 7L; // Fallback gán cho Hoàng Nam
+                                                if (!candConflict) {
+                                                        selectedGuideId = candId;
+                                                        break;
+                                                }
                                         }
                                 }
                         }
@@ -635,12 +653,18 @@ public class TourBookingServiceImpl implements TourBookingService {
                                         }
                                 }
 
-                                String currentNotes = booking.getNotes() != null ? booking.getNotes() : "";
-                                booking.setNotes(currentNotes + "\n[ĐÃ HỦY TOUR & HOÀN 100%] Đã xóa khoản Tour (" + refundAmount
-                                                + " VNĐ) khỏi Folio phòng "
-                                                + (booking.getRoomBookingDetail().getRoom() != null ? booking
-                                                                .getRoomBookingDetail().getRoom().getRoomNumber() : "")
-                                                + " lúc " + java.time.LocalDateTime.now() + ". Lý do: " + reason);
+                                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+                                String formattedTime = java.time.LocalDateTime.now().withNano(0).format(dtf);
+                                String formattedAmount = String.format("%,d", refundAmount.longValue()).replace(',', '.');
+                                String roomNum = (booking.getRoomBookingDetail().getRoom() != null ? booking.getRoomBookingDetail().getRoom().getRoomNumber() : "");
+
+                                String currentNotes = booking.getNotes() != null ? booking.getNotes().trim() : "";
+                                String noteEntry = "[HỦY TOUR & HOÀN 100%] Xóa khoản Tour (" + formattedAmount + " VNĐ) khỏi Folio P." + roomNum + " (" + formattedTime + "). Lý do: " + reason;
+                                if (currentNotes.isEmpty()) {
+                                    booking.setNotes(noteEntry);
+                                } else {
+                                    booking.setNotes(currentNotes + "\n" + noteEntry);
+                                }
                                 tourBookingRepository.save(booking);
                         }
                         // B. Nếu là khách vãng lai (không có phòng): Tạo RefundRequest chờ chuyển khoản
@@ -650,13 +674,20 @@ public class TourBookingServiceImpl implements TourBookingService {
                                 refund.setAmount(refundAmount);
                                 refund.setStatus("Pending");
                                 refund.setManagerNote("Hoàn 100% tiền Tour do Resort hủy tour. Sự cố: " + reason);
-                                refund.setCreatedAt(java.time.LocalDateTime.now());
+                                refund.setCreatedAt(java.time.LocalDateTime.now().withNano(0));
                                 refundRequestRepository.save(refund);
 
-                                String currentNotes = booking.getNotes() != null ? booking.getNotes() : "";
-                                booking.setNotes(currentNotes + "\n[ĐÃ TẠO YÊU CẦU HOÀN] Hoàn 100% tiền Tour ("
-                                                + refundAmount + " VNĐ) - Chờ chuyển khoản lúc "
-                                                + java.time.LocalDateTime.now() + ". Lý do: " + reason);
+                                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+                                String formattedTime = java.time.LocalDateTime.now().withNano(0).format(dtf);
+                                String formattedAmount = String.format("%,d", refundAmount.longValue()).replace(',', '.');
+
+                                String currentNotes = booking.getNotes() != null ? booking.getNotes().trim() : "";
+                                String noteEntry = "[TẠO YÊU CẦU HOÀN] Hoàn 100% tiền Tour (" + formattedAmount + " VNĐ) - Chờ chuyển khoản (" + formattedTime + "). Lý do: " + reason;
+                                if (currentNotes.isEmpty()) {
+                                    booking.setNotes(noteEntry);
+                                } else {
+                                    booking.setNotes(currentNotes + "\n" + noteEntry);
+                                }
                                 tourBookingRepository.save(booking);
                         }
                 } else {
@@ -840,41 +871,78 @@ public class TourBookingServiceImpl implements TourBookingService {
                 }
 
                 BigDecimal refundAmount = BigDecimal.ZERO;
-                String newStatus = "Cancelled_Forfeited";
+                String newStatus = "Cancelled_Refunded";
 
-                // Quy tắc theo yêu cầu: > 24h => hoàn 50%, <= 24h => hoàn 0%
-                if (booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null) {
-                        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-                        // Assume departure time is 07:00 if not specified
-                        java.time.LocalTime depTime = booking.getSchedule().getDepartureTime() != null
-                                        ? booking.getSchedule().getDepartureTime()
-                                        : java.time.LocalTime.of(7, 0);
-                        java.time.LocalDateTime departureDateTime = booking.getSchedule().getDepartureDate()
-                                        .atTime(depTime);
-                        long hoursUntilDeparture = java.time.temporal.ChronoUnit.HOURS.between(now, departureDateTime);
+                java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+                String formattedTime = java.time.LocalDateTime.now().withNano(0).format(dtf);
 
-                        if (hoursUntilDeparture > 24) {
-                                // Hoàn 50%
-                                refundAmount = booking.getTotalPrice().multiply(new BigDecimal("0.5"));
-                                newStatus = "Cancelled_Refunded";
+                // Trường hợp 1: Tour ghi nợ phòng thực sự (Post to room / Charge to stay Folio)
+                boolean isPostToRoom = booking.getNotes() != null && booking.getNotes().contains("paymentMethod=post-room");
+                if (isPostToRoom && booking.getRoomBookingDetail() != null) {
+                        Long detailId = booking.getRoomBookingDetail().getId();
+                        if (folioItemRepository != null) {
+                                List<FolioItem> items = folioItemRepository.findByRoomBookingDetailId(detailId);
+                                if (items != null) {
+                                        String tourName = (booking.getSchedule() != null && booking.getSchedule().getTour() != null)
+                                                        ? booking.getSchedule().getTour().getTourName() : "";
+                                        for (FolioItem item : items) {
+                                                boolean isTourItem = "Tour".equalsIgnoreCase(item.getSourceDepartment())
+                                                                || "OTH_TOUR".equalsIgnoreCase(item.getRevenueCode())
+                                                                || (item.getDescription() != null && item.getDescription().contains("Tour:"));
+                                                if (isTourItem) {
+                                                        if (tourName.isEmpty() || (item.getDescription() != null && item.getDescription().contains(tourName))) {
+                                                                folioItemRepository.delete(item);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                        newStatus = "Cancelled_Refunded";
+                        refundAmount = BigDecimal.ZERO;
 
-                                // Tạo RefundRequest
-                                if (dto != null && dto.getBankName() != null && !dto.getBankName().isEmpty()) {
-                                        String refundInfo = String.format(
-                                                        "[YÊU CẦU HOÀN TIỀN] Ngân hàng: %s, STK: %s, Chủ thẻ: %s",
-                                                        dto.getBankName(), dto.getAccountNumber(),
-                                                        dto.getAccountName());
-                                        String currentNotes = booking.getNotes() != null ? booking.getNotes() : "";
-                                        booking.setNotes(currentNotes + "\n" + refundInfo);
+                        String roomNum = (booking.getRoomBookingDetail().getRoom() != null) ? booking.getRoomBookingDetail().getRoom().getRoomNumber() : "";
+                        String formattedPrice = String.format("%,d", booking.getTotalPrice().longValue()).replace(',', '.');
+                        String noteEntry = "[HỦY TOUR GÁN PHÒNG] Đã xóa khoản Tour (" + formattedPrice + " VNĐ) khỏi Folio P." + roomNum + ", khôi phục hạn mức chi tiêu phòng (" + formattedTime + ").";
+                        String currentNotes = booking.getNotes() != null ? booking.getNotes().trim() : "";
+                        booking.setNotes(currentNotes.isEmpty() ? noteEntry : currentNotes + "\n" + noteEntry);
+                } else {
+                        // Trường hợp 2: Tour thanh toán trực tiếp (VNPay / Tiền mặt) => Tính mốc 24h
+                        newStatus = "Cancelled_Forfeited";
+                        if (booking.getSchedule() != null && booking.getSchedule().getDepartureDate() != null) {
+                                java.time.LocalDateTime now = java.time.LocalDateTime.now().withNano(0);
+                                java.time.LocalTime depTime = booking.getSchedule().getDepartureTime() != null
+                                                ? booking.getSchedule().getDepartureTime()
+                                                : java.time.LocalTime.of(7, 0);
+                                java.time.LocalDateTime departureDateTime = booking.getSchedule().getDepartureDate()
+                                                .atTime(depTime);
+                                long hoursUntilDeparture = java.time.temporal.ChronoUnit.HOURS.between(now, departureDateTime);
 
-                                        com.kawai.models.RefundRequest refund = new com.kawai.models.RefundRequest();
-                                        refund.setTourBooking(booking);
-                                        refund.setBankName(dto.getBankName());
-                                        refund.setAccountNumber(dto.getAccountNumber());
-                                        refund.setAccountName(dto.getAccountName());
-                                        refund.setAmount(refundAmount);
-                                        refund.setStatus("Pending");
-                                        refundRequestRepository.save(refund);
+                                if (hoursUntilDeparture > 24) {
+                                        // Hoàn 50%
+                                        refundAmount = booking.getTotalPrice().multiply(new BigDecimal("0.5"));
+                                        newStatus = "Cancelled_Refunded";
+
+                                        if (dto != null && dto.getBankName() != null && !dto.getBankName().isEmpty()) {
+                                                String refundInfo = String.format(
+                                                                "[YÊU CẦU HOÀN TIỀN 50%%] Ngân hàng: %s, STK: %s, Chủ thẻ: %s (%s)",
+                                                                dto.getBankName(), dto.getAccountNumber(),
+                                                                dto.getAccountName(), formattedTime);
+                                                String currentNotes = booking.getNotes() != null ? booking.getNotes().trim() : "";
+                                                booking.setNotes(currentNotes.isEmpty() ? refundInfo : currentNotes + "\n" + refundInfo);
+
+                                                com.kawai.models.RefundRequest refund = new com.kawai.models.RefundRequest();
+                                                refund.setTourBooking(booking);
+                                                refund.setBankName(dto.getBankName());
+                                                refund.setAccountNumber(dto.getAccountNumber());
+                                                refund.setAccountName(dto.getAccountName());
+                                                refund.setAmount(refundAmount);
+                                                refund.setStatus("Pending");
+                                                refundRequestRepository.save(refund);
+                                        }
+                                } else {
+                                        String forfeitInfo = String.format("[HỦY TOUR KHÔNG HOÀN TIỀN] Khách hủy sát giờ (<= 24h), phạt 100%% cọc (%s).", formattedTime);
+                                        String currentNotes = booking.getNotes() != null ? booking.getNotes().trim() : "";
+                                        booking.setNotes(currentNotes.isEmpty() ? forfeitInfo : currentNotes + "\n" + forfeitInfo);
                                 }
                         }
                 }

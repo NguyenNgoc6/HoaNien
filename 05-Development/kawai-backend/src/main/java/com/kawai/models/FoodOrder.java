@@ -40,7 +40,7 @@ public class FoodOrder {
     @Column(name = "note", length = 500)
     private String note;
     @Column(name = "order_time", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private java.time.LocalDateTime orderTime = java.time.LocalDateTime.now();
+    private java.time.LocalDateTime orderTime = java.time.LocalDateTime.now().withNano(0);
     @OneToMany(mappedBy = "foodOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<FoodOrderDetail> details;
 

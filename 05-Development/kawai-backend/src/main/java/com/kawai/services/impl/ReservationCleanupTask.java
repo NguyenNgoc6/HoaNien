@@ -36,7 +36,7 @@ public class ReservationCleanupTask {
                 .filter(t -> "Cleaning".equalsIgnoreCase(t.getTableStatus()) && t.getCleaningStartTime() != null)
                 .collect(Collectors.toList());
 
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now().withNano(0);
         for (RestaurantTable table : cleaningTables) {
             if (table.getCleaningStartTime().plusMinutes(10).isBefore(now)) {
                 table.setTableStatus("Available");
@@ -48,7 +48,7 @@ public class ReservationCleanupTask {
 
     // Scheduled dynamically in DynamicJobConfig
     public void cleanupNoShowReservations() {
-        this.lastRun = java.time.LocalDateTime.now();
+        this.lastRun = java.time.LocalDateTime.now().withNano(0);
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
         

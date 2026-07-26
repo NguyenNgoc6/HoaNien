@@ -12,5 +12,5 @@ public class AuditLog {
     @Column(name="old_value", columnDefinition="TEXT") private String oldValue;
     @Column(name="new_value", columnDefinition="TEXT") private String newValue;
     @Column(name="ip_address", nullable=false) private String ipAddress;
-    @Column(nullable=false) private LocalDateTime timestamp = LocalDateTime.now();
+    @Column(nullable=false) private LocalDateTime timestamp = LocalDateTime.now().withNano(0);
 }

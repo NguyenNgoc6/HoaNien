@@ -126,7 +126,7 @@ public class FnBDailyReportServiceImpl implements FnBDailyReportService {
                 .totalVnpayRevenue(preview.getTotalVnpayRevenue())
                 .totalChargeToRoomRevenue(preview.getTotalChargeToRoomRevenue())
                 .totalRevenue(preview.getTotalRevenue())
-                .closedAt(LocalDateTime.now())
+                .closedAt(LocalDateTime.now().withNano(0))
                 .notes(notes) // Ghi chú của nhân viên (ví dụ: "Tiền trong két bị thiếu 50k, em đã bù tiền túi")
                 .build();
                 

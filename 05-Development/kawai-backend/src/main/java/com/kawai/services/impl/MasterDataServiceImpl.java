@@ -172,7 +172,7 @@ public class MasterDataServiceImpl implements MasterDataService {
                 if (payload.get("validFrom") != null && !payload.get("validFrom").toString().isEmpty())
                     promo.setValidFrom(java.time.LocalDateTime.parse(payload.get("validFrom").toString()));
                 else
-                    promo.setValidFrom(java.time.LocalDateTime.now());
+                    promo.setValidFrom(java.time.LocalDateTime.now().withNano(0));
                 
                 if (payload.get("validTo") != null && !payload.get("validTo").toString().isEmpty())
                     promo.setValidTo(java.time.LocalDate.parse(payload.get("validTo").toString()));
