@@ -58,20 +58,23 @@ public class TourIncidentApiController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     public ResponseEntity<?> getPendingIncidents() {
         try {
-            List<HotelOperation> pendingOps = hotelOperationRepository.findByStatus("Pending");
-            List<Map<String, Object>> incidents = pendingOps.stream()
-                    .filter(op -> "TOUR_INCIDENT".equals(op.getOperationalType()))
-                    .map(op -> Map.<String, Object>of(
-                            "id", op.getId(),
-                            "description", op.getNotes(),
-                            "staffName", op.getStaff() != null ? op.getStaff().getFullName() : "N/A",
-                            "createdAt", op.getCreatedAt().toString()
-                    ))
+            List<HotelOperation> allOps = hotelOperationRepository.findAll();
+            List<Map<String, Object>> incidents = allOps.stream()
+                    .filter(op -> "Pending".equalsIgnoreCase(op.getStatus()) && "TOUR_INCIDENT".equalsIgnoreCase(op.getOperationalType()))
+                    .map(op -> {
+                        Map<String, Object> map = new java.util.HashMap<>();
+                        map.put("id", op.getId());
+                        map.put("description", op.getNotes() != null ? op.getNotes() : "");
+                        map.put("staffName", op.getStaff() != null ? op.getStaff().getFullName() : "HDV / Tourguide");
+                        map.put("createdAt", op.getCreatedAt() != null ? op.getCreatedAt().toString() : LocalDateTime.now().toString());
+                        return map;
+                    })
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(Map.of("success", true, "data", incidents));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage() != null ? e.getMessage() : "Internal Error"));
         }
     }
 

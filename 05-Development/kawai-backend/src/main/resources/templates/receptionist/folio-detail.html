@@ -891,7 +891,7 @@
                 </div>
                 <div
                     style="display: flex; justify-content: space-between; font-weight: bold; padding: 5px 0; border-top: 1px solid #2F1F17; margin-top: 5px; padding-top: 5px;">
-                    <span>TỔNG CỘNG:</span> <span id="printTotal" style="font-size: 16px;">1.793.500</span>
+                    <span id="printTotalLabel">TỔNG CỘNG:</span> <span id="printTotal" style="font-size: 16px;">1.793.500</span>
                 </div>
             </div>
         </div>
@@ -1296,6 +1296,7 @@
     <script>
         function closeSuccessModal() {
             document.getElementById('successModal').style.display = 'none';
+            window.location.href = '/receptionist/folio?tab=CHECKED_OUT';
         }
 
         function printInvoiceFromSummary() {
@@ -2448,40 +2449,48 @@
 
             toggleAdjustmentsContainer();
 
+            const currentStatusStr = ((bookingGroupData && bookingGroupData.status) || (currentFolioData && currentFolioData.detailStatus) || (currentFolioData && currentFolioData.status) || '').toUpperCase();
+            const isAllCheckedOutInResults = globalFolioResults && globalFolioResults.length > 0 && globalFolioResults.every(r => r && (r.detailStatus === 'Checked_Out' || r.detailStatus === 'CHECKED_OUT'));
+            const isOrderCheckedOut = currentStatusStr === 'CHECKED_OUT' || isAllCheckedOutInResults;
+
             const btn = document.getElementById('btnProceedOriginal');
             if (btn) {
-                btn.style.display = 'block';
-                if (!window.allRoomsChecked) {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                    btn.innerHTML = 'Chưa kiểm phòng';
-                    btn.onclick = null;
-                } else if (outstanding < 1) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                    btn.innerHTML = 'Hoàn tất Checkout';
-                    btn.onclick = function () {
-                        currentPaymentRoomId = null;
-                        currentPaymentAmount = 0;
-                        selectedPaymentMethod = 'CASH';
-                        processPayment();
-                    };
+                if (isOrderCheckedOut) {
+                    btn.style.display = 'none';
                 } else {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                    btn.innerHTML = 'Thanh toán toàn bộ';
-                    btn.onclick = function () {
-                        openPaymentModal(globalOriginalOutstanding, true);
-                    };
+                    btn.style.display = 'block';
+                    if (!window.allRoomsChecked) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                        btn.innerHTML = 'Chưa kiểm phòng';
+                        btn.onclick = null;
+                    } else if (outstanding < 1) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.innerHTML = 'Hoàn tất Checkout';
+                        btn.onclick = function () {
+                            currentPaymentRoomId = null;
+                            currentPaymentAmount = 0;
+                            selectedPaymentMethod = 'CASH';
+                            processPayment();
+                        };
+                    } else {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.innerHTML = 'Thanh toán toàn bộ';
+                        btn.onclick = function () {
+                            openPaymentModal(globalOriginalOutstanding, true);
+                        };
+                    }
                 }
             }
 
             const btnPrint = document.getElementById('btnPrintOriginal');
             if (btnPrint) {
-                if (outstanding < 1) {
+                if (isOrderCheckedOut || outstanding < 1) {
                     btnPrint.disabled = false;
                     btnPrint.style.opacity = '1';
                     btnPrint.style.pointerEvents = 'auto';
@@ -2496,9 +2505,8 @@
             
             const btnGDPR = document.getElementById('btnGDPRAnonymize');
             if (btnGDPR) {
-                const status = (bookingGroupData && bookingGroupData.status) || (currentFolioData && currentFolioData.status);
                 const custId = (bookingGroupData && bookingGroupData.customerId) || (currentFolioData && currentFolioData.customerId);
-                if (outstanding < 1 && status === 'Checked_Out' && custId) {
+                if (outstanding < 1 && isOrderCheckedOut && custId) {
                     btnGDPR.style.display = 'block';
                 } else {
                     btnGDPR.style.display = 'none';
@@ -2612,7 +2620,7 @@
             const roomInfo = roomSummaryMap[roomId];
             if (!roomInfo) return;
 
-            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount - (roomInfo.roomDeposited || 0);
+            let roomOutstanding = roomInfo.total - roomInfo.appliedPromoDiscount;
             if (roomOutstanding < 0) roomOutstanding = 0;
 
             document.getElementById('roomBillOutstandingAmount').innerText = formatCurrency(roomOutstanding);
@@ -2711,15 +2719,21 @@
                 "Khách hàng";
             document.getElementById('printGuestName').innerText = guestName;
 
-            const roomList = (bookingGroupData && bookingGroupData.rooms) ?
-                bookingGroupData.rooms.map(r => r.roomNumber).join(', ') :
-                (currentFolioData ? currentFolioData.roomNumber : 'N/A');
+            const targetRoomData = (currentPaymentRoomId !== null && globalFolioResults && globalFolioResults.length > 0) ?
+                globalFolioResults.find(r => r && (r.id == currentPaymentRoomId || r.roomBookingDetailId == currentPaymentRoomId)) : null;
+
+            const roomList = (targetRoomData && targetRoomData.roomNumber) ?
+                targetRoomData.roomNumber :
+                ((bookingGroupData && bookingGroupData.rooms) ?
+                    bookingGroupData.rooms.map(r => r.roomNumber).join(', ') :
+                    (currentFolioData ? currentFolioData.roomNumber : 'N/A'));
             document.getElementById('printRoomNumber').innerText = roomList;
 
             let guestCount = 0;
             const isSplit = data.isSplit !== undefined ? data.isSplit : (currentPaymentRoomId !== null);
-            if (isSplit && currentFolioData) {
-                guestCount = (currentFolioData.numberOfAdults || 0) + (currentFolioData.numberOfChildren || 0);
+            if (isSplit && (targetRoomData || currentFolioData)) {
+                const infoData = targetRoomData || currentFolioData;
+                guestCount = (infoData.numberOfAdults || 0) + (infoData.numberOfChildren || 0);
             } else if (globalFolioResults && globalFolioResults.length > 0) {
                 globalFolioResults.forEach(roomResult => {
                     if (roomResult) {
@@ -2731,8 +2745,8 @@
             }
             document.getElementById('printGuestCount').innerText = guestCount;
 
-            const checkInDateStr = (currentFolioData && currentFolioData.checkInDate) || "";
-            const checkOutDateStr = (currentFolioData && currentFolioData.checkOutDate) || "";
+            const checkInDateStr = (targetRoomData && targetRoomData.checkInDate) || (currentFolioData && currentFolioData.checkInDate) || "";
+            const checkOutDateStr = (targetRoomData && targetRoomData.checkOutDate) || (currentFolioData && currentFolioData.checkOutDate) || "";
             document.getElementById('printArrivalDate').innerText = formatDateStr(checkInDateStr);
             document.getElementById('printDepartureDate').innerText = formatDateStr(checkOutDateStr);
 
@@ -2758,7 +2772,13 @@
             // 5. Gather items to print
             let itemsToPrint = [];
             if (isSplit) {
-                itemsToPrint = currentFolioData.items.filter(i => selectedItemIds.includes(i.id));
+                if (selectedItemIds && selectedItemIds.length > 0 && currentFolioData && currentFolioData.items) {
+                    itemsToPrint = currentFolioData.items.filter(i => selectedItemIds.includes(i.id));
+                } else if (targetRoomData && targetRoomData.items) {
+                    itemsToPrint = targetRoomData.items;
+                } else if (currentFolioData && currentFolioData.items) {
+                    itemsToPrint = currentFolioData.items;
+                }
             } else {
                 // If payment was successful (or no unsettled items are left), gather ALL items for print.
                 // Otherwise, only gather unsettled items.
@@ -3041,15 +3061,26 @@
 
             // 6. Calculate total values
             const promoDiscount = currentPaymentRoomId === null ? appliedGroupPromoDiscount : (roomSummaryMap[currentPaymentRoomId] ? roomSummaryMap[currentPaymentRoomId].appliedPromoDiscount : 0);
-            const deposit = currentPaymentRoomId === null ? globalPrePaidDeposit : (roomSummaryMap[currentPaymentRoomId] ? roomSummaryMap[currentPaymentRoomId].roomDeposited || 0 : 0);
+            const deposit = Math.abs(currentPaymentRoomId === null ? globalPrePaidDeposit : 0);
 
-            const vatBase = Math.max(0, printSubtotal - promoDiscount + printServiceCharge);
+            // Separate positive charges from negative adjustments/refunds
+            let positiveSubtotal = 0;
+            let refundDeductions = 0;
+            groupedItems.forEach(g => {
+                if (g.amount > 0) {
+                    positiveSubtotal += g.amount;
+                } else {
+                    refundDeductions += Math.abs(g.amount);
+                }
+            });
+
+            const vatBase = Math.max(0, positiveSubtotal - promoDiscount + printServiceCharge);
             const vat = vatBase * 0.1;
-            const totalBill = printSubtotal - promoDiscount + printServiceCharge + vat;
-            const totalOutstanding = Math.max(0, totalBill - deposit);
+            const totalBill = positiveSubtotal - promoDiscount + printServiceCharge + vat;
+            const netBalance = totalBill - refundDeductions - deposit;
 
             // Update footer UI
-            document.getElementById('printSubtotal').innerText = formatNumber(printSubtotal);
+            document.getElementById('printSubtotal').innerText = formatNumber(positiveSubtotal);
 
             // Promo display
             const printPromoRow = document.getElementById('printPromoRow');
@@ -3083,7 +3114,15 @@
                 document.getElementById('printDepositRow').style.display = 'none';
             }
 
-            document.getElementById('printTotal').innerText = formatNumber(totalOutstanding);
+            const labelEl = document.getElementById('printTotalLabel');
+            const totalEl = document.getElementById('printTotal');
+            if (netBalance >= 0) {
+                if (labelEl) labelEl.innerText = "TỔNG CỘNG:";
+                if (totalEl) totalEl.innerText = formatNumber(netBalance);
+            } else {
+                if (labelEl) labelEl.innerText = "HOÀN TRẢ KHÁCH:";
+                if (totalEl) totalEl.innerText = formatNumber(Math.abs(netBalance));
+            }
 
             document.getElementById('successModal').style.display = 'flex';
         }

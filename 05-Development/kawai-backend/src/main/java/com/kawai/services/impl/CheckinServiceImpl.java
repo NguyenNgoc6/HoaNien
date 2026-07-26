@@ -59,6 +59,10 @@ public class CheckinServiceImpl implements CheckinService {
         private final com.kawai.services.interfaces.WorkflowEngineService workflowEngineService;
 
         @Autowired
+        @org.springframework.context.annotation.Lazy
+        private com.kawai.services.interfaces.HousekeepingService housekeepingService;
+
+        @Autowired
         public CheckinServiceImpl(
                         RoomBookingDetailRepository roomBookingDetailRepo,
                         RoomRepository roomRepo,
@@ -107,25 +111,39 @@ public class CheckinServiceImpl implements CheckinService {
                 }
 
                 Room room = findRoom(roomId);
+                String prevStatus = room.getRoomStatus();
 
                 validateRoomAvailableForCheckin(room);
 
                 assignRoomToGuest(detail, room);
+
+                // Nếu phòng vừa gán đang ở trạng thái Dirty / Vacant_Dirty -> Tự động báo dọn khẩn cấp!
+                if (STATUS_DIRTY.equalsIgnoreCase(prevStatus) || "Dirty".equalsIgnoreCase(prevStatus)) {
+                        try {
+                                if (housekeepingService != null) {
+                                        housekeepingService.escalateTaskByRoomNumber(room.getRoomNumber());
+                                }
+                        } catch (Exception ex) {
+                                log.error("Lỗi khi tự động tạo phiếu dọn khẩn cho phòng {}: {}", room.getRoomNumber(), ex.getMessage());
+                        }
+                }
 
                 return roomBookingDetailRepo.save(detail);
         }
 
         private void assignRoomToGuest(RoomBookingDetail detail, Room room) {
                 detail.setRoom(room);
-                // subCreditLimit đã được gán từ lúc tạo booking (= booking.creditLimit hoặc 5tr mặc định)
+                // subCreditLimit đã được gán từ lúc tạo booking (= booking.creditLimit hoặc 5tr
+                // mặc định)
                 // Không ghi đè tại đây để đảm bảo hạn mức luôn khớp với tier của khách
                 if (detail.getSubCreditLimit() == null) {
                         // Fallback an toàn: nếu vì lý do nào đó vẫn null thì lấy từ booking cha
                         java.math.BigDecimal fallback = (detail.getRoomBooking() != null
                                         && detail.getRoomBooking().getCreditLimit() != null
-                                        && detail.getRoomBooking().getCreditLimit().compareTo(java.math.BigDecimal.ZERO) > 0)
-                                                        ? detail.getRoomBooking().getCreditLimit()
-                                                        : new java.math.BigDecimal("5000000.00");
+                                        && detail.getRoomBooking().getCreditLimit()
+                                                        .compareTo(java.math.BigDecimal.ZERO) > 0)
+                                                                        ? detail.getRoomBooking().getCreditLimit()
+                                                                        : new java.math.BigDecimal("5000000.00");
                         detail.setSubCreditLimit(fallback);
                 }
                 detail.setDetailStatus(STATUS_CHECKED_IN);
@@ -160,24 +178,23 @@ public class CheckinServiceImpl implements CheckinService {
                 String status = room.getRoomStatus();
                 // Chặn Maintenance, Occupied, và Vacant_Dirty (phòng chưa dọn dẹp)
                 if (STATUS_MAINTENANCE.equalsIgnoreCase(status)) {
-                        throw new IllegalStateException(
-                                        "ROOM-001: Phòng đang MAINTENANCE, đang bảo trì. Không thể check-in. (BR-HK-03)");
+                        throw new com.kawai.exceptions.BusinessException("ROOM-MAINTENANCE",
+                                        "Phòng " + room.getRoomNumber()
+                                                        + " đang MAINTENANCE (bảo trì). Không thể check-in. (BR-HK-03)");
                 }
                 if (STATUS_OCCUPIED.equalsIgnoreCase(status)) {
-                        throw new IllegalStateException(
-                                        "ROOM-001: Phòng đang Occupied, không thể check-in. (MOD2-002)");
-                }
-                if (STATUS_DIRTY.equalsIgnoreCase(status) || "Dirty".equalsIgnoreCase(status)) {
-                        throw new IllegalStateException(
-                                        "ROOM-001: Phòng đang DIRTY, chưa dọn dẹp xong. Không thể check-in. (BR-FO-04)");
+                        throw new com.kawai.exceptions.BusinessException("ROOM-OCCUPIED",
+                                        "Phòng " + room.getRoomNumber()
+                                                        + " đang Occupied (đã có khách ở). Không thể check-in. (MOD2-002)");
                 }
                 boolean hasPendingMaintenance = maintenanceRequestRepo.existsByRoomIdAndStatusInAndOperationalTypeIn(
                                 room.getId(),
                                 java.util.Arrays.asList("Pending", "InProgress"),
                                 java.util.Arrays.asList("MAINTENANCE", "DAMAGE_CHECK"));
                 if (hasPendingMaintenance) {
-                        throw new IllegalStateException(
-                                        "ROOM-001: Phòng đang có task bảo trì/kiểm tra chờ xử lý, không thể check-in.");
+                        throw new com.kawai.exceptions.BusinessException("ROOM-MAINT-PENDING",
+                                        "Phòng " + room.getRoomNumber()
+                                                        + " đang có phiếu bảo trì/kiểm tra chờ xử lý, không thể check-in.");
                 }
         }
 
@@ -447,6 +464,154 @@ public class CheckinServiceImpl implements CheckinService {
                                                         + " phòng trước khi hoàn tất Check-in!");
                 }
 
+                int maxCapacity = 0;
+                for (com.kawai.models.RoomBookingDetail d : pendingDetails) {
+                        maxCapacity += (d.getNumberOfAdults() != null ? d.getNumberOfAdults() : 0)
+                                     + (d.getNumberOfChildren() != null ? d.getNumberOfChildren() : 0);
+                }
+                
+                int declaredGuests = 1;
+                if (form.getDependents() != null) {
+                        for (com.kawai.dto.DependentRegistrationDTO depDTO : form.getDependents()) {
+                                if (depDTO != null && depDTO.getFullName() != null 
+                                    && !depDTO.getFullName().trim().isEmpty() 
+                                    && !depDTO.getFullName().trim().equalsIgnoreCase("Khách đi kèm")) {
+                                        declaredGuests++;
+                                }
+                        }
+                }
+                if (declaredGuests > maxCapacity) {
+                        throw new com.kawai.exceptions.BusinessException("CHECKIN-CAPACITY", 
+                                "Số lượng khách khai báo (" + declaredGuests + ") vượt quá tổng số lượng khách đã đặt (" + maxCapacity + ")!");
+                }
+
+                // ========================================================================
+                // VALIDATION BẮT BUỘC THEO QUY TRÌNH (FACE ID + VALIDATE CCCD + TRÙNG CCCD)
+                // ========================================================================
+
+                java.util.Set<String> submitCccds = new java.util.HashSet<>();
+
+                // 1. Validate Khách hàng chính (Customer / Chủ đơn)
+                if (customer != null) {
+                        String custCccd = form.getCccd() != null ? form.getCccd().trim() : "";
+                        if (custCccd.isEmpty() && customer.getCccdPassportEncrypted() != null) {
+                                try {
+                                        custCccd = com.kawai.utils.EncryptionUtils
+                                                        .decrypt(customer.getCccdPassportEncrypted());
+                                } catch (Exception ex) {
+                                        custCccd = customer.getCccdPassportEncrypted();
+                                }
+                        }
+
+                        if (!custCccd.isEmpty()) {
+                                if (!com.kawai.utils.ValidationUtils.isValidDocument(custCccd)) {
+                                        throw new com.kawai.exceptions.BusinessException("CHECKIN-VAL-CCCD",
+                                                        "Số CCCD/Hộ chiếu (" + custCccd
+                                                                        + ") của khách hàng chính không hợp lệ (CCCD phải gồm đúng 12 số, Hộ chiếu 6-15 ký tự chữ/số)!");
+                                }
+                                submitCccds.add(custCccd);
+
+                                String finalCustCccd = custCccd;
+                                boolean isDuplicateInDb = customerRepo.findAll().stream()
+                                                .anyMatch(c -> !c.getId().equals(customer.getId())
+                                                                && c.getCccdPassportEncrypted() != null &&
+                                                                (finalCustCccd.equals(c.getCccdPassportEncrypted()) ||
+                                                                                finalCustCccd.equals(decryptQuietly(c
+                                                                                                .getCccdPassportEncrypted()))));
+                                if (isDuplicateInDb) {
+                                        throw new com.kawai.exceptions.BusinessException("CHECKIN-CCCD-DUP",
+                                                        "Số CCCD/Hộ chiếu (" + custCccd
+                                                                        + ") đã tồn tại trên hệ thống thuộc về khách hàng khác!");
+                                }
+                        }
+
+                        boolean hasCustFace = (customer.getFaceVectorData() != null
+                                        && !customer.getFaceVectorData().trim().isEmpty()) ||
+                                        (customer.getFaceImgUrl() != null && !customer.getFaceImgUrl().trim().isEmpty())
+                                        ||
+                                        (form.getFaceVectorData() != null && !form.getFaceVectorData().trim().isEmpty())
+                                        ||
+                                        (form.getFaceImageBase64() != null
+                                                        && !form.getFaceImageBase64().trim().isEmpty());
+
+                        boolean isCustAdult = true; // Khách chính đứng tên luôn là người lớn
+                        if (customer.getBirthDate() != null) {
+                                int age = java.time.Period.between(customer.getBirthDate(), java.time.LocalDate.now())
+                                                .getYears();
+                                isCustAdult = age >= 14;
+                        } else if (form.getDob() != null) {
+                                int age = java.time.Period.between(form.getDob(), java.time.LocalDate.now()).getYears();
+                                isCustAdult = age >= 14;
+                        }
+
+                        if (isCustAdult && custCccd.isEmpty()) {
+                                throw new com.kawai.exceptions.BusinessException("CHECKIN-CCCD-REQ",
+                                                "Khách hàng chính ("
+                                                                + (customer.getFullName() != null
+                                                                                ? customer.getFullName()
+                                                                                : "Chủ đơn")
+                                                                + ") đủ tuổi (từ 14 tuổi) BẮT BUỘC phải cung cấp CCCD/Hộ chiếu!");
+                        }
+
+                        if (isCustAdult && !hasCustFace) {
+                                throw new com.kawai.exceptions.BusinessException("CHECKIN-FACE-REQ",
+                                                "Khách hàng chính ("
+                                                                + (customer.getFullName() != null
+                                                                                ? customer.getFullName()
+                                                                                : "Chủ đơn")
+                                                                + ") đủ tuổi (từ 14 tuổi) BẮT BUỘC phải có dữ liệu khuôn mặt (Face ID) trước khi hoàn tất Check-in!");
+                        }
+                }
+
+                // 2. Validate Người đi kèm (Dependents)
+                if (form.getDependents() != null) {
+                        for (com.kawai.dto.DependentRegistrationDTO depDTO : form.getDependents()) {
+                                if (depDTO == null || depDTO.getFullName() == null
+                                                || depDTO.getFullName().trim().isEmpty()
+                                                || depDTO.getFullName().trim().equalsIgnoreCase("Khách đi kèm")) {
+                                        continue;
+                                }
+
+                                String depCccd = depDTO.getCccd() != null ? depDTO.getCccd().trim() : "";
+                                boolean isDepAdult = (depDTO.getDateOfBirth() != null && java.time.Period
+                                                .between(depDTO.getDateOfBirth(), java.time.LocalDate.now())
+                                                .getYears() >= 14) || !depCccd.isEmpty();
+
+                                if (!depCccd.isEmpty()) {
+                                        if (!com.kawai.utils.ValidationUtils.isValidDocument(depCccd)) {
+                                                throw new com.kawai.exceptions.BusinessException("CHECKIN-VAL-CCCD",
+                                                                "Số CCCD/Hộ chiếu (" + depCccd + ") của người đi kèm ("
+                                                                                + depDTO.getFullName()
+                                                                                + ") không hợp lệ!");
+                                        }
+
+                                        if (submitCccds.contains(depCccd)) {
+                                                throw new com.kawai.exceptions.BusinessException("CHECKIN-CCCD-DUP",
+                                                                "Số CCCD/Hộ chiếu (" + depCccd + ") của người đi kèm ("
+                                                                                + depDTO.getFullName()
+                                                                                + ") bị TRÙNG LẶP trong danh sách Check-in!");
+                                        }
+                                        submitCccds.add(depCccd);
+                                } else if (isDepAdult) {
+                                        throw new com.kawai.exceptions.BusinessException("CHECKIN-CCCD-REQ",
+                                                        "Người đi kèm (" + depDTO.getFullName()
+                                                                        + ") đủ tuổi (từ 14 tuổi) BẮT BUỘC phải cung cấp CCCD/Hộ chiếu!");
+                                }
+
+                                if (isDepAdult) {
+                                        boolean hasDepFace = (depDTO.getFaceVectorData() != null
+                                                        && !depDTO.getFaceVectorData().trim().isEmpty()) ||
+                                                        (depDTO.getFaceImageBase64() != null && !depDTO
+                                                                        .getFaceImageBase64().trim().isEmpty());
+                                        if (!hasDepFace) {
+                                                throw new com.kawai.exceptions.BusinessException("CHECKIN-FACE-REQ",
+                                                                "Người đi kèm (" + depDTO.getFullName()
+                                                                                + ") đủ tuổi (từ 14 tuổi) BẮT BUỘC phải có dữ liệu khuôn mặt (Face ID) trước khi hoàn tất Check-in!");
+                                        }
+                                }
+                        }
+                }
+
                 java.util.Map<String, Long> roomNumberToDetailIdMap = new java.util.HashMap<>();
 
                 for (String roomNumber : form.getAssignedRoomNumbers()) {
@@ -643,4 +808,12 @@ public class CheckinServiceImpl implements CheckinService {
                 return detail;
         }
 
+        private String decryptQuietly(String cipher) {
+                if (cipher == null || cipher.isEmpty()) return "";
+                try {
+                        return com.kawai.utils.EncryptionUtils.decrypt(cipher);
+                } catch (Exception e) {
+                        return cipher;
+                }
+        }
 }

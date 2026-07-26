@@ -199,8 +199,8 @@ public class BookingServiceImpl implements BookingService {
             maxTierLimit = customer.getMembershipTier().getCreditLimit();
         }
 
-        BigDecimal creditLimit = (maxTierLimit != null && maxTierLimit.compareTo(BigDecimal.ZERO) > 0) 
-                ? maxTierLimit 
+        BigDecimal creditLimit = (maxTierLimit != null && maxTierLimit.compareTo(BigDecimal.ZERO) > 0)
+                ? maxTierLimit
                 : new BigDecimal("5000000.00");
 
         holdBooking.setCreditLimit(creditLimit);
@@ -477,6 +477,12 @@ public class BookingServiceImpl implements BookingService {
                 try {
                     List<com.kawai.models.RoomBookingDetail> details = roomBookingDetailRepository
                             .findByRoomBookingId(h.getId());
+                    for (com.kawai.models.RoomBookingDetail detail : details) {
+                        if (detail.getRoom() != null) {
+                            detail.getRoom().setRoomStatus("Vacant_Clean");
+                            roomRepository.save(detail.getRoom());
+                        }
+                    }
                     roomBookingDetailRepository.deleteAll(details);
                     roomBookingRepository.delete(h);
 

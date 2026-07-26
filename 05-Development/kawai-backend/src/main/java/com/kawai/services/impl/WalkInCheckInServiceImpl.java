@@ -671,7 +671,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         booking.setCheckOutDate(req.getCheckOutDate() != null ? req.getCheckOutDate() : LocalDate.now().plusDays(1));
         booking.setTotalPrice(BigDecimal.ZERO);
         booking.setDepositAmount(BigDecimal.ZERO);
-        booking.setCancellationDeadline(java.time.LocalDateTime.now());
+        booking.setHoldExpiresAt(java.time.LocalDateTime.now().plusMinutes(2));
         booking.setCreditLimit(resolveMembershipCreditLimit(customer));
         booking.setPersonalPinHash(UUID.randomUUID().toString().substring(0, 8));
         return booking;

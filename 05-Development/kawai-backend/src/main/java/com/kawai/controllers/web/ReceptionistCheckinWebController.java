@@ -150,6 +150,86 @@ public class ReceptionistCheckinWebController {
         }
     }
 
+    @PostMapping("/complete-ajax")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<?> completeCheckinAjax(@ModelAttribute CheckinSubmitFormDTO form,
+            org.springframework.validation.BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            log.error("Lỗi binding dữ liệu form: {}", bindingResult.getAllErrors());
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("success", false, "message", "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại."));
+        }
+
+        log.info("Bắt đầu xử lý Form Check-in bulk (AJAX). BookingId: {}, Số phòng gán: {}, Số người đi kèm: {}",
+                form.getBookingId(),
+                form.getAssignedRoomNumbers() != null ? form.getAssignedRoomNumbers().size() : 0,
+                form.getDependents() != null ? form.getDependents().size() : 0);
+
+        try {
+            com.kawai.models.Booking booking = bookingRepo.findById(form.getBookingId())
+                    .orElseThrow(() -> new BusinessException("CHECKIN-001", "Không tìm thấy Đơn hàng!"));
+
+            com.kawai.models.Customer customer = booking.getCustomer();
+            if (customer != null) {
+                if (form.getGuestName() != null && !form.getGuestName().trim().isEmpty()) {
+                    customer.setFullName(form.getGuestName().trim());
+                }
+                if (form.getPhone() != null && !form.getPhone().trim().isEmpty()) {
+                    if (!com.kawai.utils.ValidationUtils.isValidPhone(form.getPhone())) {
+                        throw new BusinessException("CHECKIN-VAL-01",
+                                "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có đúng 10 số)!");
+                    }
+                    customer.setPhone(form.getPhone().trim());
+                }
+                if (form.getCccd() != null && !form.getCccd().trim().isEmpty()) {
+                    if (!com.kawai.utils.ValidationUtils.isValidDocument(form.getCccd())) {
+                        throw new BusinessException("CHECKIN-VAL-02",
+                                "CCCD/Hộ chiếu không hợp lệ (CCCD phải gồm 12 số, hộ chiếu 6-15 ký tự chữ/số)!");
+                    }
+                    try {
+                        String encrypted = com.kawai.utils.EncryptionUtils.encrypt(form.getCccd().trim());
+                        customer.setCccdPassportEncrypted(encrypted);
+                    } catch (Exception e) {
+                        customer.setCccdPassportEncrypted(form.getCccd().trim());
+                    }
+                }
+                if (form.getDob() != null) {
+                    customer.setBirthDate(form.getDob());
+                }
+                if (form.getGender() != null && !form.getGender().trim().isEmpty()) {
+                    customer.setGender(form.getGender().trim());
+                }
+                if (form.getFaceVectorData() != null && !form.getFaceVectorData().isEmpty()) {
+                    customer.setFaceVectorData(form.getFaceVectorData());
+                }
+                if (form.getFaceImageBase64() != null && !form.getFaceImageBase64().isEmpty()) {
+                    try {
+                        java.util.Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                                form.getFaceImageBase64(),
+                                com.cloudinary.utils.ObjectUtils.asMap(
+                                        "folder", "hoanien_faces",
+                                        "public_id", "cust_" + customer.getId() + "_" + System.currentTimeMillis()));
+                        String publicUrl = uploadResult.get("secure_url").toString();
+                        customer.setFaceImgUrl(publicUrl);
+                    } catch (Exception e) {
+                        log.error("Failed to save FaceID image to Cloudinary for customer {}", customer.getId(), e);
+                    }
+                }
+                customerRepo.save(customer);
+            }
+
+            checkinService.processBulkCheckin(form, customer, booking);
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("success", true, "message", "Check-in thành công !"));
+
+        } catch (BusinessException e) {
+            log.error("Lỗi nghiệp vụ khi Check-in (AJAX): {}", e.getMessage());
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi hệ thống khi Check-in (AJAX): ", e);
+            return org.springframework.http.ResponseEntity.status(500).body(java.util.Map.of("success", false, "message", "Lỗi hệ thống! Vui lòng thử lại. Chi tiết: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/upgrade-dependent/{dependentId}")
     @org.springframework.web.bind.annotation.ResponseBody
     public org.springframework.http.ResponseEntity<?> upgradeDependentToCustomer(

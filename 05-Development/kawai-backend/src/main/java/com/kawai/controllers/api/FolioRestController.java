@@ -1115,6 +1115,14 @@ public class FolioRestController {
                         detail.setDetailStatus("Checked_Out");
                         roomBookingDetailRepository.save(detail);
                         roomsCheckedOutCount++;
+
+                        List<FolioItem> singleRoomItems = nightAuditService.getFolioItems(detail.getId());
+                        if (singleRoomItems != null) {
+                            for (FolioItem item : singleRoomItems) {
+                                item.setIsSettledSeparately(true);
+                            }
+                            folioItemRepository.saveAll(singleRoomItems);
+                        }
                     }
 
                     if (detail.getRoomBooking() != null && detail.getRoomBooking().getCustomer() != null) {

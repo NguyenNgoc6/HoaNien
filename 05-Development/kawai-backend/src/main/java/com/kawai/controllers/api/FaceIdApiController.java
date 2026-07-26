@@ -53,6 +53,7 @@ public class FaceIdApiController {
     private com.kawai.services.interfaces.FolioService folioService;
 
     @Autowired
+    private com.kawai.services.interfaces.SystemNotificationService systemNotificationService;
     private com.kawai.services.interfaces.EmailService emailService;
 
     /**
@@ -336,14 +337,38 @@ public class FaceIdApiController {
                         tourInfo = " (Tour: " + attendee.getTourBooking().getSchedule().getTour().getTourName() + ")";
                     }
 
+                    String noteText = "[BÁO VẮNG MẶT TOUR] Khách hàng: " + name + tourInfo + " - Lý do: " + reason;
+
                     com.kawai.models.HotelOperation incident = new com.kawai.models.HotelOperation();
                     incident.setOperationalType("TOUR_INCIDENT");
                     incident.setPriority("Normal");
                     incident.setStatus("Pending");
-                    incident.setNotes("[BÁO VẮNG MẶT] Khách hàng: " + name + tourInfo + " - Lý do: " + reason);
+                    incident.setNotes(noteText);
                     incident.setStaff(staff);
                     incident.setCreatedAt(LocalDateTime.now());
                     hotelOperationRepository.save(incident);
+
+                    if (systemNotificationService != null) {
+                        try {
+                            List<com.kawai.models.Employee> allEmployees = employeeRepository.findAll();
+                            for (com.kawai.models.Employee emp : allEmployees) {
+                                if (emp.getAccount() != null && emp.getAccount().getRole() != null) {
+                                    String roleName = emp.getAccount().getRole().getRoleName();
+                                    if ("ROLE_MANAGER".equalsIgnoreCase(roleName) || "ROLE_ADMIN".equalsIgnoreCase(roleName)) {
+                                        systemNotificationService.createNotification(
+                                                emp.getAccount(),
+                                                "Báo vắng mặt từ Tourguide",
+                                                noteText,
+                                                "TOUR_ABSENT",
+                                                "/manager/tour-operations"
+                                        );
+                                    }
+                                }
+                            }
+                        } catch (Exception notifEx) {
+                            notifEx.printStackTrace();
+                        }
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

@@ -323,6 +323,15 @@
         let currentTabStatus = 'CHECKED_IN'; // Default tab
 
         document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                const targetTab = tabParam.toUpperCase();
+                const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(targetTab));
+                if (btn) {
+                    filterByTab(btn, targetTab);
+                }
+            }
             fetchActiveFolios();
 
             const searchInput = document.getElementById('folioSearchInput');
