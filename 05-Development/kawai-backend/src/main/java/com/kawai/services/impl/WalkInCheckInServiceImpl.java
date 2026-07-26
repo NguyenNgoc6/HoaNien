@@ -412,10 +412,6 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         return java.util.Optional.empty();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // Private — Validation Helpers
-    // ══════════════════════════════════════════════════════════════════════════
-
     /**
      * Validate thông tin định danh: dateOfBirth bắt buộc; CCCD đúng format 12 số
      * nếu có.
@@ -424,10 +420,37 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         if (req.getDateOfBirth() == null) {
             throw new BusinessException("MOD2-UC14-001", "Date of birth is required");
         }
+
+        java.util.Set<String> cccdSet = new java.util.HashSet<>();
+
         String cccd = req.getCccd();
-        if (cccd != null && !cccd.isBlank() && !cccd.matches(CCCD_PATTERN)) {
-            throw new BusinessException("MOD2-UC14-003",
-                    "Invalid identification document: CCCD must be 12 digits");
+        if (cccd != null && !cccd.isBlank()) {
+            if (!cccd.matches(CCCD_PATTERN)) {
+                throw new BusinessException("MOD2-UC14-003",
+                        "Invalid identification document: CCCD must be 12 digits");
+            }
+            cccdSet.add(cccd);
+        }
+
+        if (req.getRoomSelections() != null) {
+            for (WalkInRoomSelectionDTO selection : req.getRoomSelections()) {
+                if (selection.getAccompaniedGuests() != null) {
+                    for (DependentRegistrationDTO dep : selection.getAccompaniedGuests()) {
+                        String depCccd = dep.getCccd();
+                        if (depCccd != null && !depCccd.isBlank()) {
+                            if (!depCccd.matches(CCCD_PATTERN)) {
+                                throw new BusinessException("MOD2-UC14-003",
+                                        "Invalid identification document for dependent: CCCD must be 12 digits");
+                            }
+                            if (!cccdSet.add(depCccd)) {
+                                throw new BusinessException("MOD2-UC14-004",
+                                        "Trùng lặp CCCD phát hiện: " + depCccd
+                                                + "Mã CCCD đã tồn tại trong đơn WalkIn này");
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -671,6 +694,7 @@ public class WalkInCheckInServiceImpl implements com.kawai.services.interfaces.W
         booking.setCheckOutDate(req.getCheckOutDate() != null ? req.getCheckOutDate() : LocalDate.now().plusDays(1));
         booking.setTotalPrice(BigDecimal.ZERO);
         booking.setDepositAmount(BigDecimal.ZERO);
+        booking.setCancellationDeadline(java.time.LocalDateTime.now().plusDays(2));
         booking.setHoldExpiresAt(java.time.LocalDateTime.now().plusMinutes(2));
         booking.setCreditLimit(resolveMembershipCreditLimit(customer));
         booking.setPersonalPinHash(UUID.randomUUID().toString().substring(0, 8));
