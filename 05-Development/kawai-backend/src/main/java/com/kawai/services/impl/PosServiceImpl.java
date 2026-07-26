@@ -458,7 +458,6 @@ public class PosServiceImpl implements PosService {
             for (TableReservation res : activeReservations) {
                 if ("Seated".equalsIgnoreCase(res.getStatus())) {
                     res.setStatus("Completed");
-                    res.setEndTime(java.time.LocalTime.now());
                     tableReservationRepository.save(res);
                 }
             }
